@@ -9,7 +9,7 @@ ClipStitchr is a browser-local Next.js MVP app under `web/`. The repository root
 - `docs/media-bunny/media-bunny-llms.md` contains the full Media Bunny guide content. Read this first for Media Bunny workflows, recommended patterns, and conceptual guidance.
 - `docs/media-bunny/media-bunny-api.md` contains the Media Bunny TypeScript API declarations. Use this as the source of truth for exact class names, option shapes, method signatures, and return types.
 
-The app uses the planned Next.js shape from `project-scope.md`: app routes such as `/`, `/dashboard`, `/dashboard/library`, `/dashboard/stitchr`, `/dashboard/swapr`, `/dashboard/clipr`, and `/dashboard/swipr`; `/dashboard/library` is the authenticated Library with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Templates tabs, and `/dashboard/uploads`, `/dashboard/avatars`, `/dashboard/templates`, and `/dashboard/stitches` redirect to the relevant Library tab for compatibility. Durable metadata and media are backed by Convex and Cloudflare R2, browser video processing uses Media Bunny, uploads normalize to TikTok 9:16, poster images are generated for video preview default states, and Stitchr uses UGC-then-Demo sequencing for preview, stitching, and download. Stitchr supports selecting up to 20 UGC clips with one selected Demo clip; one shared text overlay is applied across the batch, and each selected UGC produces its own finished stitch.
+The app uses the planned Next.js shape from `project-scope.md`: app routes such as `/`, `/dashboard`, `/dashboard/library`, `/dashboard/hooks`, `/dashboard/stitchr`, `/dashboard/swapr`, `/dashboard/clipr`, and `/dashboard/swipr`; `/dashboard/library` is the authenticated Library with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Pexels tabs. Hook Lab at `/dashboard/hooks` has Ideas and Review views, and `/dashboard/templates` plus the legacy Library Templates query redirect to Hook Lab Ideas. `/dashboard/uploads`, `/dashboard/avatars`, and `/dashboard/stitches` still redirect to the relevant Library tab for compatibility. Durable metadata and media are backed by Convex and Cloudflare R2, browser video processing uses Media Bunny, uploads normalize to TikTok 9:16, poster images are generated for video preview default states, and Stitchr uses UGC-then-Demo sequencing for preview, stitching, and download. Stitchr supports selecting up to 20 UGC clips with one selected Demo clip; one shared text overlay is applied across the batch, and each selected UGC produces its own finished stitch.
 
 ## Media Bunny Implementation Guidance
 
@@ -65,10 +65,13 @@ docker push "$REPOSITORY/provider-worker:$TAG"
 
 Deploy the provider job with the existing production shape:
 
-The provider deployment command assumes `clipstitchr-pexels-api-key` exists in
-Secret Manager and grants
+The provider deployment command assumes `clipstitchr-pexels-api-key` and
+`clipstitchr-apify-token` exist in Secret Manager and grant
 `140346842368-compute@developer.gserviceaccount.com` secret accessor access.
-Create that secret before deploying the Pexels-enabled Swipr automation shape.
+Create those secrets before deploying the Pexels-enabled Swipr and Hook Lab
+social-import shape. Hook Lab explicitly enables video downloads for the
+default Clockworks TikTok Actor; re-run the one-item social-import smoke check
+before changing `HOOK_LAB_TIKTOK_ACTOR_ID` or the Actor input contract.
 
 ```bash
 gcloud run jobs deploy clipstitchr-provider-worker \
@@ -82,8 +85,8 @@ gcloud run jobs deploy clipstitchr-provider-worker \
   --task-timeout 30m \
   --execution-environment gen2 \
   --service-account "140346842368-compute@developer.gserviceaccount.com" \
-  --set-env-vars '^@^NEXT_PUBLIC_CONVEX_URL=https://whimsical-ptarmigan-764.convex.cloud@PROVIDER_WORKER_TOOLS=stitchr,swapr,clipr,avatar-photo,swipr@CLIPR_TTS_MODEL_ID=elevenlabs/v3@CLIPR_LIP_SYNC_MODEL_ID=pixverse/lipsync@TEXT_WRITING_MODEL_ID=anthropic/claude-sonnet-4.6' \
-  --set-secrets PROVIDER_WORKER_SECRET=provider-worker-secret:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest,PEXELS_API_KEY=clipstitchr-pexels-api-key:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest
+  --set-env-vars '^@^NEXT_PUBLIC_CONVEX_URL=https://whimsical-ptarmigan-764.convex.cloud@PROVIDER_WORKER_TOOLS=stitchr,swapr,clipr,avatar-photo,swipr@CLIPR_TTS_MODEL_ID=elevenlabs/v3@CLIPR_LIP_SYNC_MODEL_ID=pixverse/lipsync@TEXT_WRITING_MODEL_ID=anthropic/claude-sonnet-4.6@HOOK_LAB_TIKTOK_ACTOR_ID=clockworks/tiktok-scraper@HOOK_LAB_INSTAGRAM_ACTOR_ID=apify/instagram-scraper@HOOK_LAB_APIFY_MAX_TOTAL_CHARGE_USD=0.5@HOOK_LAB_IMPORTED_VIDEO_MAX_BYTES=104857600@HOOK_LAB_VIDEO_MAX_DURATION_SECONDS=180' \
+  --set-secrets PROVIDER_WORKER_SECRET=provider-worker-secret:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest,APIFY_TOKEN=clipstitchr-apify-token:latest,PEXELS_API_KEY=clipstitchr-pexels-api-key:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest
 ```
 
 Build and push the media worker:

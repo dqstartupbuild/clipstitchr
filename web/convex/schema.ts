@@ -25,6 +25,16 @@ import { cliprResolvedGenerationModeValidator } from "./validators/cliprResolved
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { cliprVideoModelIdValidator } from "./validators/cliprVideoModelId";
 import { clipTypeValidator } from "./validators/clipType";
+import { hookLabCreativeBeatValidator } from "./validators/hookLabCreativeBeat";
+import { hookLabIdeaScopeValidator } from "./validators/hookLabIdeaScope";
+import { hookLabIdeaSourceTypeValidator } from "./validators/hookLabIdeaSourceType";
+import { hookLabIdeaStatusValidator } from "./validators/hookLabIdeaStatus";
+import { hookLabIdeaUseStatusValidator } from "./validators/hookLabIdeaUseStatus";
+import { hookLabIdeaVariantStatusValidator } from "./validators/hookLabIdeaVariantStatus";
+import { hookLabReviewStateValidator } from "./validators/hookLabReviewState";
+import { hookLabStitchRecipeValidator } from "./validators/hookLabStitchRecipe";
+import { hookLabTextBlueprintValidator } from "./validators/hookLabTextBlueprint";
+import { hookLabTextDecisionValidator } from "./validators/hookLabTextDecision";
 import { mediaJobStatusValidator } from "./validators/mediaJobStatus";
 import { mediaJobTypeValidator } from "./validators/mediaJobType";
 import { musicTrackSourceValidator } from "./validators/musicTrackSource";
@@ -136,6 +146,9 @@ export default defineSchema({
     isPosted: v.optional(v.boolean()),
     postedAt: v.optional(v.string()),
     automation: v.optional(automationProvenanceValidator),
+    hookLabIdeaId: v.optional(v.string()),
+    hookLabIdeaUseId: v.optional(v.string()),
+    hookLabIdeaVariantIndex: v.optional(v.number()),
     createdAt: v.string(),
     updatedAt: v.string(),
   })
@@ -327,6 +340,8 @@ export default defineSchema({
     rejectedHookExamples: v.optional(v.array(v.string())),
     hookGenerationGoal: v.optional(v.string()),
     hookEdgeLevel: v.optional(v.string()),
+    defaultAvatarId: v.optional(v.string()),
+    defaultDemoClipId: v.optional(v.string()),
     postBridgeSocialAccountIds: v.optional(v.array(v.number())),
     createdAt: v.string(),
     updatedAt: v.string(),
@@ -446,6 +461,9 @@ export default defineSchema({
     isPosted: v.optional(v.boolean()),
     postedAt: v.optional(v.string()),
     automation: v.optional(automationProvenanceValidator),
+    hookLabIdeaId: v.optional(v.string()),
+    hookLabIdeaUseId: v.optional(v.string()),
+    hookLabIdeaVariantIndex: v.optional(v.number()),
     createdAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
@@ -578,6 +596,155 @@ export default defineSchema({
     .index("by_owner_id", ["ownerId", "id"])
     .index("by_owner_stitch_created", ["ownerId", "stitchId", "createdAt"])
     .index("by_owner_task", ["ownerId", "automationTaskId"]),
+  stitchrHookOptions: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    planId: v.string(),
+    productId: v.optional(v.string()),
+    productName: v.optional(v.string()),
+    stitchId: v.optional(v.string()),
+    rank: v.number(),
+    hook: v.string(),
+    normalizedHook: v.string(),
+    angle: v.string(),
+    reason: v.string(),
+    isSelected: v.boolean(),
+    reviewState: hookLabReviewStateValidator,
+    reviewedAt: v.optional(v.string()),
+    rejectionReason: v.optional(v.string()),
+    linkedIdeaId: v.optional(v.string()),
+    planSource: stitchrHookPlanSourceValidator,
+    planCreatedAt: v.string(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_review_created", ["ownerId", "reviewState", "createdAt"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
+    .index("by_owner_product_review_created", [
+      "ownerId",
+      "productId",
+      "reviewState",
+      "createdAt",
+    ])
+    .index("by_owner_plan_rank", ["ownerId", "planId", "rank"])
+    .index("by_owner_id", ["ownerId", "id"]),
+  hookLabIdeas: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    name: v.string(),
+    searchText: v.string(),
+    sortKey: v.string(),
+    status: hookLabIdeaStatusValidator,
+    sourceType: hookLabIdeaSourceTypeValidator,
+    sourcePlatform: v.optional(v.union(v.literal("tiktok"), v.literal("instagram"))),
+    canonicalUrl: v.optional(v.string()),
+    sourcePostId: v.optional(v.string()),
+    sourceCreatedAt: v.optional(v.string()),
+    attributionName: v.optional(v.string()),
+    attributionUrl: v.optional(v.string()),
+    thumbnailObject: v.optional(r2ObjectValidator),
+    scope: hookLabIdeaScopeValidator,
+    productId: v.optional(v.string()),
+    originalText: v.optional(v.string()),
+    textBlueprint: v.optional(hookLabTextBlueprintValidator),
+    creativeBeat: v.optional(hookLabCreativeBeatValidator),
+    stitchRecipe: v.optional(hookLabStitchRecipeValidator),
+    sourceStitchId: v.optional(v.string()),
+    sourceTemplateId: v.optional(v.string()),
+    sourceHookOptionId: v.optional(v.string()),
+    whatToRepeat: v.optional(v.string()),
+    useCount: v.number(),
+    lastUsedAt: v.optional(v.string()),
+    migrationKey: v.optional(v.string()),
+    requestKey: v.optional(v.string()),
+    analysisModel: v.optional(v.string()),
+    providerPredictionId: v.optional(v.string()),
+    providerRunRequestedAt: v.optional(v.string()),
+    providerRunId: v.optional(v.string()),
+    providerDatasetId: v.optional(v.string()),
+    promptVersion: v.optional(v.string()),
+    analysisVersion: v.optional(v.string()),
+    failureCode: v.optional(v.string()),
+    failureMessage: v.optional(v.string()),
+    archivedAt: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_sort", ["ownerId", "sortKey"])
+    .index("by_owner_scope_created", ["ownerId", "scope", "createdAt"])
+    .index("by_owner_scope_sort", ["ownerId", "scope", "sortKey"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
+    .index("by_owner_product_sort", ["ownerId", "productId", "sortKey"])
+    .index("by_owner_status_created", ["ownerId", "status", "createdAt"])
+    .index("by_owner_canonical_url", ["ownerId", "canonicalUrl"])
+    .index("by_owner_source_stitch", ["ownerId", "sourceStitchId"])
+    .index("by_owner_source_template", ["ownerId", "sourceTemplateId"])
+    .index("by_owner_source_hook_option", ["ownerId", "sourceHookOptionId"])
+    .index("by_owner_migration_key", ["ownerId", "migrationKey"])
+    .index("by_owner_request_key", ["ownerId", "requestKey"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .searchIndex("search_ideas", {
+      searchField: "searchText",
+      filterFields: ["ownerId", "scope", "productId", "status"],
+    }),
+  hookLabIdeaUses: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    ideaId: v.string(),
+    productId: v.string(),
+    variationCount: v.number(),
+    defaultAvatarId: v.string(),
+    defaultDemoClipId: v.string(),
+    status: hookLabIdeaUseStatusValidator,
+    progress: v.number(),
+    completedVariantCount: v.number(),
+    failedVariantCount: v.number(),
+    failureMessage: v.optional(v.string()),
+    idempotencyKey: v.string(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    completedAt: v.optional(v.string()),
+    countedAt: v.optional(v.string()),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_idea_created", ["ownerId", "ideaId", "createdAt"])
+    .index("by_owner_idempotency", ["ownerId", "idempotencyKey"])
+    .index("by_owner_id", ["ownerId", "id"]),
+  hookLabIdeaVariants: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    ideaId: v.string(),
+    useId: v.string(),
+    productId: v.string(),
+    variantIndex: v.number(),
+    status: hookLabIdeaVariantStatusValidator,
+    textDecision: v.optional(hookLabTextDecisionValidator),
+    textDecisionReason: v.optional(v.string()),
+    generatedHook: v.optional(v.string()),
+    generatedCaption: v.optional(v.string()),
+    visualPrompt: v.optional(v.string()),
+    visualPromptSummary: v.optional(v.string()),
+    providerJobId: v.optional(v.string()),
+    providerPredictionIds: v.array(v.string()),
+    generatedImageObject: v.optional(r2ObjectValidator),
+    generatedVideoObject: v.optional(r2ObjectValidator),
+    generatedUgcClipId: v.optional(v.string()),
+    finishedStitchId: v.optional(v.string()),
+    failureCode: v.optional(v.string()),
+    failureMessage: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    completedAt: v.optional(v.string()),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_status_created", ["ownerId", "status", "createdAt"])
+    .index("by_owner_use_variant", ["ownerId", "useId", "variantIndex"])
+    .index("by_owner_idea_created", ["ownerId", "ideaId", "createdAt"])
+    .index("by_owner_finished_stitch", ["ownerId", "finishedStitchId"])
+    .index("by_owner_generated_ugc", ["ownerId", "generatedUgcClipId"])
+    .index("by_owner_id", ["ownerId", "id"]),
   sharedMusicTracks: defineTable({
     id: v.string(),
     uploadedByOwnerId: v.string(),

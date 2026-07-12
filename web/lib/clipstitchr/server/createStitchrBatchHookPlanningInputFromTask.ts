@@ -2,6 +2,7 @@ import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchrBatchHookPlanningInput } from "@/lib/clipstitchr/types/StitchrBatchHookPlanningInput";
 import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
 import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
+import { readHookLabTextBlueprints } from "@/lib/clipstitchr/server/readHookLabTextBlueprints";
 
 type StitchrBatchTaskSnapshot = {
   id: string;
@@ -98,6 +99,9 @@ function createProduct(input: Record<string, unknown>): ProductProfile {
     hookGenerationGoal: getOptionalString(
       input.hookGenerationGoal,
     ) as ProductProfile["hookGenerationGoal"],
+    hookLabTextBlueprints: readHookLabTextBlueprints(
+      input.hookLabTextBlueprints,
+    ),
     inferredProblem: getOptionalString(input.inferredProblem),
     inferredPainPoints: getStringArray(input.inferredPainPoints),
     preferredCliprHookStyleKey: getOptionalString(

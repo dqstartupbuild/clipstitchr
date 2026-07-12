@@ -34,8 +34,8 @@ describe("StitchTemplatePicker", () => {
       />,
     );
 
-    expect(markup).toContain("Template");
-    expect(markup).toContain("None");
+    expect(markup).toContain("Start from an idea");
+    expect(markup).toContain("Start fresh");
     expect(markup).toContain("Hook template");
     expect(markup).toContain('value="" selected');
   });

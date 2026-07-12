@@ -131,8 +131,8 @@ cleanup.
 | 8 | Progress indicator during stitching and export | ✅ | ✅ |
 | 9 | Export/download each finished TikTok 9:16 video file on demand | ✅ | ✅ |
 | 10 | Select reusable shared-library music or upload a music file for saved stitches and mix it only at download/export time | ✅ | ✅ |
-| 11 | Reuse a saved stitch as a Stitchr template with its original source clips, trims, text, audio flags, and playback rates preselected for a new stitch | ✅ | ✅ |
-| 12 | Mark saved stitches as posted or active so the library can separate published outputs from active templates | ✅ | ✅ |
+| 11 | Reuse a saved Stitch as a Hook Lab Idea recipe with its original source clips, trims, text, audio flags, and playback rates; legacy Templates remain a rollback fallback | ✅ | ✅ |
+| 12 | Mark saved stitches as posted or active so the library can separate published outputs from active work | ✅ | ✅ |
 
 ### 4.3 Text Overlays
 
@@ -164,9 +164,10 @@ shared text.
 | 9 | Swapr-generated outputs appear in the Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
 | 10 | Clipr-generated reaction and b-roll outputs appear in the Library UGC tab and remain reusable in Stitchr | ✅ | ✅ |
 | 11 | Stitches appear in the Library Stitches tab with Active, Posted, and All status filters; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
-| 12 | The Library includes Avatars and Templates tabs so source people and saved Stitchr setups sit beside saved media | ✅ | ✅ |
+| 12 | The Library includes Avatars and Pexels assets; reusable Stitchr setups live as Ideas in Hook Lab instead of a Templates tab | ✅ | ✅ |
 | 13 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
 | 14 | Demo upload and picker surfaces can filter demos by linked product | ✅ | ✅ |
+| 15 | Hook Lab has Ideas and Review views; `/dashboard/templates` and legacy `tab=templates` URLs redirect to Ideas | ✅ | ✅ |
 
 ### 4.5 AI-Assisted Content Supply (Secondary)
 
@@ -210,7 +211,33 @@ Saved stitches store source metadata, text, source audio flags, and music
 settings; Media Bunny creates the clean stitch and final music-mixed download on
 demand in the browser.
 
-### 4.6 Stitchr Longr Mode
+### 4.6 Hook Lab Ideas
+
+Hook Lab turns pasted text, a supported public TikTok or Instagram link, a
+generated hook, or an owned Stitch into a reusable Idea. Ideas may contain a
+structured text pattern, a repeatable visual creative beat, a Stitch assembly
+recipe, or any combination of those capabilities.
+
+| # | Feature | Current | Prod |
+|---|---------|---------|------|
+| 1 | Ideas and Review views at `/dashboard/hooks` | ✅ | ✅ |
+| 2 | One composer for text, supported social URLs, or an owned Stitch | ✅ | ✅ |
+| 3 | Shared and product-scoped Ideas with search, filters, edit, archive, delete, and retry | ✅ | ✅ |
+| 4 | Exact/adapt writing gates with a normalized similarity safeguard | ✅ | ✅ |
+| 5 | Independent hook Review cards with Use, Save idea, Not for me, and Undo | ✅ | ✅ |
+| 6 | Durable asynchronous Apify/provider analysis and temporary-video cleanup | ✅ in code | ✅ after deployment verification |
+| 7 | Use an Idea to create 1, 3, or 5 provider/media-owned Stitch variants with lineage | ✅ in code | ✅ after worker deployment |
+| 8 | Live per-variant progress for the use started in the current browser session | ✅ | ✅ |
+| 9 | Template-to-Idea and hook-option migrations with legacy rollback reads | ✅ in code | ✅ after migration verification |
+| 10 | Restore the latest use after reload and open the exact completed Stitch | — | Planned follow-up |
+
+Production social import requires server-side rate limits, an Apify cost cap,
+SSRF-safe temporary media fetching, a video-download-enabled TikTok Actor, and
+the current public privacy/terms disclosure to remain aligned with source
+handling. Hook Lab repeats a creative rhythm; it does not generate a
+shot-for-shot clone.
+
+### 4.7 Stitchr Longr Mode
 
 Longr is a Stitchr mode toggle, not a standalone dashboard tool. Normal mode
 keeps the batch UGC-to-Demo workflow. Longr mode creates one saved Stitch from
@@ -229,7 +256,7 @@ Longr mode uses the same browser-local Media Bunny output pattern as Stitchr,
 but accepts an arbitrary ordered sequence instead of a UGC-to-Demo pairing.
 Saved outputs are Stitches with ordered segment metadata in Convex.
 
-### 4.7 Carousel Generation
+### 4.8 Carousel Generation
 
 Swipr creates TikTok-ready static carousel image sets. The MVP uses browser-local
 canvas rendering for final export: one selected shared Background Library image
@@ -266,13 +293,13 @@ selected slides.
 /                → Landing page (marketing + "Start free" CTA)
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
-/dashboard/hooks → Authenticated Hook Lab for product hook memory and saved hook review
+/dashboard/hooks → Authenticated Hook Lab with reusable Ideas and independent generated-hook Review
 /dashboard/clipr → Authenticated Clipr engagement clip generator
 /dashboard/swipr → Authenticated TikTok carousel image generator
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos with UGC clips or finished stitches
-/dashboard/library → Authenticated Library with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Templates tabs; UGC/Demo/Avatar upload controls open from the header upload selector
+/dashboard/library → Authenticated Library with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Pexels tabs; UGC/Demo/Avatar upload controls open from the header upload selector
 /dashboard/avatars → Compatibility redirect to `/dashboard/library?tab=avatars`
-/dashboard/templates → Compatibility redirect to `/dashboard/library?tab=templates`
+/dashboard/templates → Compatibility redirect to `/dashboard/hooks?view=ideas`
 /dashboard/uploads → Compatibility redirect to `/dashboard/library`
 /dashboard/stitches → Compatibility redirect to `/dashboard/library?tab=stitches`
 ```
@@ -510,6 +537,13 @@ interface Stitch {
 }
 ```
 
+Hook Lab also stores durable `hookLabIdeas`, `hookLabIdeaUses`,
+`hookLabIdeaVariants`, and `stitchrHookOptions` rows. Products may store a
+default avatar and Demo clip. Hook Lab-generated clips and Stitches carry Idea,
+use, and variant lineage so later analytics can join real outcomes without
+rewriting the content model. Legacy `stitchTemplates` and hook-plan option
+arrays remain during the reversible migration window.
+
 ---
 
 ## 9. Phased Rollout
@@ -556,13 +590,19 @@ interface Stitch {
 - [ ] AI-suggested highlights — automatically surface the best moments from UGC clips
 - [ ] Smart auto-edit — one-click to trim dead air, awkward pauses, or low-energy segments
 - [ ] AI-generated captions / subtitles with timing
+- [x] Hook Lab Ideas/Review data model, durable provider/media workflows,
+  independent feedback, and reversible Template compatibility
+- [x] Hook Lab live per-variant progress and worker completion/failure analytics
+- [ ] Hook Lab latest-use restoration, exact completed-Stitch opening, and the
+  production social-import launch gate
 
 ---
 
 ## 10. Non-Goals (MVP)
 
-- ❌ Cloud storage
-- ❌ Server-side video rendering
+- ❌ User-managed external cloud-storage destinations
+- ❌ Moving every browser export to server-side rendering; durable worker-owned
+  workflows may use server FFmpeg when the browser cannot own completion
 - ❌ Mobile-native app
 - ❌ Collaborative editing
 - ❌ User-authored thumbnail generation / thumbnail editing

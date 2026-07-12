@@ -32,6 +32,11 @@ const mocks = vi.hoisted(() => ({
     isGenerating: false,
   },
   avatarTabProps: null as Record<string, unknown> | null,
+  hookLabIdeaCreator: {
+    createIdeaFromStitch: vi.fn(),
+    error: null as string | null,
+    savingStitchId: null as string | null,
+  },
   library: {} as Record<string, unknown>,
   listeners: new Map<string, EventListener[]>(),
   pexelsTabProps: null as Record<string, unknown> | null,
@@ -91,6 +96,10 @@ vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
 
 vi.mock("@/lib/clipstitchr/hooks/useCreateAvatarFromUgcClip", () => ({
   useCreateAvatarFromUgcClip: mocks.useCreateAvatarFromUgcClip,
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useCreateHookLabIdeaFromStitch", () => ({
+  useCreateHookLabIdeaFromStitch: () => mocks.hookLabIdeaCreator,
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
@@ -822,9 +831,11 @@ describe("LibraryPageClient", () => {
         savingHookPlanId: "hook_plan_1",
         onAcceptHookVariant: accept,
         onRejectHookVariant: reject,
+        onSaveIdea: mocks.hookLabIdeaCreator.createIdeaFromStitch,
         onSelectHookVariant: selectOption,
       }),
     );
+    expect(stitchSection?.props).not.toHaveProperty("onSaveTemplate");
     expect(swipes.some((element) => "swipes" in (element.props ?? {}))).toBe(
       true,
     );

@@ -179,6 +179,56 @@ vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
   }),
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useHookLabDefaults", () => ({
+  useHookLabDefaults: () => ({
+    defaults: {
+      avatars: [],
+      defaultAvatarId: undefined,
+      defaultDemoClipId: undefined,
+      demoClips: [],
+    },
+    isLoading: false,
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useHookLabIdeaActions", () => ({
+  useHookLabIdeaActions: () => ({
+    archive: vi.fn(),
+    archivingIdeaId: null,
+    createFromHookOption: vi.fn(),
+    createFromStitch: vi.fn(),
+    createFromValue: vi.fn(),
+    deletingIdeaId: null,
+    error: null,
+    isCreating: false,
+    remove: vi.fn(),
+    retry: vi.fn(),
+    retryingIdeaId: null,
+    savingIdeaId: null,
+    statusMessage: null,
+    update: vi.fn(),
+    useIdea: vi.fn(),
+    usingIdeaId: null,
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useHookLabIdeas", () => ({
+  useHookLabIdeas: () => ({
+    canLoadMore: false,
+    ideas: [],
+    isLoading: false,
+    isLoadingMore: false,
+    loadMore: vi.fn(),
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useHookLabStitchSources", () => ({
+  useHookLabStitchSources: () => ({
+    isLoading: false,
+    stitches: [],
+  }),
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/useSwiprExport", () => ({
   useSwiprExport: () => ({
     error: null,
@@ -504,6 +554,8 @@ describe("dashboard page clients", () => {
     expect(markup).toContain("Turn your first clips into ads");
     expect(markup).toContain("Review what ClipStitchr found");
     expect(markup).toContain("Continue to uploads");
+    expect(markup).toContain("Phrases to avoid");
+    expect(markup).not.toContain("Hooks to learn from");
   });
 
   it("renders the Swapr workflow with photo and Hook/UGC clip inputs", () => {
@@ -529,14 +581,16 @@ describe("dashboard page clients", () => {
 
     expect(markup).toContain("Library");
     expect(markup).toContain("Hook/UGC clips");
+    expect(markup).not.toContain(">Templates<");
   });
 
-  it("renders Hook Lab with memory and history controls", () => {
+  it("renders Hook Lab with Ideas and Review views", () => {
     const markup = renderToStaticMarkup(<HookLabPageClient />);
 
     expect(markup).toContain("Hook Lab");
-    expect(markup).toContain("Active product memory");
-    expect(markup).toContain("Hook history");
+    expect(markup).toContain("Add an idea");
+    expect(markup).toContain("Ideas");
+    expect(markup).toContain("Review");
   });
 
   it("renders the Clipr generator with product and avatar selectors", () => {

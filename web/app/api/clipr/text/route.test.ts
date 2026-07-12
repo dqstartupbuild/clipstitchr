@@ -20,6 +20,11 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("@/convex/_generated/api", () => ({
   api: {
+    hookLabIdeas: {
+      listPromptMemory: {
+        listPromptMemory: "hookLabIdeas.listPromptMemory",
+      },
+    },
     products: {
       get: "products.get",
     },
@@ -81,7 +86,9 @@ describe("POST /api/clipr/text", () => {
     vi.clearAllMocks();
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex-token");
-    mocks.convex.query.mockResolvedValue(createProduct());
+    mocks.convex.query.mockImplementation(async (reference) =>
+      reference === "hookLabIdeas.listPromptMemory" ? [] : createProduct(),
+    );
     mocks.convex.mutation.mockResolvedValue(null);
     mocks.createCliprTextGeneration.mockResolvedValue({
       caption: "This is where the launch changes",

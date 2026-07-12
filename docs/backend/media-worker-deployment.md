@@ -1,11 +1,15 @@
 # Media Worker Deployment
 
-Reviewed: 2026-06-01
+Reviewed: 2026-07-12
 
 The media worker is a separate runtime from the Next.js app and from Convex.
 It runs `npm run media-worker`, claims queued `mediaJobs` records from Convex,
 downloads source media from R2, processes files with FFmpeg, uploads outputs
 and posters back to R2, and completes the final Convex records.
+
+Hook Lab adds `hook-lab-variant-finalization`. It creates a normalized reusable
+opening clip and an editable ready-to-review Stitch from provider-generated
+media, then records Idea/use/variant lineage.
 
 This document covers deployment for media execution only. Provider orchestration
 and daily autopilot planning are documented in
@@ -20,7 +24,8 @@ There are three separate environment stores:
 | Next.js app | `web/.env.local` | Vercel project environment variables |
 | Convex functions | `npx convex env set ...` or Convex dashboard | Convex deployment environment variables |
 | Media worker | `web/.env.worker.local` loaded by `npm run media-worker` | The worker host's secrets/env system |
-| Provider/automation executors | `web/.env.automation.local` for local experiments | Google Cloud Run / Secret Manager / IAM |
+| Provider worker | `web/.env.provider.local` loaded by `npm run provider-worker` | Google Cloud Run / Secret Manager / IAM |
+| Automation experiments | `web/.env.automation.local` | Google Cloud Run / Secret Manager / IAM |
 
 Do not rely on Vercel secrets for the worker. Vercel secrets are only available
 to the Vercel-hosted Next.js runtime. Do not rely on `web/.env.local` for the
@@ -322,8 +327,14 @@ should not wait for it.
 6. Confirm startup passes the FFmpeg support self-test.
 7. Queue a short Clipr finalization and confirm the job moves from `queued` to
    `running` to `completed`.
-8. Confirm failed jobs show a clear error in the dashboard job panel.
-9. Add host-level logs and restart policy before production traffic.
+8. Queue a Hook Lab Idea use and confirm the opening is normalized to
+   1080x1920, its poster and reusable clip are saved, the editable Stitch uses
+   the configured Demo, and the variant reaches `completed`.
+9. Confirm Hook Lab's transient generated image/video objects are removed after
+   successful finalization or the final failed attempt, and scratch directories
+   are removed on success and failure.
+10. Confirm failed jobs show a clear error in the dashboard job panel.
+11. Add host-level logs and restart policy before production traffic.
 
 ## Environment Targets
 

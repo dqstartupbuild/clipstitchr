@@ -224,6 +224,79 @@ export const createCliprFinalizationFromProvider = mutation({
   },
 });
 
+export const createHookLabVariantFinalizationFromProvider = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    idempotencyKey: v.string(),
+    inputSnapshotJson: v.string(),
+    createdAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+  ) => {
+    assertProviderWorkerSecret(secret);
+    const existing = await ctx.db
+      .query("mediaJobs")
+      .withIndex("by_idempotency_key", (q) =>
+        q.eq("idempotencyKey", idempotencyKey),
+      )
+      .unique();
+
+    if (existing) {
+      if (existing.status === "failed") {
+        await ctx.db.patch(existing._id, {
+          attempt: 0,
+          error: undefined,
+          inputSnapshotJson,
+          lockedBy: undefined,
+          lockedUntil: undefined,
+          stage: "queued",
+          status: "queued",
+          updatedAt: createdAt,
+        });
+      }
+
+      const refreshed = await ctx.db.get(existing._id);
+
+      if (refreshed) {
+        await upsertWorkerJobSummary(ctx, "media", refreshed);
+      }
+      if (refreshed?.status === "queued") {
+        await requestWorkerLaunch({ ctx, now: createdAt, worker: "media" });
+      }
+
+      return refreshed ?? existing;
+    }
+
+    const mediaJobId = await ctx.db.insert("mediaJobs", {
+      ownerId,
+      id,
+      jobType: "hook-lab-variant-finalization",
+      status: "queued",
+      stage: "queued",
+      idempotencyKey,
+      inputSnapshotJson,
+      outputAssetIds: [],
+      attempt: 0,
+      createdAt,
+      updatedAt: createdAt,
+    });
+    const mediaJob = await ctx.db.get(mediaJobId);
+
+    if (!mediaJob) {
+      throw new Error("Unable to create Hook Lab media job.");
+    }
+
+    await upsertWorkerJobSummary(ctx, "media", mediaJob);
+    await requestWorkerLaunch({ ctx, now: createdAt, worker: "media" });
+
+    return mediaJob;
+  },
+});
+
 export const createSwaprFinalizationFromAutomation = mutation({
   args: {
     secret: v.string(),

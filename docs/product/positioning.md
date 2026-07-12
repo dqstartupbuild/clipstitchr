@@ -119,12 +119,12 @@ Primary feature:
 
 Core supporting features:
 
-- Library: keep clips, demos, drafts, templates, carousels, avatars, and
+- Library: keep clips, demos, drafts, carousels, avatars, and
   finished ads in one place.
-- Hook Lab: help users write overlay text that does not sound fake.
+- Hook Lab: save what made a line, public post, or past Stitch worth repeating,
+  then turn that pattern into fresh product-relevant drafts.
 - Clip and Stitch Scores: catch weak clips or finished ads before the user posts
   or runs them.
-- Templates: save a structure so the next ad does not start from zero.
 - Daily drafts: keep new drafts appearing when social falls off the real work
   list.
 - Clipr and Swapr: create extra Hook/UGC clips when the library is thin, and
@@ -145,14 +145,14 @@ Use this order for the public landing page:
 2. Output proof: show finished examples before explaining tools.
 3. How it works: upload once, build the library, stitch and ship.
 4. Toolkit: every tool feeds one library.
-5. Hook Lab: writing overlay text that does not sound fake is hard.
+5. Hook Lab: finding a useful pattern is easy; repeating it without copying is
+   hard.
 6. Stitchr: saved Hook/UGC clips plus a demo become ads.
 7. Scores: find weak clips before wasting a post or ad.
-8. Templates: stop rebuilding the same structure.
-9. Hook/UGC helpers: fill a thin library without another shoot.
-10. Swipr: make slides when video is overkill.
-11. Daily drafts: stay consistent when social is not the work the user enjoys.
-12. Final CTA: upload once, create everything.
+8. Hook/UGC helpers: fill a thin library without another shoot.
+9. Swipr: make slides when video is overkill.
+10. Daily drafts: stay consistent when social is not the work the user enjoys.
+11. Final CTA: upload once, create everything.
 
 ## Short Copy Options
 
@@ -173,9 +173,8 @@ Use this order for the public landing page:
 | Feature | Human reason |
 | --- | --- |
 | Stitchr | The user has clips but does not want to rebuild the same UGC-then-demo ad by hand. |
-| Hook Lab | Writing overlay text that does not sound fake is hard. |
+| Hook Lab | The user wants to repeat why something worked without copying the original post. |
 | Scores | Nobody wants to learn the clip was wrong after posting or running the ad. |
-| Templates | Rebuilding the same structure every time makes the next session feel heavy. |
 | Daily drafts | Showing up consistently on social is hard when the user does not like social. |
 | Clipr | The library needs more Hook/UGC clips or a fresh take on a saved demo without another shoot. |
 | Swapr | The user needs another usable Hook/UGC clip from material they already have. |

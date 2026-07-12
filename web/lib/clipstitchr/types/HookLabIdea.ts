@@ -1,0 +1,30 @@
+import type { HookLabIdeaScope } from "@/lib/clipstitchr/types/HookLabIdeaScope";
+import type { HookLabIdeaSourceType } from "@/lib/clipstitchr/types/HookLabIdeaSourceType";
+import type { HookLabIdeaStatus } from "@/lib/clipstitchr/types/HookLabIdeaStatus";
+import type { HookLabSourcePlatform } from "@/lib/clipstitchr/types/HookLabSourcePlatform";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
+
+export type HookLabIdea = {
+  attributionName?: string;
+  attributionUrl?: string;
+  canonicalUrl?: string;
+  createdAt: string;
+  failureMessage?: string;
+  hasCreativeBeat: boolean;
+  hasStitchRecipe: boolean;
+  hasTextPattern: boolean;
+  id: string;
+  lastUsedAt?: string;
+  name: string;
+  originalText?: string;
+  productId?: string;
+  scope: HookLabIdeaScope;
+  sourcePlatform?: HookLabSourcePlatform;
+  sourceStitchId?: string;
+  sourceType: HookLabIdeaSourceType;
+  status: HookLabIdeaStatus;
+  thumbnailObject?: R2ObjectReference;
+  updatedAt: string;
+  useCount: number;
+  whatToRepeat?: string;
+};

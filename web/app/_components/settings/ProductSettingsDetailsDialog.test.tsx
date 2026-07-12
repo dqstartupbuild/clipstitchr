@@ -52,6 +52,7 @@ describe("ProductSettingsDetailsDialog", () => {
     expect(markup).toContain("Launch work feels scattered");
     expect(markup).not.toContain("Hook goal");
     expect(markup).not.toContain("Hooks to learn from");
+    expect(markup).not.toContain("I thought launch day would feel calmer");
     expect(markup).toContain("Writing angles");
     expect(markup).toContain("Phrase bank");
     expect(markup).toContain("solo founders");

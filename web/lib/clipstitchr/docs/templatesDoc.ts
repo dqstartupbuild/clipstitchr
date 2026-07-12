@@ -2,19 +2,19 @@ import type { CustomerDocPage } from "@/lib/clipstitchr/docs/CustomerDocPage";
 
 export const templatesDoc = {
   slug: "templates",
-  title: "Templates",
+  title: "Saved setup Ideas",
   description:
-    "Save a Stitch setup so the next ad does not start with rebuilding the same structure all over again from memory.",
+    "Save a Stitch as an Idea so your next ad can start from a setup that already works.",
   summary:
-    "Turn a finished Stitch into a reusable setup, then use it when the blank start is the thing slowing you down.",
+    "Turn a finished Stitch into a reusable Idea, then start from it whenever a blank setup slows you down.",
   category: "feature",
   order: 18,
-  updated: "2026-06-22",
+  updated: "2026-07-12",
   sections: [
     {
-      title: "What templates save",
+      title: "What saved setup Ideas keep",
       body: [
-        "Templates save the setup from a finished Stitch. They are for the parts you do not want to rebuild, not for storing another finished video file.",
+        "A saved setup Idea keeps the reusable choices from a finished Stitch. It remembers the setup without storing another finished video file.",
       ],
       bullets: [
         "The Hook/UGC and demo clip choices.",
@@ -25,28 +25,28 @@ export const templatesDoc = {
       ],
     },
     {
-      title: "Save a template",
+      title: "Save an Idea",
       body: [
-        "Use templates when you make a Stitch that has a structure you know you will want again and do not want to reconstruct from memory.",
+        "Save an Idea when a Stitch has a structure you know you will want again.",
       ],
       bullets: [
         "Open a saved Stitch.",
-        "Choose Save as Template.",
+        "Choose Save as idea.",
         "ClipStitchr saves the reusable setup.",
-        "Open Templates from the dashboard sidebar to rename, delete, or reuse it.",
+        "Open Hook Lab Ideas to rename, archive, delete, or reuse it.",
       ],
     },
     {
-      title: "Use a template",
+      title: "Start from an Idea",
       body: [
-        "Open Stitchr and choose a saved template from the Template picker. In Batch mode, the template supplies the saved text and caption style while ClipStitchr still picks fresh clip pairings from your library.",
+        "Open Stitchr and choose a saved setup from Start from an idea. In Batch mode, the Idea supplies the saved text and caption style while ClipStitchr still picks fresh clip pairings from your library.",
         "In Normal mode, ClipStitchr fills in the saved setup so you can preview faster. You can still change the Hook/UGC, demo, text, trims, caption, and audio choices before creating the next Stitch.",
       ],
     },
     {
-      title: "What templates are best for",
+      title: "What saved setup Ideas are best for",
       body: [
-        "Templates are useful when a format keeps working: the same offer style, the same hook structure, the same caption style, or the same Hook/UGC-to-demo rhythm.",
+        "Saved setup Ideas are useful when a format keeps working: the same offer style, hook structure, caption style, or Hook/UGC-to-demo rhythm.",
         "They help you make another version without rebuilding every small choice, which is usually the part that makes you put the task off.",
       ],
     },

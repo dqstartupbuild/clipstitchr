@@ -135,6 +135,8 @@ describe("ProductSettingsEditDialog", () => {
     expect(markup).toContain("Audience details");
     expect(markup).toContain("Emotional narrative");
     expect(markup).toContain("Save");
+    expect(markup).not.toContain("Hooks to learn from");
+    expect(markup).not.toContain("Real winner");
   });
 
   it("updates form fields and submits the current product settings", async () => {

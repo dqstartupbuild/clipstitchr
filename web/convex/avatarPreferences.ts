@@ -61,6 +61,24 @@ export const setDefaultAvatar = mutation({
       throw new Error("Avatar not found for this product.");
     }
 
+    if (productId) {
+      const product = await ctx.db
+        .query("products")
+        .withIndex("by_owner_id", (q) =>
+          q.eq("ownerId", ownerId).eq("id", productId),
+        )
+        .unique();
+
+      if (!product) {
+        throw new Error("Product not found.");
+      }
+
+      await ctx.db.patch(product._id, {
+        defaultAvatarId: avatar.id,
+        updatedAt,
+      });
+    }
+
     const existing = await ctx.db
       .query("avatarPreferences")
       .withIndex("by_owner_product", (q) =>

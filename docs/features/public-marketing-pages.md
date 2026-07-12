@@ -25,6 +25,13 @@ The shared public layout applies the shell to `/pricing`, `/examples`, `/docs`,
 `/blog`, `/case-studies`, `/privacy`, and `/terms`. The homepage applies the
 same shell directly through `LandingPage`.
 
+The July 12, 2026 Privacy Policy and Terms also cover Hook Lab social sources.
+They explain temporary Apify/AI video processing, the source link/attribution,
+text, private thumbnail, and Idea data that may be retained, the user's lawful-
+use responsibility, and the prohibition on identity or shot-for-shot cloning.
+Keep both pages aligned whenever Hook Lab providers, retention, or source
+handling changes.
+
 ## Relevant Code
 
 - `web/app/globals.css` defines `marketing-shell`, `marketing-heading`,

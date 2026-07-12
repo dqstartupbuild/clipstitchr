@@ -1,6 +1,6 @@
 # Durable Provider And Automation Workflows
 
-Reviewed: 2026-06-01
+Reviewed: 2026-07-12
 
 ## Purpose
 
@@ -29,6 +29,7 @@ This document covers:
 - Private sound upload, TikTok import, and selection.
 - Swapr provider prediction finalization.
 - Upload video/image analysis handoffs when provider calls are used.
+- Hook Lab Idea analysis, Apify Actor continuation, and Idea-use generation.
 - Daily autopilot runs for eligible users.
 
 This document does not cover Media Bunny rendering details. Media processing is
@@ -213,6 +214,70 @@ gcloud auth application-default login
 If an external host such as Vercel must call Google APIs directly, use Workload
 Identity Federation where possible. A base64 service-account key env var is a
 fallback, not the preferred production path.
+
+The shipped provider-worker runtime uses `web/.env.provider.example`. Hook Lab
+adds `APIFY_TOKEN` plus optional Actor, cost, media, model, and ffprobe settings
+documented there. `PROVIDER_WORKER_TOOLS=stitchr` already authorizes both Hook
+Lab provider job types, so deployment does not add a separate tool name.
+
+For local verification:
+
+```bash
+cd web
+cp .env.provider.example .env.provider.local
+npm run provider-worker -- --check
+```
+
+Do not commit `.env.provider.local` or copy secret values into deployment
+documentation.
+
+## Hook Lab Durable Workflow
+
+Hook Lab uses two provider job types and one media job type:
+
+- `hook-lab-idea-analysis`
+- `hook-lab-idea-use`
+- `hook-lab-variant-finalization`
+
+The create route saves an Idea before it creates provider work. Text and owned-
+Stitch sources can be analyzed directly. TikTok and Instagram sources start an
+Apify Actor asynchronously. The run URL sets `waitForFinish=0`, `timeout=180`,
+`maxItems=1`, and a bounded `maxTotalChargeUsd`; the platform input also asks
+for one result. The worker saves the Actor run and dataset IDs, marks the
+provider job as waiting, releases the job lock, and requests a 30-second
+continuation. A later worker execution polls the durable run until it reaches a
+terminal state.
+
+Convex records `providerRunRequestedAt` atomically before the external Actor
+start. Recovery reuses a saved run and does not issue a second paid start when
+the first response was ambiguous; only an explicit user retry may clear that
+marker. Idea-use variants separately checkpoint generated writing, image, and
+video object metadata. Reclaimed jobs resume from the latest checkpoint rather
+than repeating provider calls that already completed.
+
+Ready Hook Lab text blueprints also feed Stitchr writing as structured memory.
+Convex selects at most eight product/shared blueprints, ranks product scope and
+real use first, and snapshots them into Batch/automation jobs. Prompt formatting
+omits source text and includes only reusable structure, slots, cadence, claims,
+and safety constraints.
+
+Platform adapters isolate Actor-specific output. The imported media fetcher
+accepts only validated HTTPS media URLs from adapter output, revalidates DNS and
+public-address status at every redirect, streams with a byte cap, verifies
+video content type and duration, and removes worker-local media in `finally`.
+Only an owner-private thumbnail may be retained.
+
+An Idea-use request creates one durable use plus 1, 3, or 5 durable variants
+after reserving every requested unit of writing, avatar, video, provider,
+asset-save, and Convex-write quota. Each provider job generates writing, a
+fresh avatar still, and an eight-second reaction opening, then creates a media
+job. The media worker owns normalization, poster creation, reusable clip save,
+editable Stitch assembly, lineage, and transient-object cleanup.
+
+Hook Lab enables `shouldDownloadVideos` for the default Clockworks TikTok Actor.
+A capped one-item integration run verified that this input returns a temporary
+video URL. Actor output still stays behind the platform adapter, and an Idea
+fails safely if a future Actor version omits usable media.
 
 ## Clipr Durable Target
 
@@ -403,8 +468,10 @@ Every provider/automation finalizer must be idempotent:
 - cancellation should stop future steps and ignore late provider webhooks where
   possible.
 
-Use webhooks where the provider supports them. Keep polling as recovery, not as
-the only finalization path.
+Use webhooks where the provider supports them. Keep polling as recovery when a
+verified webhook exists. Hook Lab's asynchronous Apify integration currently
+uses explicit durable polling continuations because no Hook Lab webhook
+receiver is implemented.
 
 ## Rate Limits And Abuse Protection
 
@@ -445,6 +512,9 @@ Update `docs/backend/rate-limits.md` whenever these limits are implemented.
   explicitly enables automated publishing.
 - Storage cleanup. Remove abandoned provider temp objects, raw inputs, failed
   output objects, and superseded drafts.
+- Temporary social media. Delete imported Hook Lab video in success, failure,
+  timeout, and cancellation paths; retain only bounded attribution and an
+  optional private thumbnail.
 - Observability. Track queue age, provider latency, failure rate, retry count,
   finalization latency, and daily autopilot skipped reasons.
 
@@ -494,6 +564,7 @@ Update `docs/backend/rate-limits.md` whenever these limits are implemented.
 - Media worker deployment: `docs/backend/media-worker-deployment.md`
 - Durable workflow notes: `docs/backend/durable-workflows.md`
 - Rate limits: `docs/backend/rate-limits.md`
+- Hook Lab implementation: `docs/features/stitchr-hook-lab.md`
 - Replicate webhooks: https://replicate.com/docs/webhooks
 - Replicate webhook setup:
   https://replicate.com/docs/topics/webhooks/setup-webhook

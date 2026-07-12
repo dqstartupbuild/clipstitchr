@@ -2,6 +2,7 @@ import type { StitchrBatchHookPlanningInput } from "@/lib/clipstitchr/types/Stit
 import { formatStitchrTextGenerationClipContext } from "@/lib/clipstitchr/server/formatStitchrTextGenerationClipContext";
 import { getHookEdgeLevelLabel } from "@/lib/clipstitchr/utils/getHookEdgeLevelLabel";
 import { getHookGenerationGoalLabel } from "@/lib/clipstitchr/utils/getHookGenerationGoalLabel";
+import { formatHookLabPromptMemory } from "@/lib/clipstitchr/server/formatHookLabPromptMemory";
 
 function formatHookExamples(label: string, examples?: string[]) {
   return [
@@ -24,7 +25,8 @@ function formatPlanningInput(input: StitchrBatchHookPlanningInput, index: number
     input.product.emotionalNarrative ||
       input.product.inferredProblem ||
       "(none yet - use proven short-form patterns)",
-    formatHookExamples("winning hooks", input.product.winningHookExamples),
+    "saved Idea patterns:",
+    formatHookLabPromptMemory(input.product.hookLabTextBlueprints),
     formatHookExamples("hooks to avoid", input.product.rejectedHookExamples),
     "source clips:",
     input.stitchrClipContexts
@@ -68,6 +70,7 @@ export function createStitchrBatchHookGenerationPrompt({
     "- hookVariants must contain 6-8 distinct hooks, ranked best first.",
     "- hookVariants[0].text must match filledHook and overlayText.",
     "- Use visual details only when the clip context provides them.",
+    "- Learn from saved Idea patterns by reusing their function and structure, never their source-specific wording.",
     "- Do not invent fake stats, fake studies, fake quotes, fake testimonials, or visual details.",
     "- Keep captions natural, short, and easy to post.",
     "- Hashtags must contain 3-5 lowercase hashtags, each starting with #.",

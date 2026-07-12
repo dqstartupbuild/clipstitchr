@@ -19,8 +19,8 @@ for only that task and saves the fallback hook into the same history table.
    `convex/stitchrBatch.ts` and requests a delayed provider fallback launch.
 2. The route reads the new task snapshots through
    `convex/stitchrHookPlans.listBatchPlanningInputs`.
-3. Template-covered tasks are skipped because the template already supplies the
-   hook text.
+3. Tasks covered by an Idea recipe or legacy Template are skipped because the
+   saved recipe already supplies the hook text.
 4. Non-template tasks consume the `stitchrBatchHookPlanDaily` and
    `stitchrBatchHookPlanGlobalDaily` limits before any writing provider call.
 5. `createStitchrBatchHookGeneration` sends one prompt containing all task
@@ -34,9 +34,22 @@ for only that task and saves the fallback hook into the same history table.
    plans fall back to `createCliprTextGeneration`.
 9. Worker fallback generations are saved with source `worker_fallback`.
 
+## Structured Idea Memory
+
+Batch planning no longer treats raw winning-hook examples as copy-and-paste
+memory. Convex selects at most eight ready, non-archived Hook Lab text
+blueprints from the active product and shared Ideas. Product scope, use count,
+and recent use/update time determine the order.
+
+The selected blueprints are copied into each durable task snapshot. Prompt
+formatting uses their reusable pattern, semantic slots, emotional job, cadence,
+claim constraints, and source-specific exclusions, while deliberately omitting
+`sourceText`. Foreground Batch planning and worker fallback therefore keep the
+same structured memory even if an Idea changes while the batch is running.
+
 ## Hook History
 
-`stitchrHookPlans` stores:
+`stitchrHookPlans` remains the durable generation envelope and stores:
 
 - selected hook
 - alternate hook options
@@ -45,23 +58,23 @@ for only that task and saves the fallback hook into the same history table.
 - product and UGC/demo references
 - provider model and prediction id
 - source: batch planner, worker fallback, or manual
-- feedback: accepted or rejected
+- the legacy option array and feedback fields for rollback compatibility
 
-The dashboard Hook Lab page reads this table, filters by product, paginates the
-history, and lets the user copy, save as winner, or add to avoid list. Each
-history card keeps the full hook option list inside a dropdown so generated
-batches do not dominate the page.
+Every plan save also synchronizes its options into independent
+`stitchrHookOptions` rows. Hook Lab Review reads those rows through an indexed,
+cursor-paginated query. Each card can be selected, saved as an Idea, marked
+**Not for me**, or undone without changing sibling cards.
 
-Accepting a hook adds it to the product's winning hook examples. Rejecting a hook
-adds it to the product's rejected hook examples. The next Stitchr writing prompt
-uses those product examples as prompt memory. When an accepted hook is tied to a
-finished Stitch, ClipStitchr also saves that Stitch setup as a Template.
+**Not for me** adds that one hook to the product's rejected examples, which the
+next Stitchr writing prompt uses as avoid memory. **Save idea** explicitly
+creates an Idea and links it to the review option. Review feedback no longer
+silently creates a Template.
 
 ## Hook Lab Page
 
-Hook Lab now has its own dashboard page at `/dashboard/hooks`. Settings keeps
-product and automation controls, while Hook Lab owns product hook memory and
-the saved hook history list.
+Hook Lab lives at `/dashboard/hooks`. **Ideas** owns reusable inspiration and
+recipes. **Review** owns the independent generated-hook inbox. Product writing
+preferences remain available from the same page.
 
 ## File Tree
 
@@ -70,7 +83,10 @@ the saved hook history list.
   directly starts the provider Cloud Run job through Convex.
 - `web/lib/clipstitchr/constants/stitchrBatchProviderFallbackLaunchDelayMs.ts`
   stores the delayed provider fallback timing.
-- `web/convex/stitchrHookPlans.ts` owns hook-plan reads, writes, and feedback.
+- `web/convex/stitchrHookPlans.ts` owns plan generation and compatibility
+  fields.
+- `web/convex/stitchrHookOptions/` owns normalized Review rows and independent
+  feedback.
 - `web/convex/schema.ts` defines the `stitchrHookPlans` table.
 - `web/lib/clipstitchr/server/createStitchrBatchHookGeneration.ts` calls the
   writing provider.
@@ -82,16 +98,11 @@ the saved hook history list.
   saves worker fallbacks.
 - `web/app/dashboard/hooks/HookLabPageClient.tsx` renders the dashboard Hook Lab
   page.
-- `web/app/_components/hooks/HookLabHistorySection.tsx` renders saved hook
-  history.
-- `web/app/_components/hooks/HookLabPaginatedHistoryGrid.tsx` paginates saved
-  hook batches.
-- `web/app/_components/hooks/HookPlanOptionsDetails.tsx` keeps a batch's full
-  option list collapsed until the user opens it.
-- `web/app/_components/hooks/HookLabMemoryPanel.tsx` renders active product hook
-  memory.
-- `web/convex/stitchTemplates/createAutomaticStitchTemplateFromAcceptedHookPlan.ts`
-  creates Templates from accepted hook winners when a finished Stitch exists.
+- `web/app/_components/hooks/HookLabReviewGrid.tsx` paginates independent hook
+  cards.
+- `web/app/_components/hooks/HookLabReviewCard.tsx` owns one option's actions.
+- `web/app/_components/hooks/HookLabWritingPreferencesDialog.tsx` edits product
+  writing memory.
 
 ## Failure Behavior
 
@@ -104,7 +115,8 @@ the saved hook history list.
 - Planner failure records failed hook-plan rows when possible and still returns
   the batch response, because workers can fall back per stitch.
 - Worker fallback only runs for tasks without a usable saved plan.
-- Template batches do not run or rate-limit the hook planner.
+- Idea-recipe and legacy-Template batches do not run or rate-limit the hook
+  planner.
 - A repeat request for an already-running daily batch does not create a second
   batch. It returns the active task IDs, relaunches the provider worker for
   queued/text tasks, and relaunches the media worker for media-stage tasks.

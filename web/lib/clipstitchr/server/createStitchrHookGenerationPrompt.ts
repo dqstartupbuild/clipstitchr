@@ -4,6 +4,7 @@ import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/S
 import { getHookEdgeLevelLabel } from "@/lib/clipstitchr/utils/getHookEdgeLevelLabel";
 import { getHookGenerationGoalLabel } from "@/lib/clipstitchr/utils/getHookGenerationGoalLabel";
 import { formatStitchrTextGenerationClipContext } from "@/lib/clipstitchr/server/formatStitchrTextGenerationClipContext";
+import { formatHookLabPromptMemory } from "@/lib/clipstitchr/server/formatHookLabPromptMemory";
 
 type CreateStitchrHookGenerationPromptOptions = {
   fillers: CliprPlaceholderFillers;
@@ -16,9 +17,6 @@ export function createStitchrHookGenerationPrompt({
   product,
   stitchrClipContexts = [],
 }: CreateStitchrHookGenerationPromptOptions) {
-  const winningHookExamples = product.winningHookExamples?.length
-    ? product.winningHookExamples.map((example) => `- ${example}`).join("\n")
-    : "- None saved yet.";
   const rejectedHookExamples = product.rejectedHookExamples?.length
     ? product.rejectedHookExamples.map((example) => `- ${example}`).join("\n")
     : "- None saved yet.";
@@ -44,8 +42,8 @@ export function createStitchrHookGenerationPrompt({
     "Hook Lab memory:",
     `- Goal: ${getHookGenerationGoalLabel(product.hookGenerationGoal)}`,
     `- Tone: ${getHookEdgeLevelLabel(product.hookEdgeLevel)}`,
-    "Hooks to learn from:",
-    winningHookExamples,
+    "Saved Idea patterns:",
+    formatHookLabPromptMemory(product.hookLabTextBlueprints),
     "Hooks to avoid:",
     rejectedHookExamples,
     "",
@@ -63,8 +61,8 @@ export function createStitchrHookGenerationPrompt({
     "- Write for the viewer first. The product is context, not the main character.",
     "- The hook should make the viewer feel seen, curious, surprised, or slightly called out.",
     "- The hook should fit what appears to happen in the selected UGC/demo clips when that context is useful.",
-    "- Use saved winning hooks as taste examples. Adapt their emotional pattern, not their exact wording.",
-    "- If a saved hook came from viral niche content, rewrite it so it fits this account and does not feel copied.",
+    "- Use saved Idea patterns as structured creative memory. Preserve their function, not source wording.",
+    "- Never reproduce source-specific names, brands, claims, references, or unresolved slots from an Idea pattern.",
     "- Avoid the saved rejected hooks and avoid their cadence.",
     "- Do not open with the product name unless the source context makes that feel natural.",
     "- Use product facts only as quiet background proof. Do not explain features or write a product pitch.",

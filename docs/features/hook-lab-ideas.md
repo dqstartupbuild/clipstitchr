@@ -1,8 +1,62 @@
 # Hook Lab Ideas
 
-Status: approved product and technical design; implementation pending.
+Status: implemented in code with reversible legacy compatibility; production
+migration and deployment verification pending.
 
 Date: July 12, 2026.
+
+## Implementation Status
+
+The core redesign is implemented:
+
+- `/dashboard/hooks` now has **Ideas** and **Review** views.
+- The Idea composer accepts text, supported TikTok or Instagram links, or an
+  owned Stitch.
+- Ideas, uses, variants, and independent hook-review options have dedicated
+  Convex records and indexed, cursor-paginated reads.
+- Text reuse is gated by exact/adapt rules and an `0.82` normalized-similarity
+  ceiling. Visual analysis stores a structured creative beat instead of a
+  shot-for-shot recipe.
+- Each of the five possible variant indexes has a deterministic hook treatment
+  and visual direction. Convex atomically reserves generated hook wording,
+  rejects sibling overlap, and allows bounded safe rewrites before failing a
+  version that cannot become distinct.
+- Idea analysis and use run through durable provider jobs. Final Stitch
+  assembly runs through a durable media job.
+- Template rows remain intact. Deterministic, secret-gated backfills create
+  recipe Ideas, while Stitchr and automation can fall back to legacy Template
+  IDs during the rollback window.
+- Templates are gone from Library navigation, and legacy Template URLs redirect
+  to Hook Lab Ideas.
+- Stitch cards save reusable setups as Ideas, and the dual-read Stitchr and
+  automation controls describe those recipe records as saved setup Ideas.
+- The public Privacy Policy and Terms now explain temporary social-post
+  processing, retained attribution/Idea data, lawful-use responsibility, and
+  the prohibition on identity or shot-for-shot cloning.
+
+The production rollout still requires the migrations, Convex deployment, both
+worker deployments, and smoke checks described below. The following bounded
+behavior and rollback notes remain relevant:
+
+- The current UI reactively shows status and partial failures for the use
+  started in that browser session, then links to Library Stitches when an
+  output is ready. It does not yet restore the latest use after a page reload
+  or deep-link to the exact completed Stitch.
+- The default Clockworks TikTok Actor is called with video downloads enabled.
+  A capped one-item live run returned usable temporary video media on July 12,
+  2026; changing the Actor or its input requires repeating that smoke check.
+- Legacy automation Template allocations keep their old Template IDs and work
+  through the compatibility resolver; they are not rewritten to Idea IDs in
+  the initial migration.
+- Imported social video and worker scratch are deleted in `finally` paths.
+  Provider-generated image/video R2 inputs are deleted with best-effort cleanup
+  after successful media finalization and after the final failed attempt.
+
+Automated coverage includes the utility/SSRF/Apify/adapter layer, selected UI
+cards, provider writing parsers, media-input parsing, all three route surfaces,
+Convex domain and migration behavior, current-use progress, provider recovery,
+independent Review mutations, successful media-finalizer persistence, and
+terminal temporary-input cleanup.
 
 ## Outcome
 
@@ -182,7 +236,9 @@ and arbitrary media URLs are out of scope. A failed import remains visible with
 3. Existing UGC analysis, overlay text, trims, timing, playback rates, audio
    flags, text style, caption, and demo relationship seed the Idea.
 4. If the saved UGC metadata is not detailed enough, background analysis reads
-   the owned source clip through a short-lived signed URL.
+   the owned source clip through a short-lived signed URL. The worker streams
+   the response with a 60-second timeout and enforces the byte cap against the
+   downloaded body instead of trusting saved client metadata.
 
 The primary **Use idea** path still creates a fresh opening with the active
 product's default avatar and uses its default demo. Ideas with a source Stitch
@@ -210,7 +266,9 @@ change scope, retry, use original setup, archive, and delete live in the overflo
 menu.
 
 Deleting an Idea never deletes its source Stitch, generated Stitches, clips, or
-product assets. Archiving is preferred when the Idea has use history.
+product assets. An Idea cannot be deleted while Hook Lab is analyzing it or
+making outputs from it; the confirmation explains that the user can delete it
+after the work finishes. Archiving is preferred when the Idea has use history.
 
 ## Product Scope and Defaults
 
@@ -250,12 +308,17 @@ full Clipr or Stitchr setup flow.
 8. The worker pairs the opening with the default demo, applies the assembly
    recipe and generated overlay, and creates a saved Stitch.
 9. Every output links back to its Idea, use record, and variant index.
-10. The Hook Lab card reports progress. Completion opens the ready-to-review
-    Stitch without requiring the user to assemble it manually.
+10. Durable use and variant rows record progress and completion. The current
+    Idea card reacts to each variant and links to Library Stitches when an
+    output is ready. Restoring that panel after reload and opening the exact
+    completed Stitch directly are still pending.
 
-For 3 or 5 variations, every variant must change both the hook treatment and at
-least one bounded visual detail while retaining the same creative beat. Merely
-changing punctuation or camera micro-movement does not count as a variation.
+For 3 or 5 variations, each index selects a different required hook treatment
+and bounded visual direction while retaining the same creative beat. Generated
+wording is atomically compared with already-reserved siblings. Overlap triggers
+bounded safe adaptation attempts; a version fails instead of accepting a
+duplicate. Merely changing punctuation or camera micro-movement does not count
+as a variation.
 
 ## What “Repeat the Creative Beat” Means
 
@@ -345,6 +408,24 @@ The use record stores `reused` or `adapted` and a short reason. This supports
 debugging and future quality measurement without exposing prompt mechanics in
 the main UI.
 
+### Structured prompt memory
+
+Ready, non-archived Idea blueprints now replace raw winning-hook examples in
+Stitchr writing prompts. Each read considers up to 24 current-product Ideas and
+24 shared Ideas, then selects at most 8. Product-scoped patterns rank first,
+followed by use count and recent use/update time.
+
+The prompt formatter includes the reusable pattern, semantic slots, emotional
+job, cadence, source niche, product-specific tokens, unresolved references,
+claims requiring support, and exact-reuse constraints. It intentionally omits
+the blueprint's `sourceText`; source text stays on the Idea for similarity and
+audit decisions, not copy-and-paste prompt memory.
+
+The same bounded structured memory feeds manual Stitchr text generation,
+on-demand Batch planning, and daily Stitchr automation. Batch/automation task
+snapshots capture the selected blueprints so an in-flight job does not change
+meaning when Ideas are edited later.
+
 ## Hook Review Cards
 
 Generated hook options are normalized into independent records. Each card owns
@@ -368,6 +449,11 @@ It does not reject its parent plan or other variants. The action supports Undo.
 
 The old plan-level Accept and Reject controls are removed. Accepting a hook no
 longer creates a Template automatically.
+
+When a regenerated plan puts different hook wording at an existing rank, that
+row returns to **Needs review** and drops its old Idea link, review timestamp,
+and rejection reason. Rank reuse never makes a new hook inherit feedback from
+the hook it replaced.
 
 ## Conceptual Data Model
 
@@ -459,21 +545,24 @@ The analysis job uses a source adapter selected by canonical hostname:
 Adapters return one internal normalized source shape. Actor-specific field names
 never enter Convex documents or UI code.
 
-The existing `clockworks/tiktok-scraper` integration can continue supporting
-TikTok metadata, but its documented sample currently shows empty `mediaUrls`.
-The TikTok adapter therefore needs a separately verified actor/configuration
-that reliably returns a temporary video URL when creative-beat analysis is
-enabled. The actor ID is environment configuration, not a UI or schema value.
+The existing `clockworks/tiktok-scraper` integration supports TikTok metadata
+and downloadable video when `shouldDownloadVideos` is enabled. A capped
+one-item run verified that contract on July 12, 2026. The TikTok adapter still
+accepts several documented media-field shapes and fails safely if none are
+present. The Actor ID remains environment configuration, not a UI or schema
+value.
 
-Apify Actor runs should start asynchronously with `maxItems=1` and a configured
-`maxTotalChargeUsd`. The worker stores the run and dataset IDs, then safely
-polls/requeues or consumes a verified webhook. A synchronous 120-second route is
-not the durability boundary for Hook Lab.
+Apify Actor runs start asynchronously. The run request sets
+`waitForFinish=0`, `timeout=180`, `maxItems=1`, and the configured
+`maxTotalChargeUsd`; platform input also requests only one result. The worker
+stores the run and dataset IDs, releases its lock, and requests a 30-second
+continuation until the run reaches a terminal state. A synchronous route is not
+the durability boundary for Hook Lab.
 
 The existing upload-video analysis pipeline already analyzes full video over
-time and creates timestamped action breakdowns. Hook Lab should reuse its model
-and provider primitives, but use a dedicated prompt and parser that output a
-creative beat instead of upload-library metadata.
+time and creates timestamped action breakdowns. Hook Lab reuses its provider
+primitives with a dedicated prompt and parser that output a creative beat
+instead of upload-library metadata.
 
 ## Temporary Media Handling
 
@@ -491,12 +580,13 @@ creative beat instead of upload-library metadata.
 - Delete transient media in success, failure, timeout, and cancellation paths.
 - Copy only the bounded thumbnail into the owner's private R2 prefix.
 - Do not persist source audio or music.
-- Make the user-facing terms clear that the user is saving inspiration from
-  public content and must have a lawful reason to process it.
+- Keep the user-facing Privacy Policy and Terms aligned with the implemented
+  temporary processing, retained attribution, and lawful-use responsibility.
 
 Deletion here means ClipStitchr does not retain the downloaded video. External
-processors may temporarily process inputs under their own service terms, which
-must be reflected in privacy documentation before launch.
+processors may temporarily process inputs under their own service terms. The
+Privacy Policy and Terms disclose this behavior and must stay aligned with any
+provider or retention change.
 
 ## Template Migration
 
@@ -517,7 +607,8 @@ Migration is staged and reversible.
 - Hook Lab reads migrated Ideas.
 - Stitchr and automation resolve an Idea recipe first and fall back to the old
   Template during the compatibility window.
-- Existing automation Template selections map to their migrated Idea IDs.
+- Existing automation Template selections keep their legacy IDs and resolve
+  through the Idea-first, Template-fallback compatibility helper.
 - New saves write Ideas only.
 
 ### Stage 3: switch navigation
@@ -536,16 +627,15 @@ table. This cleanup is a separate change from the initial migration.
 
 ## Rate Limits and Abuse Protection
 
-The implementation is incomplete until `docs/backend/rate-limits.md` is updated
-with the final values and verification steps.
-
-Recommended initial limits:
+The final limits and verification steps are maintained in
+`docs/backend/rate-limits.md`. The configured initial limits are:
 
 | Operation | Per user | Global | Enforcement point |
 | --- | --- | --- | --- |
 | Social link import | 15/day, burst 3 | 300/day | Before Apify run creation |
 | Idea AI analysis | 30/day, burst 5 | 1,000/day | Before Replicate analysis |
-| Use idea | Existing writing, avatar still/video, R2, and Stitchr media limits multiplied by 1, 3, or 5 | Existing shared provider buckets | Reserve before child jobs are created |
+| Use idea | 10 variants/day, burst 5, plus existing writing, avatar still/video, R2, and Stitchr media limits multiplied by 1, 3, or 5 | Existing shared provider buckets | Reserve before child jobs are created |
+| Generated asset saves | 20 objects/day, burst 10 | 2,000/day | Reserve the normalized opening video and poster per requested variant; the editable Stitch is metadata-only |
 | Idea metadata writes | Existing Convex record-save/update limits | Existing global Convex limits | At the owning mutation |
 
 Social-link analysis consumes both the social import and Idea analysis limits.
@@ -616,8 +706,8 @@ feature documentation.
 
 ## Analytics
 
-Add consent-aware PostHog events without source text, social URLs, usernames,
-captions, or provider payloads:
+The implementation emits these consent-aware PostHog events without source
+text, social URLs, usernames, captions, or provider payloads:
 
 - `hook_lab_idea_created`
 - `hook_lab_idea_analysis_started`
@@ -632,7 +722,10 @@ captions, or provider payloads:
 
 Properties may include source type, platform enum, capability flags, scope,
 variation count, status, duration bucket, and error category. They must not
-include user copy or direct identifiers.
+include user copy or direct identifiers. Analysis and use completion/failure
+events are emitted by consent-aware client subscriptions only when Hook Lab
+observes the transition. A tab-session claim prevents duplicate events from
+rerenders or remounts; events are not queued or backfilled without consent.
 
 ## Accessibility and Copy
 
@@ -656,6 +749,14 @@ Recommended empty-state copy:
 > the idea without copying the post.
 
 ## Testing Strategy
+
+The lists below are the rollout verification matrix. Automated coverage now
+includes utilities/adapters/similarity, selected cards, provider-writing and
+media-input parsers, all three route surfaces, default/use/variant Convex
+domains, both Idea backfills, current-use progress, provider analysis
+continuation and recovery, failed social-temp cleanup, independent Review
+mutations, successful finalizer persistence, and terminal generated-input
+cleanup.
 
 ### Unit coverage
 
@@ -800,16 +901,30 @@ web/
     hooks/
       useHookLabIdeas.ts
       useHookLabIdeaActions.ts
+      useHookLabIdeaActionFeedback.ts
+      useCreateHookLabIdeaFromValue.ts
+      useCreateHookLabIdeaFromStitchSelection.ts
+      useCreateHookLabIdeaFromHookOption.ts
+      useUpdateHookLabIdea.ts
+      useArchiveHookLabIdea.ts
+      useRemoveHookLabIdea.ts
+      useRetryHookLabIdeaAnalysis.ts
+      useStartHookLabIdeaUseAction.ts
       useHookLabReviewOptions.ts
+  services/provider-worker/hookLab/
+    getHookLabAnalysisSourceContext.ts
+    pickHookLabAnalysisSourceFields.ts
 ```
 
 Route files only authenticate, parse, delegate, and format responses. Provider,
 parser, adapter, mutation, component, hook, type, and validator responsibilities
-remain isolated in their own files.
+remain isolated in their own files. `useHookLabIdeaActions.ts` is only a public
+composition boundary; each action and its activity state live in the focused
+hook named above.
 
 ## Delivery Phases
 
-### Phase 1: fix the current trust failures
+### Phase 1: fix the current trust failures — implemented
 
 - normalize hook options into independent review rows
 - ship one-hook-per-card Review
@@ -817,7 +932,7 @@ remain isolated in their own files.
 - strengthen text adaptation output and similarity safeguards
 - stop automatic Template creation from feedback
 
-### Phase 2: unify Templates and Ideas
+### Phase 2: unify Templates and Ideas — implemented with compatibility
 
 - add the Idea model and Ideas view
 - add product defaults
@@ -825,21 +940,26 @@ remain isolated in their own files.
 - backfill and dual-read Templates
 - remove Templates from Library navigation
 
-### Phase 3: social import and creative-beat analysis
+### Phase 3: social import and creative-beat analysis — implemented in code
 
 - add TikTok and Instagram adapters
 - add durable Apify analysis jobs
 - enforce temporary-media deletion and new limits
 - produce structured creative beats and thumbnails
 
-### Phase 4: one-click ready drafts
+### Phase 4: one-click ready drafts — implemented
 
 - create Idea use/variant lineage
 - generate default-avatar UGC openings
 - create 1, 3, or 5 server-owned Stitch variants
-- surface progress and partial failures
+- surface per-variant progress and partial failures for the current browser
+  session
 
-### Phase 5: campaign learning
+Restoring the latest use after reload and supporting an exact completed-Stitch
+deep link remain follow-up navigation polish; they do not block one-click draft
+creation or current-session review.
+
+### Phase 5: campaign learning — lineage implemented; ranking remains later
 
 - join Idea lineage to posted analytics
 - rank relevant Ideas using actual use and performance signals
@@ -859,6 +979,8 @@ Local implementation references:
 - `docs/backend/provider-automation-workflows.md`
 - `docs/backend/rate-limits.md`
 - `web/lib/clipstitchr/server/createStitchrHookGenerationPrompt.ts`
+- `web/lib/clipstitchr/server/formatHookLabPromptMemory.ts`
+- `web/convex/hookLabIdeas/getHookLabPromptBlueprints.ts`
 - `web/lib/clipstitchr/server/createUploadVideoAnalysisPrompt.ts`
 - `web/lib/clipstitchr/server/createUploadVideoAnalysisOutputText.ts`
 - `web/lib/clipstitchr/server/apify/runApifyActorDataset.ts`
@@ -874,8 +996,8 @@ External references checked for this design:
 - [Clockworks TikTok Scraper](https://apify.com/clockworks/tiktok-scraper)
 - [Apify Instagram Scraper](https://apify.com/apify/instagram-scraper)
 
-The Actor pages are runtime dependencies, not permanent contracts. Before
-implementation, pin and fixture-test the selected actor input/output shapes and
+The Actor pages are runtime dependencies, not permanent contracts. Before each
+production rollout, fixture-test the selected actor input/output shapes and
 verify current pricing, media availability, retention, and terms.
 
 ## Decision Log

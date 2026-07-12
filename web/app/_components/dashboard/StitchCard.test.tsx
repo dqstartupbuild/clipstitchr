@@ -340,6 +340,74 @@ describe("StitchCard", () => {
     ]);
   });
 
+  it("saves a Stitch as an Idea with safe feedback and analytics", async () => {
+    const onSaveIdea = vi.fn(async () => undefined);
+
+    renderToStaticMarkup(
+      <StitchCard
+        stitch={createStitch()}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onSaveIdea={onSaveIdea}
+        onUpdateMusic={vi.fn()}
+        onUpdatePostedStatus={vi.fn()}
+        onUpdateSocialCaption={vi.fn()}
+        onUpdateSourceSettings={vi.fn()}
+        onUpdateTextOverlay={vi.fn()}
+      />,
+    );
+
+    expect(mocks.actionItems.map((item) => item.label)).toContain(
+      "Save as idea",
+    );
+    expect(mocks.actionItems.map((item) => item.label)).not.toContain(
+      "Save as Template",
+    );
+    mocks.actionItems.find((item) => item.label === "Save as idea")?.onClick?.();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(onSaveIdea).toHaveBeenCalledWith(createStitch());
+    expect(mocks.stateSetter).toHaveBeenCalledWith({
+      message: "Saved as an Idea in Hook Lab.",
+      variant: "success",
+    });
+    expect(mocks.trackPostHogEvent).not.toHaveBeenCalledWith(
+      "stitch_template_saved",
+      expect.anything(),
+    );
+  });
+
+  it("captures Idea-save failures without direct identifiers", async () => {
+    const saveError = new Error("Hook Lab is busy.");
+
+    renderToStaticMarkup(
+      <StitchCard
+        stitch={createStitch()}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onSaveIdea={vi.fn(async () => {
+          throw saveError;
+        })}
+        onUpdateMusic={vi.fn()}
+        onUpdatePostedStatus={vi.fn()}
+        onUpdateSocialCaption={vi.fn()}
+        onUpdateSourceSettings={vi.fn()}
+        onUpdateTextOverlay={vi.fn()}
+      />,
+    );
+
+    mocks.actionItems.find((item) => item.label === "Save as idea")?.onClick?.();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mocks.capturePostHogException).toHaveBeenCalledWith(saveError, {
+      feature: "hook_lab_idea_save_from_stitch",
+    });
+  });
+
   it("opens details from card buttons and loads poster blobs", async () => {
     const onLoadPoster = vi.fn(async () => new Blob(["poster"]));
     const elements = collectElements(

@@ -23,9 +23,6 @@ export function HookLabMemoryForm({
   product,
   onUpdate,
 }: HookLabMemoryFormProps) {
-  const [winningHookExamplesText, setWinningHookExamplesText] = useState(
-    formatProductHookExamplesText(product.winningHookExamples),
-  );
   const [rejectedHookExamplesText, setRejectedHookExamplesText] = useState(
     formatProductHookExamplesText(product.rejectedHookExamples),
   );
@@ -41,11 +38,9 @@ export function HookLabMemoryForm({
         hookEdgeLevel={hookEdgeLevel}
         hookGenerationGoal={hookGenerationGoal}
         rejectedHookExamplesText={rejectedHookExamplesText}
-        winningHookExamplesText={winningHookExamplesText}
         onHookEdgeLevelChange={setHookEdgeLevel}
         onHookGenerationGoalChange={setHookGenerationGoal}
         onRejectedHookExamplesTextChange={setRejectedHookExamplesText}
-        onWinningHookExamplesTextChange={setWinningHookExamplesText}
       />
       <div className="flex justify-end">
         <Button
@@ -61,9 +56,7 @@ export function HookLabMemoryForm({
               rejectedHookExamples: parseProductHookExamplesText(
                 rejectedHookExamplesText,
               ),
-              winningHookExamples: parseProductHookExamplesText(
-                winningHookExamplesText,
-              ),
+              winningHookExamples: product.winningHookExamples,
             })
           }
         >

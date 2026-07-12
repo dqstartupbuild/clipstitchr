@@ -12,10 +12,10 @@ large documents wherever possible.
   so public list consumers cannot accidentally read every article body.
 - `/blog`, `/blog/[slug]`, and `/sitemap.xml` use hourly revalidation instead
   of forced dynamic rendering.
-- Dashboard home saves Stitch templates through `useCreateStitchTemplate`
-  without subscribing to the full template list.
-- Library template rows load only when the Library Stitches or Templates tabs
-  need them.
+- Hook Lab Idea and Review lists use indexed, cursor-paginated reads instead of
+  loading every Idea or parent hook-plan array.
+- Legacy Template rows load only for compatibility consumers. Templates no
+  longer have a visible Library tab.
 - Dashboard library providers now track the active Library tab and skip hidden
   clip, photo, avatar, Swipr, Swipe, Stitch, and Pexels subscriptions.
 - Library Hook Plan reads are active-product scoped and load only for the

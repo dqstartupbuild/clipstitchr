@@ -6,8 +6,7 @@ The first batch onboarding flow gives new users one direct path into ClipStitchr
 
 1. Add a product name and website.
 2. Review and edit the generated product profile.
-3. Add at least one Hook Lab example so Stitchr has a real hook style to learn
-   from.
+3. Choose Hook Lab writing goal/tone and any phrases to avoid.
 4. Upload Hook/UGC clips and review their scores.
 5. Upload a product demo and review its score.
 6. Choose Stitchr batch text style and colors.
@@ -45,7 +44,7 @@ The review screen lets the user edit:
 - Product name
 - Website
 - Preferred hook style
-- Hook Lab examples, goal, and tone
+- Hook Lab goal, tone, and phrases to avoid
 - Product details
 - Audience details
 - Audience problem
@@ -54,11 +53,11 @@ The review screen lets the user edit:
 
 `ProductProfileCreateInput` now supports `inferredProblem` and `inferredPainPoints` so the review screen can save the generated fields it shows.
 
-The review screen also requires at least one Hook Lab winning example before
-the user can continue. The helper copy tells users to copy hooks from viral
-content in their niche or add their own winners. These examples are saved on
-the product profile and reused by manual Stitchr, Batch, and scheduled Stitchr
-generation.
+The review screen no longer asks new users for raw winning-hook examples. Saved
+Ideas are the positive learning source, while onboarding owns only goal, tone,
+and avoid phrases. Existing `winningHookExamples` values pass through unchanged
+for rollback and are converted to product-scoped Ideas by the rollout
+migration.
 
 ## Upload Review
 

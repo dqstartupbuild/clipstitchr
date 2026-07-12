@@ -69,7 +69,7 @@ attention first, show the product immediately after.
 10. Optionally configure one text overlay and one caption/hashtag field per
    output or copy one overlay across the batch.
 11. Optionally generate ranked overlay hook options, a caption hook, and 3-5
-   hashtags from saved product context, Hook Lab examples, and the selected
+   hashtags from saved product context, structured Hook Lab Idea patterns, and the selected
    Hook/UGC/demo clip descriptions. Stitchr auto-text can draw from product/ad
    hook-library templates, but source names and template IDs stay hidden. Hook
    Lab handles generated text; if selected clips have already-applied Quick
@@ -126,13 +126,13 @@ unmarking a stitch as posted only changes library organization and does not
 change source clips, stored stitch settings, music, posters, captions, or
 downloadable output.
 
-Dedicated Stitchr templates are saved setup records created from finished stitch
-cards with **Save as Template**. They can be selected from the Template picker on
-the Stitchr page, where **None** is the default, or managed from the Templates
-sidebar page. In Batch mode, a selected template supplies the text overlay style
-and caption copy for every queued draft while Batch still picks fresh Hook/UGC
-and Demo pairs. See `docs/features/stitchr-templates.md` for the data model, routes,
-CRUD behavior, rate limits, and maintenance notes.
+Reusable Stitchr setups now live as recipe Ideas in Hook Lab. A recipe can
+supply source choices, trims, text-overlay style, audio behavior, playback
+rates, and caption copy. Batch can apply the recipe's text and caption while it
+still chooses fresh Hook/UGC and Demo pairs. Legacy Template IDs continue to
+resolve through a fallback reader during the rollback window. See
+`docs/features/stitchr-hook-lab.md` for current behavior and
+`docs/features/stitchr-templates.md` for compatibility details.
 
 Stitchr social captions are documented separately in
 `docs/features/stitchr-social-captions.md`.
@@ -165,7 +165,7 @@ automated Stitch.
   into Stitchr.
 - Keep generated overlay text and caption copy editable while hiding hook
   style/template mechanics.
-- Keep Hook Lab examples as user-owned taste memory, not copied output.
+- Keep Hook Lab Ideas as user-owned structured memory, not copied output.
 - Keep Stitchr hook and caption generation simple and viewer-first, matching
   the Swipr prompt style while still using selected source context when it is
   helpful.

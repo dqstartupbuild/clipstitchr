@@ -9,7 +9,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function TermsPage() {
-  const lastUpdated = "June 26, 2026";
+  const lastUpdated = "July 12, 2026";
 
   return (
     <article className="marketing-grid-bg px-6 py-20 md:py-28">
@@ -45,7 +45,9 @@ export default function TermsPage() {
               previewing Hook/UGC-then-demo sequences, and creating downloadable
               MP4 files. Media processing runs in the browser, while saved
               media and metadata use backend storage. The Site also provides
-              articles and resources.
+              Hook Lab, which can study text, your saved Stitches, and public
+              TikTok or Instagram posts to help you make a fresh creative Idea.
+              The Site also provides articles and resources.
             </p>
           </section>
 
@@ -84,6 +86,20 @@ export default function TermsPage() {
             </p>
             <p>
               Only add sounds you are allowed to use in your videos.
+            </p>
+            <p>
+              If you give Hook Lab a social post link, you confirm that the post
+              is public and that your use is lawful. Do not use private,
+              login-only, stolen, or unlawfully shared content. You remain
+              responsible for checking whether your finished work respects
+              copyright, trademark, publicity, privacy, platform, advertising,
+              and other applicable rules.
+            </p>
+            <p>
+              Hook Lab is meant to repeat a general writing pattern or creative
+              beat. You may not use it to impersonate someone, clone a person’s
+              identity or voice, remove watermarks, or copy a source post
+              shot-for-shot.
             </p>
           </section>
 

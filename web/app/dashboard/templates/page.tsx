@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function TemplatesPage() {
-  redirect("/dashboard/library?tab=templates");
+  redirect("/dashboard/hooks?view=ideas");
 }

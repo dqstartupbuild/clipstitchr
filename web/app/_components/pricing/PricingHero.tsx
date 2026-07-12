@@ -12,7 +12,7 @@ export function PricingHero() {
             Simple pricing for content that stops eating your week.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
-            Stitchr, scoring, templates, and your clip library are included.
+            Stitchr, scoring, Hook Lab Ideas, and your clip library are included.
             Credits only matter when ClipStitchr creates extra videos, visuals,
             or drafts because your library is thin.
           </p>

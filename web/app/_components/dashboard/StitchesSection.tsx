@@ -35,7 +35,7 @@ type StitchesSectionProps = {
   hasMoreItems?: boolean;
   id?: string;
   isLoadingMoreItems?: boolean;
-  savingTemplateStitchId?: string | null;
+  savingIdeaStitchId?: string | null;
   statusCounts?: Record<StitchLibraryStatusFilter, number>;
   statusFilter?: StitchLibraryStatusFilter;
   title?: string;
@@ -47,7 +47,7 @@ type StitchesSectionProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onPostBridgeScheduled?: () => void | Promise<void>;
-  onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
+  onSaveIdea?: (stitch: Stitch) => void | Promise<unknown>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
@@ -97,7 +97,7 @@ export function StitchesSection({
   hasMoreItems = false,
   id = "stitches",
   isLoadingMoreItems = false,
-  savingTemplateStitchId = null,
+  savingIdeaStitchId = null,
   statusCounts,
   statusFilter = "active",
   title = "Stitches",
@@ -109,7 +109,7 @@ export function StitchesSection({
   onLoadPoster,
   onLoadVideo,
   onPostBridgeScheduled,
-  onSaveTemplate,
+  onSaveIdea,
   onScore,
   onApplyQuickEdit,
   onResetQuickEdit,
@@ -218,14 +218,14 @@ export function StitchesSection({
                   batchDelete.isDeletingSelected ||
                   batchSchedule.isSchedulingSelected
                 }
-                isSavingTemplate={savingTemplateStitchId === stitch.id}
+                isSavingIdea={savingIdeaStitchId === stitch.id}
                 onDelete={onDelete}
                 onAcceptHookVariant={onAcceptHookVariant}
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
                 onLoadVideo={onLoadVideo}
                 onPostBridgeScheduled={onPostBridgeScheduled}
-                onSaveTemplate={onSaveTemplate}
+                onSaveIdea={onSaveIdea}
                 onScore={onScore}
                 onApplyQuickEdit={onApplyQuickEdit}
                 onResetQuickEdit={onResetQuickEdit}

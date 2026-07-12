@@ -31,7 +31,6 @@ const tabGroups: {
     label: "Assets",
     tabs: [
       { label: "Avatars", value: "avatars" },
-      { label: "Templates", value: "templates" },
       { label: "Pexels", value: "pexels" },
     ],
   },

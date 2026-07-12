@@ -256,8 +256,8 @@ last used guide ID is stored in `.clipstitchr.yml`.
 Repo setup also writes `.clipstitchr/app-context.json`, a source-derived map of
 routes, workflow hints, form labels, and button names. Guide generation and
 model-backed agent planning send a capped version of this context to the API so
-requests like "use Hook Lab to add hooks" can map to visible controls such as
-`Hooks to learn from` and `Save Hook Lab`.
+requests like "use Hook Lab to add an idea" can map to visible controls such as
+`Paste a hook or a public TikTok or Instagram link` and `Save idea`.
 
 When a guide is active, the CLI prints the full checklist, opens the recording
 target, and steps through the guide in the terminal:

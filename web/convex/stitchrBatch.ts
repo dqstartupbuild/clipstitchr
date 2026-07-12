@@ -15,6 +15,8 @@ import { createStitchrBatchRunId } from "./stitchrBatchRunId";
 import { listRecentVideoClipsByLibraryKind } from "./listRecentVideoClipsByLibraryKind";
 import { upsertAutomationTaskSummary } from "./upsertAutomationTaskSummary";
 import { getStitchTemplateBatchTextOverlay } from "./stitchTemplates/getStitchTemplateBatchTextOverlay";
+import { getStitchRecipeByIdeaOrTemplate } from "./getStitchRecipeByIdeaOrTemplate";
+import { getHookLabPromptBlueprints } from "./hookLabIdeas/getHookLabPromptBlueprints";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import { STITCHR_BATCH_DAILY_LIMIT } from "../lib/clipstitchr/constants/stitchrBatchGenerationLimits";
@@ -172,6 +174,12 @@ export const plan = mutation({
       throw new Error("Product not found.");
     }
 
+    const hookLabTextBlueprints = await getHookLabPromptBlueprints(
+      ctx,
+      ownerId,
+      product.id,
+    );
+
     const runId = createStitchrBatchRunId(ownerId, batchDate, product.id);
     const existingTasks = await ctx.db
       .query("automationTasks")
@@ -261,16 +269,11 @@ export const plan = mutation({
       }),
     ]);
     const batchTemplate = templateId
-      ? await ctx.db
-          .query("stitchTemplates")
-          .withIndex("by_owner_id", (q) =>
-            q.eq("ownerId", ownerId).eq("id", templateId),
-          )
-          .unique()
+      ? await getStitchRecipeByIdeaOrTemplate(ctx, ownerId, templateId)
       : null;
 
     if (templateId && !batchTemplate) {
-      throw new Error("Unable to find that Stitch template.");
+      throw new Error("Unable to find that Stitch idea.");
     }
 
     const templateTextOverlay = batchTemplate
@@ -527,6 +530,7 @@ export const plan = mutation({
           rejectedHookExamples: product?.rejectedHookExamples,
           hookGenerationGoal: product?.hookGenerationGoal,
           hookEdgeLevel: product?.hookEdgeLevel,
+          hookLabTextBlueprints,
           productCreatedAt: product?.createdAt,
           productUpdatedAt: product?.updatedAt,
           selectedScore: selectedPair.score,

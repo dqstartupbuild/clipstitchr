@@ -57,19 +57,20 @@ Download, reuse, mark posted, or schedule
 
 The authenticated Library at `/dashboard/library` is the single place for
 saved Hook/UGC clips, product demos, generated outputs, finished work, avatar
-photos, templates, and imported Pexels packs.
+photos, and imported Pexels packs. Reusable inspiration and Stitch recipes live
+in Hook Lab Ideas.
 
 Library groups:
 
 - Videos: Hook/UGC, Product demos, Swaps
 - Finished: Stitches, Carousels
-- Assets: Avatars, Templates, Pexels
+- Assets: Avatars, Pexels
 
 Compatibility redirects keep older dashboard URLs working:
 
 - `/dashboard/uploads` -> `/dashboard/library`
 - `/dashboard/avatars` -> `/dashboard/library?tab=avatars`
-- `/dashboard/templates` -> `/dashboard/library?tab=templates`
+- `/dashboard/templates` -> `/dashboard/hooks?view=ideas`
 - `/dashboard/stitches` -> `/dashboard/library?tab=stitches`
 
 ### Stitchr
@@ -98,7 +99,7 @@ Stitchr also supports:
 
 - Batch mode for automated daily draft creation
 - Longr mode for ordered multi-clip sequences
-- reusable Stitchr templates
+- reusable Hook Lab Idea recipes, with legacy Template fallback during migration
 - multiple editable text overlays
 - social captions and hashtags
 - selected, uploaded, or TikTok-imported sounds
@@ -107,9 +108,11 @@ Stitchr also supports:
 
 ### Hook Lab
 
-Hook Lab stores product-aware hook examples and review memory. It helps generate
-editable overlay text, caption hooks, and hashtag ideas without exposing
-internal template IDs or prompt mechanics to users.
+Hook Lab has **Ideas** and **Review** views. Users can save a useful line, a
+supported public TikTok or Instagram post, or a past Stitch; Hook Lab learns a
+structured writing pattern or creative beat and can turn it into 1, 3, or 5
+fresh, editable Stitches. Review keeps every generated hook on its own card so
+Use, Save idea, and Not for me never affect sibling hooks.
 
 ### Quick Edit
 
@@ -371,7 +374,7 @@ Dashboard routes:
 | `/dashboard/onboarding` | First-run onboarding |
 | `/dashboard/uploads` | Redirect to Library |
 | `/dashboard/avatars` | Redirect to Library Avatars tab |
-| `/dashboard/templates` | Redirect to Library Templates tab |
+| `/dashboard/templates` | Redirect to Hook Lab Ideas |
 | `/dashboard/stitches` | Redirect to Library Stitches tab |
 
 ## Repository Layout

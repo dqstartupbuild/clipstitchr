@@ -120,9 +120,8 @@ Weak:
 
 Strong:
 
-> Rebuilding the same structure is what makes a new set feel heavy. Templates
-> keep the trims, text, captions, and timing from the Stitch you would rather
-> not rebuild.
+> Save the line, post, or Stitch that made you stop. Hook Lab keeps the useful
+> pattern and turns it into something fresh for your product.
 
 ## Section Guidance
 
@@ -134,18 +133,14 @@ one video at a time, or remember where the finished file went.
 
 Hook Lab:
 
-This exists because writing overlay text that does not sound fake is hard for
-people who are not natural copywriters. Say that directly.
+This exists because people can recognize a good idea without knowing how to
+repeat it for their own product. Explain that Hook Lab learns the pattern and
+creative beat without copying the original post.
 
 Scoring:
 
 This exists because nobody wants to find out a clip was wrong after posting or
 running the ad. Say that directly.
-
-Templates:
-
-This exists because rebuilding the same structure every time is what makes a new
-content session feel heavy. Say that directly.
 
 Daily drafts:
 

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "../auth/getAuthenticatedOwnerId";
 import { query } from "../_generated/server";
+import { getStitchRecipeByIdeaOrTemplate } from "../getStitchRecipeByIdeaOrTemplate";
 
 export const get = query({
   args: {
@@ -9,9 +10,6 @@ export const get = query({
   handler: async (ctx, { id }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
-    return await ctx.db
-      .query("stitchTemplates")
-      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
-      .unique();
+    return await getStitchRecipeByIdeaOrTemplate(ctx, ownerId, id);
   },
 });

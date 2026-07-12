@@ -89,7 +89,9 @@ describe("LandingPage", () => {
     expect(markup).toContain("/example-outputs/clipstitchr-example-01.webm");
     expect(markup).toContain("/example-outputs/clipstitchr-example-21.webm");
     expect(markup).not.toContain("/examples/stitchr-fitness-score-reaction");
-    expect(markup).toContain("Rebuilding the same structure");
+    expect(markup).toContain(
+      "Starting from zero is what makes the next post feel heavy",
+    );
     expect(markup).toContain("Sometimes the problem is just not having enough usable clips");
     expect(markup).toContain("When video feels like overkill");
     expect(markup).toContain("Showing up daily is hard when you do not like social");

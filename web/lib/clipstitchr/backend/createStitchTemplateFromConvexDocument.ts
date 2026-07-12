@@ -1,8 +1,7 @@
-import type { Doc } from "@/convex/_generated/dataModel";
 import type { StitchTemplate } from "@/lib/clipstitchr/types/StitchTemplate";
 
 export function createStitchTemplateFromConvexDocument(
-  template: Doc<"stitchTemplates">,
+  template: StitchTemplate,
 ): StitchTemplate {
   return {
     createdAt: template.createdAt,

@@ -19,11 +19,11 @@ export function StitchTemplatePicker({
   return (
     <div className="rounded-lg border border-border bg-surface p-4">
       <SelectInput
-        label="Template"
+        label="Start from an idea"
         value={selectedTemplateId}
         disabled={isLoading}
         options={[
-          { label: "None", value: "" },
+          { label: "Start fresh", value: "" },
           ...templates.map((template) => ({
             label: template.name,
             value: template.id,

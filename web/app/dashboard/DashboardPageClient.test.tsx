@@ -73,7 +73,9 @@ const mocks = vi.hoisted(() => ({
     stitchrUgcSourceClips: [],
     swipeBackgrounds: [],
   },
+  recentStitchesProps: null as Record<string, unknown> | null,
   stitchTemplateState: {
+    createIdeaFromStitch: vi.fn(),
     createTemplateFromStitch: vi.fn(),
     deleteTemplate: vi.fn(),
     deletingTemplateId: null as string | null,
@@ -134,7 +136,10 @@ vi.mock("@/app/_components/dashboard/DashboardStats", () => ({
 }));
 
 vi.mock("@/app/_components/dashboard/RecentStitchesSection", () => ({
-  RecentStitchesSection: () => "RecentStitchesSection",
+  RecentStitchesSection: (props: Record<string, unknown>) => {
+    mocks.recentStitchesProps = props;
+    return "RecentStitchesSection";
+  },
 }));
 
 vi.mock("@/app/_components/dashboard/RecentSwipesSection", () => ({
@@ -190,10 +195,10 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
   },
 }));
 
-vi.mock("@/lib/clipstitchr/hooks/useCreateStitchTemplate", () => ({
-  useCreateStitchTemplate: () => ({
-    createTemplateFromStitch:
-      mocks.stitchTemplateState.createTemplateFromStitch,
+vi.mock("@/lib/clipstitchr/hooks/useCreateHookLabIdeaFromStitch", () => ({
+  useCreateHookLabIdeaFromStitch: () => ({
+    createIdeaFromStitch:
+      mocks.stitchTemplateState.createIdeaFromStitch,
     error: mocks.stitchTemplateState.error,
     savingStitchId: mocks.stitchTemplateState.savingStitchId,
   }),
@@ -300,6 +305,12 @@ describe("DashboardPageClient", () => {
     expect(markup).toContain("RecentStitchesSection");
     expect(markup).toContain("RecentSwipesSection");
     expect(markup).toContain("StitchrCallout");
+    expect(mocks.recentStitchesProps).toEqual(
+      expect.objectContaining({
+        onSaveIdea: mocks.stitchTemplateState.createIdeaFromStitch,
+      }),
+    );
+    expect(mocks.recentStitchesProps).not.toHaveProperty("onSaveTemplate");
   });
 
   it("surfaces the first available library error", () => {

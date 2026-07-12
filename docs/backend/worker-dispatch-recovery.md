@@ -31,6 +31,20 @@ Delayed provider follow-ups, such as polling after a provider prediction is
 created, still use their explicit delay. Their recovery launch is scheduled 10
 minutes after that delayed launch target.
 
+Hook Lab uses this explicit path for asynchronous Apify Actor runs. While the
+Actor is nonterminal, the provider worker stores the run and dataset IDs,
+releases its claim lock, and calls `providerJobs.markProviderStatus` with a
+30-second `continuationDelayMs`. Convex bounds explicit continuation delays to
+1 second through 10 minutes. Correctness remains in the durable provider job;
+the worker process does not sleep while waiting for Apify.
+
+Before starting an Actor, Hook Lab atomically records
+`providerRunRequestedAt`. Recovery always reuses a recorded run and treats an
+ambiguous start response as operator-visible failure instead of risking a
+second paid Actor start. An explicit user retry may clear the marker. Generated
+writing, image, and video object checkpoints similarly let reclaimed Idea-use
+jobs resume after their last completed provider step.
+
 ## Queue Drain Behavior
 
 Cloud Run worker jobs run bounded batches with `--once --max-jobs=3`. A bounded
@@ -79,6 +93,7 @@ web/convex/providerWorkerLaunch.ts
 web/convex/workerContinuationDelayMs.ts
 web/services/media-worker/runMediaWorker.mjs
 web/services/provider-worker/runProviderWorker.ts
+web/services/provider-worker/hookLab/waitForHookLabApifyRun.ts
 ```
 
 ## Future Option: Queue-Based Dispatch

@@ -11,7 +11,7 @@ import { LandingScoreSection } from "@/app/_components/landing/LandingScoreSecti
 import { LandingExampleOutputSection } from "@/app/_components/landing/LandingExampleOutputSection";
 import { LandingStudioSection } from "@/app/_components/landing/LandingStudioSection";
 import { LandingSwiprSection } from "@/app/_components/landing/LandingSwiprSection";
-import { LandingTemplateSection } from "@/app/_components/landing/LandingTemplateSection";
+import { LandingIdeaSection } from "@/app/_components/landing/LandingIdeaSection";
 import { LandingWorkflow } from "@/app/_components/landing/LandingWorkflow";
 
 export function LandingPage() {
@@ -26,7 +26,7 @@ export function LandingPage() {
       <LandingHookLabSection />
       <LandingPreview />
       <LandingScoreSection />
-      <LandingTemplateSection />
+      <LandingIdeaSection />
       <LandingStudioSection />
       <LandingSwiprSection />
       <LandingAutomationSection />

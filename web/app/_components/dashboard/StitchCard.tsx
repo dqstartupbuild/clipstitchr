@@ -60,7 +60,7 @@ type StitchCardProps = {
   hookPlans?: StitchrHookPlan[];
   isSelected?: boolean;
   isSelectionDisabled?: boolean;
-  isSavingTemplate?: boolean;
+  isSavingIdea?: boolean;
   savingHookPlanId?: string | null;
   onAcceptHookVariant?: (planId: string, hookText: string) => void;
   onDelete: (id: string) => void | Promise<void>;
@@ -74,7 +74,7 @@ type StitchCardProps = {
   onRejectHookVariant?: (planId: string, hookText: string) => void;
   onSelect?: () => void;
   onSelectHookVariant?: (planId: string, hookText: string) => void;
-  onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
+  onSaveIdea?: (stitch: Stitch) => void | Promise<unknown>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
@@ -114,7 +114,7 @@ export function StitchCard({
   hookPlans = [],
   isSelected = false,
   isSelectionDisabled = false,
-  isSavingTemplate = false,
+  isSavingIdea = false,
   savingHookPlanId = null,
   onAcceptHookVariant,
   onDelete,
@@ -128,7 +128,7 @@ export function StitchCard({
   onRejectHookVariant,
   onSelect,
   onSelectHookVariant,
-  onSaveTemplate,
+  onSaveIdea,
   onUpdateMusic,
   onUpdatePostedStatus,
   onUpdateSocialCaption,
@@ -200,7 +200,10 @@ export function StitchCard({
   const [socialCaptionError, setSocialCaptionError] = useState<string | null>(
     null,
   );
-  const [templateError, setTemplateError] = useState<string | null>(null);
+  const [ideaSaveFeedback, setIdeaSaveFeedback] = useState<{
+    message: string;
+    variant: "error" | "success";
+  } | null>(null);
   const [textError, setTextError] = useState<string | null>(null);
   const [sourceSettingsError, setSourceSettingsError] = useState<string | null>(
     null,
@@ -596,28 +599,30 @@ export function StitchCard({
       setIsSavingPostedStatus(false);
     }
   };
-  const handleSaveTemplate = async () => {
-    if (!onSaveTemplate) {
+  const handleSaveIdea = async () => {
+    if (!onSaveIdea) {
       return;
     }
 
-    setTemplateError(null);
+    setIdeaSaveFeedback(null);
 
     try {
-      await onSaveTemplate(stitch);
-      trackPostHogEvent("stitch_template_saved", {
-        stitch_id: stitch.id,
+      await onSaveIdea(stitch);
+      setIdeaSaveFeedback({
+        message: "Saved as an Idea in Hook Lab.",
+        variant: "success",
       });
     } catch (nextError) {
       capturePostHogException(nextError, {
-        feature: "stitch_template_save",
-        stitch_id: stitch.id,
+        feature: "hook_lab_idea_save_from_stitch",
       });
-      setTemplateError(
-        nextError instanceof Error
-          ? nextError.message
-          : "Could not save that template.",
-      );
+      setIdeaSaveFeedback({
+        message:
+          nextError instanceof Error
+            ? nextError.message
+            : "Couldn’t save this Stitch as an Idea.",
+        variant: "error",
+      });
     }
   };
   const actionItems: MediaCardActionMenuItem[] = [
@@ -626,13 +631,13 @@ export function StitchCard({
       href: getReuseStitchHref(stitch),
       icon: <RefreshCw aria-hidden className="h-4 w-4" />,
     },
-    ...(onSaveTemplate
+    ...(onSaveIdea
       ? [
           {
-            label: "Save as Template",
+            label: "Save as idea",
             icon: <BookmarkPlus aria-hidden className="h-4 w-4" />,
-            disabled: isSavingTemplate,
-            onClick: () => void handleSaveTemplate(),
+            disabled: isSavingIdea,
+            onClick: () => void handleSaveIdea(),
           },
         ]
       : []),
@@ -810,9 +815,14 @@ export function StitchCard({
             {quickEditError}
           </p>
         ) : null}
-        {templateError ? (
+        {ideaSaveFeedback?.variant === "error" ? (
           <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
-            {templateError}
+            {ideaSaveFeedback.message}
+          </p>
+        ) : null}
+        {ideaSaveFeedback?.variant === "success" ? (
+          <p className="mt-3 rounded-md border border-accent/30 bg-surface-muted px-2 py-1 text-xs font-semibold text-accent-dark">
+            {ideaSaveFeedback.message}
           </p>
         ) : null}
         {socialCaptionError ? (

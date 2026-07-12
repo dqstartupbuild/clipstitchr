@@ -175,7 +175,7 @@ describe("content pages", () => {
     expect(indexMarkup).toContain(firstDoc.title);
     expect(indexMarkup).toContain("ClipStitchr CLI");
     expect(indexMarkup).toContain("Clip Scores");
-    expect(indexMarkup).toContain("Templates");
+    expect(indexMarkup).toContain("Saved setup Ideas");
     expect(indexMarkup).toContain("Automation");
     expect(indexMarkup).toContain("Post Bridge");
     expect(generateDocsArticleStaticParams()).toContainEqual({

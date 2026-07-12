@@ -28,17 +28,12 @@ export function ProductCreateDialog({
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [productDetails, setProductDetails] = useState("");
   const [audienceDetails, setAudienceDetails] = useState("");
-  const [winningHookExamplesText, setWinningHookExamplesText] = useState("");
   const [rejectedHookExamplesText, setRejectedHookExamplesText] = useState("");
   const [hookGenerationGoal, setHookGenerationGoal] =
     useState<HookGenerationGoal>("views");
   const [hookEdgeLevel, setHookEdgeLevel] = useState<HookEdgeLevel>("punchy");
   const [error, setError] = useState<string | null>(null);
-  const canSave =
-    name.trim().length > 0 &&
-    (!isRequired ||
-      parseProductHookExamplesText(winningHookExamplesText).length > 0) &&
-    !isSaving;
+  const canSave = name.trim().length > 0 && !isSaving;
 
   return (
     <div
@@ -66,9 +61,6 @@ export function ProductCreateDialog({
               websiteUrl: websiteUrl || undefined,
               productDetails,
               audienceDetails,
-              winningHookExamples: parseProductHookExamplesText(
-                winningHookExamplesText,
-              ),
               rejectedHookExamples: parseProductHookExamplesText(
                 rejectedHookExamplesText,
               ),
@@ -164,12 +156,9 @@ export function ProductCreateDialog({
             hookEdgeLevel={hookEdgeLevel}
             hookGenerationGoal={hookGenerationGoal}
             rejectedHookExamplesText={rejectedHookExamplesText}
-            winningHookExamplesText={winningHookExamplesText}
-            isWinningRequired={isRequired}
             onHookEdgeLevelChange={setHookEdgeLevel}
             onHookGenerationGoalChange={setHookGenerationGoal}
             onRejectedHookExamplesTextChange={setRejectedHookExamplesText}
-            onWinningHookExamplesTextChange={setWinningHookExamplesText}
           />
         </div>
         {error ? (

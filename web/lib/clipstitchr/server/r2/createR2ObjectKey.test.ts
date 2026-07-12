@@ -102,6 +102,17 @@ describe("createR2ObjectKey", () => {
       }),
     ).toBe("users/user_123/swipr-backgrounds/background_456/image.jpg");
   });
+
+  it("creates user-scoped keys for Hook Lab thumbnails", () => {
+    expect(
+      createR2ObjectKey({
+        userId: "user_123",
+        kind: "hook-lab-thumbnail",
+        recordId: "idea_456",
+        contentType: "image/jpeg",
+      }),
+    ).toBe("users/user_123/hook-lab/idea_456/thumbnail.jpg");
+  });
 });
 
 describe("createSharedMusicR2ObjectKey", () => {

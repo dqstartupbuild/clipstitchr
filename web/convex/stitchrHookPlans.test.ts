@@ -401,7 +401,7 @@ describe("convex stitchrHookPlans", () => {
     );
   });
 
-  it("saves an accepted hook with a finished stitch as a template", async () => {
+  it("does not turn accepted feedback into a Template", async () => {
     const { ctx } = createCtx({
       products: [
         {
@@ -459,27 +459,15 @@ describe("convex stitchrHookPlans", () => {
 
     expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
       ctx,
-      "convexRecordSave",
+      "convexMetadataUpdate",
       {
         key: "owner_123",
         throws: true,
       },
     );
-    expect(ctx.db.insert).toHaveBeenCalledWith(
+    expect(ctx.db.insert).not.toHaveBeenCalledWith(
       "stitchTemplates",
-      expect.objectContaining({
-        id: "accepted-hook-template:owner_123:stitch_1",
-        name: "Winner: Hook B",
-        sourceStitchId: "stitch_1",
-        textOverlay: expect.objectContaining({
-          text: "Hook B",
-        }),
-        textOverlays: expect.arrayContaining([
-          expect.objectContaining({
-            text: "Hook B",
-          }),
-        ]),
-      }),
+      expect.anything(),
     );
   });
 });

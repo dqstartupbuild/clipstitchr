@@ -1,112 +1,91 @@
-# Stitchr Templates
+# Stitchr Templates Compatibility
 
-Stitchr templates let a user save the setup from a finished stitch so the next
-ad does not start with rebuilding the same structure all over again.
+Standalone Templates have been replaced in the product by Hook Lab Ideas. The
+legacy Template model remains temporarily as a rollback and automation-
+compatibility layer.
 
-Public copy should lead with the reason templates matter: rebuilding the same
-structure is often the thing that makes a new content session feel heavy.
+Stitch cards now use **Save as idea** and create a Stitch-sourced Idea. Stitchr
+labels the dual-read recipe picker **Start from an idea**, and automation labels
+allocations **Saved setup Ideas**. Legacy Template language remains only in
+internal compatibility names and stored fields.
 
-## What It Does
+See `docs/features/hook-lab-ideas.md` for the current feature and
+`docs/features/stitchr-hook-lab.md` for its implementation.
 
-A saved template keeps the editable Stitchr setup:
+## Legacy Record
 
-- source UGC and demo clip ids and names
-- normal or Longr mode
+`stitchTemplates` preserves an editable Stitchr setup:
+
+- source Hook/UGC and Demo IDs and names
+- Normal or Longr mode
 - clip trims and sequence segments
-- source-audio flags
-- playback rates
-- shared text overlay data
-- shared caption and hashtag copy
-- source stitch name and id for context
+- source-audio flags and playback rates
+- text-overlay style and copy
+- caption and hashtag copy
+- source Stitch ID and name
 
-Templates do not store rendered stitch video files, posters, music assets, or
-downloaded media blobs. They are setup records only.
+Template records do not own rendered videos, posters, music, or downloaded
+blobs. The initial Hook Lab rollout does not delete or mutate them.
 
-## User Flow
+## Migration
 
-1. Open a saved stitch card.
-2. Choose **Save as Template**.
-3. The app creates a template from that stitch's current setup.
-4. Open Stitchr.
-5. Use the Template picker. **None** is the default.
-6. Pick a template to load its clips, trims, audio settings, playback rates,
-   text, and caption copy.
-7. Select different Hook/UGC clips if needed. The reused text and caption stay
-   available for new Hook/UGC clips unless the user gives a specific clip its own
-   edit.
+The secret-gated
+`migrations/migrateStitchTemplatesToHookLabIdeas:migrateStitchTemplatesToHookLabIdeas`
+mutation creates one deterministic `migrated_template` Idea per owned Template.
+It preserves the source Stitch and Template IDs plus the reusable assembly
+recipe. Product-linked source Stitches create product-scoped Ideas; other
+Templates become shared Ideas.
 
-In Stitchr Batch mode, the same picker chooses text and caption copy for the
-daily batch without loading the template clips into the manual editor. Batch
-drafts still pick fresh Hook/UGC and Demo pairs, but each queued draft uses the selected
-template's first non-empty text overlay style and saved caption copy.
+The migration is paginated at no more than 50 records per call, uses
+`RATE_LIMIT_API_SECRET`, and is safe to rerun because each row has a stable
+`migrationKey`. Verify the backfill with
+`migrations/getHookLabMigrationStatus:getHookLabMigrationStatus` before
+removing any compatibility code.
 
-In automation settings, templates are allocated by count instead of by one
-single selection. The Stitchr Config panel shows each template with minus and
-plus buttons, plus a Random remainder row. The template counts and Random count
-always add up to the selected automation draft count, letting a user repeat a
-winning format while leaving the rest of the run fresh.
+## Compatibility Behavior
 
-The Library **Templates** tab opens at `/dashboard/library?tab=templates`,
-where users can see templates, rename them, delete them, and send one back into
-Stitchr when they do not want to start from zero.
+Stitchr, Batch, and daily automation resolve a Hook Lab Idea recipe first and
+fall back to a legacy Template through
+`web/convex/getStitchRecipeByIdeaOrTemplate.ts`.
 
-## Implementation
+Existing `automationPreferences.stitchrTemplateAllocations` keep their Template
+IDs in this rollout. They are not rewritten to Idea IDs, so the fallback reader
+must remain until those preferences have been separately migrated or retired.
 
-The persistent template table is `stitchTemplates` in
-`web/convex/schema.ts`. Records are owner-scoped and indexed by
-`ownerId + createdAt` for the Templates page and by `ownerId + id` for single
-record access.
+Legacy Template queries and mutations remain available for rollback and older
+callers. Current Stitch-card and Hook Lab saves create Ideas instead of silently
+creating a Template when a generated hook receives positive feedback.
 
-Convex functions live in `web/convex/stitchTemplates/`:
+## Navigation
 
-- `createFromStitch.ts` saves a template from an owned stitch.
-- `list.ts` lists the signed-in user's templates.
-- `get.ts` reads one owned template.
-- `updateName.ts` renames an owned template.
-- `remove.ts` deletes an owned template.
-- `createStitchTemplateDocumentFromStitch.ts` copies only reusable setup fields
-  from the source stitch.
+Templates no longer appear as a Library tab.
 
-Client template data flows through:
+- `/dashboard/templates` redirects to `/dashboard/hooks?view=ideas`.
+- `/dashboard/library?tab=templates` also redirects to Hook Lab Ideas.
 
-- `web/lib/clipstitchr/types/StitchTemplate.ts`
-- `web/lib/clipstitchr/backend/createStitchTemplateFromConvexDocument.ts`
-- `web/lib/clipstitchr/hooks/useStitchTemplates.ts`
-- `web/lib/clipstitchr/utils/getStitchTemplateDefaultName.ts`
-- `web/lib/clipstitchr/utils/getUseStitchTemplateHref.ts`
-
-The save action is exposed by `StitchCard` and passed through dashboard stitch
-sections. The picker is `StitchTemplatePicker`, rendered on
-`/dashboard/stitchr` for manual and Batch modes. Batch requests pass the
-selected template ID through `generateStitchrBatch` and
-`POST /api/stitchr/batch/generate`, then `stitchrBatch.plan` copies the
-template overlay and caption into the queued task snapshots. Template
-automation allocations are saved on `automationPreferences` and used by
-`automationStitchr.planDaily` when it builds daily draft task snapshots.
-Template management lives in the Library Templates tab through
-`web/app/_components/library/TemplateLibraryTabSection.tsx`, rendered by
-`web/app/dashboard/library/LibraryPageClient.tsx`.
+The old Template Library section can remain in source during the rollback
+window, but it is not part of current navigation.
 
 ## Abuse Protection
 
-Template writes are user-triggered Convex operations:
+Legacy writes retain their existing shared Convex limits:
 
-- `stitchTemplates.createFromStitch` consumes `convexRecordSave`.
-- `stitchTemplates.updateName` consumes `convexMetadataUpdate`.
-- `stitchTemplates.remove` consumes `convexRecordDelete`.
+- create: `convexRecordSave`
+- rename: `convexMetadataUpdate`
+- delete: `convexRecordDelete`
 
-The list and get queries are authenticated owner-scoped reads. They do not create
-storage, bandwidth, provider, or third-party API cost.
+The migration is operator-secret protected and intentionally not user-rate-
+limited. Operators must run bounded pages and inspect progress after each page.
 
-## Maintenance Notes
+## Retirement Gate
 
-Template application intentionally mirrors the existing "Reuse in Stitchr"
-behavior. Normal Stitchr templates place copied text into the reusable text
-and caption state instead of tying it to the original Hook/UGC clip. That means
-a user can deselect the original Hook/UGC clip, move through picker pages,
-choose new Hook/UGC clips, and still keep the same text and caption on the new
-stitch outputs.
+Do not remove `stitchTemplates`, old plan arrays, Template mutations, or
+automation allocation fields until all of these are true:
 
-The URL sync on `/dashboard/stitchr` must only run on initial load and browser
-history changes. The in-page Template picker does not rewrite the URL, so reruns
-from ordinary library-state changes must not clear reusable template text.
+1. Template and migrated-Idea counts match in production.
+2. Every migrated Template Idea has a Stitch recipe.
+3. Hook-option row counts match the legacy plan arrays.
+4. Stitchr and automation Idea-first reads have completed a rollback window.
+5. Legacy automation allocations have been migrated or explicitly retired.
+6. A separate cleanup change updates schema, code, tests, and documentation
+   together.

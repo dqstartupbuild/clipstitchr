@@ -196,8 +196,13 @@ export const claimNextForProvider = mutation({
       (!jobType || candidate.jobType === jobType) &&
       (!stage || candidate.stage === stage);
 
+    const nowMs = Date.parse(updatedAt);
+
+    if (!Number.isFinite(nowMs)) {
+      throw new Error("Provider job claim time is invalid.");
+    }
+
     if (stage) {
-      const nowMs = Date.parse(updatedAt);
       const runningJobs = jobType
         ? await ctx.db
             .query("providerJobs")
@@ -259,7 +264,36 @@ export const claimNextForProvider = mutation({
           .withIndex("by_status_created", (q) => q.eq("status", "queued"))
           .order("asc")
           .take(10);
-    const job = queuedJobs.find(matchesJob);
+    let job = queuedJobs.find(matchesJob);
+
+    if (!job) {
+      const runningJobs = jobType
+        ? await ctx.db
+            .query("providerJobs")
+            .withIndex("by_status_job_type_created", (q) =>
+              q.eq("status", "running").eq("jobType", jobType),
+            )
+            .order("asc")
+            .take(50)
+        : await ctx.db
+            .query("providerJobs")
+            .withIndex("by_status_created", (q) => q.eq("status", "running"))
+            .order("asc")
+            .take(50);
+
+      job = runningJobs.find((candidate) => {
+        const lockedUntilMs = candidate.lockedUntil
+          ? Date.parse(candidate.lockedUntil)
+          : Number.NaN;
+
+        return (
+          matchesJob(candidate) &&
+          Boolean(candidate.lockedUntil) &&
+          Number.isFinite(lockedUntilMs) &&
+          lockedUntilMs <= nowMs
+        );
+      });
+    }
 
     if (!job) {
       return null;
@@ -268,7 +302,10 @@ export const claimNextForProvider = mutation({
     if (job.attempt >= PROVIDER_JOB_MAX_ATTEMPTS) {
       await ctx.db.patch(job._id, {
         status: "failed",
+        stage: "retry-limit",
         error: "Provider job reached the retry limit.",
+        lockedBy: undefined,
+        lockedUntil: undefined,
         updatedAt,
       });
       const failedJob = await ctx.db.get(job._id);
@@ -277,7 +314,7 @@ export const claimNextForProvider = mutation({
         await upsertWorkerJobSummary(ctx, "provider", failedJob);
       }
 
-      return null;
+      return failedJob;
     }
 
     await ctx.db.patch(job._id, {
@@ -311,6 +348,7 @@ export const markProviderStatus = mutation({
     mediaJobId: v.optional(v.string()),
     progress: v.optional(v.number()),
     releaseLock: v.optional(v.boolean()),
+    continuationDelayMs: v.optional(v.number()),
     updatedAt: v.string(),
   },
   handler: async (
@@ -327,6 +365,7 @@ export const markProviderStatus = mutation({
       mediaJobId,
       progress,
       releaseLock,
+      continuationDelayMs,
       updatedAt,
     },
   ) => {
@@ -382,10 +421,17 @@ export const markProviderStatus = mutation({
       });
     }
 
-    if (status === "running" && releaseLock && stage === "provider-created") {
+    const relaunchDelayMs =
+      continuationDelayMs !== undefined
+        ? Math.min(Math.max(Math.round(continuationDelayMs), 1_000), 10 * 60_000)
+        : stage === "provider-created"
+          ? 60_000
+          : undefined;
+
+    if (status === "running" && releaseLock && relaunchDelayMs !== undefined) {
       await requestWorkerLaunch({
         ctx,
-        delayMs: 60_000,
+        delayMs: relaunchDelayMs,
         now: updatedAt,
         worker: "provider",
       });

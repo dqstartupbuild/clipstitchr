@@ -10,7 +10,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function PrivacyPage() {
-  const lastUpdated = "June 26, 2026";
+  const lastUpdated = "July 12, 2026";
 
   return (
     <article className="marketing-grid-bg px-6 py-20 md:py-28">
@@ -55,6 +55,21 @@ export default function PrivacyPage() {
             <p>
               Sounds you add are used to help you make and export your own
               clips and stitches.
+            </p>
+            <p>
+              Hook Lab can learn from text you paste, one of your saved
+              Stitches, or a public TikTok or Instagram post you choose. We
+              send that source to our processing providers so they can find a
+              reusable writing pattern and visual idea.
+            </p>
+            <p>
+              For a public social post, Apify retrieves the public post details
+              and a temporary video link when one is available. Our worker
+              downloads the video only for analysis and deletes its temporary
+              copy whether the analysis works or fails. We may keep the public
+              post link, creator attribution, extracted text, a private preview
+              image, and the reusable Idea in your account until you remove it.
+              We do not use Hook Lab to save or repost the source video.
             </p>
             <p>
               You can delete clips, photos, and stitches in the dashboard. Those
@@ -128,13 +143,15 @@ export default function PrivacyPage() {
             <h2>Information Sharing</h2>
             <p>
               We do not sell, rent, or trade your personal information. We may
-              share non-video website data only in the following circumstances:
+              share account information or media only in the following
+              circumstances:
             </p>
             <ul>
               <li>
                 <strong>Service providers:</strong> Third-party tools (e.g.,
-                hosting, analytics) that help us operate the website, bound
-                by their own privacy policies.
+                hosting, storage, analytics, Apify, and AI processing) that help
+                us run the features you request, subject to their own privacy
+                policies and terms.
               </li>
               <li>
                 <strong>Ad tools:</strong> If you allow marketing cookies, we

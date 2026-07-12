@@ -62,12 +62,12 @@ export function AutomationStitchrTemplateAllocationPicker({
   return (
     <div className="grid gap-2">
       <p className="text-sm font-semibold text-text-primary">
-        Stitchr templates
+        Saved setup Ideas
       </p>
       <div className="grid gap-2 rounded-lg border border-border bg-surface-muted p-3">
         <div className="flex min-h-10 items-center justify-between gap-3 rounded-lg bg-white px-3">
           <span className="text-sm font-semibold text-text-primary">
-            Random
+            Fresh setup
           </span>
           <span className="inline-flex h-7 min-w-8 items-center justify-center rounded-md border border-border bg-surface px-2 text-sm font-bold text-text-primary">
             {randomCount}
@@ -120,7 +120,7 @@ export function AutomationStitchrTemplateAllocationPicker({
           })
         ) : (
           <p className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-secondary">
-            Save a Stitch as a template to reuse its format here.
+            Save a Stitch as an Idea to reuse its setup here.
           </p>
         )}
       </div>

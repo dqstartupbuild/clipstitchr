@@ -1189,6 +1189,22 @@ export const remove = mutation({
       return null;
     }
 
+    if (clip.clipType === "demo") {
+      const products = await ctx.db
+        .query("products")
+        .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+        .take(200);
+
+      for (const product of products) {
+        if (product.defaultDemoClipId === clip.id) {
+          await ctx.db.patch(product._id, {
+            defaultDemoClipId: undefined,
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      }
+    }
+
     await ctx.db.delete(clip._id);
     await Promise.all([
       videoClipCounts.deleteIfExists(ctx, clip),

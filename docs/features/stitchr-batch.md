@@ -14,8 +14,8 @@ ad" unless it is directly explaining the UI label.
 - Works even when scheduled automation is turned off in Settings.
 - Uses its own Stitchr Batch pair history so recent Hook/UGC and Demo pairings are
   avoided when better options exist.
-- Can use a selected Stitchr template so every queued draft uses that
-  template's saved text overlay style and caption copy instead of generated
+- Can use a selected setup Idea so every queued draft uses that
+  recipe's saved text overlay style and caption copy instead of generated
   random text.
 - Lets the user choose Batch text style, text color, background color, and
   outline color, including `Any` choices that vary drafts automatically.
@@ -24,18 +24,18 @@ ad" unless it is directly explaining the UI label.
   planning so drafts start without waiting for the fallback.
 - Saves finished drafts as normal Stitch library items, not as automation-owned
   outputs.
-- Uses the saved product's Hook Lab examples when it generates text for drafts
-  that do not use a selected template.
+- Uses the active product's bounded structured Hook Lab Idea memory when it
+  generates text for drafts that do not use a selected setup recipe.
 - Leaves Normal and Longr Stitchr modes available for manual editing.
 
 ## User Flow
 
 1. The user opens `/dashboard/stitchr`.
 2. The page starts on Batch mode unless the URL is launching a saved stitch,
-   template, Hook/UGC clip, or Demo clip for direct editing.
-3. The Template picker stays available in Batch mode. **None** is the default.
-   Selecting a template in Batch mode does not switch the page into manual
-   editing.
+   setup Idea, Hook/UGC clip, or Demo clip for direct editing.
+3. The **Start from an idea** picker stays available in Batch mode. **Start
+   fresh** is the default. Selecting a setup Idea in Batch mode does not switch
+   the page into manual editing.
 4. The Batch panel shows the current daily limit, text style controls, and a
    generation button.
 5. When the user generates a batch, the client posts to
@@ -60,23 +60,27 @@ Batch mode uses the same text style choice model as product automation:
 
 The selected choices are included in the Batch API request, normalized by
 `readStitchrBatchGenerateRequest`, passed to `stitchrBatch.plan`, and stored in
-each task input snapshot. When no selected template provides a saved overlay,
+each task input snapshot. When no selected setup Idea provides a saved overlay,
 the provider worker uses those resolved values when it creates the final text
 overlay.
 
-## Template Behavior
+## Setup Idea Behavior
 
-When a template is selected, `stitchrBatch.plan` verifies the template belongs
-to the signed-in user and copies its first non-empty text overlay plus saved
-caption copy into every queued task. The provider worker skips Stitchr text
-generation for those tasks, stretches the saved overlay across each new draft's
-duration, and preserves the overlay text, placement, font size, style, and
-colors. Pair selection still uses the user's current Hook/UGC and Demo library.
+When a recipe Idea is selected, `stitchrBatch.plan` verifies it belongs to the
+signed-in user and copies its first non-empty text overlay plus saved caption
+copy into every queued task. The provider worker skips Stitchr text generation
+for those tasks, stretches the saved overlay across each new draft's duration,
+and preserves the overlay text, placement, font size, style, and colors. Pair
+selection still uses the user's current Hook/UGC and Demo library.
 
-When no template provides copy, `stitchrBatch.plan` snapshots the product's Hook
-Lab fields into each provider task. The provider worker reconstructs the product
-profile from that snapshot before calling the shared Stitchr text-generation
-prompt.
+When no recipe provides copy, `stitchrBatch.plan` snapshots bounded structured
+Idea memory and the product's writing guardrails into each provider task. The
+provider worker reconstructs that context before calling the shared Stitchr
+text-generation prompt.
+
+Internal request/snapshot fields remain named `templateId` during the rollback
+window. The resolver reads an Idea recipe first and falls back to a legacy
+Template with the same owner checks.
 
 ## Pair History Behavior
 
@@ -152,7 +156,7 @@ The JSON response includes `providerDispatchStatus`:
 - `web/lib/clipstitchr/server/stitchr/getStitchrBatchDate.ts` converts the
   request timestamp into the user's browser-local batch date.
 - `web/lib/clipstitchr/server/readStitchrBatchGenerateRequest.ts` reads the
-  optional selected template ID, text styling, and browser time zone from the
+  optional selected recipe ID (stored as `templateId` for compatibility), text styling, and browser time zone from the
   Batch API request.
 - `web/lib/clipstitchr/client/generateStitchrBatch.ts` is the browser client
   wrapper for the Batch API route.

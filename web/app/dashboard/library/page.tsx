@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { LibraryPageClient } from "@/app/dashboard/library/LibraryPageClient";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
@@ -6,11 +7,23 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Library | ${site.name}`,
   description:
-    "Browse Hook/UGC clips, demos, templates, carousel drafts, and finished Stitches.",
+    "Browse Hook/UGC clips, demos, avatars, carousel drafts, and finished Stitches.",
   canonical: "/dashboard/library",
   noIndex: true,
 });
 
-export default function LibraryPage() {
+type LibraryPageProps = {
+  searchParams?: Promise<{ tab?: string | string[] }>;
+};
+
+export default async function LibraryPage({
+  searchParams = Promise.resolve({}),
+}: LibraryPageProps = {}) {
+  const { tab } = await searchParams;
+
+  if (tab === "templates") {
+    redirect("/dashboard/hooks?view=ideas");
+  }
+
   return <LibraryPageClient />;
 }

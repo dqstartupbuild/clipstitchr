@@ -49,9 +49,6 @@ export function OnboardingProductReviewForm({
   const [preferredCliprHookStyleKey, setPreferredCliprHookStyleKey] = useState(
     product.preferredCliprHookStyleKey ?? "",
   );
-  const [winningHookExamplesText, setWinningHookExamplesText] = useState(
-    formatProductHookExamplesText(product.winningHookExamples),
-  );
   const [rejectedHookExamplesText, setRejectedHookExamplesText] = useState(
     formatProductHookExamplesText(product.rejectedHookExamples),
   );
@@ -70,9 +67,7 @@ export function OnboardingProductReviewForm({
       inferredProblem,
       inferredPainPoints: parseProductPainPointsText(painPointsText),
       preferredCliprHookStyleKey: preferredCliprHookStyleKey || undefined,
-      winningHookExamples: parseProductHookExamplesText(
-        winningHookExamplesText,
-      ),
+      winningHookExamples: product.winningHookExamples,
       rejectedHookExamples: parseProductHookExamplesText(
         rejectedHookExamplesText,
       ),
@@ -88,17 +83,14 @@ export function OnboardingProductReviewForm({
       name,
       painPointsText,
       preferredCliprHookStyleKey,
+      product.winningHookExamples,
       productDetails,
       rejectedHookExamplesText,
       websiteUrl,
-      winningHookExamplesText,
     ],
   );
   const shouldSave = getProductProfileInputHasChanges({ input, product });
-  const canContinue =
-    name.trim().length > 0 &&
-    parseProductHookExamplesText(winningHookExamplesText).length > 0 &&
-    !isSaving;
+  const canContinue = name.trim().length > 0 && !isSaving;
 
   return (
     <Panel className="p-5">
@@ -152,12 +144,9 @@ export function OnboardingProductReviewForm({
           hookEdgeLevel={hookEdgeLevel}
           hookGenerationGoal={hookGenerationGoal}
           rejectedHookExamplesText={rejectedHookExamplesText}
-          winningHookExamplesText={winningHookExamplesText}
-          isWinningRequired
           onHookEdgeLevelChange={setHookEdgeLevel}
           onHookGenerationGoalChange={setHookGenerationGoal}
           onRejectedHookExamplesTextChange={setRejectedHookExamplesText}
-          onWinningHookExamplesTextChange={setWinningHookExamplesText}
         />
         <div className="grid gap-4 lg:grid-cols-2">
           <label className="block">

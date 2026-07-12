@@ -142,13 +142,14 @@ describe("app route wrappers", () => {
     expect(markup).toContain("Inside ClipStitchr");
   });
 
-  it("renders dashboard page wrapper clients and provider layout", () => {
+  it("renders dashboard page wrapper clients and provider layout", async () => {
+    const libraryPage = await LibraryPage();
     const markup = renderToStaticMarkup(
       <DashboardLayout>
         <DashboardPage />
         <CliprPage />
         <HookLabPage />
-        <LibraryPage />
+        {libraryPage}
         <OnboardingPage />
         <SettingsPage />
         <StitchrPage />
@@ -173,12 +174,20 @@ describe("app route wrappers", () => {
       "REDIRECT:/dashboard/library?tab=avatars",
     );
     expect(() => TemplatesPage()).toThrow(
-      "REDIRECT:/dashboard/library?tab=templates",
+      "REDIRECT:/dashboard/hooks?view=ideas",
     );
     expect(() => UploadsPage()).toThrow("REDIRECT:/dashboard/library");
     expect(() => StitchesPage()).toThrow(
       "REDIRECT:/dashboard/library?tab=stitches",
     );
+  });
+
+  it("redirects the old Templates library query", async () => {
+    await expect(
+      LibraryPage({
+        searchParams: Promise.resolve({ tab: "templates" }),
+      }),
+    ).rejects.toThrow("REDIRECT:/dashboard/hooks?view=ideas");
   });
 
   it("returns robots metadata and renders shared button links", () => {

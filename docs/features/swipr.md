@@ -115,7 +115,7 @@ should become the version available from the library.
 ## Library Behavior
 
 The Library includes a Swipes tab alongside UGC, Demo, Swaps, Stitches,
-Avatars, and Templates.
+Avatars, and Pexels. Reusable Stitchr Ideas live in Hook Lab.
 
 In the grouped Library navigation, saved Swipes are labeled as Carousels under
 Finished so users can find finished image posts without knowing the internal

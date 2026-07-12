@@ -1,6 +1,6 @@
 # PostHog Analytics
 
-Last updated: June 26, 2026
+Last updated: July 12, 2026
 
 ## Consent
 
@@ -50,6 +50,13 @@ Core browser tracking:
 | `stitch_deleted` | Stitch deletion is requested | Tracks stitch ID and non-content metadata. |
 | `avatar_photos_generate_clicked` | Avatar photo generation button clicked | Tracks avatar ID, count, style, and lighting. |
 | `avatar_created_from_clip` | Clip-to-avatar creation succeeds | Tracks clip ID and generation options. |
+| `hook_lab_hook_used` | A generated Review hook is selected | No user-entered hook text is sent. |
+| `hook_lab_hook_saved_as_idea` | A Review hook is explicitly saved as an Idea | No user-entered hook text is sent. |
+| `hook_lab_hook_marked_not_for_me` | A Review hook is added to product avoid memory | No user-entered hook text is sent. |
+| `hook_lab_idea_analysis_completed` | The live Ideas view observes an Idea move from analyzing to ready | Tracks source/scope enums and capability flags only. |
+| `hook_lab_idea_analysis_failed` | The live Ideas view observes an Idea move from analyzing to failed or needs attention | Tracks source/scope enums and the terminal status only. |
+| `hook_lab_idea_use_completed` | The current-use subscription reaches completed or partial | Tracks variation result counts; partial means at least one Stitch is ready. |
+| `hook_lab_idea_use_failed` | The current-use subscription reaches failed with no ready Stitch | Tracks variation result counts only. |
 
 Server-side product events:
 
@@ -63,9 +70,23 @@ Server-side product events:
 | `sound_uploaded` | Private sound upload succeeds | Tracks source, content type, and size. |
 | `post_bridge_post_scheduled` | Post Bridge schedule API succeeds | Tracks source type, source ID, Post Bridge post ID, platform count, queue mode, media size, and audio flag. |
 | `post_bridge_analytics_synced` | Post Bridge analytics sync succeeds | No user-entered content is sent. |
+| `hook_lab_idea_created` | An Idea is durably created | Tracks scope, source type, and platform enum only. |
+| `hook_lab_idea_analysis_started` | An initial or retry analysis job is accepted | Tracks retry/source metadata only. |
+| `hook_lab_idea_used` | An Idea use and its variants are created | Tracks requested variation count only. |
+
+Hook Lab lifecycle completion/failure events are browser events because the
+browser has the visitor's analytics-consent decision. They fire only when the
+live Hook Lab view observes the transition; closing the page before completion
+does not create a delayed event. A tab-session claim prevents React rerenders,
+remounts, or repeated live-query snapshots from emitting the same lifecycle
+twice. Events are not queued or backfilled when analytics consent is absent.
 
 ## Data Rules
 
 Do not send user-entered media names, prompts, descriptions, or free-form error messages as event properties. IDs and non-content metadata are okay.
+
+For Hook Lab specifically, do not send source text, social URLs, usernames,
+captions, extracted post data, Actor dataset contents, provider payloads, or
+Idea, use, variant, Stitch, product, provider-job, or prediction IDs.
 
 Identified PostHog profiles are only created after analytics consent. Signed-in users may be identified with account ID, email, and name for product analytics and support context.

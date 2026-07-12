@@ -19,10 +19,10 @@ export function HookLabMemoryPanel({
       <div className="mb-4">
         <p className="text-sm font-semibold text-accent-dark">Hook Lab</p>
         <h2 className="mt-1 text-lg font-bold text-text-primary">
-          Active product memory
+          Writing preferences
         </h2>
         <p className="mt-1 text-sm leading-6 text-text-secondary">
-          Keep the hooks you like close and block the ones that feel wrong.
+          Pick a goal and tone, then block phrases that never sound like you.
         </p>
       </div>
       {product ? (
@@ -34,7 +34,7 @@ export function HookLabMemoryPanel({
         />
       ) : (
         <p className="text-sm leading-6 text-text-secondary">
-          Choose an active product before saving hook examples.
+          Choose an active product before saving writing preferences.
         </p>
       )}
     </Panel>

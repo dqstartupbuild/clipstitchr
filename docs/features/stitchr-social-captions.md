@@ -73,8 +73,10 @@ The prompt and parser live in:
 - `web/lib/clipstitchr/utils/getStitchrSocialCaptionForUgcId.ts`
 
 Saved stitches store `socialCaption` in Convex through `web/convex/stitches.ts`
-and `web/convex/schema.ts`. Templates copy the same field through
-`web/convex/stitchTemplates/createStitchTemplateDocumentFromStitch.ts`.
+and `web/convex/schema.ts`. Hook Lab Stitch recipes preserve the caption for
+reuse. Legacy Templates copy the same field through
+`web/convex/stitchTemplates/createStitchTemplateDocumentFromStitch.ts` during
+the rollback window.
 
 The reusable caption field is
 `web/app/_components/stitches/StitchSocialCaptionField.tsx`. Stitchr uses it

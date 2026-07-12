@@ -19,6 +19,8 @@ import { getQuickEditOverlayText } from "./getQuickEditOverlayText";
 import { createCompletedRunNotification } from "./createCompletedRunNotification";
 import { createAutomaticStitchTemplateFromAcceptedHookStitch } from "./stitchTemplates/createAutomaticStitchTemplateFromAcceptedHookStitch";
 import { getStitchTemplateBatchTextOverlay } from "./stitchTemplates/getStitchTemplateBatchTextOverlay";
+import { getStitchRecipeByIdeaOrTemplate } from "./getStitchRecipeByIdeaOrTemplate";
+import { getHookLabPromptBlueprints } from "./hookLabIdeas/getHookLabPromptBlueprints";
 import { defaultAutomationGenerationCount } from "../lib/clipstitchr/constants/defaultAutomationGenerationCount";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
@@ -427,12 +429,11 @@ export const planDaily = mutation({
       0,
       AUTOMATION_STITCHR_TEMPLATE_LOOKUP_LIMIT,
     )) {
-      const template = await ctx.db
-        .query("stitchTemplates")
-        .withIndex("by_owner_id", (q) =>
-          q.eq("ownerId", ownerId).eq("id", templateId),
-        )
-        .unique();
+      const template = await getStitchRecipeByIdeaOrTemplate(
+        ctx,
+        ownerId,
+        templateId,
+      );
 
       if (template) {
         stitchTemplates.push(template);
@@ -449,6 +450,19 @@ export const planDaily = mutation({
           ? Array.from({ length: allocation.count }, () => template)
           : [];
       },
+    );
+    const hookLabTextBlueprintEntries = await Promise.all(
+      eligibleProducts.map(async (eligibleProduct) => [
+        eligibleProduct.id,
+        await getHookLabPromptBlueprints(
+          ctx,
+          ownerId,
+          eligibleProduct.id,
+        ),
+      ] as const),
+    );
+    const hookLabTextBlueprintsByProductId = new Map(
+      hookLabTextBlueprintEntries,
     );
 
     for (const [index, selectedPair] of selectedPairs.entries()) {
@@ -598,6 +612,9 @@ export const planDaily = mutation({
           rejectedHookExamples: product?.rejectedHookExamples,
           hookGenerationGoal: product?.hookGenerationGoal,
           hookEdgeLevel: product?.hookEdgeLevel,
+          hookLabTextBlueprints: product
+            ? hookLabTextBlueprintsByProductId.get(product.id) ?? []
+            : [],
           productCreatedAt: product?.createdAt,
           productUpdatedAt: product?.updatedAt,
           selectedScore: selectedPair.score,

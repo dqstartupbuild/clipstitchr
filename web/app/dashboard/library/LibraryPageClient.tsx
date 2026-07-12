@@ -17,6 +17,7 @@ import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { SHOW_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/showUploadControlsEventName";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCreateAvatarFromUgcClip } from "@/lib/clipstitchr/hooks/useCreateAvatarFromUgcClip";
+import { useCreateHookLabIdeaFromStitch } from "@/lib/clipstitchr/hooks/useCreateHookLabIdeaFromStitch";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
@@ -100,6 +101,7 @@ export function LibraryPageClient() {
     loadClip: library.loadClip,
     saveGeneratedPhotos: photoLibrary.saveGeneratedPhotos,
   });
+  const hookLabIdeaCreator = useCreateHookLabIdeaFromStitch();
   const [selectedTab, setSelectedTab] = useState<LibraryTab>(
     getInitialLibraryTab,
   );
@@ -235,6 +237,7 @@ export function LibraryPageClient() {
     library.error ??
     swiprLibrary.error ??
     products.error ??
+    hookLabIdeaCreator.error ??
     stitchTemplates.error ??
     (selectedTab === "stitches" ? hookPlans.error : null);
   const hasDemoProductFilter = false;
@@ -375,7 +378,7 @@ export function LibraryPageClient() {
         <LibraryPageHeader
           eyebrow="Library"
           title="Library"
-          description="Browse saved clips, demos, avatars, templates, Stitches, and Swipes."
+          description="Browse saved clips, demos, avatars, Stitches, and Swipes."
         />
         {error ? (
           <DashboardAlert variant="error">{error}</DashboardAlert>
@@ -490,7 +493,7 @@ export function LibraryPageClient() {
             demoClips={library.videoGroups.demo.clips}
             hookPlans={hookPlans.plans}
             savingHookPlanId={hookPlans.savingPlanId}
-            savingTemplateStitchId={stitchTemplates.savingStitchId}
+            savingIdeaStitchId={hookLabIdeaCreator.savingStitchId}
             stitches={stitches}
             totalCount={
               hasSearchQuery ? undefined : stitchStatusCounts[stitchStatusFilter]
@@ -520,7 +523,7 @@ export function LibraryPageClient() {
             onLoadPoster={library.loadStitchPoster}
             onLoadVideo={library.loadStitchVideo}
             onPostBridgeScheduled={library.refresh}
-            onSaveTemplate={stitchTemplates.createTemplateFromStitch}
+            onSaveIdea={hookLabIdeaCreator.createIdeaFromStitch}
             onScore={library.scoreStitch}
             onApplyQuickEdit={library.applyStitchQuickEdit}
             onResetQuickEdit={library.resetStitchQuickEdit}

@@ -23,6 +23,11 @@ import { createSwiprAutomationTextGeneration } from "@/lib/clipstitchr/server/cr
 import { pickSwiprDraftBackgroundIds } from "@/lib/clipstitchr/server/pickSwiprDraftBackgroundIds";
 import { createStitchrTemplateTextOverlay } from "./createStitchrTemplateTextOverlay";
 import { getOptionalStitchrTextOverlay } from "./getOptionalStitchrTextOverlay";
+import { getHookLabIdeaAnalysisFailure } from "./hookLab/getHookLabIdeaAnalysisFailure";
+import { parseHookLabIdeaAnalysisJobInput } from "./hookLab/parseHookLabIdeaAnalysisJobInput";
+import { parseHookLabIdeaUseJobInput } from "./hookLab/parseHookLabIdeaUseJobInput";
+import { processHookLabIdeaAnalysis } from "./hookLab/processHookLabIdeaAnalysis";
+import { processHookLabIdeaUse } from "./hookLab/processHookLabIdeaUse";
 import { processManualCliprDemo } from "./processManualCliprDemo";
 import { PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS } from "./providerWorkerClaimableProviderJobs";
 import { PROVIDER_TOOLS, type ProviderTool } from "./providerWorkerTools";
@@ -31,6 +36,7 @@ import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateC
 import { createStitchScoreOutputText } from "@/lib/clipstitchr/server/createStitchScoreOutputText";
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
 import { createQuickEditDetectorCandidates } from "@/lib/clipstitchr/server/createQuickEditDetectorCandidates";
+import { readHookLabTextBlueprints } from "@/lib/clipstitchr/server/readHookLabTextBlueprints";
 import { createStitchScoreDetectorCandidates } from "@/lib/clipstitchr/server/createStitchScoreDetectorCandidates";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
 import { getAvatarPhotoGenerationModelId } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationModelId";
@@ -51,6 +57,7 @@ import { searchPexelsPhotoResults } from "@/lib/clipstitchr/server/pexels/search
 import { readImageDimensionsFromBytes } from "@/lib/clipstitchr/server/readImageDimensionsFromBytes";
 import { assertR2ObjectKeyBelongsToUser } from "@/lib/clipstitchr/server/r2/assertR2ObjectKeyBelongsToUser";
 import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey";
+import { deleteR2Objects } from "@/lib/clipstitchr/server/r2/deleteR2Objects";
 import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
 import { putR2Object } from "@/lib/clipstitchr/server/r2/putR2Object";
 import { saveCliprSceneImageObject } from "@/lib/clipstitchr/server/saveCliprSceneImageObject";
@@ -139,6 +146,7 @@ type AutomationTask = {
 };
 
 type ProviderJob = {
+  error?: string;
   id: string;
   inputSnapshotJson: string;
   jobType: string;
@@ -146,6 +154,7 @@ type ProviderJob = {
   ownerId: string;
   providerJobIds: string[];
   stage: string;
+  status: "queued" | "running" | "completed" | "failed" | "canceled";
 };
 
 type ManualSwaprSegmentInput = {
@@ -758,6 +767,9 @@ function parseStitchrAutomationTaskInput(
         hookEdgeLevel: getOptionalString(
           input.hookEdgeLevel,
         ) as ProductProfile["hookEdgeLevel"],
+        hookLabTextBlueprints: readHookLabTextBlueprints(
+          input.hookLabTextBlueprints,
+        ),
         createdAt: getOptionalString(input.productCreatedAt) ?? "",
         updatedAt: getOptionalString(input.productUpdatedAt) ?? "",
       }
@@ -909,6 +921,9 @@ function parseSwiprAutomationTaskInput(
       hookGenerationGoal: getOptionalString(
         input.hookGenerationGoal,
       ) as ProductProfile["hookGenerationGoal"],
+      hookLabTextBlueprints: readHookLabTextBlueprints(
+        input.hookLabTextBlueprints,
+      ),
       inferredProblem: getOptionalString(input.inferredProblem),
       inferredPainPoints: getStringArray(input.inferredPainPoints),
       preferredCliprHookStyleKey: getOptionalString(
@@ -3186,6 +3201,24 @@ async function processProviderJob({
     return;
   }
 
+  if (job.jobType === "hook-lab-idea-analysis") {
+    await processHookLabIdeaAnalysis({
+      client,
+      job,
+      providerWorkerSecret: config.providerWorkerSecret,
+    });
+    return;
+  }
+
+  if (job.jobType === "hook-lab-idea-use") {
+    await processHookLabIdeaUse({
+      client,
+      job,
+      providerWorkerSecret: config.providerWorkerSecret,
+    });
+    return;
+  }
+
   throw new Error(`Unsupported provider job type: ${job.jobType}.`);
 }
 
@@ -3287,6 +3320,54 @@ async function failProviderJob({
 }) {
   const message = getErrorMessage(error, "Unable to process provider job.");
 
+  if (job.jobType === "hook-lab-idea-analysis") {
+    const failure = getHookLabIdeaAnalysisFailure(error);
+
+    await client.mutation(
+      api["hookLabIdeas/failAnalysisJobFromProvider"]
+        .failAnalysisJobFromProvider,
+      {
+        secret: config.providerWorkerSecret,
+        ownerId: job.ownerId,
+        jobId: job.id,
+        ideaId: parseHookLabIdeaAnalysisJobInput(job.inputSnapshotJson).ideaId,
+        ...failure,
+        updatedAt: getNow(),
+      },
+    );
+    return;
+  }
+
+  if (job.jobType === "hook-lab-idea-use") {
+    const result = await client.mutation(
+      api["hookLabIdeaVariants/failGenerationJobFromProvider"]
+        .failGenerationJobFromProvider,
+      {
+        secret: config.providerWorkerSecret,
+        ownerId: job.ownerId,
+        jobId: job.id,
+        variantId: parseHookLabIdeaUseJobInput(job.inputSnapshotJson).variantId,
+        failureCode: "generation_failed",
+        failureMessage:
+          "We could not finish this version. Try the idea again in a moment.",
+        updatedAt: getNow(),
+      },
+    );
+    const temporaryObjectKeys = Array.isArray(result?.temporaryObjectKeys)
+      ? result.temporaryObjectKeys.filter(
+          (key: unknown): key is string =>
+            typeof key === "string" && Boolean(key),
+        )
+      : [];
+
+    if (temporaryObjectKeys.length > 0) {
+      await deleteR2Objects(temporaryObjectKeys).catch((cleanupError) => {
+        console.error("Hook Lab temporary object cleanup failed.", cleanupError);
+      });
+    }
+    return;
+  }
+
   await Promise.all([
     markProviderJobStatus({
       client,
@@ -3340,6 +3421,19 @@ async function claimNextProviderJob({
   client: ConvexHttpClient;
   config: ProviderWorkerConfig;
 }) {
+  if (config.providerTools.has("stitchr")) {
+    const hookLabAnalysisJob = await claimProviderJobByStage({
+      client,
+      config,
+      jobType: "hook-lab-idea-analysis",
+      stage: "hook-lab-awaiting-apify",
+    });
+
+    if (hookLabAnalysisJob) {
+      return hookLabAnalysisJob;
+    }
+  }
+
   if (config.providerTools.has("swapr")) {
     const swaprFinalizationJob = await claimProviderJobByStage({
       client,
@@ -3458,10 +3552,40 @@ async function runOnce({
     const providerJob = await claimNextProviderJob({ client, config });
 
     if (providerJob) {
+      if (providerJob.status === "failed") {
+        await failProviderJob({
+          client,
+          config,
+          error: new Error(
+            providerJob.error || "Provider job reached the retry limit.",
+          ),
+          job: providerJob,
+        });
+        processedCount += 1;
+        continue;
+      }
+
       try {
         await processProviderJob({ client, config, job: providerJob });
       } catch (error) {
-        await failProviderJob({ client, config, error, job: providerJob });
+        const message = getErrorMessage(
+          error,
+          "Unable to process provider job.",
+        );
+        const retryQueued = await client.mutation(
+          api["providerJobAttempts/retryAfterFailure"].retryAfterFailure,
+          {
+            secret: config.providerWorkerSecret,
+            ownerId: providerJob.ownerId,
+            id: providerJob.id,
+            error: message,
+            updatedAt: getNow(),
+          },
+        );
+
+        if (!retryQueued) {
+          await failProviderJob({ client, config, error, job: providerJob });
+        }
         throw error;
       }
 
@@ -3533,6 +3657,7 @@ async function main() {
 
   if (args.check) {
     createReplicateClient();
+    getRequiredEnv("APIFY_TOKEN");
     console.log("Provider worker check passed.");
     return;
   }

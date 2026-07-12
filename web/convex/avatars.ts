@@ -268,6 +268,20 @@ export const removeWithPhotos = mutation({
       }
     }
 
+    const products = await ctx.db
+      .query("products")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .take(200);
+
+    for (const product of products) {
+      if (product.defaultAvatarId === id) {
+        await ctx.db.patch(product._id, {
+          defaultAvatarId: undefined,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    }
+
     return {
       deletedAvatar: true,
       deletedPhotoCount: avatarPhotos.length,

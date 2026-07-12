@@ -11,6 +11,7 @@ import { getAutomationCliprGenerationMode } from "../lib/clipstitchr/utils/getAu
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { normalizeAutomationStitchrTemplateAllocations } from "../lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations";
+import { getStitchRecipeByIdeaOrTemplate } from "./getStitchRecipeByIdeaOrTemplate";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
 import { getSwiprCallToActionStyle } from "../lib/clipstitchr/utils/getSwiprCallToActionStyle";
 import { normalizeSwiprCreativeContext } from "../lib/clipstitchr/utils/normalizeSwiprCreativeContext";
@@ -182,12 +183,11 @@ export const save = mutation({
 
     if (ownedStitchTemplateIds) {
       for (const templateId of requestedTemplateIds) {
-        const template = await ctx.db
-          .query("stitchTemplates")
-          .withIndex("by_owner_id", (q) =>
-            q.eq("ownerId", ownerId).eq("id", templateId),
-          )
-          .unique();
+        const template = await getStitchRecipeByIdeaOrTemplate(
+          ctx,
+          ownerId,
+          templateId,
+        );
 
         if (template) {
           ownedStitchTemplateIds.add(template.id);

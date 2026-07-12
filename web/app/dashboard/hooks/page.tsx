@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Hook Lab | ${site.name}`,
   description:
-    "Review saved hooks, keep winning lines, and tune the writing memory for new ClipStitchr videos.",
+    "Save repeatable content ideas, review generated hooks, and turn inspiration into fresh ClipStitchr videos.",
   canonical: "/dashboard/hooks",
   noIndex: true,
 });

@@ -4,8 +4,7 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
-import { createAutomaticStitchTemplateFromAcceptedHookPlan } from "./stitchTemplates/createAutomaticStitchTemplateFromAcceptedHookPlan";
-import { createAutomaticStitchTemplateFromAcceptedHookStitch } from "./stitchTemplates/createAutomaticStitchTemplateFromAcceptedHookStitch";
+import { syncStitchrHookOptionsFromPlan } from "./stitchrHookOptions/syncStitchrHookOptionsFromPlan";
 import { stitchrHookVariantValidator } from "./validators/stitchrHookVariant";
 
 const HOOK_TEXT_MAX_LENGTH = 240;
@@ -465,6 +464,21 @@ export const saveBatchPlannerResults = mutation({
         });
       }
 
+      await syncStitchrHookOptionsFromPlan({
+        createdAt: existingPlan?.createdAt ?? updatedAt,
+        ctx,
+        hookOptions,
+        ownerId,
+        planCreatedAt: existingPlan?.createdAt ?? updatedAt,
+        planId: existingPlan?.id ?? createPlanId(ownerId, automationTaskId),
+        planSource: fields.source,
+        productId: fields.productId,
+        productName: fields.productName,
+        selectedHook,
+        stitchId: fields.stitchId,
+        updatedAt,
+      });
+
       savedCount += 1;
     }
 
@@ -529,6 +543,19 @@ export const saveBatchPlannerFailure = mutation({
           ...fields,
         });
       }
+
+      await syncStitchrHookOptionsFromPlan({
+        createdAt: existingPlan?.createdAt ?? updatedAt,
+        ctx,
+        hookOptions: [],
+        ownerId,
+        planCreatedAt: existingPlan?.createdAt ?? updatedAt,
+        planId: existingPlan?.id ?? createPlanId(ownerId, automationTaskId),
+        planSource: fields.source,
+        selectedHook: "",
+        stitchId: fields.stitchId,
+        updatedAt,
+      });
 
       savedCount += 1;
     }
@@ -599,16 +626,46 @@ export const saveWorkerFallbackResult = mutation({
 
     if (existingPlan) {
       await ctx.db.patch(existingPlan._id, fields);
+      await syncStitchrHookOptionsFromPlan({
+        createdAt: existingPlan.createdAt,
+        ctx,
+        hookOptions,
+        ownerId,
+        planCreatedAt: existingPlan.createdAt,
+        planId: existingPlan.id,
+        planSource: fields.source,
+        productId: fields.productId,
+        productName: fields.productName,
+        selectedHook,
+        stitchId: fields.stitchId,
+        updatedAt,
+      });
       return existingPlan.id;
     }
 
+    const planId = createPlanId(ownerId, automationTaskId);
     await ctx.db.insert("stitchrHookPlans", {
-      id: createPlanId(ownerId, automationTaskId),
+      id: planId,
       createdAt: updatedAt,
       ...fields,
     });
 
-    return createPlanId(ownerId, automationTaskId);
+    await syncStitchrHookOptionsFromPlan({
+      createdAt: updatedAt,
+      ctx,
+      hookOptions,
+      ownerId,
+      planCreatedAt: updatedAt,
+      planId,
+      planSource: fields.source,
+      productId: fields.productId,
+      productName: fields.productName,
+      selectedHook,
+      stitchId: fields.stitchId,
+      updatedAt,
+    });
+
+    return planId;
   },
 });
 
@@ -660,13 +717,19 @@ export const attachStitch = mutation({
       stitchId: stitch.id,
       updatedAt,
     });
+    const hookOptions = await ctx.db
+      .query("stitchrHookOptions")
+      .withIndex("by_owner_plan_rank", (query) =>
+        query.eq("ownerId", ownerId).eq("planId", plan.id),
+      )
+      .take(HOOK_OPTION_LIMIT);
 
-    await createAutomaticStitchTemplateFromAcceptedHookStitch({
-      ctx,
-      ownerId,
-      stitchId: stitch.id,
-      updatedAt,
-    }).catch(() => null);
+    for (const option of hookOptions) {
+      await ctx.db.patch(option._id, {
+        stitchId: stitch.id,
+        updatedAt,
+      });
+    }
 
     return plan.id;
   },
@@ -756,6 +819,20 @@ export const saveManualGeneration = mutation({
 
     if (existingPlan) {
       await ctx.db.patch(existingPlan._id, fields);
+      await syncStitchrHookOptionsFromPlan({
+        createdAt: existingPlan.createdAt,
+        ctx,
+        hookOptions,
+        ownerId,
+        planCreatedAt: existingPlan.createdAt,
+        planId: existingPlan.id,
+        planSource: fields.source,
+        productId: fields.productId,
+        productName: fields.productName,
+        selectedHook,
+        stitchId: fields.stitchId,
+        updatedAt,
+      });
       return existingPlan.id;
     }
 
@@ -763,6 +840,21 @@ export const saveManualGeneration = mutation({
       id,
       createdAt: updatedAt,
       ...fields,
+    });
+
+    await syncStitchrHookOptionsFromPlan({
+      createdAt: updatedAt,
+      ctx,
+      hookOptions,
+      ownerId,
+      planCreatedAt: updatedAt,
+      planId: id,
+      planSource: fields.source,
+      productId: fields.productId,
+      productName: fields.productName,
+      selectedHook,
+      stitchId: fields.stitchId,
+      updatedAt,
     });
 
     return id;
@@ -823,6 +915,21 @@ export const selectOption = mutation({
           ? selectedOption.rejectionReason
           : undefined,
       selectedHook,
+      updatedAt,
+    });
+
+    await syncStitchrHookOptionsFromPlan({
+      createdAt: plan.createdAt,
+      ctx,
+      hookOptions: plan.hookOptions,
+      ownerId,
+      planCreatedAt: plan.createdAt,
+      planId: plan.id,
+      planSource: plan.source,
+      productId: plan.productId,
+      productName: plan.productName,
+      selectedHook,
+      stitchId: plan.stitchId,
       updatedAt,
     });
 
@@ -889,20 +996,27 @@ export const accept = mutation({
       updatedAt,
     });
 
+    await syncStitchrHookOptionsFromPlan({
+      createdAt: plan.createdAt,
+      ctx,
+      hookOptions,
+      ownerId,
+      planCreatedAt: plan.createdAt,
+      planId: plan.id,
+      planSource: plan.source,
+      productId: plan.productId,
+      productName: plan.productName,
+      selectedHook: plan.selectedHook,
+      stitchId: plan.stitchId,
+      updatedAt,
+    });
+
     await addProductHookExample({
       ctx,
       hookText: acceptedHook,
       ownerId,
       productId: plan.productId,
       status: "accepted",
-      updatedAt,
-    });
-
-    await createAutomaticStitchTemplateFromAcceptedHookPlan({
-      ctx,
-      hookText: acceptedHook,
-      ownerId,
-      stitchId: plan.stitchId,
       updatedAt,
     });
 
@@ -969,6 +1083,21 @@ export const reject = mutation({
             rejectionReason,
           }
         : {}),
+      updatedAt,
+    });
+
+    await syncStitchrHookOptionsFromPlan({
+      createdAt: plan.createdAt,
+      ctx,
+      hookOptions,
+      ownerId,
+      planCreatedAt: plan.createdAt,
+      planId: plan.id,
+      planSource: plan.source,
+      productId: plan.productId,
+      productName: plan.productName,
+      selectedHook: plan.selectedHook,
+      stitchId: plan.stitchId,
       updatedAt,
     });
 

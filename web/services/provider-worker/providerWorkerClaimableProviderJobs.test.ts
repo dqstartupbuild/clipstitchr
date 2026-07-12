@@ -8,4 +8,15 @@ describe("PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS", () => {
       "stitchr",
     ]);
   });
+
+  it("routes both Hook Lab stages to Stitchr-capable provider workers", () => {
+    expect(PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS).toContainEqual([
+      "hook-lab-idea-analysis",
+      "stitchr",
+    ]);
+    expect(PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS).toContainEqual([
+      "hook-lab-idea-use",
+      "stitchr",
+    ]);
+  });
 });

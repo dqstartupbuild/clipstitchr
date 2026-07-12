@@ -60,9 +60,12 @@ export async function POST(request: Request) {
 
     await convex.mutation(api.rateLimits.consumeCliprHookScript, { secret });
 
-    const productDocument = await convex.query(api.products.get, {
-      id: productId,
-    });
+    const [productDocument, hookLabTextBlueprints] = await Promise.all([
+      convex.query(api.products.get, { id: productId }),
+      convex.query(api.hookLabIdeas.listPromptMemory.listPromptMemory, {
+        productId,
+      }),
+    ]);
 
     if (!productDocument) {
       throw new Error("Saved product not found.");
@@ -70,7 +73,10 @@ export async function POST(request: Request) {
 
     const generation = await createCliprTextGeneration({
       durationSeconds: getCliprDurationSeconds(body.durationSeconds),
-      product: createProductProfileFromConvexDocument(productDocument),
+      product: {
+        ...createProductProfileFromConvexDocument(productDocument),
+        hookLabTextBlueprints,
+      },
       purpose: getCliprTextPurpose(body.purpose),
       replicate: createReplicateClient(),
       slideCount:

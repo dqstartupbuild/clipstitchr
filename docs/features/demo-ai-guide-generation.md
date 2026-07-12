@@ -47,9 +47,9 @@ user passes `--goal`. The guide prompt treats that goal as the primary direction
 and prefers matching scanned routes when available, so specific requests stay
 focused on the requested tool or workflow instead of falling back to a generic
 workspace tour. App context adds real source-derived feature, field, and button
-labels, so a request to add hooks in Hook Lab can become a guide that opens
-`/dashboard/hooks`, types safe demo examples into `Hooks to learn from`, and
-saves with `Save Hook Lab` when those controls exist.
+labels, so a request to add an Idea in Hook Lab can become a guide that opens
+`/dashboard/hooks`, types safe demo text into the universal Idea field, and
+uses `Save idea` when those controls exist.
 
 ## File Tree
 

@@ -112,13 +112,18 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("Hook Lab memory:");
     expect(prompt).toContain("Goal: Get more comments");
     expect(prompt).toContain("Tone: Bold");
-    expect(prompt).toContain("This launch got away from me");
-    expect(prompt).toContain("I thought launch day would feel calmer");
+    expect(prompt).toContain("No saved Idea patterns yet.");
+    expect(prompt).not.toContain("This launch got away from me");
+    expect(prompt).not.toContain("I thought launch day would feel calmer");
     expect(prompt).toContain("Stop scrolling");
     expect(prompt).toContain("Write for the viewer first");
     expect(prompt).toContain("The product is context, not the main character");
-    expect(prompt).toContain("Adapt their emotional pattern");
-    expect(prompt).toContain("viral niche content");
+    expect(prompt).toContain(
+      "Preserve their function, not source wording",
+    );
+    expect(prompt).toContain(
+      "Never reproduce source-specific names, brands, claims, references, or unresolved slots",
+    );
     expect(prompt).toContain("hookVariants must contain 6-8 distinct hooks");
     expect(prompt).toContain("Most hooks should be 3-9 words");
     expect(prompt).toContain("hashtags must contain 3-5 hashtags");

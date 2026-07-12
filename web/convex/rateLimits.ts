@@ -179,6 +179,55 @@ export const consumeTikTokSoundImport = mutation({
   },
 });
 
+export const consumeHookLabIdeaAnalysis = mutation({
+  args: {
+    idempotencyKey: v.string(),
+    isSocialImport: v.boolean(),
+    secret: v.string(),
+  },
+  handler: async (
+    ctx,
+    { idempotencyKey, isSocialImport, secret },
+  ) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const existingJob = await ctx.db
+      .query("providerJobs")
+      .withIndex("by_idempotency_key", (query) =>
+        query.eq("idempotencyKey", idempotencyKey.trim()),
+      )
+      .unique();
+
+    if (existingJob?.ownerId === ownerId) {
+      return { alreadyReserved: true };
+    }
+
+    if (isSocialImport) {
+      await rateLimiter.limit(ctx, "hookLabSocialImport", {
+        key: ownerId,
+        throws: true,
+      });
+      await rateLimiter.limit(ctx, "hookLabSocialImportGlobal", {
+        throws: true,
+      });
+    }
+
+    await rateLimiter.limit(ctx, "hookLabIdeaAnalysis", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "hookLabIdeaAnalysisGlobal", {
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      throws: true,
+    });
+
+    return { alreadyReserved: false };
+  },
+});
+
 export const consumePostBridgeRead = mutation({
   args: {
     secret: v.string(),

@@ -1,0 +1,31 @@
+import type { QuickEditSuggestions } from "./QuickEditSuggestions";
+import type { StitchMusicMetadata } from "./StitchMusicMetadata";
+import type { StitchrMode } from "./StitchrMode";
+import type { StitchSequenceSegment } from "./StitchSequenceSegment";
+import type { TextOverlay } from "./TextOverlay";
+import type { VideoPlaybackRate } from "./VideoPlaybackRate";
+import type { VideoTrimRange } from "./VideoTrimRange";
+
+export type HookLabStitchRecipe = {
+  demoClipId: string;
+  demoClipName: string;
+  demoPlaybackRate?: VideoPlaybackRate;
+  demoQuickEdit?: QuickEditSuggestions;
+  demoTrimRange?: VideoTrimRange;
+  duration: number;
+  height: number;
+  includeDemoAudio?: boolean;
+  includeUgcAudio?: boolean;
+  mode?: Exclude<StitchrMode, "batch">;
+  music?: StitchMusicMetadata;
+  sequenceSegments?: StitchSequenceSegment[];
+  socialCaption?: string;
+  textOverlay?: TextOverlay;
+  textOverlays?: TextOverlay[];
+  ugcClipId: string;
+  ugcClipName: string;
+  ugcPlaybackRate?: VideoPlaybackRate;
+  ugcQuickEdit?: QuickEditSuggestions;
+  ugcTrimRange?: VideoTrimRange;
+  width: number;
+};

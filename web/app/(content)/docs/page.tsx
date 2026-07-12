@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 export const metadata = createPageMetadata({
   title: `Docs | ${site.name}`,
   description:
-    "Plain ClipStitchr docs for using the CLI, turning saved clips into ads, writing better hooks, reusing templates, and checking limits.",
+    "Plain ClipStitchr docs for using the CLI, turning saved clips into ads, writing better hooks, reusing Ideas, and checking limits.",
   canonical: "/docs",
 });
 

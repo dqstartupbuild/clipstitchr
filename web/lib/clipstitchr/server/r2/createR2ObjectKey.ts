@@ -31,6 +31,11 @@ const objectKindConfig: Record<
     baseName: "image",
     fallbackExtension: "jpg",
   },
+  "hook-lab-thumbnail": {
+    directory: "hook-lab",
+    baseName: "thumbnail",
+    fallbackExtension: "jpg",
+  },
   photo: {
     directory: "photos",
     baseName: "photo",

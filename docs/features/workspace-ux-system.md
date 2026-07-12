@@ -73,7 +73,7 @@ Media cards use `MediaPrimaryAction` for the clearest next action:
 - Stitches: Download
 - Swipes: Continue editing
 - Avatar photos: Use in Swapr
-- Templates: Use in Stitchr through the existing template card action
+- Hook Lab recipe Ideas: Use idea from Hook Lab
 
 ## Maintenance Notes
 

@@ -20,9 +20,9 @@ appearance, support, and subscription remain shared across the whole account.
   color, and outline color choices.
 - Outline color appears in Settings for outline-capable styles, matching the
   editor controls.
-- Stitchr daily drafts can allocate work to saved templates. Any unallocated
-  draft count stays Random, so a 3-draft run can use 2 template-matched drafts
-  and 1 fresh random draft.
+- Stitchr daily drafts can allocate work to saved recipe Ideas or legacy
+  Templates. Any unallocated draft count stays **Fresh setup**, so a 3-draft
+  run can use 2 recipe-matched drafts and 1 fresh draft.
 - Swipr automation can use selected saved Pexels packs. If selected packs have
   usable images, the provider worker reuses those saved backgrounds. If no
   selected pack image is available, it falls back to Pexels search.
@@ -64,17 +64,18 @@ The shared count type is `3 | 5 | 10`. The default remains 10.
 - Counts are capped by the existing maximum so new settings cannot exceed the
   current automation limit.
 
-## Stitchr Template Allocation
+## Stitchr Recipe Allocation
 
-The Stitchr Config panel lists the user's saved Stitchr templates with small
-minus and plus buttons. Each template count reserves that many automated drafts
-for the template's saved text overlay style and caption. The Random row is the
-remaining count and always keeps the total equal to the selected draft count.
+The Stitchr Config panel lists reusable Stitchr recipes as **Saved setup
+Ideas**. Recipe Ideas and rollback Templates expose the same saved text-overlay
+style and caption fields. Each count reserves that many automated drafts, while
+the **Fresh setup** row keeps the total equal to the selected draft count.
 
 Saved allocations are owner-scoped. The client normalizes duplicate and stale
-template entries before saving, and `automationPreferences.save` verifies that
-every requested template belongs to the signed-in user before persisting the
-settings.
+entries before saving, and `automationPreferences.save` verifies ownership.
+The stored field remains `stitchrTemplateAllocations` during the rollback
+window. Existing Template IDs are not rewritten; automation resolves an Idea
+recipe first and falls back to the legacy Template record.
 
 ## Text Styling
 

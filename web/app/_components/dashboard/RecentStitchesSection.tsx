@@ -15,14 +15,14 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 
 type RecentStitchesSectionProps = {
   demoClips: VideoClipMetadata[];
-  savingTemplateStitchId?: string | null;
+  savingIdeaStitchId?: string | null;
   stitches: Stitch[];
   onDelete: (id: string) => void | Promise<void>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onPostBridgeScheduled?: () => void | Promise<void>;
-  onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
+  onSaveIdea?: (stitch: Stitch) => void | Promise<unknown>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
@@ -61,14 +61,14 @@ type RecentStitchesSectionProps = {
 
 export function RecentStitchesSection({
   demoClips,
-  savingTemplateStitchId = null,
+  savingIdeaStitchId = null,
   stitches,
   onDelete,
   onLoadClip,
   onLoadPoster,
   onLoadVideo,
   onPostBridgeScheduled,
-  onSaveTemplate,
+  onSaveIdea,
   onScore,
   onApplyQuickEdit,
   onResetQuickEdit,
@@ -101,13 +101,13 @@ export function RecentStitchesSection({
               key={stitch.id}
               stitch={stitch}
               demoClips={demoClips}
-              isSavingTemplate={savingTemplateStitchId === stitch.id}
+              isSavingIdea={savingIdeaStitchId === stitch.id}
               onDelete={onDelete}
               onLoadClip={onLoadClip}
               onLoadPoster={onLoadPoster}
               onLoadVideo={onLoadVideo}
               onPostBridgeScheduled={onPostBridgeScheduled}
-              onSaveTemplate={onSaveTemplate}
+              onSaveIdea={onSaveIdea}
               onScore={onScore}
               onApplyQuickEdit={onApplyQuickEdit}
               onResetQuickEdit={onResetQuickEdit}

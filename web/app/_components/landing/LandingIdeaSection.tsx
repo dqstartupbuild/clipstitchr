@@ -1,63 +1,61 @@
-import { LayoutTemplate, PenLine, RefreshCcw, Scissors } from "lucide-react";
+import { Lightbulb, PenLine, RefreshCcw, Scissors } from "lucide-react";
 import { Panel } from "@/app/_components/ui/Panel";
 
-const templateBenefits = [
+const ideaBenefits = [
   {
-    title: "Save the setup",
+    title: "Save what is worth repeating",
     description:
-      "Keep the trims, text, captions, and timing from the Stitch you would rather not rebuild.",
-    icon: LayoutTemplate,
+      "Keep a useful line, public post, or finished Stitch without rebuilding the thought from memory.",
+    icon: Lightbulb,
   },
   {
-    title: "Skip the blank start",
+    title: "Repeat the idea, not the post",
     description:
-      "Load a template instead of recreating the same structure again.",
+      "Hook Lab keeps the writing pattern and creative beat while leaving the source-specific details behind.",
     icon: RefreshCcw,
   },
   {
-    title: "Only change the new parts",
+    title: "Start the next Stitch faster",
     description:
-      "Swap clips or edit the text while the useful parts stay put.",
+      "Use your product defaults to turn a saved Idea into a fresh, editable Stitch.",
     icon: PenLine,
   },
 ];
 
-export function LandingTemplateSection() {
+export function LandingIdeaSection() {
   return (
-    <section id="templates" className="scroll-mt-24 bg-background px-6 py-24">
+    <section id="hook-lab" className="scroll-mt-24 bg-background px-6 py-24">
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="max-w-2xl">
-          <p className="marketing-eyebrow">
-            For the part you dread repeating
-          </p>
+          <p className="marketing-eyebrow">For the good idea you want again</p>
           <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
-            Rebuilding the same structure is what makes a new set feel heavy.
+            Starting from zero is what makes the next post feel heavy.
           </h2>
           <p className="mt-5 leading-7 text-text-secondary">
-            Turn a finished Stitch into a template, then use it as the starting
-            point next time. Keep the trims, text, captions, and timing that
-            worked while the clips stay easy to swap.
+            Save a line, public post, or past Stitch in Hook Lab. ClipStitchr
+            learns the useful pattern and turns it into a fresh Stitch for the
+            product you are working on.
           </p>
         </div>
         <div className="marketing-card p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="inline-flex items-center gap-2 rounded-md border border-purple-200 bg-white px-2 py-1 text-xs font-bold text-accent-dark">
-                <LayoutTemplate aria-hidden className="h-4 w-4" />
-                Saved Template
+                <Lightbulb aria-hidden className="h-4 w-4" />
+                Saved Idea
               </p>
               <h3 className="mt-4 text-xl font-bold text-text-primary">
                 Weekend offer opener
               </h3>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
-                Hook/UGC first, demo second, quick trim, text hook, and caption ready
-                to reuse.
+                A relatable reaction, a quick curiosity turn, and a clean handoff
+                into the product Demo.
               </p>
             </div>
             <Scissors aria-hidden className="h-9 w-9 shrink-0 text-accent" />
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {["Hook/UGC", "Product demo", "Text hook", "Caption"].map(
+            {["Text pattern", "Creative beat", "Saved setup", "Fresh Stitch"].map(
               (item) => (
                 <div
                   key={item}
@@ -69,11 +67,11 @@ export function LandingTemplateSection() {
             )}
           </div>
           <div className="mt-5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-text-primary">
-            Next time: load it, swap clips, review, export.
+            Next time: use the Idea, review the Stitch, make it yours.
           </div>
         </div>
-        <div className="grid gap-4 lg:col-span-2 md:grid-cols-3">
-          {templateBenefits.map((benefit) => {
+        <div className="grid gap-4 md:grid-cols-3 lg:col-span-2">
+          {ideaBenefits.map((benefit) => {
             const Icon = benefit.icon;
 
             return (

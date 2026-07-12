@@ -558,7 +558,7 @@ export function StitchrPageClient() {
       const templateStitch = await loadStitch(templateStitchId);
 
       if (!templateStitch) {
-        setAutoTextMessage("Unable to load that stitch template.");
+        setAutoTextMessage("Unable to load that saved setup.");
         return;
       }
 
@@ -729,7 +729,7 @@ export function StitchrPageClient() {
       );
 
       if (loadedSourceClips.length !== sourceIds.length) {
-        setAutoTextMessage("Some clips from that template are missing.");
+        setAutoTextMessage("Some clips from that saved setup are missing.");
       }
 
       setTemplateUgcClips((currentClips) =>
@@ -920,7 +920,7 @@ export function StitchrPageClient() {
 
     if (!selectedTemplate) {
       void Promise.resolve().then(() => {
-        setAutoTextMessage("Unable to find that template.");
+        setAutoTextMessage("Unable to find that saved setup Idea.");
         setAppliedTemplateId(selectedTemplateId);
       });
       return;

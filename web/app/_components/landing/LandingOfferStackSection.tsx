@@ -41,9 +41,9 @@ const features: LandingOfferFeature[] = [
     icon: Gauge,
   },
   {
-    title: "Templates for repeat pain",
+    title: "Ideas worth repeating",
     description:
-      "Save the setup that worked so the next one does not start from zero.",
+      "Save the pattern and creative beat that worked so the next one does not start from zero.",
     icon: LayoutTemplate,
   },
   {
