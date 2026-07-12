@@ -45,6 +45,14 @@ The production backend rollout completed on July 12, 2026:
 - The provider execution `clipstitchr-provider-worker-lz4lz` and media
   execution `clipstitchr-media-worker-m68r7` both passed their production
   `--check` smoke tests.
+- The social-video repair deployed the provider worker from commit `d18a2d57`
+  with image tag `hook-lab-social-fix-d18a2d57`. Production check execution
+  `clipstitchr-provider-worker-hsrgd` completed successfully.
+- The originally failed Instagram and TikTok Ideas both recovered to `ready`
+  on their first repaired worker attempt. Their Replicate predictions
+  succeeded, the original successful Actor runs were reused, both provider
+  jobs recorded Actor and prediction lineage, and both job-scoped temporary R2
+  prefixes contained zero objects after completion.
 
 The following bounded behavior and rollback notes remain relevant:
 
@@ -53,8 +61,9 @@ The following bounded behavior and rollback notes remain relevant:
   output is ready. It does not yet restore the latest use after a page reload
   or deep-link to the exact completed Stitch.
 - The default Clockworks TikTok Actor is called with video downloads enabled.
-  A capped one-item live run returned usable temporary video media on July 12,
-  2026; changing the Actor or its input requires repeating that smoke check.
+  End-to-end recovery verified authenticated download from its private Apify
+  record and successful Gemini analysis on July 12, 2026; changing the Actor or
+  its input requires repeating that full smoke check.
 - Legacy automation Template allocations keep their old Template IDs and work
   through the compatibility resolver; they are not rewritten to Idea IDs in
   the initial migration.

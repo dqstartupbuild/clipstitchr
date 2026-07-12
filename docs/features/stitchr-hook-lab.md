@@ -181,8 +181,10 @@ plus `APIFY_TOKEN`. Hook Lab-specific settings are:
 | `PROVIDER_WORKER_FFPROBE_PATH` | `ffprobe` | Duration inspection binary |
 
 `PROVIDER_WORKER_TOOLS` does not need a new value when it already includes
-`stitchr`. The provider and media workers were deployed from commit `345bd86a`
-with image tag `hook-lab-345bd86a`.
+`stitchr`. The original provider and media rollout used image tag
+`hook-lab-345bd86a`. The current provider worker uses
+`hook-lab-social-fix-d18a2d57` from commit `d18a2d57`; the media worker remains
+unchanged because the repair does not touch media-worker code.
 
 ## Migration and Rollback
 
@@ -280,6 +282,22 @@ The July 12, 2026 production rollout completed these release gates:
    execution `clipstitchr-media-worker-m68r7` with `--args=--check --wait`.
 6. Verified one-item TikTok and Instagram Actor output contracts with capped
    live runs.
+
+The July 12 social-video repair then completed these production checks:
+
+1. Deployed provider image `hook-lab-social-fix-d18a2d57`; Convex and the media
+   worker did not require changes.
+2. Passed `clipstitchr-provider-worker-hsrgd` with `--args=--check --wait`.
+3. Re-ran the originally failed Instagram and TikTok Ideas. Both reached
+   `ready` on attempt 1 with successful Gemini predictions and two provider IDs
+   each: the reused Actor run and new prediction.
+4. Confirmed both Ideas retained their original successful Actor run instead
+   of creating another Apify run, and both job-scoped temporary R2 prefixes
+   were empty after completion.
+5. The normal TikTok retry correctly rejected an extra social-import
+   reservation at the configured burst limit. Its one-off operational recovery
+   reused the previously reserved failed analysis work; no product rate-limit
+   setting or enforcement code was weakened.
 
 Keep these regression checks in future releases:
 
