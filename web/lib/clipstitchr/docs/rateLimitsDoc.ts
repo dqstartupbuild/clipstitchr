@@ -194,7 +194,7 @@ export const rateLimitsDoc = {
         {
           action: "Post Bridge post creates",
           limit: "600 per minute and 1,000 per day",
-          note: "Uses your saved Post Bridge key. Bulk queue reviews and sends selected posts one at a time.",
+          note: "Uses your saved Post Bridge key. Bulk queue applies one shared setup, then sends selected posts one at a time.",
         },
         {
           action: "Post Bridge analytics sync",

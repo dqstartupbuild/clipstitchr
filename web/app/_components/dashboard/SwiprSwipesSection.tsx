@@ -4,13 +4,13 @@ import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { SwiprSwipeCard } from "@/app/_components/dashboard/SwiprSwipeCard";
-import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
+import { PostBridgeBatchQueueDialog } from "@/app/_components/postBridge/PostBridgeBatchQueueDialog";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
 import { createSwiprPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
-import { useLibraryBatchScheduleDialog } from "@/lib/clipstitchr/hooks/useLibraryBatchScheduleDialog";
+import { useLibraryBatchQueueDialog } from "@/lib/clipstitchr/hooks/useLibraryBatchQueueDialog";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryPostedStatusFilter";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
@@ -75,16 +75,7 @@ export function SwiprSwipesSection({
     () => swipes.filter((swipe) => batchDelete.selectedIds.has(swipe.id)),
     [batchDelete.selectedIds, swipes],
   );
-  const batchSchedule = useLibraryBatchScheduleDialog({
-    itemName: "Swipe",
-    itemPluralName: "Swipes",
-    items: selectedSwipes,
-    onComplete: async () => {
-      batchDelete.stopSelecting();
-      await onPostBridgeScheduled?.();
-    },
-  });
-  const activeBatchSwipe = batchSchedule.activeItem;
+  const batchQueue = useLibraryBatchQueueDialog(selectedSwipes);
   const statusFilterOptions: {
     label: string;
     value: LibraryPostedStatusFilter;
@@ -117,9 +108,8 @@ export function SwiprSwipesSection({
             <LibraryBatchActionBar
               areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
               isDeletingSelected={batchDelete.isDeletingSelected}
-              isQueueingSelected={batchSchedule.isSchedulingSelected}
+              isQueueingSelected={batchQueue.isBatchQueueDialogOpen}
               isSelecting={batchDelete.isSelecting}
-              queueStatusMessage={batchSchedule.scheduleStatusMessage}
               selectedCount={batchDelete.selectedCount}
               visibleItemCount={batchDelete.visibleItemCount}
               onClearSelection={batchDelete.clearSelection}
@@ -127,7 +117,7 @@ export function SwiprSwipesSection({
                 void batchDelete.deleteSelectedItems();
               }}
               onQueueSelected={() => {
-                batchSchedule.startSchedulingSelectedItems();
+                batchQueue.openBatchQueueDialog();
               }}
               onSelectVisible={batchDelete.selectVisibleItems}
               onStartSelecting={batchDelete.startSelecting}
@@ -149,7 +139,7 @@ export function SwiprSwipesSection({
                   isSelected={batchDelete.selectedIds.has(swipe.id)}
                   isSelectionDisabled={
                     batchDelete.isDeletingSelected ||
-                    batchSchedule.isSchedulingSelected
+                    batchQueue.isBatchQueueDialogOpen
                   }
                   onLoadBackgroundBlob={onLoadBackgroundBlob}
                   onLoadPoster={onLoadPoster}
@@ -185,34 +175,30 @@ export function SwiprSwipesSection({
           description={emptyDescription}
         />
       )}
-      {activeBatchSwipe ? (
-        <PostBridgeScheduleDialog
-          key={activeBatchSwipe.id}
+      {batchQueue.isBatchQueueDialogOpen ? (
+        <PostBridgeBatchQueueDialog
           allowMusic
-          contextLabel={`Post ${batchSchedule.activeIndex + 1} of ${
-            batchSchedule.selectedScheduleCount
-          }`}
-          defaultCaption={
-            activeBatchSwipe.socialCaption ??
-            createSwiprSwipeSocialDescription(activeBatchSwipe)
-          }
-          sourceId={activeBatchSwipe.id}
-          sourceProductId={activeBatchSwipe.productSourceId}
-          sourceTitle={getSwiprPostBridgeTitle(activeBatchSwipe)}
-          sourceType="swipe"
-          onClose={batchSchedule.closeCurrentScheduleDialog}
-          onRenderMedia={({ musicTrack, onProgress, platforms }) =>
-            createSwiprPostBridgeScheduleMedia({
-              backgroundsById,
-              loadBackgroundBlob: onLoadBackgroundBlob,
-              musicTrack,
-              onProgress,
-              platforms,
-              swipe: activeBatchSwipe,
-            })
-          }
-          onScheduled={() => {
-            batchSchedule.markCurrentItemScheduled();
+          items={batchQueue.queuedItems.map((swipe) => ({
+            caption:
+              swipe.socialCaption ?? createSwiprSwipeSocialDescription(swipe),
+            id: swipe.id,
+            productId: swipe.productSourceId,
+            renderMedia: ({ musicTrack, onProgress, platforms }) =>
+              createSwiprPostBridgeScheduleMedia({
+                backgroundsById,
+                loadBackgroundBlob: onLoadBackgroundBlob,
+                musicTrack,
+                onProgress,
+                platforms,
+                swipe,
+              }),
+            sourceType: "swipe",
+            title: getSwiprPostBridgeTitle(swipe),
+          }))}
+          onClose={batchQueue.closeBatchQueueDialog}
+          onQueued={async () => {
+            batchDelete.stopSelecting();
+            await onPostBridgeScheduled?.();
           }}
         />
       ) : null}

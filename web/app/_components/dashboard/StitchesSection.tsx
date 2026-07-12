@@ -4,14 +4,14 @@ import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
-import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
+import { PostBridgeBatchQueueDialog } from "@/app/_components/postBridge/PostBridgeBatchQueueDialog";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
 import { createStitchPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
-import { useLibraryBatchScheduleDialog } from "@/lib/clipstitchr/hooks/useLibraryBatchScheduleDialog";
+import { useLibraryBatchQueueDialog } from "@/lib/clipstitchr/hooks/useLibraryBatchQueueDialog";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
@@ -142,16 +142,7 @@ export function StitchesSection({
     () => stitches.filter((stitch) => batchDelete.selectedIds.has(stitch.id)),
     [batchDelete.selectedIds, stitches],
   );
-  const batchSchedule = useLibraryBatchScheduleDialog({
-    itemName: "stitch",
-    itemPluralName: "stitches",
-    items: selectedStitches,
-    onComplete: async () => {
-      batchDelete.stopSelecting();
-      await onPostBridgeScheduled?.();
-    },
-  });
-  const activeBatchStitch = batchSchedule.activeItem;
+  const batchQueue = useLibraryBatchQueueDialog(selectedStitches);
   const statusFilterOptions: {
     label: string;
     value: StitchLibraryStatusFilter;
@@ -184,9 +175,8 @@ export function StitchesSection({
             <LibraryBatchActionBar
               areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
               isDeletingSelected={batchDelete.isDeletingSelected}
-              isQueueingSelected={batchSchedule.isSchedulingSelected}
+              isQueueingSelected={batchQueue.isBatchQueueDialogOpen}
               isSelecting={batchDelete.isSelecting}
-              queueStatusMessage={batchSchedule.scheduleStatusMessage}
               selectedCount={batchDelete.selectedCount}
               visibleItemCount={batchDelete.visibleItemCount}
               onClearSelection={batchDelete.clearSelection}
@@ -194,7 +184,7 @@ export function StitchesSection({
                 void batchDelete.deleteSelectedItems();
               }}
               onQueueSelected={() => {
-                batchSchedule.startSchedulingSelectedItems();
+                batchQueue.openBatchQueueDialog();
               }}
               onSelectVisible={batchDelete.selectVisibleItems}
               onStartSelecting={batchDelete.startSelecting}
@@ -216,7 +206,7 @@ export function StitchesSection({
                 isSelected={batchDelete.selectedIds.has(stitch.id)}
                 isSelectionDisabled={
                   batchDelete.isDeletingSelected ||
-                  batchSchedule.isSchedulingSelected
+                  batchQueue.isBatchQueueDialogOpen
                 }
                 isSavingIdea={savingIdeaStitchId === stitch.id}
                 onDelete={onDelete}
@@ -279,28 +269,26 @@ export function StitchesSection({
           </Button>
         </div>
       ) : null}
-      {activeBatchStitch ? (
-        <PostBridgeScheduleDialog
-          key={activeBatchStitch.id}
-          contextLabel={`Post ${batchSchedule.activeIndex + 1} of ${
-            batchSchedule.selectedScheduleCount
-          }`}
-          defaultCaption={activeBatchStitch.socialCaption}
-          sourceId={activeBatchStitch.id}
-          sourceProductId={activeBatchStitch.productId}
-          sourceTitle={activeBatchStitch.name}
-          sourceType="stitch"
-          onClose={batchSchedule.closeCurrentScheduleDialog}
-          onRenderMedia={({ onProgress }) =>
-            createStitchPostBridgeScheduleMedia({
-              loadClip: onLoadClip,
-              loadVideo: onLoadVideo,
-              onProgress,
-              stitch: activeBatchStitch,
-            })
-          }
-          onScheduled={() => {
-            batchSchedule.markCurrentItemScheduled();
+      {batchQueue.isBatchQueueDialogOpen ? (
+        <PostBridgeBatchQueueDialog
+          items={batchQueue.queuedItems.map((stitch) => ({
+            caption: stitch.socialCaption ?? "",
+            id: stitch.id,
+            productId: stitch.productId,
+            renderMedia: ({ onProgress }) =>
+              createStitchPostBridgeScheduleMedia({
+                loadClip: onLoadClip,
+                loadVideo: onLoadVideo,
+                onProgress,
+                stitch,
+              }),
+            sourceType: "stitch",
+            title: stitch.name,
+          }))}
+          onClose={batchQueue.closeBatchQueueDialog}
+          onQueued={async () => {
+            batchDelete.stopSelecting();
+            await onPostBridgeScheduled?.();
           }}
         />
       ) : null}
