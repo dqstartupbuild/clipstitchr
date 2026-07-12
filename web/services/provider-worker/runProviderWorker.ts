@@ -48,6 +48,7 @@ import { getCliprResolvedGenerationMode } from "@/lib/clipstitchr/utils/getClipr
 import { getCliprTtsModelId } from "@/lib/clipstitchr/server/getCliprTtsModelId";
 import { getCliprVideoModelId } from "@/lib/clipstitchr/utils/getCliprVideoModelId";
 import { getAutomationStitchrColorChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrColorChoice";
+import { getAutomationGenerationCount } from "@/lib/clipstitchr/utils/getAutomationGenerationCount";
 import { getRemoteImageFile } from "@/lib/clipstitchr/server/getRemoteImageFile";
 import { getReplicateOutputUrls } from "@/lib/clipstitchr/server/getReplicateOutputUrls";
 import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/getReplicatePredictionModelReference";
@@ -308,6 +309,7 @@ type AvatarPhotoAutomationTaskInput = {
 type SwiprAutomationTaskInput = {
   automationDate: string;
   draftIndex: number;
+  generationCount: number;
   product: ProductProfile;
   swiprCallToActionStyle: SwiprCallToActionStyle;
   swiprCreativeContext: string;
@@ -886,10 +888,18 @@ function parseAvatarPhotoAutomationTaskInput(
 function parseSwiprAutomationTaskInput(
   inputSnapshotJson: string,
 ): SwiprAutomationTaskInput {
-  const input = getObject(JSON.parse(inputSnapshotJson) as unknown, "Swipr input");
+  const input = getObject(
+    JSON.parse(inputSnapshotJson) as unknown,
+    "Swipr input",
+  );
   const draftIndex =
     typeof input.draftIndex === "number" && Number.isFinite(input.draftIndex)
       ? Math.max(1, Math.floor(input.draftIndex))
+      : 1;
+  const generationCount =
+    typeof input.generationCount === "number" &&
+    Number.isFinite(input.generationCount)
+      ? getAutomationGenerationCount(input.generationCount)
       : 1;
   const productCreatedAt = getOptionalString(input.productCreatedAt) ?? "";
   const productUpdatedAt =
@@ -898,13 +908,17 @@ function parseSwiprAutomationTaskInput(
   return {
     automationDate: getString(input.automationDate, "Swipr automation date"),
     draftIndex,
+    generationCount,
     product: {
       id: getString(input.productId, "Swipr product ID"),
       name: getString(input.productName, "Swipr product name"),
       productDetails: stripWebsiteSourcedProductDetails(
         getString(input.productDetails, "Swipr product details"),
       ),
-      audienceDetails: getString(input.audienceDetails, "Swipr audience details"),
+      audienceDetails: getString(
+        input.audienceDetails,
+        "Swipr audience details",
+      ),
       emotionalNarrative: getOptionalString(input.emotionalNarrative),
       cliprPlaceholderFillers: getStringArrayRecord(
         input.cliprPlaceholderFillers,
@@ -2213,6 +2227,7 @@ async function processSwipr({
   const replicate = createReplicateClient();
   const textGeneration = await createSwiprAutomationTextGeneration({
     callToActionStyle: input.swiprCallToActionStyle,
+    count: input.generationCount,
     creativeContext: input.swiprCreativeContext,
     product,
     replicate,
@@ -2222,160 +2237,177 @@ async function processSwipr({
   const selectedBackgroundIds = selectedPackBackgrounds.map(
     (background) => background.id,
   );
-  const preferredSelectedBackgroundId = selectedBackgroundIds.length
-    ? selectedBackgroundIds[
-        (getSeededIndex(`${task.runId}:swipr:backgrounds`, selectedBackgroundIds.length) +
-          input.draftIndex -
-          1) %
-          selectedBackgroundIds.length
-      ]
-    : undefined;
-  let backgroundIds = pickSwiprDraftBackgroundIds({
-    availableBackgroundIds: selectedBackgroundIds,
-    preferredFirstBackgroundId: preferredSelectedBackgroundId,
-    slideCount: SWIPR_MAX_SLIDE_COUNT,
-  });
+  const pexelsPhotos = selectedBackgroundIds.length
+    ? []
+    : await searchPexelsPhotoResults({
+        perPage: SWIPR_MAX_SLIDE_COUNT * 3,
+        query: createSwiprAutomationPexelsQuery(product),
+      });
 
-  if (!backgroundIds.length) {
-    const pexelsPhotos = await searchPexelsPhotoResults({
-      perPage: SWIPR_MAX_SLIDE_COUNT * 3,
-      query: createSwiprAutomationPexelsQuery(product),
-    });
+  if (!selectedBackgroundIds.length && !pexelsPhotos.length) {
+    throw new Error("Pexels did not return photos for Swipr automation.");
+  }
 
-    if (!pexelsPhotos.length) {
-      throw new Error("Pexels did not return photos for Swipr automation.");
-    }
-
-    const pexelsBackgroundIds: string[] = [];
-
-    const pexelsPhotoIndexes = pickSwiprDraftBackgroundIds({
-      availableBackgroundIds: pexelsPhotos.map((_, index) => String(index)),
-      preferredFirstBackgroundId: String(
-        (getSeededIndex(`${task.runId}:swipr:pexels`, pexelsPhotos.length) +
-          input.draftIndex -
-          1) %
-          pexelsPhotos.length,
-      ),
+  for (const [batchIndex, slideshow] of textGeneration.slideshows.entries()) {
+    const draftIndex = input.draftIndex + batchIndex;
+    const preferredSelectedBackgroundId = selectedBackgroundIds.length
+      ? selectedBackgroundIds[
+          (getSeededIndex(
+            `${task.runId}:swipr:backgrounds`,
+            selectedBackgroundIds.length,
+          ) +
+            draftIndex -
+            1) %
+            selectedBackgroundIds.length
+        ]
+      : undefined;
+    let backgroundIds = pickSwiprDraftBackgroundIds({
+      availableBackgroundIds: selectedBackgroundIds,
+      preferredFirstBackgroundId: preferredSelectedBackgroundId,
       slideCount: SWIPR_MAX_SLIDE_COUNT,
     });
 
-    for (const pexelsPhotoIndex of pexelsPhotoIndexes) {
-      const photo = pexelsPhotos[Number(pexelsPhotoIndex)];
-      const backgroundId = createId();
-      const { bytes, contentType } = await downloadPexelsPhotoBytes(photo);
-      const dimensions = readImageDimensionsFromBytes(bytes, contentType);
-      const imageObject = await putR2Object({
-        body: bytes,
-        contentType,
-        key: createR2ObjectKey({
-          userId: task.ownerId,
-          kind: "swipr-background",
-          recordId: backgroundId,
-          contentType,
-        }),
+    if (!backgroundIds.length) {
+      const pexelsBackgroundIds: string[] = [];
+      const pexelsPhotoIndexes = pickSwiprDraftBackgroundIds({
+        availableBackgroundIds: pexelsPhotos.map((_, index) => String(index)),
+        preferredFirstBackgroundId: String(
+          (getSeededIndex(`${task.runId}:swipr:pexels`, pexelsPhotos.length) +
+            draftIndex -
+            1) %
+            pexelsPhotos.length,
+        ),
+        slideCount: SWIPR_MAX_SLIDE_COUNT,
       });
 
-      await client.mutation(api.swiprBackgrounds.saveFromProvider, {
-        secret: config.providerWorkerSecret,
-        ownerId: task.ownerId,
-        id: backgroundId,
-        name: `Pexels - ${photo.photographer}`,
-        tags: normalizeAssetTagsWithRequiredTag(
-          [photo.alt, product.name, product.audienceDetails].filter(
-            (tag): tag is string => Boolean(tag),
+      for (const pexelsPhotoIndex of pexelsPhotoIndexes) {
+        const photo = pexelsPhotos[Number(pexelsPhotoIndex)];
+        const backgroundId = createId();
+        const { bytes, contentType } = await downloadPexelsPhotoBytes(photo);
+        const dimensions = readImageDimensionsFromBytes(bytes, contentType);
+        const imageObject = await putR2Object({
+          body: bytes,
+          contentType,
+          key: createR2ObjectKey({
+            userId: task.ownerId,
+            kind: "swipr-background",
+            recordId: backgroundId,
+            contentType,
+          }),
+        });
+
+        await client.mutation(api.swiprBackgrounds.saveFromProvider, {
+          secret: config.providerWorkerSecret,
+          ownerId: task.ownerId,
+          id: backgroundId,
+          name: `Pexels - ${photo.photographer}`,
+          tags: normalizeAssetTagsWithRequiredTag(
+            [photo.alt, product.name, product.audienceDetails].filter(
+              (tag): tag is string => Boolean(tag),
+            ),
+            "pexels",
           ),
-          "pexels",
-        ),
-        description: photo.alt || `Pexels photo by ${photo.photographer}`,
-        details: [
-          `Pexels photo: ${photo.pexelsUrl}`,
-          `Photographer: ${photo.photographer}`,
-          photo.photographerUrl
-            ? `Photographer URL: ${photo.photographerUrl}`
-            : undefined,
-        ]
-          .filter((detail): detail is string => Boolean(detail))
-          .join("\n"),
-        source: "pexels",
-        pexelsPhotoId: photo.id,
-        imageObject,
-        mimeType: imageObject.contentType,
-        size: imageObject.size,
-        width: dimensions.width,
-        height: dimensions.height,
-        createdAt: now,
-      });
-      pexelsBackgroundIds.push(backgroundId);
+          description: photo.alt || `Pexels photo by ${photo.photographer}`,
+          details: [
+            `Pexels photo: ${photo.pexelsUrl}`,
+            `Photographer: ${photo.photographer}`,
+            photo.photographerUrl
+              ? `Photographer URL: ${photo.photographerUrl}`
+              : undefined,
+          ]
+            .filter((detail): detail is string => Boolean(detail))
+            .join("\n"),
+          source: "pexels",
+          pexelsPhotoId: photo.id,
+          imageObject,
+          mimeType: imageObject.contentType,
+          size: imageObject.size,
+          width: dimensions.width,
+          height: dimensions.height,
+          createdAt: now,
+        });
+        pexelsBackgroundIds.push(backgroundId);
+      }
+
+      backgroundIds = pexelsBackgroundIds;
     }
 
-    backgroundIds = pexelsBackgroundIds;
+    const swipeId = createId();
+    const swiprTextStyleId = resolveAutomationStitchrTextStyleId(
+      input.swiprTextStyleChoice,
+      `${task.id}:${draftIndex}:swipr:style`,
+    );
+    const swiprTextStyle = TEXT_OVERLAY_STYLES.find(
+      (style) => style.id === swiprTextStyleId,
+    );
+    const swiprTextColor = resolveAutomationStitchrColor(
+      input.swiprTextColorChoice,
+      `${task.id}:${draftIndex}:swipr:text`,
+    );
+    const swiprTextBackgroundColor = swiprTextStyle?.backgroundColor
+      ? resolveAutomationStitchrColor(
+          input.swiprTextBackgroundColorChoice,
+          `${task.id}:${draftIndex}:swipr:background`,
+        )
+      : undefined;
+    const swiprTextStrokeColor = swiprTextStyle?.strokeColor
+      ? resolveAutomationStitchrColor(
+          input.swiprTextStrokeColorChoice,
+          `${task.id}:${draftIndex}:swipr:stroke`,
+        )
+      : undefined;
+    const slides = slideshow.slides.map((text, index) => ({
+      id: createId(),
+      backgroundId: backgroundIds[index] ?? backgroundIds[0],
+      textOverlay: {
+        ...createDefaultSwiprTextOverlay(index + 1),
+        text,
+        styleId: swiprTextStyleId,
+        color: swiprTextColor,
+        ...(swiprTextBackgroundColor
+          ? { backgroundColor: swiprTextBackgroundColor }
+          : {}),
+        ...(swiprTextStrokeColor ? { strokeColor: swiprTextStrokeColor } : {}),
+      },
+    }));
+
+    await client.mutation(api.swipes.saveFromProvider, {
+      secret: config.providerWorkerSecret,
+      ownerId: task.ownerId,
+      automation: {
+        source: "automation",
+        runId: task.runId,
+        taskId: task.id,
+        tool: "swipr",
+        automationDate: input.automationDate,
+        sourceSummary: input.product.name,
+      },
+      id: swipeId,
+      name: `${input.product.name} - Automation Swipe ${draftIndex}`,
+      productSourceType: "saved-product",
+      productSourceId: input.product.id,
+      productContext: `${input.product.productDetails}\n\nAudience: ${input.product.audienceDetails}`,
+      productName: input.product.name,
+      backgroundId: backgroundIds[0],
+      caption: slideshow.caption,
+      description: slideshow.description,
+      hashtags: slideshow.hashtags,
+      socialCaption: slideshow.socialCaption,
+      slides,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await markTaskStatus({
+      client,
+      config,
+      task,
+      status: "running",
+      stage: "saving-batch",
+      outputAssetId: swipeId,
+      providerJobId: textGeneration.providerPredictionId,
+    });
   }
-
-  const swipeId = createId();
-  const swiprTextStyleId = resolveAutomationStitchrTextStyleId(
-    input.swiprTextStyleChoice,
-    `${task.id}:swipr:style`,
-  );
-  const swiprTextStyle = TEXT_OVERLAY_STYLES.find(
-    (style) => style.id === swiprTextStyleId,
-  );
-  const swiprTextColor = resolveAutomationStitchrColor(
-    input.swiprTextColorChoice,
-    `${task.id}:swipr:text`,
-  );
-  const swiprTextBackgroundColor = swiprTextStyle?.backgroundColor
-    ? resolveAutomationStitchrColor(
-        input.swiprTextBackgroundColorChoice,
-        `${task.id}:swipr:background`,
-      )
-    : undefined;
-  const swiprTextStrokeColor = swiprTextStyle?.strokeColor
-    ? resolveAutomationStitchrColor(
-        input.swiprTextStrokeColorChoice,
-        `${task.id}:swipr:stroke`,
-      )
-    : undefined;
-  const slides = textGeneration.slides.map((text, index) => ({
-    id: createId(),
-    backgroundId: backgroundIds[index] ?? backgroundIds[0],
-    textOverlay: {
-      ...createDefaultSwiprTextOverlay(index + 1),
-      text,
-      styleId: swiprTextStyleId,
-      color: swiprTextColor,
-      ...(swiprTextBackgroundColor
-        ? { backgroundColor: swiprTextBackgroundColor }
-        : {}),
-      ...(swiprTextStrokeColor ? { strokeColor: swiprTextStrokeColor } : {}),
-    },
-  }));
-
-  await client.mutation(api.swipes.saveFromProvider, {
-    secret: config.providerWorkerSecret,
-    ownerId: task.ownerId,
-    automation: {
-      source: "automation",
-      runId: task.runId,
-      taskId: task.id,
-      tool: "swipr",
-      automationDate: input.automationDate,
-      sourceSummary: input.product.name,
-    },
-    id: swipeId,
-    name: `${input.product.name} - Automation Swipe ${input.draftIndex}`,
-    productSourceType: "saved-product",
-    productSourceId: input.product.id,
-    productContext: `${input.product.productDetails}\n\nAudience: ${input.product.audienceDetails}`,
-    productName: input.product.name,
-    backgroundId: backgroundIds[0],
-    caption: textGeneration.caption,
-    description: textGeneration.description,
-    hashtags: textGeneration.hashtags,
-    socialCaption: textGeneration.socialCaption,
-    slides,
-    createdAt: now,
-    updatedAt: now,
-  });
 
   await markTaskStatus({
     client,
@@ -2383,7 +2415,6 @@ async function processSwipr({
     task,
     status: "completed",
     stage: "completed",
-    outputAssetId: swipeId,
     providerJobId: textGeneration.providerPredictionId,
   });
 }

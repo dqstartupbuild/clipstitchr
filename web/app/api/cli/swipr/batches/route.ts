@@ -53,7 +53,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       automationDate,
-      count: result.taskIds.length,
+      count: result.generationCount ?? result.taskIds.length,
       runId: result.runId,
       status: result.status,
       taskIds: result.taskIds,

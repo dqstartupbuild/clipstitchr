@@ -347,7 +347,11 @@ the currently open Swipe.
 ## Automation
 
 Automatic Swipr generation can use selected Mine Pexels packs for slide photos.
-The planner queues the task when the user has an eligible product. If selected
+The planner queues one batch task when the user has an eligible product. The
+provider worker sends the full requested draft count through one shared text
+generation request, matching page Batch mode's ability to make the carousels
+distinct and vary automatic CTA choices across the batch. It then saves every
+returned carousel as its own editable Swipe. If selected
 packs are available, the provider worker randomizes those saved background IDs
 with the same non-repeating cycle used by batch generation. If no selected pack
 backgrounds are available, it searches a larger Pexels candidate set from the
@@ -372,8 +376,8 @@ Swipr persistence adds new cost surfaces:
 - Batch Swipr draft generation, including counted text-writing provider calls
   and Convex Swipe saves.
 - Provider-worker Pexels searches and private Swipr photo saves for automatic
-  Swipr drafts. Automatic draft text uses the same shared batch generator as
-  Swipr page Batch mode.
+  Swipr drafts. One automatic run uses one shared batch text request for its
+  requested draft count instead of isolated one-draft provider requests.
 - Convex record saves for private and global Swipr photos.
 - Convex record saves, updates, and deletes for user-owned Swipes.
 

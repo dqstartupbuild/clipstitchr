@@ -27,7 +27,7 @@ describe("createSwiprAutomationTextGeneration", () => {
     vi.clearAllMocks();
   });
 
-  it("uses the Swipr page batch generator for one automation draft", async () => {
+  it("uses one Swipr page batch generation for the full automation batch", async () => {
     const slideshow = {
       caption: "A useful caption",
       description: "A useful long description",
@@ -35,7 +35,8 @@ describe("createSwiprAutomationTextGeneration", () => {
       hook: "Your launch feels harder",
       rationale: "It speaks to the audience problem.",
       slides: ["Your launch feels harder", "Make the next step smaller"],
-      socialCaption: "A useful caption\n\nA useful long description\n\n#founders",
+      socialCaption:
+        "A useful caption\n\nA useful long description\n\n#founders",
     };
     const replicate = {} as Parameters<
       typeof createSwiprAutomationTextGeneration
@@ -44,25 +45,26 @@ describe("createSwiprAutomationTextGeneration", () => {
     mocks.createSwiprBatchTextGeneration.mockResolvedValue({
       providerModel: "anthropic/claude-sonnet-4.6",
       providerPredictionId: "prediction_1",
-      slideshows: [slideshow],
+      slideshows: [slideshow, slideshow],
     });
 
     await expect(
       createSwiprAutomationTextGeneration({
         callToActionStyle: "engagement",
+        count: 2,
         creativeContext: "Focus on launch-day anxiety.",
         product,
         replicate,
         slideCount: 8,
       }),
     ).resolves.toEqual({
-      ...slideshow,
       providerModel: "anthropic/claude-sonnet-4.6",
       providerPredictionId: "prediction_1",
+      slideshows: [slideshow, slideshow],
     });
     expect(mocks.createSwiprBatchTextGeneration).toHaveBeenCalledWith({
       callToActionStyle: "engagement",
-      count: 1,
+      count: 2,
       creativeContext: "Focus on launch-day anxiety.",
       product,
       replicate,
@@ -80,6 +82,7 @@ describe("createSwiprAutomationTextGeneration", () => {
     await expect(
       createSwiprAutomationTextGeneration({
         callToActionStyle: "any",
+        count: 1,
         creativeContext: "",
         product,
         replicate: {} as Parameters<
@@ -87,6 +90,8 @@ describe("createSwiprAutomationTextGeneration", () => {
         >[0]["replicate"],
         slideCount: 8,
       }),
-    ).rejects.toThrow("The writing provider did not return a Swipr slideshow.");
+    ).rejects.toThrow(
+      "The writing provider returned 0 of 1 requested Swipr slideshows.",
+    );
   });
 });

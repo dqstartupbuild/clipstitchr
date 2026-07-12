@@ -317,16 +317,16 @@ Target flow:
 1. Create an automatic Swipr provider job with a full product snapshot plus the
    normalized creative context and final-slide CTA choice.
 2. Consume Swipr generation limits before provider work.
-3. Generate editable carousel text for the maximum 8-slide Swipe with the same
-   shared batch prompt used by the Swipr page. The prompt requires one subtle
-   non-final product placement and applies the selected CTA only to the final
-   slide.
+3. Generate the run's requested carousel count in one provider request with the
+   same shared batch prompt used by the Swipr page. Each Swipe has the maximum
+   8 slides. The prompt makes the decks distinct, requires one subtle non-final
+   product placement, and applies the selected CTA only to the final slide.
 4. Search Pexels from the product and audience context.
 5. Copy selected Pexels photos to owner-scoped R2 objects server-side.
 6. Save owner-owned `swiprBackgrounds` records for those photos.
-7. Create an editable `swipe` draft that references one saved photo per slide
-   and stores the generated caption, 1000-4000 character description,
-   hashtags, and combined social copy.
+7. Create one editable `swipe` draft per returned carousel. Each draft
+   references one saved photo per slide and stores the generated caption,
+   1000-4000 character description, hashtags, and combined social copy.
 
 For carousel export, the current browser ZIP export can remain local until
 server-side carousel rendering becomes a product requirement.

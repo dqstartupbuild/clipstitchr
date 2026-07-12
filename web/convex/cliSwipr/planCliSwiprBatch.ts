@@ -79,7 +79,8 @@ export const planCliSwiprBatch = mutation({
         preferences?.swiprSelectedLibraryPackNames ?? [],
       );
     const swiprTextStyleChoice = getAutomationStitchrTextStyleChoice(
-      preferences?.swiprTextStyleChoice ?? defaultAutomationStitchrTextStyleChoice,
+      preferences?.swiprTextStyleChoice ??
+        defaultAutomationStitchrTextStyleChoice,
     );
     const swiprTextColorChoice = getAutomationStitchrColorChoice(
       preferences?.swiprTextColorChoice ?? defaultAutomationStitchrColorChoice,
@@ -120,52 +121,46 @@ export const planCliSwiprBatch = mutation({
       return { runId, status: run.status, taskIds: [] };
     }
 
-    const taskIds: string[] = [];
-
-    for (let index = 0; index < swiprGenerationCount; index += 1) {
-      const task = await createAutomationTask(ctx, {
-        ownerId,
+    const task = await createAutomationTask(ctx, {
+      ownerId,
+      productId: product.id,
+      id: `${runId}:batch`,
+      runId,
+      tool: "swipr",
+      taskType: "swipr-draft",
+      stage: "awaiting-text-provider",
+      skipAutomationPreferenceCheck: true,
+      idempotencyKey: `${runId}:swipr:batch`,
+      inputSnapshotJson: JSON.stringify({
+        automationDate,
+        generationCount: swiprGenerationCount,
         productId: product.id,
-        id: `${runId}:${index + 1}`,
-        runId,
-        tool: "swipr",
-        taskType: "swipr-draft",
-        stage: "awaiting-text-provider",
-        skipAutomationPreferenceCheck: true,
-        idempotencyKey: `${runId}:swipr:${index + 1}`,
-        inputSnapshotJson: JSON.stringify({
-          automationDate,
-          draftIndex: index + 1,
-          productId: product.id,
-          productName: product.name,
-          productDetails: product.productDetails,
-          audienceDetails: product.audienceDetails,
-          emotionalNarrative: product.emotionalNarrative,
-          cliprPlaceholderFillers: product.cliprPlaceholderFillers,
-          eligibleCliprHookStyleKeys: product.eligibleCliprHookStyleKeys,
-          eligibleCliprHookTemplateIds: product.eligibleCliprHookTemplateIds,
-          inferredProblem: product.inferredProblem,
-          inferredPainPoints: product.inferredPainPoints,
-          preferredCliprHookStyleKey: product.preferredCliprHookStyleKey,
-          winningHookExamples: product.winningHookExamples,
-          rejectedHookExamples: product.rejectedHookExamples,
-          hookGenerationGoal: product.hookGenerationGoal,
-          hookEdgeLevel: product.hookEdgeLevel,
-          productCreatedAt: product.createdAt,
-          productUpdatedAt: product.updatedAt,
-          swiprCallToActionStyle,
-          swiprCreativeContext,
-          swiprSelectedLibraryPackNames,
-          swiprTextStyleChoice,
-          swiprTextColorChoice,
-          swiprTextBackgroundColorChoice,
-          swiprTextStrokeColorChoice,
-        }),
-        createdAt: now,
-      });
-
-      taskIds.push(task.id);
-    }
+        productName: product.name,
+        productDetails: product.productDetails,
+        audienceDetails: product.audienceDetails,
+        emotionalNarrative: product.emotionalNarrative,
+        cliprPlaceholderFillers: product.cliprPlaceholderFillers,
+        eligibleCliprHookStyleKeys: product.eligibleCliprHookStyleKeys,
+        eligibleCliprHookTemplateIds: product.eligibleCliprHookTemplateIds,
+        inferredProblem: product.inferredProblem,
+        inferredPainPoints: product.inferredPainPoints,
+        preferredCliprHookStyleKey: product.preferredCliprHookStyleKey,
+        winningHookExamples: product.winningHookExamples,
+        rejectedHookExamples: product.rejectedHookExamples,
+        hookGenerationGoal: product.hookGenerationGoal,
+        hookEdgeLevel: product.hookEdgeLevel,
+        productCreatedAt: product.createdAt,
+        productUpdatedAt: product.updatedAt,
+        swiprCallToActionStyle,
+        swiprCreativeContext,
+        swiprSelectedLibraryPackNames,
+        swiprTextStyleChoice,
+        swiprTextColorChoice,
+        swiprTextBackgroundColorChoice,
+        swiprTextStrokeColorChoice,
+      }),
+      createdAt: now,
+    });
 
     await markAutomationRunStatus(ctx, {
       runDocumentId: run._id,
@@ -173,6 +168,11 @@ export const planCliSwiprBatch = mutation({
       updatedAt: now,
     });
 
-    return { runId, status: "running", taskIds };
+    return {
+      generationCount: swiprGenerationCount,
+      runId,
+      status: "running",
+      taskIds: [task.id],
+    };
   },
 });

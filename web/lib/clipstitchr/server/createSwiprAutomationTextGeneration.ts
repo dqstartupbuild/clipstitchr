@@ -7,12 +7,14 @@ type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 export async function createSwiprAutomationTextGeneration({
   callToActionStyle,
+  count,
   creativeContext,
   product,
   replicate,
   slideCount,
 }: {
   callToActionStyle: SwiprCallToActionStyle;
+  count: number;
   creativeContext: string;
   product: ProductProfile;
   replicate: ReplicateClient;
@@ -20,21 +22,17 @@ export async function createSwiprAutomationTextGeneration({
 }) {
   const generation = await createSwiprBatchTextGeneration({
     callToActionStyle,
-    count: 1,
+    count,
     creativeContext,
     product,
     replicate,
     slideCount,
   });
-  const slideshow = generation.slideshows[0];
-
-  if (!slideshow) {
-    throw new Error("The writing provider did not return a Swipr slideshow.");
+  if (generation.slideshows.length !== count) {
+    throw new Error(
+      `The writing provider returned ${generation.slideshows.length} of ${count} requested Swipr slideshows.`,
+    );
   }
 
-  return {
-    ...slideshow,
-    providerModel: generation.providerModel,
-    providerPredictionId: generation.providerPredictionId,
-  };
+  return generation;
 }

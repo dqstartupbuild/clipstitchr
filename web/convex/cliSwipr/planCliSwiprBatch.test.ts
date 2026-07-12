@@ -81,7 +81,7 @@ describe("planCliSwiprBatch", () => {
       enabled: false,
       enabledTools: [],
       preferenceVersion: 2,
-      swiprGenerationCount: 1,
+      swiprGenerationCount: 3,
       swiprCallToActionStyle: "follow",
       swiprCreativeContext: "Focus on launch-day anxiety.",
       swiprSelectedLibraryPackNames: [],
@@ -110,15 +110,18 @@ describe("planCliSwiprBatch", () => {
         ownerId: "owner_1",
         secret: "rate_limit_secret",
       }),
-    ).resolves.toEqual(
-      expect.objectContaining({
-        status: "running",
-      }),
-    );
+    ).resolves.toEqual({
+      generationCount: 3,
+      runId: "cli:swipr:owner_1:legacy:2026-07-06:batch_1",
+      status: "running",
+      taskIds: ["cli:swipr:owner_1:legacy:2026-07-06:batch_1:batch"],
+    });
 
+    expect(mocks.createAutomationTask).toHaveBeenCalledTimes(1);
     expect(mocks.createAutomationTask).toHaveBeenCalledWith(
       ctx,
       expect.objectContaining({
+        id: "cli:swipr:owner_1:legacy:2026-07-06:batch_1:batch",
         skipAutomationPreferenceCheck: true,
         taskType: "swipr-draft",
         tool: "swipr",
@@ -130,6 +133,7 @@ describe("planCliSwiprBatch", () => {
 
     expect(taskInput).toEqual(
       expect.objectContaining({
+        generationCount: 3,
         swiprCallToActionStyle: "follow",
         swiprCreativeContext: "Focus on launch-day anxiety.",
       }),
