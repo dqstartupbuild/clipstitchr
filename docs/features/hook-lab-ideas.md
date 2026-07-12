@@ -1,7 +1,6 @@
 # Hook Lab Ideas
 
-Status: implemented in code with reversible legacy compatibility; production
-migration and deployment verification pending.
+Status: implemented and deployed with reversible legacy compatibility.
 
 Date: July 12, 2026.
 
@@ -34,9 +33,20 @@ The core redesign is implemented:
   processing, retained attribution/Idea data, lawful-use responsibility, and
   the prohibition on identity or shot-for-shot cloning.
 
-The production rollout still requires the migrations, Convex deployment, both
-worker deployments, and smoke checks described below. The following bounded
-behavior and rollback notes remain relevant:
+The production backend rollout completed on July 12, 2026:
+
+- Convex schema and functions deployed to `prod:whimsical-ptarmigan-764`.
+- The additive backfills created 5 recipe Ideas from 5 Templates, 7 Ideas from
+  saved winning hooks, and 240 independent Review options from 30 plans.
+- Migration verification reported zero missing Template recipes and matching
+  expected/actual Review-option counts.
+- Provider and media Cloud Run Jobs deployed from commit `345bd86a` with image
+  tag `hook-lab-345bd86a`.
+- The provider execution `clipstitchr-provider-worker-lz4lz` and media
+  execution `clipstitchr-media-worker-m68r7` both passed their production
+  `--check` smoke tests.
+
+The following bounded behavior and rollback notes remain relevant:
 
 - The current UI reactively shows status and partial failures for the use
   started in that browser session, then links to Library Stitches when an
@@ -816,6 +826,15 @@ cleanup.
 - old Template links redirect safely
 - backfill reruns create no duplicates
 - rollback can restore old reads before legacy deletion
+
+Production verification on July 12, 2026 recorded:
+
+- `templateCount: 5`
+- `migratedTemplateIdeaCount: 5`
+- `missingTemplateRecipeCount: 0`
+- `hookPlanCount: 30`
+- `expectedHookOptionCount: 240`
+- `hookOptionCount: 240`
 
 ## Proposed Atomic File Tree
 

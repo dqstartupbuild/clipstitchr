@@ -4,8 +4,8 @@ Hook Lab turns a useful line, public post, generated hook, or past Stitch into
 an Idea that can be used again without copying the original word for word or
 shot for shot.
 
-Status: implemented in code. Production migration and worker verification are
-required before the social-import workflow is considered launched.
+Status: implemented and deployed. Production migrations and both worker smoke
+checks completed on July 12, 2026.
 
 The complete product decisions and design rationale live in
 `docs/features/hook-lab-ideas.md`. This document is the shorter implementation
@@ -158,8 +158,8 @@ plus `APIFY_TOKEN`. Hook Lab-specific settings are:
 | `PROVIDER_WORKER_FFPROBE_PATH` | `ffprobe` | Duration inspection binary |
 
 `PROVIDER_WORKER_TOOLS` does not need a new value when it already includes
-`stitchr`. The provider and media worker images both changed and must both be
-redeployed.
+`stitchr`. The provider and media workers were deployed from commit `345bd86a`
+with image tag `hook-lab-345bd86a`.
 
 ## Migration and Rollback
 
@@ -188,6 +188,11 @@ Legacy `stitchTemplates`, plan arrays, Template mutations, and automation
 Template allocations remain available for rollback. Recipe reads prefer an
 Idea and fall back to the old Template. Existing automation allocation IDs are
 not rewritten in this rollout.
+
+The July 12, 2026 production run created 5 migrated Template Ideas and 7 Ideas
+from saved winning hooks. Verification found 5 Templates, 5 migrated Template
+Ideas, zero missing recipes, 30 hook plans, and 240 expected/actual Review
+options.
 
 Templates no longer appear in Library navigation. `/dashboard/templates` and
 `/dashboard/library?tab=templates` redirect to
@@ -240,21 +245,27 @@ pages whenever providers, retention, or source handling changes.
 
 ## Verification
 
-Before calling the rollout complete:
+The July 12, 2026 production rollout completed these release gates:
 
-1. Deploy the additive Convex schema and functions.
-2. Run all three migrations and the migration-status query in production.
-3. Add `APIFY_TOKEN` and Hook Lab provider-worker settings without placing
-   secret values in source control.
-4. Build and deploy both Cloud Run Job images, then run each with
-   `--args=--check --wait`.
-5. Deploy the web application only after its Convex functions are available.
-6. Test text, owned-Stitch, Instagram, and the configured TikTok Actor path.
-7. Confirm rate-limit rejection occurs before Apify or Replicate work.
-8. Confirm imported social-video and thumbnail files are removed on success and
-   terminal failure, worker scratch is always removed, and generated R2 inputs
-   are removed after successful finalization or the final failed attempt.
-9. Confirm Template fallback and `/dashboard/templates` rollback compatibility.
+1. Deployed the additive Convex schema and functions before the web release.
+2. Ran all three migrations and verified matching Template, recipe, and Review
+   counts.
+3. Added `APIFY_TOKEN` through Secret Manager and bound it only to the worker
+   service account.
+4. Deployed both Cloud Run Job images with tag `hook-lab-345bd86a`.
+5. Passed provider execution `clipstitchr-provider-worker-lz4lz` and media
+   execution `clipstitchr-media-worker-m68r7` with `--args=--check --wait`.
+6. Verified one-item TikTok and Instagram Actor output contracts with capped
+   live runs.
+
+Keep these regression checks in future releases:
+
+- Test text, owned-Stitch, Instagram, and the configured TikTok Actor path.
+- Confirm rate-limit rejection occurs before Apify or Replicate work.
+- Confirm imported social-video and thumbnail files are removed on success and
+  terminal failure, worker scratch is always removed, and generated R2 inputs
+  are removed after successful finalization or the final failed attempt.
+- Confirm Template fallback and `/dashboard/templates` rollback compatibility.
 
 Automated coverage includes 11 focused tests across the three HTTP route
 surfaces and 15 Convex domain/migration tests, in addition to utility, adapter,

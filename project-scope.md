@@ -225,10 +225,10 @@ recipe, or any combination of those capabilities.
 | 3 | Shared and product-scoped Ideas with search, filters, edit, archive, delete, and retry | ✅ | ✅ |
 | 4 | Exact/adapt writing gates with a normalized similarity safeguard | ✅ | ✅ |
 | 5 | Independent hook Review cards with Use, Save idea, Not for me, and Undo | ✅ | ✅ |
-| 6 | Durable asynchronous Apify/provider analysis and temporary-video cleanup | ✅ in code | ✅ after deployment verification |
-| 7 | Use an Idea to create 1, 3, or 5 provider/media-owned Stitch variants with lineage | ✅ in code | ✅ after worker deployment |
+| 6 | Durable asynchronous Apify/provider analysis and temporary-video cleanup | ✅ | ✅ deployed and smoke-checked |
+| 7 | Use an Idea to create 1, 3, or 5 provider/media-owned Stitch variants with lineage | ✅ | ✅ workers deployed |
 | 8 | Live per-variant progress for the use started in the current browser session | ✅ | ✅ |
-| 9 | Template-to-Idea and hook-option migrations with legacy rollback reads | ✅ in code | ✅ after migration verification |
+| 9 | Template-to-Idea and hook-option migrations with legacy rollback reads | ✅ | ✅ migrated and verified |
 | 10 | Restore the latest use after reload and open the exact completed Stitch | — | Planned follow-up |
 
 Production social import requires server-side rate limits, an Apify cost cap,
