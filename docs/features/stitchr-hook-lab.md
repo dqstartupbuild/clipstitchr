@@ -1,5 +1,10 @@
 # Stitchr Hook Lab
 
+> Current implementation reference. The approved successor design that turns
+> Hook Lab into a repeatable-Idea workspace and replaces Templates is documented
+> in `docs/features/hook-lab-ideas.md`. Until that design is implemented, the
+> behavior below describes the shipped feature.
+
 Hook Lab exists because writing overlay text that does not sound fake is hard
 for people who are not natural copywriters.
 
