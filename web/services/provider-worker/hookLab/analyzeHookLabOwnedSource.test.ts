@@ -1,41 +1,64 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { analyzeHookLabOwnedSource } from "./analyzeHookLabOwnedSource";
 
 const mocks = vi.hoisted(() => ({
-  createHookLabFileFromR2Object: vi.fn(),
   createHookLabIdeaAnalysis: vi.fn(),
   createReplicateClient: vi.fn(),
+  getValidatedHookLabR2VideoUrl: vi.fn(),
+  recordPrediction: vi.fn(),
 }));
 
 vi.mock("@/lib/clipstitchr/server/createReplicateClient", () => ({
   createReplicateClient: mocks.createReplicateClient,
 }));
 vi.mock(
-  "@/lib/clipstitchr/server/hookLab/createHookLabFileFromR2Object",
+  "@/lib/clipstitchr/server/hookLab/getValidatedHookLabR2VideoUrl",
   () => ({
-    createHookLabFileFromR2Object: mocks.createHookLabFileFromR2Object,
+    getValidatedHookLabR2VideoUrl: mocks.getValidatedHookLabR2VideoUrl,
   }),
 );
 vi.mock("./createHookLabIdeaAnalysis", () => ({
   createHookLabIdeaAnalysis: mocks.createHookLabIdeaAnalysis,
 }));
+vi.mock("./recordHookLabAnalysisPrediction", () => ({
+  recordHookLabAnalysisPrediction: mocks.recordPrediction,
+}));
 
 describe("analyzeHookLabOwnedSource", () => {
-  it("checks the downloaded bytes instead of trusting the stored clip size", async () => {
-    const videoFile = new File([new Uint8Array([1])], "opening.mp4", {
-      type: "video/mp4",
-    });
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it("validates the owned video before analyzing a fresh signed URL", async () => {
+    const client = { mutation: vi.fn() };
+    const job = {
+      id: "provider_1",
+      inputSnapshotJson: "{}",
+      ownerId: "owner_1",
+      stage: "awaiting-provider",
+    };
 
     mocks.createReplicateClient.mockReturnValue({});
-    mocks.createHookLabFileFromR2Object.mockResolvedValue(videoFile);
-    mocks.createHookLabIdeaAnalysis.mockResolvedValue({
-      creativeBeat: {},
-      modelId: "model_1",
-      name: "Saved opening",
-      predictionId: "prediction_1",
-      textBlueprint: {},
-      whatToRepeat: "Keep the reveal",
-    });
+    mocks.getValidatedHookLabR2VideoUrl.mockResolvedValue(
+      "https://r2.example/fresh/opening.mp4",
+    );
+    mocks.recordPrediction.mockResolvedValue(undefined);
+    mocks.createHookLabIdeaAnalysis.mockImplementation(
+      async (options: {
+        onPredictionCreated: (prediction: { id: string }) => Promise<void>;
+      }) => {
+        await options.onPredictionCreated({ id: "prediction_1" });
+
+        return {
+          creativeBeat: {},
+          modelId: "model_1",
+          name: "Saved opening",
+          predictionId: "prediction_1",
+          textBlueprint: {},
+          whatToRepeat: "Keep the reveal",
+        };
+      },
+    );
 
     await analyzeHookLabOwnedSource({
       analysisInput: {
@@ -54,28 +77,35 @@ describe("analyzeHookLabOwnedSource", () => {
           },
         },
       },
+      client: client as never,
       idea: {
         id: "idea_1",
         originalText: "Watch this",
         sourceType: "stitch",
       },
-      job: {
-        id: "provider_1",
-        inputSnapshotJson: "{}",
-        ownerId: "owner_1",
-        stage: "awaiting-provider",
-      },
+      job,
+      providerWorkerSecret: "provider-secret",
     });
 
-    expect(mocks.createHookLabFileFromR2Object).toHaveBeenCalledWith({
-      fallbackFileName: "opening.mp4",
+    expect(mocks.getValidatedHookLabR2VideoUrl).toHaveBeenCalledWith({
       maxBytes: 100 * 1024 * 1024,
       object: expect.objectContaining({ key: expect.stringContaining("clip_1") }),
       timeoutMs: 60_000,
       userId: "owner_1",
     });
     expect(mocks.createHookLabIdeaAnalysis).toHaveBeenCalledWith(
-      expect.objectContaining({ videoFile }),
+      expect.objectContaining({
+        videoUrl: "https://r2.example/fresh/opening.mp4",
+      }),
     );
+    expect(mocks.createHookLabIdeaAnalysis).toHaveBeenCalledWith(
+      expect.not.objectContaining({ videoFile: expect.anything() }),
+    );
+    expect(mocks.recordPrediction).toHaveBeenCalledWith({
+      client,
+      job,
+      predictionId: "prediction_1",
+      providerWorkerSecret: "provider-secret",
+    });
   });
 });

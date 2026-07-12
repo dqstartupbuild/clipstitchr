@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import { createHookLabFileFromR2Object } from "@/lib/clipstitchr/server/hookLab/createHookLabFileFromR2Object";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getValidatedHookLabR2VideoUrl } from "@/lib/clipstitchr/server/hookLab/getValidatedHookLabR2VideoUrl";
 
 const mocks = vi.hoisted(() => ({
   getR2DownloadSignedUrl: vi.fn(),
@@ -15,7 +15,42 @@ const object = {
   size: 1,
 };
 
-describe("createHookLabFileFromR2Object", () => {
+describe("getValidatedHookLabR2VideoUrl", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it("returns a fresh signed URL after streaming the complete saved object", async () => {
+    mocks.getR2DownloadSignedUrl
+      .mockResolvedValueOnce({
+        expiresIn: 900,
+        url: "https://r2.example/validation/video.mp4",
+      })
+      .mockResolvedValueOnce({
+        expiresIn: 900,
+        url: "https://r2.example/fresh/video.mp4",
+      });
+    const fetcher = vi.fn(async () =>
+      Promise.resolve(
+        new Response(new Uint8Array([1, 2, 3]), {
+          headers: { "content-type": "video/mp4" },
+          status: 200,
+        }),
+      ),
+    ) as unknown as typeof fetch;
+
+    await expect(
+      getValidatedHookLabR2VideoUrl({
+        fetcher,
+        maxBytes: 10,
+        object,
+        timeoutMs: 1_000,
+        userId: "owner_1",
+      }),
+    ).resolves.toBe("https://r2.example/fresh/video.mp4");
+    expect(mocks.getR2DownloadSignedUrl).toHaveBeenCalledTimes(2);
+  });
+
   it("streams the saved object and enforces the actual downloaded byte count", async () => {
     mocks.getR2DownloadSignedUrl.mockResolvedValue({
       expiresIn: 900,
@@ -31,14 +66,13 @@ describe("createHookLabFileFromR2Object", () => {
               controller.close();
             },
           }),
-          { status: 200 },
+          { headers: { "content-type": "video/mp4" }, status: 200 },
         ),
       ),
     ) as unknown as typeof fetch;
 
     await expect(
-      createHookLabFileFromR2Object({
-        fallbackFileName: "opening.mp4",
+      getValidatedHookLabR2VideoUrl({
         fetcher,
         maxBytes: 3,
         object,
@@ -56,15 +90,14 @@ describe("createHookLabFileFromR2Object", () => {
     const fetcher = vi.fn(async () =>
       Promise.resolve(
         new Response(new Uint8Array([1]), {
-          headers: { "content-length": "20" },
+          headers: { "content-length": "20", "content-type": "video/mp4" },
           status: 200,
         }),
       ),
     ) as unknown as typeof fetch;
 
     await expect(
-      createHookLabFileFromR2Object({
-        fallbackFileName: "opening.mp4",
+      getValidatedHookLabR2VideoUrl({
         fetcher,
         maxBytes: 10,
         object,
@@ -92,8 +125,7 @@ describe("createHookLabFileFromR2Object", () => {
     ) as unknown as typeof fetch;
 
     await expect(
-      createHookLabFileFromR2Object({
-        fallbackFileName: "opening.mp4",
+      getValidatedHookLabR2VideoUrl({
         fetcher,
         maxBytes: 10,
         object,
@@ -118,8 +150,7 @@ describe("createHookLabFileFromR2Object", () => {
     ) as unknown as typeof fetch;
 
     await expect(
-      createHookLabFileFromR2Object({
-        fallbackFileName: "opening.mp4",
+      getValidatedHookLabR2VideoUrl({
         fetcher,
         maxBytes: 10,
         object,
@@ -127,5 +158,31 @@ describe("createHookLabFileFromR2Object", () => {
         userId: "owner_1",
       }),
     ).rejects.toThrow("is not a video");
+  });
+
+  it("rejects a present saved-video stream that contains no bytes", async () => {
+    mocks.getR2DownloadSignedUrl.mockResolvedValue({
+      expiresIn: 900,
+      url: "https://r2.example/video.mp4",
+    });
+    const fetcher = vi.fn(async () =>
+      Promise.resolve(
+        new Response(new Uint8Array(), {
+          headers: { "content-type": "video/mp4" },
+          status: 200,
+        }),
+      ),
+    ) as unknown as typeof fetch;
+
+    await expect(
+      getValidatedHookLabR2VideoUrl({
+        fetcher,
+        maxBytes: 10,
+        object,
+        timeoutMs: 1_000,
+        userId: "owner_1",
+      }),
+    ).rejects.toThrow("saved Hook Lab video was empty");
+    expect(mocks.getR2DownloadSignedUrl).toHaveBeenCalledTimes(1);
   });
 });

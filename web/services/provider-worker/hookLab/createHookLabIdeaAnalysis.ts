@@ -1,4 +1,4 @@
-import { createReplicateInputFile } from "@/lib/clipstitchr/server/createReplicateInputFile";
+import type { Prediction } from "replicate";
 import { createTextWritingPredictionInput } from "@/lib/clipstitchr/server/createTextWritingPredictionInput";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getUploadVideoAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoAnalysisModelId";
@@ -10,39 +10,35 @@ import { parseHookLabIdeaAnalysis } from "./parseHookLabIdeaAnalysis";
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 type CreateHookLabIdeaAnalysisOptions = {
+  onPredictionCreated?: (prediction: Prediction) => Promise<void> | void;
   originalText?: string;
   replicate: ReplicateClient;
   sourceContext?: Record<string, unknown>;
   sourceType: string;
-  videoFile?: File;
+  videoUrl?: string;
 };
 
 export async function createHookLabIdeaAnalysis({
+  onPredictionCreated,
   originalText,
   replicate,
   sourceContext,
   sourceType,
-  videoFile,
+  videoUrl,
 }: CreateHookLabIdeaAnalysisOptions) {
   const prompt = createHookLabIdeaAnalysisPrompt({
     originalText,
     sourceContext,
     sourceType,
   });
-  const modelId = videoFile
+  const modelId = videoUrl
     ? getUploadVideoAnalysisModelId()
     : getHookLabTextModelId();
   const prediction = await replicate.predictions.create({
     model: modelId,
-    input: videoFile
+    input: videoUrl
       ? {
-          videos: [
-            createReplicateInputFile({
-              fallbackFileName: "hook-lab-source.mp4",
-              file: videoFile,
-              mimeType: videoFile.type || "video/mp4",
-            }),
-          ],
+          videos: [videoUrl],
           prompt,
           system_instruction:
             "You extract safe reusable text structure and non-identifying creative beats from one source.",
@@ -59,6 +55,11 @@ export async function createHookLabIdeaAnalysis({
           temperature: 0.2,
         }),
   });
+
+  await Promise.resolve(onPredictionCreated?.(prediction)).catch(() => {
+    console.warn("Hook Lab prediction lineage checkpoint failed.");
+  });
+
   const outputText = await getCompletedReplicatePredictionOutputText({
     failureMessage: "Hook Lab could not finish analyzing this idea.",
     prediction,

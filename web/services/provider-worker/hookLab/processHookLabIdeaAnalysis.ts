@@ -42,7 +42,13 @@ export async function processHookLabIdeaAnalysis({
           job,
           providerWorkerSecret,
         })
-      : await analyzeHookLabOwnedSource({ analysisInput, idea, job });
+      : await analyzeHookLabOwnedSource({
+          analysisInput,
+          client,
+          idea,
+          job,
+          providerWorkerSecret,
+        });
 
   if (!analysis) {
     return;

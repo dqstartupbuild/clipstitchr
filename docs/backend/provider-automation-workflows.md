@@ -250,10 +250,13 @@ terminal state.
 
 Convex records `providerRunRequestedAt` atomically before the external Actor
 start. Recovery reuses a saved run and does not issue a second paid start when
-the first response was ambiguous; only an explicit user retry may clear that
-marker. Idea-use variants separately checkpoint generated writing, image, and
-video object metadata. Reclaimed jobs resume from the latest checkpoint rather
-than repeating provider calls that already completed.
+the first response was ambiguous. A successful terminal run is reused by an
+ordinary analysis retry and its ID is attached to the current provider job. A
+media download/type/expiry failure is stored as `source_video_unavailable`, so
+the next explicit user retry clears the stale run and dataset before starting a
+fresh capped import. Idea-use variants separately checkpoint generated writing,
+image, and video object metadata. Reclaimed jobs resume from the latest
+checkpoint rather than repeating provider calls that already completed.
 
 Ready Hook Lab text blueprints also feed Stitchr writing as structured memory.
 Convex selects at most eight product/shared blueprints, ranks product scope and
@@ -264,8 +267,29 @@ and safety constraints.
 Platform adapters isolate Actor-specific output. The imported media fetcher
 accepts only validated HTTPS media URLs from adapter output, revalidates DNS and
 public-address status at every redirect, streams with a byte cap, verifies
-video content type and duration, and removes worker-local media in `finally`.
-Only an owner-private thumbnail may be retained.
+video content type and duration, and adds bearer authorization only for an exact
+Apify key-value-store record URL. Headers are rebuilt after each redirect, so
+the token is never forwarded to a media CDN or another host. The worker stages
+the validated bytes under a MIME-named, owner-private temporary R2 key and gives
+Gemini a short-lived signed URL. This avoids Replicate file indirection that can
+hide the video's MIME type. The temporary R2 object and worker-local media are
+removed in `finally`; only an owner-private thumbnail may be retained. Owned
+Stitch video is fully streamed under the same byte/type/timeout validation,
+then analyzed through a fresh short-lived signed URL. Temporary R2 deletion is
+retried three times with a 10-second abort timeout per attempt. If cleanup still
+fails, the worker emits a sanitized error with the durable provider job ID,
+without overriding completed analysis or its original failure; this prevents a
+cleanup outage from duplicating a paid prediction. Thumbnail generation removes
+partial output when ffmpeg or the subsequent file read fails.
+
+The create and retry routes return `202` after durable queueing. Provider calls
+therefore appear in the later Cloud Run execution rather than the Vercel trace.
+New Replicate prediction IDs and reused Actor run IDs are recorded on the
+current provider job. A failed prediction-ID checkpoint does not abandon the
+already-created prediction; polling continues and successful completion records
+the ID again. Permanent MIME/input and terminal import failures bypass identical
+immediate retries; transient network, provider-availability, and rate-limit
+failures keep the bounded retry path.
 
 An Idea-use request creates one durable use plus 1, 3, or 5 durable variants
 after reserving every requested unit of writing, avatar, video, provider,
@@ -512,9 +536,9 @@ Update `docs/backend/rate-limits.md` whenever these limits are implemented.
   explicitly enables automated publishing.
 - Storage cleanup. Remove abandoned provider temp objects, raw inputs, failed
   output objects, and superseded drafts.
-- Temporary social media. Delete imported Hook Lab video in success, failure,
-  timeout, and cancellation paths; retain only bounded attribution and an
-  optional private thumbnail.
+- Temporary social media. Delete imported Hook Lab worker files and temporary
+  R2 video objects in success, failure, timeout, and cancellation paths; retain
+  only bounded attribution and an optional private thumbnail.
 - Observability. Track queue age, provider latency, failure rate, retry count,
   finalization latency, and daily autopilot skipped reasons.
 

@@ -31,6 +31,11 @@ const objectKindConfig: Record<
     baseName: "image",
     fallbackExtension: "jpg",
   },
+  "hook-lab-source-video": {
+    directory: "hook-lab-sources",
+    baseName: "source",
+    fallbackExtension: "mp4",
+  },
   "hook-lab-thumbnail": {
     directory: "hook-lab",
     baseName: "thumbnail",

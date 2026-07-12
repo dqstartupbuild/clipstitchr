@@ -17,14 +17,30 @@ export function getHookLabIdeaAnalysisFailure(error: unknown) {
     };
   }
 
-  if (normalized.includes("seconds")) {
+  if (
+    normalized.includes("hook lab supports public videos up to") &&
+    normalized.includes("seconds")
+  ) {
     return {
       failureCode: "video_too_long",
       failureMessage: "That video is longer than Hook Lab can analyze right now.",
     };
   }
 
-  if (normalized.includes("does not expose") || normalized.includes("missing")) {
+  const importedVideoUnavailable =
+    (normalized.includes("imported video") &&
+      (normalized.includes("download") ||
+        normalized.includes("empty") ||
+        normalized.includes("expired") ||
+        normalized.includes("redirect") ||
+        normalized.includes("too long"))) ||
+    (normalized.includes("imported link") && normalized.includes("video")) ||
+    normalized.includes("imported video duration could not be read") ||
+    normalized.includes("missing its apify dataset") ||
+    normalized.includes("returned an empty dataset") ||
+    normalized.includes("does not expose a usable source video");
+
+  if (importedVideoUnavailable) {
     return {
       failureCode: "source_video_unavailable",
       failureMessage:

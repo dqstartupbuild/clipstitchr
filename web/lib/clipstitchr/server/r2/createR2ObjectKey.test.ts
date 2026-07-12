@@ -113,6 +113,19 @@ describe("createR2ObjectKey", () => {
       }),
     ).toBe("users/user_123/hook-lab/idea_456/thumbnail.jpg");
   });
+
+  it("creates MIME-derived temporary Hook Lab source video keys", () => {
+    expect(
+      createR2ObjectKey({
+        userId: "user_123",
+        kind: "hook-lab-source-video",
+        recordId: "provider:idea_456:attempt_1",
+        contentType: "video/quicktime",
+      }),
+    ).toBe(
+      "users/user_123/hook-lab-sources/provider-idea_456-attempt_1/source.mov",
+    );
+  });
 });
 
 describe("createSharedMusicR2ObjectKey", () => {

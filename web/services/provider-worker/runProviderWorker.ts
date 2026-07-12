@@ -24,6 +24,7 @@ import { pickSwiprDraftBackgroundIds } from "@/lib/clipstitchr/server/pickSwiprD
 import { createStitchrTemplateTextOverlay } from "./createStitchrTemplateTextOverlay";
 import { getOptionalStitchrTextOverlay } from "./getOptionalStitchrTextOverlay";
 import { getHookLabIdeaAnalysisFailure } from "./hookLab/getHookLabIdeaAnalysisFailure";
+import { getHookLabAnalysisErrorIsRetryable } from "./hookLab/getHookLabAnalysisErrorIsRetryable";
 import { parseHookLabIdeaAnalysisJobInput } from "./hookLab/parseHookLabIdeaAnalysisJobInput";
 import { parseHookLabIdeaUseJobInput } from "./hookLab/parseHookLabIdeaUseJobInput";
 import { processHookLabIdeaAnalysis } from "./hookLab/processHookLabIdeaAnalysis";
@@ -3603,16 +3604,20 @@ async function runOnce({
           error,
           "Unable to process provider job.",
         );
-        const retryQueued = await client.mutation(
-          api["providerJobAttempts/retryAfterFailure"].retryAfterFailure,
-          {
-            secret: config.providerWorkerSecret,
-            ownerId: providerJob.ownerId,
-            id: providerJob.id,
-            error: message,
-            updatedAt: getNow(),
-          },
-        );
+        const retryQueued =
+          providerJob.jobType !== "hook-lab-idea-analysis" ||
+          getHookLabAnalysisErrorIsRetryable(error)
+            ? await client.mutation(
+                api["providerJobAttempts/retryAfterFailure"].retryAfterFailure,
+                {
+                  secret: config.providerWorkerSecret,
+                  ownerId: providerJob.ownerId,
+                  id: providerJob.id,
+                  error: message,
+                  updatedAt: getNow(),
+                },
+              )
+            : false;
 
         if (!retryQueued) {
           await failProviderJob({ client, config, error, job: providerJob });

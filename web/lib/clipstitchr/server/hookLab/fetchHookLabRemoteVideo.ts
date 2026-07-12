@@ -1,7 +1,9 @@
 import { assertHookLabRemoteMediaUrl } from "@/lib/clipstitchr/server/hookLab/assertHookLabRemoteMediaUrl";
+import { createHookLabRemoteVideoRequestHeaders } from "@/lib/clipstitchr/server/hookLab/createHookLabRemoteVideoRequestHeaders";
 import type { HookLabFetchedVideo } from "@/lib/clipstitchr/types/HookLabFetchedVideo";
 
 type FetchHookLabRemoteVideoOptions = {
+  apifyToken?: string;
   fetcher?: typeof fetch;
   maxBytes?: number;
   maxRedirects?: number;
@@ -13,6 +15,7 @@ type FetchHookLabRemoteVideoOptions = {
 };
 
 export async function fetchHookLabRemoteVideo({
+  apifyToken,
   fetcher = fetch,
   maxBytes = 100 * 1024 * 1024,
   maxRedirects = 5,
@@ -39,7 +42,10 @@ export async function fetchHookLabRemoteVideo({
         resolveHostname,
       );
       const response = await fetcher(validatedUrl, {
-        headers: { accept: "video/*" },
+        headers: createHookLabRemoteVideoRequestHeaders(
+          validatedUrl,
+          apifyToken,
+        ),
         redirect: "manual",
         signal: controller.signal,
       });
@@ -100,6 +106,10 @@ export async function fetchHookLabRemoteVideo({
         }
 
         chunks.push(value);
+      }
+
+      if (totalBytes === 0) {
+        throw new Error("The imported video response was empty.");
       }
 
       const bytes = new Uint8Array(totalBytes);

@@ -65,11 +65,12 @@ export default function PrivacyPage() {
             <p>
               For a public social post, Apify retrieves the public post details
               and a temporary video link when one is available. Our worker
-              downloads the video only for analysis and deletes its temporary
-              copy whether the analysis works or fails. We may keep the public
-              post link, creator attribution, extracted text, a private preview
-              image, and the reusable Idea in your account until you remove it.
-              We do not use Hook Lab to save or repost the source video.
+              places the video in protected temporary storage only while it is
+              being analyzed. We delete the working copies whether the analysis
+              works or fails. We may keep the public post link, creator
+              attribution, extracted text, a private preview image, and the
+              reusable Idea in your account until you remove it. We do not use
+              Hook Lab to save or repost the source video.
             </p>
             <p>
               You can delete clips, photos, and stitches in the dashboard. Those

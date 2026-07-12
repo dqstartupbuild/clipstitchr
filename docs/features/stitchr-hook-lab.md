@@ -114,8 +114,12 @@ adapters translate Actor-specific fields into one internal source shape.
 Before the external start request, Convex atomically records
 `providerRunRequestedAt`. A recorded Actor run is always reused. If the start
 response is ambiguous, automatic recovery does not launch a second paid run;
-an explicit user retry may clear the marker and start again. Idea-use variants
-also checkpoint generated writing, image, and video object metadata so a stale
+an explicit user retry may clear the marker and start again. An ordinary
+analysis retry reuses a successful Actor dataset and attaches that run ID to the
+new provider job, so no new Apify run is expected. A source-download failure is
+stored as `source_video_unavailable`; the next explicit retry clears the stale
+Actor provenance and starts a fresh capped import. Idea-use variants also
+checkpoint generated writing, image, and video object metadata so a stale
 worker claim can resume without repeating completed provider work.
 
 The Instagram default is `apify/instagram-scraper`. The default TikTok setting
@@ -128,9 +132,28 @@ rest of the product.
 The provider worker validates every imported media redirect, DNS result,
 content type, byte count, and duration. It rejects credentials, non-HTTPS URLs,
 unexpected ports, private/link-local/loopback/reserved addresses, and cloud
-metadata destinations. Imported video is worker-local only. A bounded thumbnail
-may be copied to the owner's private R2 prefix; the temporary video and local
-thumbnail are deleted in `finally` paths.
+metadata destinations. When an Actor returns a private Apify key-value-store
+record, bearer authorization is sent only to that exact Apify endpoint and is
+recomputed at every redirect so it cannot reach another host. The validated
+video is copied to a MIME-named object in the owner's private temporary R2
+prefix, then Gemini reads a short-lived signed URL whose path preserves the
+media extension. Owned Stitch video uses the same full-stream validation and a
+fresh signed R2 URL. The temporary source object and local working files are
+deleted in `finally` paths; only a bounded private thumbnail may remain. R2
+deletion gets three attempts with a 10-second abort timeout per attempt. A
+persistent cleanup outage emits a sanitized, job-correlated worker error
+without discarding completed analysis or creating a duplicate prediction.
+Thumbnail generation also removes partial local output when ffmpeg or file
+reading fails.
+
+The HTTP create and retry routes return `202` once durable work is queued.
+Apify and Replicate calls happen later in Cloud Run, so their absence from the
+Vercel function trace is expected. Replicate prediction IDs are recorded on the
+provider job immediately after creation. If that best-effort checkpoint is
+temporarily unavailable, the worker continues polling the already-created
+prediction and records its ID with successful completion. Permanent MIME/input
+and terminal import failures skip identical immediate retries, while transient
+network and provider failures keep the bounded retry path.
 
 Idea use generates fresh overlay writing, an avatar still, and an eight-second
 reaction opening. It then creates a `hook-lab-variant-finalization` media job.
@@ -261,10 +284,15 @@ The July 12, 2026 production rollout completed these release gates:
 Keep these regression checks in future releases:
 
 - Test text, owned-Stitch, Instagram, and the configured TikTok Actor path.
+- For each social platform, verify the Actor dataset media can actually be
+  downloaded and reaches a completed Gemini prediction; an existence-only URL
+  check is insufficient.
 - Confirm rate-limit rejection occurs before Apify or Replicate work.
-- Confirm imported social-video and thumbnail files are removed on success and
-  terminal failure, worker scratch is always removed, and generated R2 inputs
+- Confirm imported local files, temporary social-video R2 objects, and thumbnail
+  scratch are removed on success and terminal failure, and generated R2 inputs
   are removed after successful finalization or the final failed attempt.
+- Confirm cleanup failures preserve the original analysis result/error and do
+  not trigger another Replicate prediction.
 - Confirm Template fallback and `/dashboard/templates` rollback compatibility.
 
 Automated coverage includes 11 focused tests across the three HTTP route

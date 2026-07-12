@@ -234,7 +234,10 @@ recipe, or any combination of those capabilities.
 Production social import requires server-side rate limits, an Apify cost cap,
 SSRF-safe temporary media fetching, a video-download-enabled TikTok Actor, and
 the current public privacy/terms disclosure to remain aligned with source
-handling. Hook Lab repeats a creative rhythm; it does not generate a
+handling. Private Apify media downloads use endpoint-scoped authorization, and
+validated video is analyzed through a short-lived, MIME-named signed URL from
+owner-private temporary R2 storage. Local and R2 working copies are deleted on
+every terminal path. Hook Lab repeats a creative rhythm; it does not generate a
 shot-for-shot clone.
 
 ### 4.7 Stitchr Longr Mode

@@ -58,9 +58,11 @@ The following bounded behavior and rollback notes remain relevant:
 - Legacy automation Template allocations keep their old Template IDs and work
   through the compatibility resolver; they are not rewritten to Idea IDs in
   the initial migration.
-- Imported social video and worker scratch are deleted in `finally` paths.
-  Provider-generated image/video R2 inputs are deleted with best-effort cleanup
-  after successful media finalization and after the final failed attempt.
+- Imported social video is copied to a MIME-named, owner-private temporary R2
+  object for multimodal analysis. That object and worker scratch are deleted in
+  `finally` paths. Provider-generated image/video R2 inputs are deleted with
+  best-effort cleanup after successful media finalization and after the final
+  failed attempt.
 
 Automated coverage includes the utility/SSRF/Apify/adapter layer, selected UI
 cards, provider writing parsers, media-input parsing, all three route surfaces,
@@ -226,12 +228,14 @@ product context and can be edited later.
 1. The user pastes a supported public post URL and selects **Save idea**.
 2. ClipStitchr canonicalizes the URL and creates the Idea before paid work.
 3. A durable analysis job imports public metadata and a temporary video URL.
-4. The worker validates the media type and size, downloads or stages it only
-   long enough for analysis, and extracts the source text and creative beat.
+4. The worker validates the media type, size, redirects, and duration, then
+   stages a MIME-named copy in the owner's private temporary R2 prefix. Gemini
+   reads that copy through a short-lived signed URL while extracting the source
+   text and creative beat.
 5. ClipStitchr saves a private thumbnail copy, canonical source metadata,
    attribution, structured analysis, and provider provenance.
-6. The temporary video is deleted in a `finally` cleanup path whether analysis
-   succeeds or fails.
+6. The local working file and temporary R2 video are deleted in a `finally`
+   cleanup path whether analysis succeeds or fails.
 
 Only public TikTok and Instagram post/reel URLs are supported initially.
 Profiles, feeds, searches, private posts, deleted posts, slideshows, live videos,
@@ -567,27 +571,48 @@ Apify Actor runs start asynchronously. The run request sets
 `maxTotalChargeUsd`; platform input also requests only one result. The worker
 stores the run and dataset IDs, releases its lock, and requests a 30-second
 continuation until the run reaches a terminal state. A synchronous route is not
-the durability boundary for Hook Lab.
+the durability boundary for Hook Lab. The create and retry routes therefore
+return `202` after queueing work; Apify and Replicate calls occur later in the
+Cloud Run provider worker, not inside the Vercel request.
+
+A successful saved Actor run and dataset are reused on ordinary analysis retry,
+so a retry does not imply that a new Actor run should appear. The reused run ID
+is attached to the new provider job for lineage. If the imported media cannot
+be downloaded or is no longer usable, the Idea receives
+`source_video_unavailable`; the next explicit retry clears the stale Actor
+provenance and starts a fresh capped import.
 
 The existing upload-video analysis pipeline already analyzes full video over
-time and creates timestamped action breakdowns. Hook Lab reuses its provider
-primitives with a dedicated prompt and parser that output a creative beat
-instead of upload-library metadata.
+time and creates timestamped action breakdowns. Hook Lab reuses its signed-R2
+video input pattern with a dedicated prompt and parser that output a creative
+beat instead of upload-library metadata. Replicate prediction IDs are attached
+to the provider job as soon as prediction creation succeeds, before polling.
+A transient checkpoint failure does not abandon the already-paid prediction;
+the completed Idea write records the ID again after polling.
 
 ## Temporary Media Handling
 
 - Accept only canonical public TikTok and Instagram URLs.
 - Never fetch a user-supplied arbitrary media URL directly.
 - Read the media URL only from the validated adapter result.
+- Authenticate only exact Apify key-value-store record URLs when an Actor
+  returns private media. Recompute request headers after every redirect so the
+  Apify bearer token is never forwarded to another host.
 - Require HTTPS and validate redirects, content type, byte length, and maximum
   duration before analysis.
 - Reject local, private, link-local, loopback, and cloud-metadata network ranges
   at every redirect to prevent SSRF.
 - Cap imported videos at the existing full-video analysis size limit and add a
   conservative duration cap for this feature.
-- Store transient media under a purpose-specific temporary key or worker-local
-  temporary file.
+- Store transient media under a purpose-specific, owner-private temporary R2
+  key whose extension matches the validated MIME type, plus a worker-local
+  temporary file for duration and thumbnail processing.
+- Give Gemini only a short-lived signed R2 read URL. Owned Stitch video follows
+  the same full-stream validation and fresh signed-URL path.
 - Delete transient media in success, failure, timeout, and cancellation paths.
+  Temporary R2 deletion gets three attempts with a 10-second abort timeout per
+  attempt. Exhaustion emits a sanitized, job-correlated worker error without
+  replacing the real analysis outcome or launching another paid prediction.
 - Copy only the bounded thumbnail into the owner's private R2 prefix.
 - Do not persist source audio or music.
 - Keep the user-facing Privacy Policy and Terms aligned with the implemented
@@ -653,6 +678,12 @@ Text and owned-Stitch analysis consume only Idea analysis. Retrying a provider
 failure with the same idempotency key must not consume the quota twice unless a
 new paid provider run is actually created.
 
+Each social analysis attempt may create one bounded temporary R2 video object
+after the route has reserved both analysis and social-import quota. It has no
+separate user-facing storage bucket because the existing per-user/global
+provider limits, 100 MiB hard cap, deterministic job-scoped key, and mandatory
+`finally` deletion bound its cost and lifetime.
+
 HTTP routes return `429` with `Retry-After` and simple copy. Rate limits never
 replace ownership, product-scope, or source-asset authorization checks.
 
@@ -662,14 +693,22 @@ replace ownership, product-scope, or source-asset authorization checks.
 - Job dispatch is idempotent by owner, source, and request key.
 - Canonical social URLs prevent duplicate imports of the same source post.
 - Every stage records safe progress and provider provenance.
+- Reused terminal Actor runs and newly created Replicate predictions are
+  attached to the current provider job, so support can distinguish import from
+  analysis failures without storing source URLs or captions.
 - Worker continuation and delayed recovery follow the existing provider-worker
   pattern.
+- Deterministic model-input and terminal import errors skip the immediate
+  three-attempt retry loop. Transient network, provider availability, and
+  rate-limit failures remain retryable.
 - A failed analysis does not delete the Idea card.
 - One failed variant does not fail successful siblings in a 3- or 5-variation
   request.
 - Quota reservation and refund behavior is explicit for jobs that fail before a
   paid call begins.
 - Temporary-media cleanup runs independently of final status persistence.
+- Thumbnail creation removes its partial local file when ffmpeg or file reading
+  fails, and analysis waits for the thumbnail task to settle before cleanup.
 - If thumbnail copying fails after analysis, the Idea may complete without a
   thumbnail rather than losing the analysis.
 - If Stitch finalization fails after UGC generation, the generated UGC remains
@@ -798,7 +837,12 @@ cleanup.
 - authentication before all work
 - rate limiting before Apify and Replicate
 - actor success, timeout, failure, and malformed dataset output
+- authenticated private Apify media with authorization stripped on redirect
+- signed-R2 video input for social and owned-Stitch analysis
+- Actor and Replicate provider-ID lineage on the current provider job
+- deterministic-versus-transient provider retry classification
 - temporary-media deletion on every terminal path
+- cleanup exhaustion preserving the original analysis result and prediction
 - thumbnail failure fallback
 - video size/type/duration enforcement
 - one, partial, and total variant failures
@@ -914,7 +958,10 @@ web/
       createHookLabTikTokSource.ts
       createHookLabInstagramSource.ts
       createHookLabStitchSource.ts
+      createHookLabRemoteVideoRequestHeaders.ts
       deleteHookLabTemporaryVideo.ts
+      fetchHookLabRemoteVideo.ts
+      getValidatedHookLabR2VideoUrl.ts
       dispatchHookLabIdeaAnalysis.ts
       dispatchHookLabIdeaUse.ts
     hooks/
@@ -931,8 +978,16 @@ web/
       useStartHookLabIdeaUseAction.ts
       useHookLabReviewOptions.ts
   services/provider-worker/hookLab/
+    analyzeHookLabOwnedSource.ts
+    analyzeHookLabSocialSource.ts
+    createHookLabIdeaAnalysis.ts
+    createHookLabVideoThumbnail.ts
+    deleteHookLabTemporarySourceVideo.ts
+    getHookLabAnalysisErrorIsRetryable.ts
     getHookLabAnalysisSourceContext.ts
     pickHookLabAnalysisSourceFields.ts
+    recordHookLabAnalysisPrediction.ts
+    saveHookLabTemporarySourceVideo.ts
 ```
 
 Route files only authenticate, parse, delegate, and format responses. Provider,

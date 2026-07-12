@@ -6,6 +6,7 @@ import { createHookLabInstagramSource } from "@/lib/clipstitchr/server/hookLab/c
 import { createHookLabTikTokSource } from "@/lib/clipstitchr/server/hookLab/createHookLabTikTokSource";
 import { getHookLabIdeaSourcePlatform } from "./getHookLabIdeaSourcePlatform";
 import type { HookLabIdeaDocument } from "./HookLabIdeaDocument";
+import { markHookLabAnalysisJobStatus } from "./markHookLabAnalysisJobStatus";
 import type { ProcessHookLabIdeaAnalysisOptions } from "./ProcessHookLabIdeaAnalysisOptions";
 import { startHookLabSocialActor } from "./startHookLabSocialActor";
 import { waitForHookLabApifyRun } from "./waitForHookLabApifyRun";
@@ -31,6 +32,17 @@ export async function loadHookLabSocialSource({
     await waitForHookLabApifyRun({ client, job, providerWorkerSecret, runId });
     return null;
   }
+
+  await markHookLabAnalysisJobStatus({
+    client,
+    job,
+    progress: 0.2,
+    providerJobId: run.id,
+    providerWorkerSecret,
+    stage: "hook-lab-reading-apify-result",
+    status: "running",
+  });
+
   if (run.status !== "SUCCEEDED") {
     throw new Error(`${getHookLabIdeaSourcePlatform(idea)} import did not complete.`);
   }
