@@ -28,7 +28,9 @@ automation settings.
    added to their account.
 7. Users can add a global pack to Mine for Swipr batch generation and
    automation.
-8. Users can click any pack card to view its photos.
+8. Users can click any pack card to view its photos in a dialog. The dialog
+   shows 12 photos per page, supports previous and next page controls, and
+   closes when the user taps outside it or uses the close button.
 9. Users can remove a pack from Mine. This only removes the pack from that
    user's account and never deletes the shared global pack.
 10. Users can remove individual photos from their own account copy of a pack.
@@ -182,9 +184,10 @@ is the source of truth.
 - `web/app/_components/swipr/SwiprBatchControls.tsx`
 - `web/app/_components/swipr/SwiprManualControls.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackPicker.tsx`
-- `web/app/_components/swipr/SwiprLibraryPackEditor.tsx`
+- `web/app/_components/swipr/SwiprLibraryPackDialog.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackPhotoList.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackEditorPhoto.tsx`
+- `web/lib/clipstitchr/constants/swiprLibraryPackPageSize.ts`
 - `web/app/_components/swipr/SwiprLibraryPhotoCard.tsx`
 - `web/app/_components/settings/AutomationSwiprPackPicker.tsx`
 - `web/app/dashboard/library/LibraryPageClient.tsx`

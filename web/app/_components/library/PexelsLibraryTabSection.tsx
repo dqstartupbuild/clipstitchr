@@ -5,7 +5,7 @@ import { Download, Search } from "lucide-react";
 import { PexelsPhotoCard } from "@/app/_components/swipr/PexelsPhotoCard";
 import { PexelsLibraryFilterTabs } from "@/app/_components/library/PexelsLibraryFilterTabs";
 import { PexelsLibraryPackCard } from "@/app/_components/library/PexelsLibraryPackCard";
-import { SwiprLibraryPackEditor } from "@/app/_components/swipr/SwiprLibraryPackEditor";
+import { SwiprLibraryPackDialog } from "@/app/_components/swipr/SwiprLibraryPackDialog";
 import { Button } from "@/app/_components/ui/Button";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { importPexelsPhotosToSwiprLibrary } from "@/lib/clipstitchr/client/importPexelsPhotosToSwiprLibrary";
@@ -405,7 +405,7 @@ export function PexelsLibraryTabSection({
       )}
 
       {viewingPack ? (
-        <SwiprLibraryPackEditor
+        <SwiprLibraryPackDialog
           key={`${filter}-${viewingPack.name}`}
           backgrounds={viewingBackgrounds}
           isMine={viewingPackIsMine}
