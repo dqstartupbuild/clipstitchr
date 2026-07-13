@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { PostBridgeAccountCheckbox } from "@/app/_components/postBridge/PostBridgeAccountCheckbox";
 import { PostBridgeBatchCaptionEditor } from "@/app/_components/postBridge/PostBridgeBatchCaptionEditor";
@@ -37,36 +37,43 @@ export function PostBridgeBatchQueueDialog({
   const [soundMode, setSoundMode] = useState<PostBridgeSoundMode>("none");
   const [completedCount, setCompletedCount] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState<"loading" | "idle" | "queueing" | "complete">("loading");
+  const [status, setStatus] = useState<"idle" | "queueing" | "complete">("idle");
+  const [isAccountLoading, setIsAccountLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const isBusy = status === "loading" || status === "queueing";
+  const isQueueSubmissionLocked = useRef(false);
+  const isBusy = isAccountLoading || status === "queueing";
   const selectedAccountIdSet = useMemo(() => new Set(selectedAccountIds), [selectedAccountIds]);
   const selectedPlatforms = useMemo(
     () => accounts.filter((account) => selectedAccountIdSet.has(account.id)).map((account) => account.platform),
     [accounts, selectedAccountIdSet],
   );
   const remainingCount = items.length - completedCount;
+  const accountProductId = items[0]?.productId;
 
   useEffect(() => {
     let isCancelled = false;
-    void fetchPostBridgeAccountOptions(items[0]?.productId)
+
+    void fetchPostBridgeAccountOptions(accountProductId)
       .then((options) => {
         if (!isCancelled) {
           setAccounts(options.accounts);
           setSelectedAccountIds(options.defaultSocialAccountIds);
-          setStatus("idle");
         }
       })
       .catch((nextError) => {
         if (!isCancelled) {
           setError(nextError instanceof Error ? nextError.message : "Unable to load connected accounts.");
-          setStatus("idle");
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsAccountLoading(false);
         }
       });
     return () => {
       isCancelled = true;
     };
-  }, [items]);
+  }, [accountProductId]);
 
   const handleAccountChange = (accountId: number, checked: boolean) => {
     setSelectedAccountIds((currentIds) =>
@@ -81,6 +88,11 @@ export function PostBridgeBatchQueueDialog({
   };
 
   const handleQueue = async () => {
+    if (isQueueSubmissionLocked.current) {
+      return;
+    }
+
+    isQueueSubmissionLocked.current = true;
     setError(null);
     let completedBeforeFailure = completedCount;
 
@@ -116,6 +128,8 @@ export function PostBridgeBatchQueueDialog({
           ? `${message} ${completedBeforeFailure} already added. Continue to finish the rest.`
           : message,
       );
+    } finally {
+      isQueueSubmissionLocked.current = false;
     }
   };
 
@@ -133,12 +147,12 @@ export function PostBridgeBatchQueueDialog({
         <div className="grid gap-5 p-4 sm:p-5">
           <div className="grid gap-3">
             <p className="text-sm font-bold text-text-primary">Accounts</p>
-            {accounts.length ? <div className="grid gap-2 sm:grid-cols-2">{accounts.map((account) => <PostBridgeAccountCheckbox key={account.id} account={account} checked={selectedAccountIdSet.has(account.id)} disabled={isBusy} onChange={handleAccountChange} />)}</div> : <p className="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text-secondary">Connect TikTok, Instagram, or YouTube Shorts in Post Bridge first.</p>}
+            {isAccountLoading ? <p className="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text-secondary">Loading your connected accounts...</p> : accounts.length ? <div className="grid gap-2 sm:grid-cols-2">{accounts.map((account) => <PostBridgeAccountCheckbox key={account.id} account={account} checked={selectedAccountIdSet.has(account.id)} disabled={isBusy} onChange={handleAccountChange} />)}</div> : <p className="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text-secondary">Connect TikTok, Instagram, or YouTube Shorts in Post Bridge first.</p>}
           </div>
           <PostBridgeBatchCaptionEditor activeIndex={activeCaptionIndex} captions={captions} disabled={isBusy} titles={items.map((item) => item.title)} onActiveIndexChange={setActiveCaptionIndex} onCaptionChange={handleCaptionChange} />
           {allowMusic ? <div className="grid gap-3"><PostBridgeSoundModePicker disabled={isBusy} value={soundMode} onChange={setSoundMode} />{soundMode === "manual" ? <div className="flex flex-wrap items-center gap-3"><MusicSelectorButton disabled={isBusy} label={musicTrack ? "Change sound" : "Add sound"} selectedTrackId={musicTrack?.id} source="swipr" onSelectTrack={setMusicTrack} />{musicTrack ? <button type="button" className="text-sm font-semibold text-text-secondary underline-offset-4 hover:text-accent hover:underline" disabled={isBusy} onClick={() => setMusicTrack(null)}>Remove sound</button> : null}</div> : null}</div> : null}
-          {status === "queueing" || status === "complete" ? <div className="grid gap-2"><p className="text-sm font-semibold text-text-secondary">{status === "complete" ? `Added ${items.length} posts to your queue.` : `Adding post ${Math.min(completedCount + 1, items.length)} of ${items.length} to your queue...`}</p><ProgressBar value={progress} /></div> : null}
-          {error ? <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{error}</p> : null}
+          {status === "queueing" || status === "complete" ? <div className="grid gap-2" role="status" aria-live="polite"><p className="text-sm font-semibold text-text-secondary">{status === "complete" ? `Added ${items.length} posts to your queue.` : `Adding post ${Math.min(completedCount + 1, items.length)} of ${items.length} to your queue...`}</p><ProgressBar value={progress} /></div> : null}
+          {error ? <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" role="alert">{error}</p> : null}
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="secondary" disabled={isBusy} onClick={onClose}>Cancel</Button><Button type="button" isLoading={isBusy} disabled={status === "complete" || !accounts.length || !selectedAccountIds.length} onClick={() => void handleQueue()}>{completedCount > 0 ? `Continue with ${remainingCount}` : `Add ${items.length} to queue`}</Button></div>
         </div>
       </div>

@@ -17,6 +17,14 @@ dialog preserves the completed count and changes its action to continue with
 the remaining items. A continuation starts at the first unfinished item rather
 than sending completed posts again.
 
+Connected accounts load once for the selected product when the dialog opens.
+Live Library updates after each successful post do not reload those accounts or
+reset the active batch. The progress bar stays visible until the whole batch
+finishes or a real item failure occurs, and the dialog keeps its close and queue
+controls locked while a batch is running. A synchronous submission guard also
+prevents rapid or repeated button presses from starting an overlapping copy of
+the same batch.
+
 ## Provider Pacing
 
 Post Bridge limits each API key to 10 requests per second, and one queued post
@@ -42,9 +50,15 @@ The CLI and dashboard use the same owner-scoped schedule and upload limits. The
 provider pacing bucket is keyed by the saved Post Bridge key, so it is also
 shared when both entry points use that key.
 
+The batch dialog consumes one connected-account read when it opens for a
+product. Reactive source updates during the batch reuse those loaded choices,
+so a 20-item batch does not create 20 extra account reads. This avoids request
+amplification while keeping the normal Post Bridge read limit unchanged.
+
 ## Source Files
 
 - `web/app/_components/postBridge/PostBridgeBatchQueueDialog.tsx`
+- `web/app/_components/postBridge/PostBridgeBatchQueueDialog.test.tsx`
 - `web/lib/clipstitchr/client/queuePostBridgeBatchItems.ts`
 - `web/lib/clipstitchr/server/postBridge/requestPostBridge.ts`
 - `web/lib/clipstitchr/server/postBridge/reservePostBridgeProviderRequest.ts`

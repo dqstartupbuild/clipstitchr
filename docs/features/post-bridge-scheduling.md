@@ -35,7 +35,11 @@ Bulk queue opens one batch dialog for all selected items. The dialog preselects
 product-linked Post Bridge accounts when defaults exist, while the user can
 change accounts, edit each numbered caption, and use the Swipe sound controls
 before confirming once. If an item fails, completed items remain complete and
-the dialog can continue from the first unfinished item.
+the dialog can continue from the first unfinished item. Connected accounts are
+loaded once for the selected product. Library updates caused by completed items
+do not reset the dialog, so progress remains visible and the queue action stays
+locked until the batch genuinely completes or fails. A synchronous guard also
+blocks a second batch if the action is pressed more than once.
 
 Stitches use the same browser export path as downloads. If the saved stitch has
 an existing rendered video, that video is used. Otherwise the browser renders
@@ -138,7 +142,9 @@ Dashboard bulk queue is intentionally sequential. After one confirmation, each
 item uses the same browser media rendering, temporary R2 upload, Post Bridge
 media upload, and `POST /api/post-bridge/schedule` flow, then moves to the next
 item only after the previous one succeeds. A continued run skips items already
-completed in that dialog.
+completed in that dialog. Reactive source changes do not reload connected
+accounts during the run, which prevents unnecessary Post Bridge read requests
+and keeps account-read `429` responses from being amplified by the batch size.
 
 ## Analytics
 
