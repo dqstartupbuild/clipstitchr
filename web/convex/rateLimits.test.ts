@@ -175,6 +175,7 @@ describe("convex rateLimits", () => {
       args: { secret: "secret" },
       expected: [
         { key: "owner_123", name: "postBridgeSchedule", throws: true },
+        { key: "owner_123", name: "postBridgeScheduleHourly", throws: true },
         { key: "owner_123", name: "postBridgeScheduleDaily", throws: true },
         { name: "postBridgeScheduleGlobalDaily", throws: true },
       ],

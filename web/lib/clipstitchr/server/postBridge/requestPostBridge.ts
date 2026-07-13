@@ -1,4 +1,5 @@
 import { createPostBridgeUrl } from "@/lib/clipstitchr/server/postBridge/createPostBridgeUrl";
+import { reservePostBridgeProviderRequest } from "@/lib/clipstitchr/server/postBridge/reservePostBridgeProviderRequest";
 import { waitForPostBridgeRetry } from "@/lib/clipstitchr/server/postBridge/waitForPostBridgeRetry";
 
 type RequestPostBridgeOptions = {
@@ -21,6 +22,8 @@ export async function requestPostBridge<ResponseBody>(
   }
 
   for (let attempt = 0; attempt < 4; attempt += 1) {
+    await reservePostBridgeProviderRequest(apiKey);
+
     const response = await fetch(createPostBridgeUrl(path, query), {
       body: body === undefined ? undefined : JSON.stringify(body),
       headers,

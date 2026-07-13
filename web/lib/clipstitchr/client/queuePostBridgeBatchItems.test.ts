@@ -66,4 +66,33 @@ describe("queuePostBridgeBatchItems", () => {
     expect(schedulePostBridgePost).toHaveBeenNthCalledWith(1, expect.objectContaining({ caption: "Edited first", sourceId: "one", useQueue: true }));
     expect(schedulePostBridgePost).toHaveBeenNthCalledWith(2, expect.objectContaining({ caption: "Edited second", sourceId: "two", useQueue: true }));
   });
+
+  it("resumes at the first unfinished item", async () => {
+    const firstItem = createItem("one");
+    const secondItem = createItem("two");
+    const thirdItem = createItem("three");
+
+    await queuePostBridgeBatchItems({
+      captions: ["First", "Second", "Third"],
+      items: [firstItem, secondItem, thirdItem],
+      musicTrack: null,
+      onCompletedCountChange: vi.fn(),
+      onProgressChange: vi.fn(),
+      platforms: ["instagram"],
+      socialAccountIds: [12],
+      startIndex: 1,
+    });
+
+    expect(firstItem.renderMedia).not.toHaveBeenCalled();
+    expect(secondItem.renderMedia).toHaveBeenCalledOnce();
+    expect(thirdItem.renderMedia).toHaveBeenCalledOnce();
+    expect(schedulePostBridgePost).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ sourceId: "two" }),
+    );
+    expect(schedulePostBridgePost).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ sourceId: "three" }),
+    );
+  });
 });

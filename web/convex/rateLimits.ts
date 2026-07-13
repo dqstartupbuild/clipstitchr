@@ -260,6 +260,10 @@ export const consumePostBridgeSchedule = mutation({
       key: ownerId,
       throws: true,
     });
+    await rateLimiter.limit(ctx, "postBridgeScheduleHourly", {
+      key: ownerId,
+      throws: true,
+    });
     await rateLimiter.limit(ctx, "postBridgeScheduleDaily", {
       key: ownerId,
       throws: true,

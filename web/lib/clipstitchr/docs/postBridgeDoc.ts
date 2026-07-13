@@ -35,7 +35,7 @@ export const postBridgeDoc = {
       title: "Schedule finished work",
       body: [
         "When a saved Stitch or Swipe is ready, open the post options and choose whether it should go out now or later. ClipStitchr sends the media, caption, and account choices to Post Bridge.",
-        "When you have several ready drafts, use Select in the Library and choose Queue selected. Choose the accounts and sound once, then review each numbered caption from the caption menu. ClipStitchr keeps every caption with its own draft and adds the posts to Post Bridge one at a time after one confirmation.",
+        "When you have several ready drafts, use Select in the Library and choose Queue selected. Choose the accounts and sound once, then review each numbered caption from the caption menu. ClipStitchr keeps every caption with its own draft, gently spaces each Post Bridge request, and lets you continue from the first unfinished post if the connection drops.",
         "This is meant to remove the last annoying step, not take away your judgment. Score the clip, edit the copy, and only schedule the version you would be okay seeing live.",
       ],
       bullets: [

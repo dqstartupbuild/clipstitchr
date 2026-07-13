@@ -1,4 +1,4 @@
-import { DAY, HOUR, MINUTE, RateLimiter } from "@convex-dev/rate-limiter";
+import { DAY, HOUR, MINUTE, SECOND, RateLimiter } from "@convex-dev/rate-limiter";
 import { components } from "./_generated/api";
 import {
   AUTOMATION_STITCHR_DAILY_LIMIT,
@@ -456,11 +456,24 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 200,
     shards: 5,
   },
+  postBridgeProviderRequest: {
+    kind: "token bucket",
+    rate: 8,
+    period: SECOND,
+    capacity: 2,
+    maxReserved: 40,
+  },
   postBridgeSchedule: {
     kind: "token bucket",
     rate: 600,
     period: MINUTE,
     capacity: 60,
+  },
+  postBridgeScheduleHourly: {
+    kind: "token bucket",
+    rate: 100,
+    period: HOUR,
+    capacity: 100,
   },
   postBridgeScheduleDaily: {
     kind: "token bucket",

@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createPostBridgePost } from "@/lib/clipstitchr/server/postBridge/createPostBridgePost";
 
+vi.mock("@/lib/clipstitchr/server/postBridge/reservePostBridgeProviderRequest", () => ({
+  reservePostBridgeProviderRequest: vi.fn(),
+}));
+
 describe("createPostBridgePost", () => {
   afterEach(() => {
     vi.unstubAllGlobals();

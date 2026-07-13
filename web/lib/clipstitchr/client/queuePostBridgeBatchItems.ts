@@ -11,6 +11,7 @@ type QueuePostBridgeBatchItemsOptions = {
   socialAccountIds: number[];
   onCompletedCountChange: (count: number) => void;
   onProgressChange: (progress: number) => void;
+  startIndex?: number;
 };
 
 export async function queuePostBridgeBatchItems({
@@ -21,8 +22,11 @@ export async function queuePostBridgeBatchItems({
   socialAccountIds,
   onCompletedCountChange,
   onProgressChange,
+  startIndex = 0,
 }: QueuePostBridgeBatchItemsOptions) {
-  for (const [index, item] of items.entries()) {
+  for (let index = startIndex; index < items.length; index += 1) {
+    const item = items[index];
+
     onCompletedCountChange(index);
     const renderResult = await item.renderMedia({
       musicTrack,

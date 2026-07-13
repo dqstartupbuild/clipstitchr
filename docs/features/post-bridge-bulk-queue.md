@@ -1,60 +1,54 @@
 # Post Bridge Bulk Queue
 
-Dashboard Library selection mode can queue selected saved Stitches or saved
-Swipes to Post Bridge without opening each card menu one by one. The user still
-reviews each post before it is sent.
+Dashboard Library selection mode can add selected saved Stitches or Swipes to
+the user's Post Bridge queue with one review and confirmation flow.
+
+Provider source reference: `https://api.post-bridge.com/reference`.
 
 ## How It Works
 
-The `Select` button in the Stitches and Swipes sections opens the existing batch
-selection controls. `Queue selected` appears beside `Delete selected`. The bulk
-queue action opens the same Post Bridge schedule dialog used by the individual
-`Schedule post` card action.
+`Queue selected` opens one batch dialog. The user chooses connected accounts
+and optional Swipe sound once, then reviews the numbered caption for every
+selected draft. After confirmation, ClipStitchr renders, uploads, and queues
+each item sequentially so browser media work stays bounded.
 
-The dialog preselects the product's saved Post Bridge account defaults when they
-exist, but the user can still choose accounts, edit the caption, pick post-now or
-queue mode, and adjust any Swipe sound settings before sending that item. After
-one selected post finishes, the next selected item opens in a fresh dialog. If
-the user cancels a dialog, the remaining selected items are left alone.
+The dialog reports the active item and total progress. When an item fails, the
+dialog preserves the completed count and changes its action to continue with
+the remaining items. A continuation starts at the first unfinished item rather
+than sending completed posts again.
 
-Each selected item finishes rendering, uploading, and scheduling before the next
-item is shown. That keeps browser work, Post Bridge uploads, and schedule creates
-sequential.
+## Provider Pacing
 
-## Stitch Queueing
+Post Bridge limits each API key to 10 requests per second, and one queued post
+can require several API calls: create a media upload URL, load connected
+accounts, and create the post. ClipStitchr therefore applies one centralized
+provider pacing bucket keyed by a SHA-256 hash of the saved Post Bridge API key.
+It reserves calls at 8 requests per second with an initial burst of 2, then
+waits before making the provider request. This covers dashboard, CLI, account,
+queue, and analytics calls that share the same Post Bridge key.
 
-Each selected Stitch uses the same media builder as the single-card schedule
-dialog. If a rendered Stitch video already exists, it is reused. Otherwise the
-browser renders the saved Stitch from its clips and settings. The user can edit
-the caption and account choices in the schedule dialog before that MP4 uploads
-through the existing temporary R2 and Post Bridge media upload flow.
+Provider `429` retries remain as a fallback for transient provider pressure.
+Each retry also passes through the pacing bucket.
 
-## Swipe Queueing
+## Rate Limits and Abuse Protection
 
-Each selected Swipe uses the dashboard renderer and the same music controls as
-individual scheduling. Manual sound and no-sound modes are available inside each
-review dialog. Without music, Swipes render as image carousels for supported
-platform choices. If the user selects YouTube or chooses a sound, the Swipe
-renders as a 9:16 MP4 so the post can include video and audio.
+Each item still consumes the existing R2 upload, Post Bridge upload-byte,
+schedule-create, and Convex metadata-update limits. Schedule creation allows a
+60-post burst, no more than 100 posts per hour, 1,000 posts per day per user,
+and 10,000 posts per day globally. The hourly cap matches Post Bridge's
+published platform limit.
 
-## Rate Limits
-
-Bulk queue does not use a new backend endpoint. It consumes the same existing
-Post Bridge media upload, schedule create, R2 upload, and Convex metadata update
-limits as individual scheduling, after the user sends each reviewed post. The
-schedule-create per-user minute bucket is set to Post Bridge's documented
-per-key cadence, while ClipStitchr still keeps daily user and global caps to
-protect app infrastructure.
+The CLI and dashboard use the same owner-scoped schedule and upload limits. The
+provider pacing bucket is keyed by the saved Post Bridge key, so it is also
+shared when both entry points use that key.
 
 ## Source Files
 
-- `web/app/_components/dashboard/LibraryBatchActionBar.tsx`
-- `web/app/_components/dashboard/StitchesSection.tsx`
-- `web/app/_components/dashboard/SwiprSwipesSection.tsx`
-- `web/app/_components/postBridge/PostBridgeScheduleDialog.tsx`
-- `web/lib/clipstitchr/hooks/useLibraryBatchScheduleDialog.ts`
-- `web/lib/clipstitchr/utils/getLibraryBatchScheduleStatusMessage.ts`
-- `web/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia.ts`
-- `web/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia.ts`
-- `web/lib/clipstitchr/client/schedulePostBridgePost.ts`
+- `web/app/_components/postBridge/PostBridgeBatchQueueDialog.tsx`
+- `web/lib/clipstitchr/client/queuePostBridgeBatchItems.ts`
+- `web/lib/clipstitchr/server/postBridge/requestPostBridge.ts`
+- `web/lib/clipstitchr/server/postBridge/reservePostBridgeProviderRequest.ts`
+- `web/lib/clipstitchr/server/postBridge/createPostBridgeProviderRateLimitKey.ts`
+- `web/convex/postBridgeRateLimits/reservePostBridgeProviderRequest.ts`
+- `web/convex/rateLimiter.ts`
 - `docs/backend/rate-limits.md`

@@ -31,11 +31,11 @@ post before choosing whether to post now or add it to their Post Bridge queue.
 Queued posts use Post Bridge's saved queue settings instead of a ClipStitchr
 date picker.
 
-Bulk queue opens the same schedule dialog for each selected item one at a time.
-The dialog preselects product-linked Post Bridge accounts when defaults exist,
-but the user can change accounts, edit captions, choose post-now or queue mode,
-and use the same Swipe sound controls as individual scheduling. If the user
-cancels a dialog, the remaining selected items are not sent.
+Bulk queue opens one batch dialog for all selected items. The dialog preselects
+product-linked Post Bridge accounts when defaults exist, while the user can
+change accounts, edit each numbered caption, and use the Swipe sound controls
+before confirming once. If an item fails, completed items remain complete and
+the dialog can continue from the first unfinished item.
 
 Stitches use the same browser export path as downloads. If the saved stitch has
 an existing rendered video, that video is used. Otherwise the browser renders
@@ -125,14 +125,20 @@ The Post Bridge API uses bearer-token authentication. Because each request uses
 the saved user's key, account lists, posts, analytics, media uploads, and
 scheduled posts are scoped to that user's Post Bridge account.
 
+Before every Post Bridge API call, the server reserves capacity from a shared
+bucket keyed by a SHA-256 hash of that API key. The bucket runs below Post
+Bridge's published per-key request rate and waits proactively, so dashboard and
+CLI calls using the same key cannot independently burst past the provider
+limit. Provider `429` retry and backoff remains a fallback.
+
 Manual Swipe sounds use the existing sound picker. TikTok sound search and import
 routes are separately authenticated and rate-limited before Apify and R2 work.
 
-Dashboard bulk queue is intentionally sequential. Each selected item opens in the
-same schedule dialog as the single-card action. After the user sends that item,
-it uses the same browser media rendering, temporary R2 upload, Post Bridge media
-upload, and `POST /api/post-bridge/schedule` flow, then moves to the next item
-only after the previous one succeeds.
+Dashboard bulk queue is intentionally sequential. After one confirmation, each
+item uses the same browser media rendering, temporary R2 upload, Post Bridge
+media upload, and `POST /api/post-bridge/schedule` flow, then moves to the next
+item only after the previous one succeeds. A continued run skips items already
+completed in that dialog.
 
 ## Analytics
 
@@ -180,6 +186,8 @@ posted post status counts.
 - `web/lib/clipstitchr/utils/getPostBridgePostTimeLabel.ts`
 - `web/lib/clipstitchr/utils/getSwiprPostBridgeTitle.ts`
 - `web/lib/clipstitchr/server/postBridge/removePostBridgeTitleLineFromCaption.ts`
+- `web/lib/clipstitchr/server/postBridge/reservePostBridgeProviderRequest.ts`
+- `web/convex/postBridgeRateLimits/reservePostBridgeProviderRequest.ts`
 - `web/lib/clipstitchr/media/createCliprMixedAudioBuffer.ts`
 - `web/lib/clipstitchr/media/createSwiprMusicAudioBuffer.ts`
 - `web/lib/clipstitchr/media/scheduleLoopingAudioBuffer.ts`

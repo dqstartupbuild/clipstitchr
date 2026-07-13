@@ -97,6 +97,14 @@ export async function POST(request: Request) {
     assertPostBridgePlatformMediaKind(media.mediaKind, platforms);
 
     await convex.mutation(
+      api.cliRateLimits.consumeCliPostBridgeSchedule.consumeCliPostBridgeSchedule,
+      {
+        ownerId: session.ownerId,
+        secret,
+      },
+    );
+
+    await convex.mutation(
       api.cliRateLimits.consumeCliPostBridgeMediaUpload
         .consumeCliPostBridgeMediaUpload,
       {
@@ -113,14 +121,6 @@ export async function POST(request: Request) {
       sourceObject: swipe.posterObject,
       userId: session.ownerId,
     });
-
-    await convex.mutation(
-      api.cliRateLimits.consumeCliPostBridgeSchedule.consumeCliPostBridgeSchedule,
-      {
-        ownerId: session.ownerId,
-        secret,
-      },
-    );
 
     const caption =
       readCliOptionalString(body, "caption") ??
