@@ -12,13 +12,16 @@ export function PricingHero() {
             Simple pricing for content that stops eating your week.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
-            Stitchr, scoring, Hook Lab Ideas, and your clip library are included.
-            Credits only matter when ClipStitchr creates extra videos, visuals,
-            or drafts because your library is thin.
+            Stitchr, scoring, Hook Lab Ideas, and your clip library are
+            included. Credits only matter when ClipStitchr creates extra videos,
+            visuals, or drafts because your library is thin.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <PrimaryButtonLink href="/sign-up" icon={<ArrowRight aria-hidden className="h-4 w-4" />}>
-              Start free
+            <PrimaryButtonLink
+              href="#plans"
+              icon={<ArrowRight aria-hidden className="h-4 w-4" />}
+            >
+              Choose a plan
             </PrimaryButtonLink>
             <SecondaryButtonLink href="/case-studies">
               See case studies

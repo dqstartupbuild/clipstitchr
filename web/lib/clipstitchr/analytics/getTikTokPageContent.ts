@@ -1,8 +1,26 @@
+import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { publicToolKeys } from "@/lib/clipstitchr/tools/catalog/publicToolKeys";
+
 type TikTokPageContent = {
   contentCategory: string;
   contentId: string;
   contentName: string;
 };
+
+const toolPageContent = Object.fromEntries(
+  publicToolKeys.map((key) => {
+    const tool = publicToolCatalog[key];
+
+    return [
+      tool.pathname,
+      {
+        contentCategory: "Tools",
+        contentId: tool.tiktokContentId,
+        contentName: tool.name,
+      },
+    ];
+  }),
+) as Record<string, TikTokPageContent>;
 
 const staticPageContent: Record<string, TikTokPageContent> = {
   "/": {
@@ -45,6 +63,12 @@ const staticPageContent: Record<string, TikTokPageContent> = {
     contentId: "terms",
     contentName: "Terms of Use",
   },
+  "/tools": {
+    contentCategory: "Tools",
+    contentId: "tools",
+    contentName: "App marketing tools",
+  },
+  ...toolPageContent,
 };
 
 export function getTikTokPageContent(pathname: string): TikTokPageContent {

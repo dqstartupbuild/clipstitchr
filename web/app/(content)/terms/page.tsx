@@ -15,9 +15,7 @@ export default function TermsPage() {
     <article className="marketing-grid-bg px-6 py-20 md:py-28">
       <div className="marketing-card mx-auto max-w-3xl p-6 md:p-10">
         <header className="mb-12">
-          <p className="marketing-eyebrow mb-5">
-            Legal
-          </p>
+          <p className="marketing-eyebrow mb-5">Legal</p>
           <h1 className="marketing-heading mb-4 text-5xl text-text-primary md:text-7xl">
             Terms of Use
           </h1>
@@ -31,23 +29,59 @@ export default function TermsPage() {
             <h2>Agreement to Terms</h2>
             <p>
               By accessing or using the {site.name} website located at{" "}
-              <strong>{site.url}</strong> (the &quot;Site&quot;), you agree
-              to be bound by these Terms of Use. If you do not agree to
-              these terms, please do not use the Site.
+              <strong>{site.url}</strong> (the &quot;Site&quot;), you agree to
+              be bound by these Terms of Use. If you do not agree to these
+              terms, please do not use the Site.
             </p>
           </section>
 
           <section>
             <h2>Description of Service</h2>
             <p>
-              {site.name} provides an MVP for uploading Hook/UGC clips
-              and product demo videos, normalizing them to TikTok-ready 9:16,
+              {site.name} provides an MVP for uploading Hook/UGC clips and
+              product demo videos, normalizing them to TikTok-ready 9:16,
               previewing Hook/UGC-then-demo sequences, and creating downloadable
-              MP4 files. Media processing runs in the browser, while saved
-              media and metadata use backend storage. The Site also provides
-              Hook Lab, which can study text, your saved Stitches, and public
-              TikTok or Instagram posts to help you make a fresh creative Idea.
-              The Site also provides articles and resources.
+              MP4 files. Media processing runs in the browser, while saved media
+              and metadata use backend storage. The Site also provides Hook Lab,
+              which can study text, your saved Stitches, and public TikTok or
+              Instagram posts to help you make a fresh creative Idea. The Site
+              also provides articles and free planning tools. Those tools do not
+              create a free ClipStitchr account or subscription.
+            </p>
+          </section>
+
+          <section>
+            <h2>Public Tools</h2>
+            <p>
+              Public tools such as the Ad Variant Calculator, hook resources,
+              briefs, courses, worksheets, blueprints, economics calculators,
+              and local media tools are provided for planning and inspiration.
+              Calculator results are arithmetic based on the assumptions you
+              enter, not financial forecasts, spend recommendations, or
+              performance promises. Writing and test guidance may be incomplete,
+              inaccurate, or unsuitable for your app. Video checks describe
+              ClipStitchr&apos;s production baseline or combine technical facts
+              with your self-review; they do not verify content, usage rights,
+              or acceptance by every advertising network. You are responsible
+              for reviewing every result before using it.
+            </p>
+            <p>
+              Do not enter confidential information, personal data about other
+              people, trade secrets, or claims you do not have the right to use.
+              You remain responsible for the accuracy of your advertising and
+              for following the rules that apply to your app, audience, and
+              marketing channels.
+            </p>
+            <p>
+              Platform specifications and obstruction overlays are dated
+              references, not permanent certification. Usage-rights questions,
+              creator quote comparisons, and handoff templates are not legal or
+              financial advice. Local media findings and content-audit scores
+              still require your review.
+            </p>
+            <p>
+              Joining the mailing list does not create a ClipStitchr account.
+              You can unsubscribe from marketing emails at any time.
             </p>
           </section>
 
@@ -59,19 +93,15 @@ export default function TermsPage() {
             </p>
             <ul>
               <li>Infringe upon the rights of others</li>
+              <li>Restrict or inhibit any other user from using the Site</li>
+              <li>Introduce viruses, malware, or other harmful code</li>
               <li>
-                Restrict or inhibit any other user from using the Site
+                Attempt to gain unauthorized access to any portion of the Site
+                or its systems
               </li>
               <li>
-                Introduce viruses, malware, or other harmful code
-              </li>
-              <li>
-                Attempt to gain unauthorized access to any portion of the
-                Site or its systems
-              </li>
-              <li>
-                Use automated tools to scrape, crawl, or otherwise extract
-                data from the Site without permission
+                Use automated tools to scrape, crawl, or otherwise extract data
+                from the Site without permission
               </li>
             </ul>
           </section>
@@ -81,12 +111,10 @@ export default function TermsPage() {
             <p>
               You are responsible for the videos you upload, process, stitch,
               and download. You must have the rights and permissions needed to
-              use any UGC, product demos, audio, trademarks, or other
-              content included in those files.
+              use any UGC, product demos, audio, trademarks, or other content
+              included in those files.
             </p>
-            <p>
-              Only add sounds you are allowed to use in your videos.
-            </p>
+            <p>Only add sounds you are allowed to use in your videos.</p>
             <p>
               If you give Hook Lab a social post link, you confirm that the post
               is public and that your use is lawful. Do not use private,
@@ -96,9 +124,9 @@ export default function TermsPage() {
               and other applicable rules.
             </p>
             <p>
-              Hook Lab may make protected temporary working copies of the
-              source video while it learns the Idea. Those copies are deleted
-              after processing and are not added to your Library.
+              Hook Lab may make protected temporary working copies of the source
+              video while it learns the Idea. Those copies are deleted after
+              processing and are not added to your Library.
             </p>
             <p>
               Hook Lab is meant to repeat a general writing pattern or creative
@@ -121,9 +149,9 @@ export default function TermsPage() {
           <section>
             <h2>Intellectual Property</h2>
             <p>
-              Site content, brand assets, design elements, and documentation
-              are the property of {site.name} or its licensors and are protected
-              by applicable intellectual property laws.
+              Site content, brand assets, design elements, and documentation are
+              the property of {site.name} or its licensors and are protected by
+              applicable intellectual property laws.
             </p>
           </section>
 
@@ -135,31 +163,30 @@ export default function TermsPage() {
               express or implied. We do not warrant that:
             </p>
             <ul>
-              <li>The Site will be available at all times or free from errors</li>
               <li>
-                Information on the Site is complete, accurate, or current
+                The Site will be available at all times or free from errors
               </li>
+              <li>Information on the Site is complete, accurate, or current</li>
             </ul>
           </section>
 
           <section>
             <h2>Limitation of Liability</h2>
             <p>
-              To the fullest extent permitted by law, {site.name} shall not
-              be liable for any indirect, incidental, special, consequential,
-              or punitive damages arising from your use of the Site, even if
-              we have been advised of the possibility of such damages.
+              To the fullest extent permitted by law, {site.name} shall not be
+              liable for any indirect, incidental, special, consequential, or
+              punitive damages arising from your use of the Site, even if we
+              have been advised of the possibility of such damages.
             </p>
           </section>
 
           <section>
             <h2>Third-Party Links</h2>
             <p>
-              The Site may contain links to third-party websites or services.
-              We are not responsible for the content, privacy practices, or
-              availability of those third-party sites. Your use of
-              third-party sites is governed by their respective terms and
-              policies.
+              The Site may contain links to third-party websites or services. We
+              are not responsible for the content, privacy practices, or
+              availability of those third-party sites. Your use of third-party
+              sites is governed by their respective terms and policies.
             </p>
           </section>
 
@@ -168,8 +195,8 @@ export default function TermsPage() {
             <p>
               We reserve the right to modify these Terms of Use at any time.
               Changes will be posted on this page with an updated &quot;Last
-              updated&quot; date. Your continued use of the Site after
-              changes are posted constitutes acceptance of the revised terms.
+              updated&quot; date. Your continued use of the Site after changes
+              are posted constitutes acceptance of the revised terms.
             </p>
           </section>
 
@@ -177,16 +204,16 @@ export default function TermsPage() {
             <h2>Governing Law</h2>
             <p>
               These Terms of Use shall be governed by and construed in
-              accordance with applicable laws, without regard to conflict of
-              law principles.
+              accordance with applicable laws, without regard to conflict of law
+              principles.
             </p>
           </section>
 
           <section>
             <h2>Contact</h2>
             <p>
-              If you have questions about these Terms of Use, you can reach
-              us through the contact information provided on our website.
+              If you have questions about these Terms of Use, you can reach us
+              through the contact information provided on our website.
             </p>
           </section>
         </div>

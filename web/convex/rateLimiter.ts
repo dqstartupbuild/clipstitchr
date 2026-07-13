@@ -282,6 +282,38 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 100,
     shards: 5,
   },
+  toolLeadSubmitByClient: {
+    kind: "token bucket",
+    rate: 10,
+    period: HOUR,
+    capacity: 5,
+  },
+  toolLeadSubmitByEmail: {
+    kind: "token bucket",
+    rate: 3,
+    period: HOUR,
+    capacity: 3,
+  },
+  toolLeadSubmitGlobal: {
+    kind: "token bucket",
+    rate: 500,
+    period: HOUR,
+    capacity: 100,
+    shards: 5,
+  },
+  appHookGeneratorByClient: {
+    kind: "token bucket",
+    rate: 30,
+    period: HOUR,
+    capacity: 10,
+  },
+  appHookGeneratorGlobal: {
+    kind: "token bucket",
+    rate: 3000,
+    period: HOUR,
+    capacity: 300,
+    shards: 5,
+  },
   tiktokEventsApiByClient: {
     kind: "token bucket",
     rate: 120,

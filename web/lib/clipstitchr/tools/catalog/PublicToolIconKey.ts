@@ -1,0 +1,16 @@
+export type PublicToolIconKey =
+  | "calculator"
+  | "sparkles"
+  | "clipboard-check"
+  | "gauge"
+  | "notebook-pen"
+  | "refresh-cw"
+  | "rectangle-vertical"
+  | "flask-conical"
+  | "panels-top-left"
+  | "circle-dollar-sign"
+  | "badge-dollar-sign"
+  | "chart-no-axes-combined"
+  | "list-video"
+  | "badge-check"
+  | "map";

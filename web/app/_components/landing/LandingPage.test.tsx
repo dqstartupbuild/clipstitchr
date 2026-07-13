@@ -65,21 +65,25 @@ describe("LandingPage", () => {
   it("renders the full landing page from the home route", () => {
     const markup = renderToStaticMarkup(<Home />);
 
-    expect(markup).toContain(
-      "Turn raw footage into finished ads",
-    );
-    expect(markup).toContain(
-      "Upload Hook/UGC clips and product demos once",
-    );
-    expect(markup).toContain("Start for free");
+    expect(markup).toContain("Turn raw footage into finished ads");
+    expect(markup).toContain("Upload Hook/UGC clips and product demos once");
+    expect(markup).toContain("Get ClipStitchr");
+    expect(markup).toContain("Starts at $39/month");
+    expect(markup).toContain("Every tool included");
+    expect(markup).not.toContain("free trial");
+    expect(markup).not.toContain("Start for free");
     expect(markup).toContain("Watch examples");
     expect(markup).toContain("Three steps. Zero timelines");
     expect(markup).toContain("Every tool feeds one library");
-    expect(markup).toContain("Run product work from the repo you already have open");
+    expect(markup).toContain(
+      "Run product work from the repo you already have open",
+    );
     expect(markup).toContain("npm install -g clipstitchr");
     expect(markup).toContain("/docs/clipstitchr-cli");
     expect(markup).toContain("Writing overlay text that does not sound fake");
-    expect(markup).toContain("Paste lines from posts that made you stop scrolling");
+    expect(markup).toContain(
+      "Paste lines from posts that made you stop scrolling",
+    );
     expect(markup).toContain(
       "Use one product demo without dragging it into every ad yourself",
     );
@@ -92,9 +96,13 @@ describe("LandingPage", () => {
     expect(markup).toContain(
       "Starting from zero is what makes the next post feel heavy",
     );
-    expect(markup).toContain("Sometimes the problem is just not having enough usable clips");
+    expect(markup).toContain(
+      "Sometimes the problem is just not having enough usable clips",
+    );
     expect(markup).toContain("When video feels like overkill");
-    expect(markup).toContain("Showing up daily is hard when you do not like social");
+    expect(markup).toContain(
+      "Showing up daily is hard when you do not like social",
+    );
     expect(markup).toContain("Scheduling after the draft is ready");
     expect(markup).toContain("/docs/post-bridge");
     expect(markup).toContain("Upload once");

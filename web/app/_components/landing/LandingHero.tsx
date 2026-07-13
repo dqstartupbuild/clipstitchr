@@ -20,16 +20,16 @@ export function LandingHero() {
             <span className="text-accent-dark">Fast.</span>
           </h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-text-secondary md:text-lg md:leading-8">
-            Upload Hook/UGC clips and product demos once. Build a reusable library.
-            Create polished TikTok and Reels verticals without rebuilding the
-            same workflow every week.
+            Upload Hook/UGC clips and product demos once. Build a reusable
+            library. Create polished TikTok and Reels verticals without
+            rebuilding the same workflow every week.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <LandingDashboardCta
               className={PRIMARY_BUTTON_CLASS_NAME}
               contentId="hero_start_clips_button"
               contentName="Hero start clips"
-              signedOutLabel="Start for free"
+              signedOutLabel="Get ClipStitchr"
             />
             <a
               href="#example-output-reel"
@@ -40,14 +40,16 @@ export function LandingHero() {
             </a>
           </div>
           <div className="mt-5 flex flex-wrap gap-4 text-xs font-semibold text-text-tertiary">
-            {["No credit card", "14-day free trial", "Cancel anytime"].map(
-              (item) => (
-                <span className="inline-flex items-center gap-1.5" key={item}>
-                  <Check aria-hidden className="h-3.5 w-3.5 text-accent" />
-                  {item}
-                </span>
-              ),
-            )}
+            {[
+              "Starts at $39/month",
+              "Every tool included",
+              "Cancel anytime",
+            ].map((item) => (
+              <span className="inline-flex items-center gap-1.5" key={item}>
+                <Check aria-hidden className="h-3.5 w-3.5 text-accent" />
+                {item}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -60,7 +62,10 @@ export function LandingHero() {
                     ugc_take_4.mp4
                   </span>
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10">
-                    <Play aria-hidden className="h-2.5 w-2.5 fill-white text-white" />
+                    <Play
+                      aria-hidden
+                      className="h-2.5 w-2.5 fill-white text-white"
+                    />
                   </span>
                 </div>
                 <div>
@@ -84,9 +89,7 @@ export function LandingHero() {
                   <span className="marketing-subheading text-[10px] text-accent-dark">
                     Stitchr
                   </span>
-                  <span className="text-[8px] text-text-tertiary">
-                    3 clips
-                  </span>
+                  <span className="text-[8px] text-text-tertiary">3 clips</span>
                 </div>
                 <div className="flex flex-1 flex-col gap-2 p-2.5">
                   <div className="flex h-14 items-center justify-center rounded-lg border border-white/5 bg-gradient-to-br from-orange-500/60 to-rose-600/40">

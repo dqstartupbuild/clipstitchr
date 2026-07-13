@@ -19,6 +19,10 @@ export function getPostHogPageCategory(pathname: string) {
     return "docs";
   }
 
+  if (pathname.startsWith("/tools")) {
+    return "tools";
+  }
+
   if (pathname.startsWith("/privacy")) {
     return "legal";
   }

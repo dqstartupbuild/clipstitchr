@@ -31,7 +31,7 @@ Clerk sign-in work smoother when Turbopack is sensitive to route compilation.
 
 ## Behavior
 
-Signed-out visitors get a normal button labeled `Start for free`. Clicking it
+Signed-out visitors get a normal button labeled `Get ClipStitchr`. Clicking it
 tracks the CTA click and opens Clerk sign-up. The component can also be set to
 open sign-in for future landing CTA variants.
 

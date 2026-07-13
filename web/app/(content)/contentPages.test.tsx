@@ -76,10 +76,14 @@ describe("content pages", () => {
       generateBlogPostMetadata({
         params: Promise.resolve({ slug: firstPost.slug }),
       }),
-    ).resolves.toEqual(expect.objectContaining({
-      description: firstPost.description,
-    }));
-    expect(indexMarkup).toContain("Notes on doing content when you would rather not");
+    ).resolves.toEqual(
+      expect.objectContaining({
+        description: firstPost.description,
+      }),
+    );
+    expect(indexMarkup).toContain(
+      "Notes on doing content when you would rather not",
+    );
     expect(indexMarkup).toContain(firstPost.title);
     expect(articleMarkup).toContain(firstPost.title);
     expect(articleMarkup).toContain("Back to the blog");
@@ -120,9 +124,11 @@ describe("content pages", () => {
       generateCaseStudyMetadata({
         params: Promise.resolve({ slug: firstCaseStudy.slug }),
       }),
-    ).resolves.toEqual(expect.objectContaining({
-      description: firstCaseStudy.description,
-    }));
+    ).resolves.toEqual(
+      expect.objectContaining({
+        description: firstCaseStudy.description,
+      }),
+    );
     expect(indexMarkup).toContain("Case studies");
     expect(indexMarkup).toContain(firstCaseStudy.title);
     expect(detailMarkup).toContain(firstCaseStudy.title);
@@ -167,9 +173,11 @@ describe("content pages", () => {
       generateDocsArticleMetadata({
         params: Promise.resolve({ slug: firstDoc.slug }),
       }),
-    ).resolves.toEqual(expect.objectContaining({
-      title: expect.stringContaining(firstDoc.title),
-    }));
+    ).resolves.toEqual(
+      expect.objectContaining({
+        title: expect.stringContaining(firstDoc.title),
+      }),
+    );
     expect(indexMarkup).toContain("Start with the annoying part you want gone");
     expect(indexMarkup).toContain("What helps the next ad");
     expect(indexMarkup).toContain(firstDoc.title);
@@ -296,6 +304,7 @@ describe("content pages", () => {
     expect(layoutMarkup).toContain("Content child");
     expect(layoutMarkup).toContain("Blog");
     expect(layoutMarkup).toContain("Case studies");
+    expect(layoutMarkup).toContain("Tools");
     expect(layoutMarkup).toContain("Pricing");
     expect(pricingMarkup).toContain(
       "Simple pricing for content that stops eating your week",
@@ -307,11 +316,24 @@ describe("content pages", () => {
     expect(pricingMarkup).toContain("10k Organic Views Challenge");
     expect(pricingMarkup).toContain("Refill");
     expect(pricingMarkup).toContain("150 credits");
-    expect(pricingMarkup).toContain("Start free");
+    expect(pricingMarkup).toContain("Choose a plan");
+    expect(pricingMarkup).toContain("Choose Starter");
+    expect(pricingMarkup).toContain("Choose Pro");
+    expect(pricingMarkup).toContain("Choose Studio");
+    expect(pricingMarkup).not.toContain("Start free");
     expect(privacyMarkup).toContain("Privacy Policy");
     expect(privacyMarkup).toContain("Media Processing and Storage");
+    expect(privacyMarkup).toContain("Public Tools and Mailing List");
+    expect(privacyMarkup).toContain(
+      "The Ad Variant Calculator and the other public calculators",
+    );
+    expect(privacyMarkup).toContain("not uploaded to ClipStitchr");
     expect(termsMarkup).toContain("Terms of Use");
     expect(termsMarkup).toContain("Browser Processing Limits");
+    expect(termsMarkup).toContain("Public Tools");
+    expect(termsMarkup).toContain(
+      "Joining the mailing list does not create a ClipStitchr account",
+    );
     expect(emptyMarkup).toContain("Nothing published yet.");
   });
 });

@@ -36,11 +36,16 @@ Core browser tracking:
 | `$pageleave` | Browser page hide/unload after analytics consent | Supports bounce rate, session duration, and final scroll-depth properties. |
 | `$prev_pageview_*_scroll*` | Attached to following `$pageview` or `$pageleave` events | Built-in PostHog scroll-depth properties remain enabled with `disable_scroll_properties: false`. |
 | `cta_clicked` | Landing page CTA links | Tracks CTA ID, label, location, and destination. |
-| `auth_cta_clicked` | Header sign-in/sign-up clicks | Tracks action, header location, and desktop/mobile variant. |
+| `auth_cta_clicked` | Header sign-in clicks | Tracks the sign-in action, header location, and desktop/mobile variant. |
+| `pricing_cta_clicked` | Signed-out header pricing clicks | Tracks the fixed pricing destination, header location, and desktop/mobile variant. |
 | `dashboard_cta_clicked` | Header dashboard CTA | Tracks header location and variant. |
 | `waitlist_form_submitted` | Waitlist form submit | No name or email is sent in event properties. |
 | `waitlist_joined` | Waitlist entry saved | Tracks created/updated status only. |
 | `waitlist_join_failed` | Waitlist save fails | Tracks a simple error category only. |
+| `tool_lead_accepted` | Public tool mailing-list request accepted | Tracks only the fixed tool source after the server returns its opaque accepted response. |
+| `app_hook_generator_submitted` | Public App Hook Generator request starts | Tracks only the selected edge level and whether this is the first or another set. |
+| `app_hook_generator_completed` | Public App Hook Generator returns results | Tracks edge level, request kind, and the fixed result count; no submitted or generated text. |
+| `app_hook_generator_failed` | Public App Hook Generator request fails | Tracks request kind and a simple rate-limited/request-failed category. |
 | `dashboard_navigation_clicked` | Dashboard sidebar navigation | Tracks destination and label. |
 | `upload_menu_opened` | Dashboard upload menu opens | Tracks current page path. |
 | `upload_destination_selected` | Upload type chosen | Tracks asset type and destination. |
@@ -84,6 +89,15 @@ twice. Events are not queued or backfilled when analytics consent is absent.
 ## Data Rules
 
 Do not send user-entered media names, prompts, descriptions, or free-form error messages as event properties. IDs and non-content metadata are okay.
+
+For public tools, do not send names, email addresses, app names, product
+descriptions, audience details, hook or brief text, planning or cost numbers,
+campaign metrics, creator quotes, worksheet notes, course progress, filenames,
+video dimensions, codec details, sampled media signals, or generated results. The
+tool-lead event may include only the fixed catalog tool source. It must not
+include created/duplicate status, request failures, or other properties that
+could help enumerate an email address. Browser-local tool runs do not create a
+separate result event in this release.
 
 For Hook Lab specifically, do not send source text, social URLs, usernames,
 captions, extracted post data, Actor dataset contents, provider payloads, or

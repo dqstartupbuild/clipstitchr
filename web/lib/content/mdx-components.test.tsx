@@ -66,6 +66,8 @@ describe("mdxComponents", () => {
     expect(markup).toContain("youtube-nocookie.com");
     expect(markup).toContain("Metric");
     expect(markup).toContain("Result");
+    expect(markup).toContain('href="/pricing"');
+    expect(markup).toContain("See pricing");
     expect(markup).toContain("Join now");
   });
 });

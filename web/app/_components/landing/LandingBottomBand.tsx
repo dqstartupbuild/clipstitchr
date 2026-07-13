@@ -21,7 +21,7 @@ export function LandingBottomBand() {
             className={`${PRIMARY_BUTTON_CLASS_NAME} mt-8`}
             contentId="bottom_start_clips_button"
             contentName="Bottom start clips"
-            signedOutLabel="Start for free"
+            signedOutLabel="Get ClipStitchr"
           />
         </div>
       </div>

@@ -12,6 +12,7 @@ import type * as activeWorkerJobs from "../activeWorkerJobs.js";
 import type * as adjustNotificationUnreadSummary from "../adjustNotificationUnreadSummary.js";
 import type * as aggregateBackfills from "../aggregateBackfills.js";
 import type * as aggregateCounts from "../aggregateCounts.js";
+import type * as appHookGeneratorRateLimit from "../appHookGeneratorRateLimit.js";
 import type * as assertProductBelongsToOwner from "../assertProductBelongsToOwner.js";
 import type * as assignLegacyRecordsToProduct from "../assignLegacyRecordsToProduct.js";
 import type * as auth_assertAutomationWorkerSecret from "../auth/assertAutomationWorkerSecret.js";
@@ -244,6 +245,7 @@ import type * as stitchrHookOptions_undoFeedback from "../stitchrHookOptions/und
 import type * as stitchrHookPlans from "../stitchrHookPlans.js";
 import type * as swipes from "../swipes.js";
 import type * as swiprBackgrounds from "../swiprBackgrounds.js";
+import type * as toolLeads_submit from "../toolLeads/submit.js";
 import type * as upsertAutomationRunSummary from "../upsertAutomationRunSummary.js";
 import type * as upsertAutomationTaskSummary from "../upsertAutomationTaskSummary.js";
 import type * as upsertCliprJobSummary from "../upsertCliprJobSummary.js";
@@ -328,9 +330,11 @@ import type * as validators_swiprCallToActionStyle from "../validators/swiprCall
 import type * as validators_swiprProductSourceType from "../validators/swiprProductSourceType.js";
 import type * as validators_swiprSlide from "../validators/swiprSlide.js";
 import type * as validators_textOverlay from "../validators/textOverlay.js";
+import type * as validators_toolLeadSource from "../validators/toolLeadSource.js";
 import type * as validators_videoClipLibraryKind from "../validators/videoClipLibraryKind.js";
 import type * as validators_videoPlaybackRate from "../validators/videoPlaybackRate.js";
 import type * as validators_videoTrimRange from "../validators/videoTrimRange.js";
+import type * as validators_waitlistSource from "../validators/waitlistSource.js";
 import type * as videoClips from "../videoClips.js";
 import type * as videoClips_getHookLabVariantForMediaWorker from "../videoClips/getHookLabVariantForMediaWorker.js";
 import type * as videoClips_saveHookLabVariantFromMediaWorker from "../videoClips/saveHookLabVariantFromMediaWorker.js";
@@ -350,6 +354,7 @@ declare const fullApi: ApiFromModules<{
   adjustNotificationUnreadSummary: typeof adjustNotificationUnreadSummary;
   aggregateBackfills: typeof aggregateBackfills;
   aggregateCounts: typeof aggregateCounts;
+  appHookGeneratorRateLimit: typeof appHookGeneratorRateLimit;
   assertProductBelongsToOwner: typeof assertProductBelongsToOwner;
   assignLegacyRecordsToProduct: typeof assignLegacyRecordsToProduct;
   "auth/assertAutomationWorkerSecret": typeof auth_assertAutomationWorkerSecret;
@@ -582,6 +587,7 @@ declare const fullApi: ApiFromModules<{
   stitchrHookPlans: typeof stitchrHookPlans;
   swipes: typeof swipes;
   swiprBackgrounds: typeof swiprBackgrounds;
+  "toolLeads/submit": typeof toolLeads_submit;
   upsertAutomationRunSummary: typeof upsertAutomationRunSummary;
   upsertAutomationTaskSummary: typeof upsertAutomationTaskSummary;
   upsertCliprJobSummary: typeof upsertCliprJobSummary;
@@ -666,9 +672,11 @@ declare const fullApi: ApiFromModules<{
   "validators/swiprProductSourceType": typeof validators_swiprProductSourceType;
   "validators/swiprSlide": typeof validators_swiprSlide;
   "validators/textOverlay": typeof validators_textOverlay;
+  "validators/toolLeadSource": typeof validators_toolLeadSource;
   "validators/videoClipLibraryKind": typeof validators_videoClipLibraryKind;
   "validators/videoPlaybackRate": typeof validators_videoPlaybackRate;
   "validators/videoTrimRange": typeof validators_videoTrimRange;
+  "validators/waitlistSource": typeof validators_waitlistSource;
   videoClips: typeof videoClips;
   "videoClips/getHookLabVariantForMediaWorker": typeof videoClips_getHookLabVariantForMediaWorker;
   "videoClips/saveHookLabVariantFromMediaWorker": typeof videoClips_saveHookLabVariantFromMediaWorker;

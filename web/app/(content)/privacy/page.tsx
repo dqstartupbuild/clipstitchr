@@ -16,9 +16,7 @@ export default function PrivacyPage() {
     <article className="marketing-grid-bg px-6 py-20 md:py-28">
       <div className="marketing-card mx-auto max-w-3xl p-6 md:p-10">
         <header className="mb-12">
-          <p className="marketing-eyebrow mb-5">
-            Legal
-          </p>
+          <p className="marketing-eyebrow mb-5">Legal</p>
           <h1 className="marketing-heading mb-4 text-5xl text-text-primary md:text-7xl">
             Privacy Policy
           </h1>
@@ -32,9 +30,9 @@ export default function PrivacyPage() {
             <h2>Overview</h2>
             <p>
               {site.name} (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;)
-              operates the website located at{" "}
-              <strong>{site.url}</strong>. This Privacy Policy explains what we
-              collect, how uploads are handled, and the choices you have.
+              operates the website located at <strong>{site.url}</strong>. This
+              Privacy Policy explains what we collect, how uploads are handled,
+              and the choices you have.
             </p>
           </section>
 
@@ -53,13 +51,13 @@ export default function PrivacyPage() {
               data removes that local preview cache.
             </p>
             <p>
-              Sounds you add are used to help you make and export your own
-              clips and stitches.
+              Sounds you add are used to help you make and export your own clips
+              and stitches.
             </p>
             <p>
               Hook Lab can learn from text you paste, one of your saved
-              Stitches, or a public TikTok or Instagram post you choose. We
-              send that source to our processing providers so they can find a
+              Stitches, or a public TikTok or Instagram post you choose. We send
+              that source to our processing providers so they can find a
               reusable writing pattern and visual idea.
             </p>
             <p>
@@ -90,12 +88,50 @@ export default function PrivacyPage() {
             <ul>
               <li>Your name and email address</li>
               <li>Feedback, questions, or other messages</li>
+              <li>
+                App details and audience context you submit to the App Hook
+                Generator
+              </li>
             </ul>
 
-            <h3>Information Collected Automatically</h3>
+            <h3>Public Tools and Mailing List</h3>
             <p>
-              When you visit our website, standard hosting logs may record:
+              The Ad Variant Calculator and the other public calculators,
+              graders, brief builders, planners, checklists, courses, kits,
+              trackers, and worksheets work in your browser. We do not send
+              their writing, notes, planning numbers, campaign metrics, quotes,
+              costs, or results to our servers just to show your result.
             </p>
+            <p>
+              The public video tools read the video or image you choose in your
+              browser. Local tools may inspect technical facts, sparsely decode
+              frames or audio, estimate compression, or show a safe-zone
+              overlay. The media, filename, pixels, audio samples, timestamps,
+              technical facts, and report are not uploaded to ClipStitchr or
+              saved to your account.
+            </p>
+            <p>
+              Guided resources may save versioned checklist progress and notes
+              in local browser storage. CSV and Markdown files are built and
+              downloaded on your device. Those local drafts and files are not
+              synchronized to a ClipStitchr account.
+            </p>
+            <p>
+              The App Hook Generator sends the app details and audience context
+              you enter to our server, which fills a limited set of existing
+              ClipStitchr hook patterns. It does not send this information to an
+              outside AI provider or save the inputs or results to a ClipStitchr
+              account.
+            </p>
+            <p>
+              If you join the mailing list from a public tool, we store your
+              name, email address, and the tool you joined from in Convex. We
+              use those details to send the practical resources and product
+              updates you requested. You can unsubscribe at any time.
+            </p>
+
+            <h3>Information Collected Automatically</h3>
+            <p>When you visit our website, standard hosting logs may record:</p>
             <ul>
               <li>IP address</li>
               <li>Browser type and operating system</li>
@@ -105,9 +141,9 @@ export default function PrivacyPage() {
             <p>
               If you allow optional cookies, we may also remember a random
               visitor ID, your session, the page you landed on, where you came
-              from, campaign links, ad click IDs, and events such as waitlist
-              sign-ups, uploads, exports, AI generation requests, or future
-              purchases.
+              from, campaign links, ad click IDs, and events such as
+              mailing-list sign-ups, public tool use, uploads, exports, AI
+              generation requests, or future purchases.
             </p>
             <p>
               If analytics cookies are on, we use PostHog to understand how
@@ -119,12 +155,13 @@ export default function PrivacyPage() {
             <p>
               If marketing cookies are on, we may also send TikTok a hashed
               version of your email or account ID when you join the waitlist or
-              sign in. Hashing means TikTok does not receive the plain email or
+              sign in. Public tool mailing-list forms do not send your email to
+              TikTok. Hashing means TikTok does not receive the plain email or
               ID from us.
             </p>
             <p>
-              We use this to understand what is working and improve the site.
-              We do not use optional cookie data unless you allow it.
+              We use this to understand what is working and improve the site. We
+              do not use optional cookie data unless you allow it.
             </p>
           </section>
 
@@ -133,6 +170,8 @@ export default function PrivacyPage() {
             <p>We use the information we collect to:</p>
             <ul>
               <li>Run video normalization and stitching workflows</li>
+              <li>Create the public tool result you ask for</li>
+              <li>Send resources and product updates you requested</li>
               <li>Improve our website content and user experience</li>
               <li>Respond to your inquiries or feedback</li>
               <li>Understand how people use the site</li>
@@ -169,9 +208,9 @@ export default function PrivacyPage() {
           <section>
             <h2>Cookies</h2>
             <p>
-              Clerk authentication uses essential cookies and storage to keep you
-              signed in. Hosting or framework infrastructure may use essential
-              storage for basic functionality.
+              Clerk authentication uses essential cookies and storage to keep
+              you signed in. Hosting or framework infrastructure may use
+              essential storage for basic functionality.
             </p>
             <p>
               ClipStitchr also uses a required cookie to remember your cookie
@@ -209,26 +248,25 @@ export default function PrivacyPage() {
             <p>
               Our website is not directed at children under 13. We do not
               knowingly collect personal information from children. If you
-              believe a child has provided us with personal information,
-              please contact us and we will promptly delete it.
+              believe a child has provided us with personal information, please
+              contact us and we will promptly delete it.
             </p>
           </section>
 
           <section>
             <h2>Changes to This Policy</h2>
             <p>
-              We may update this Privacy Policy from time to time. Changes
-              will be posted on this page with an updated &quot;Last
-              updated&quot; date. We encourage you to review this page
-              periodically.
+              We may update this Privacy Policy from time to time. Changes will
+              be posted on this page with an updated &quot;Last updated&quot;
+              date. We encourage you to review this page periodically.
             </p>
           </section>
 
           <section>
             <h2>Contact</h2>
             <p>
-              If you have questions about this Privacy Policy, you can reach
-              us through the contact information provided on our website.
+              If you have questions about this Privacy Policy, you can reach us
+              through the contact information provided on our website.
             </p>
           </section>
         </div>

@@ -91,7 +91,7 @@ Add app-owned state for:
 - active entitlement tier;
 - AI credit or generation quota policy;
 - monthly reset rules;
-- free trial behavior;
+- paid subscription activation behavior;
 - grace-period behavior after failed payment;
 - cancellation behavior;
 - admin overrides or support credits;
@@ -105,7 +105,8 @@ given user is allowed to do.
 ## What It Does Not Solve
 
 The component does not define ClipStitchr pricing. Plans, usage limits, credit
-budgets, trial behavior, and cancellation policy still need product decisions.
+budgets, paid access activation, and cancellation policy still need product
+decisions. ClipStitchr does not offer a free plan or trial.
 
 The component does not replace rate limits. AI generation, R2 signed URLs,
 provider calls, polling, and Convex writes still need the existing rate-limit

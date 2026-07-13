@@ -31,4 +31,30 @@ describe("createTikTokViewContentPayload", () => {
       ],
     });
   });
+
+  it("labels public app marketing tools", () => {
+    expect(
+      createTikTokViewContentPayload("/tools/ad-variant-calculator"),
+    ).toMatchObject({
+      contents: [
+        {
+          content_category: "Tools",
+          content_id: "ad_variant_calculator",
+          content_name: "Ad Variant Calculator",
+        },
+      ],
+    });
+
+    expect(
+      createTikTokViewContentPayload("/tools/app-ugc-cost-calculator"),
+    ).toMatchObject({
+      contents: [
+        {
+          content_category: "Tools",
+          content_id: "app_ugc_cost_calculator",
+          content_name: "App UGC Production Cost Calculator",
+        },
+      ],
+    });
+  });
 });

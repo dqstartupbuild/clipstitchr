@@ -1,4 +1,6 @@
 import { resolveSiteUrl } from "./resolveSiteUrl";
+import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { publicToolKeys } from "@/lib/clipstitchr/tools/catalog/publicToolKeys";
 
 const configuredSiteUrl = resolveSiteUrl();
 
@@ -73,6 +75,20 @@ export const site = {
       changeFrequency: "weekly" as const,
       priority: 0.84,
     },
+    {
+      pathname: "/tools",
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    },
+    ...publicToolKeys.map((key) => {
+      const tool = publicToolCatalog[key];
+
+      return {
+        pathname: tool.pathname,
+        changeFrequency: tool.changeFrequency,
+        priority: tool.priority,
+      };
+    }),
     {
       pathname: "/pricing",
       changeFrequency: "weekly" as const,
