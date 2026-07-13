@@ -209,6 +209,9 @@ and the fixed PostHog and TikTok page classifiers.
 - Each public tool has a dedicated feature document beside this one.
 - `docs/backend/rate-limits.md` is the source of truth for both tool-lead and
   generator enforcement limits.
+- Shared lead validators use relative imports so the same bounded validation
+  runs under both Next.js and Convex's isolated TypeScript project, which does
+  not inherit the app-level `@/*` path alias.
 - `docs/analytics/posthog.md` and `docs/analytics/tiktok.md` document the fixed
   public-tool analytics contract.
 - `web/lib/metadata.ts` supplies the existing metadata helper.

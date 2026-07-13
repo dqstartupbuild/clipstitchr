@@ -1,6 +1,6 @@
-import type { ToolLeadInput } from "@/lib/clipstitchr/tools/toolLeads/ToolLeadInput";
-import { toolLeadEmailPattern } from "@/lib/clipstitchr/tools/toolLeads/toolLeadEmailPattern";
-import { toolLeadFieldLimits } from "@/lib/clipstitchr/tools/toolLeads/toolLeadFieldLimits";
+import type { ToolLeadInput } from "./ToolLeadInput";
+import { toolLeadEmailPattern } from "./toolLeadEmailPattern";
+import { toolLeadFieldLimits } from "./toolLeadFieldLimits";
 
 export function getToolLeadInputIsValid(input: ToolLeadInput) {
   return (
