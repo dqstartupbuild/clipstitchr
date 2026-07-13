@@ -24,6 +24,19 @@ The course does not source creators, inspect footage, unlock the paid Hook
 library, produce assets, or export ads. It is educational preparation for the
 paid workflow.
 
+## Approved Future Email Experience
+
+The current self-paced browser course remains unchanged until the hybrid
+lead-capture plan ships. Under that approved future plan, the public page keeps
+the curriculum and one complete sample lesson open. Required name and email
+unlock explicit enrollment in a five-lesson Loops marketing Workflow plus
+browser-local worksheets. The approved browser worksheets unlock immediately,
+while a new or opted-out address confirms its email before the Workflow begins.
+The course must honor unsubscribe and must not use Loops transactional
+templates. See
+`docs/features/public-tool-lead-capture-strategy.md` and
+`docs/backend/loops-email-integration.md`.
+
 ## File Tree
 
 ```text

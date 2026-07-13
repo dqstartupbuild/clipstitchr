@@ -1,11 +1,26 @@
 # Public Tool and Resource Batch 16–50 Design
 
+## Historical Status
+
+This document records the implementation contract used to complete the
+fifty-tool library. Its immediate-result and optional-form decisions still
+describe the shipped behavior.
+
+The later approved acquisition design in
+`docs/features/public-tool-lead-capture-strategy.md` supersedes those decisions
+for a future implementation. It introduces open-result, useful-preview,
+gated-portability, and email-native modes while retaining public standalone
+value. Loops is now the selected future email provider, with its integration
+boundary recorded in `docs/backend/loops-email-integration.md`. Until that
+design is implemented, the behavior and verification requirements in this
+historical document remain authoritative for the running application.
+
 ## Understanding Lock
 
-The approved lead-magnet portfolio contains fifty numbered capabilities. The
-current public catalog implements fifteen of them. “Implement the remaining 35
-tools/resources” therefore means the portfolio entries that do not have an
-existing equivalent:
+The approved lead-magnet portfolio contains fifty numbered capabilities. At the
+start of this batch, the public catalog implemented fifteen of them.
+“Implement the remaining 35 tools/resources” therefore meant the portfolio
+entries that did not have an existing equivalent:
 
 - Planning: 1–4 and 6–10.
 - Hook resources: 14 and 16–20.
@@ -13,15 +28,17 @@ existing equivalent:
 - Campaign and business planning: 33 and 37–40.
 - High-value experiences: 41–46, 49, and 50.
 
-The existing UGC Ad Brief Builder maps portfolio item 47. Portfolio item 3 is
-still missing because it is a deliberately blank, immediately reusable brief
-template rather than the personalized builder. The other existing mappings are
-recorded in the completion matrix below so the final audit can prove all fifty
-portfolio numbers without manufacturing duplicate pages.
+The already-existing UGC Ad Brief Builder mapped portfolio item 47. Portfolio
+item 3 was still missing because it was a deliberately blank, immediately
+reusable brief template rather than the personalized builder. The other
+already-existing mappings are recorded in the completion matrix below so the
+final audit can prove all fifty portfolio numbers without manufacturing
+duplicate pages.
 
-The audience remains app founders and app marketers. Every resource must
-deliver its useful result before optional mailing-list capture. ClipStitchr has
-no free product account, free production tier, or free finished-ad export.
+The audience remains app founders and app marketers. For this completed batch,
+every resource had to deliver its complete useful result before optional
+mailing-list capture. ClipStitchr has no free product account, free production
+tier, or free finished-ad export.
 
 ## Assumptions and Non-Functional Requirements
 
@@ -116,12 +133,12 @@ that the implementation does not provide.
 | 1 | 30-Day App Content Plan — `/tools/30-day-app-content-plan` | Interactive plan | Goal, cadence, launch stage, asset coverage, and on-camera comfort produce exactly 30 dated production, publishing, repurposing, and review actions. Non-posting days contain useful batch or learning work. | No scripts, scheduling, publishing, persistence, or media. |
 | 2 | 100 App Demo Video Hooks — `/tools/100-app-demo-video-hooks` | Filterable collection | One hundred individually authored examples across ten angles, each with a visual handoff and claim-safety note. | Fixed educational examples; no personalization, saving, or full Hook Lab library. |
 | 3 | App UGC Ad Brief Template — `/tools/app-ugc-ad-brief-template` | Guided template | A blank copyable brief and one complete example covering claims, deliverables, reusable takes, demo handoff, naming, usage questions, and reshoots. | No personalized generation, creator management, rights validation, or production. |
-| 4 | App Demo Recording Checklist — `/tools/app-demo-recording-checklist` | Checklist | Capture-method-aware eighteen-item preparation list with progress, blockers, and copyable incomplete priorities. | No screen recording, file inspection, repair, or export. |
+| 4 | Product Demo Recording Checklist — `/tools/app-demo-recording-checklist` | Checklist | Capture-method-aware eighteen-item preparation list with progress, blockers, and copyable incomplete priorities. | No screen recording, file inspection, repair, or export in this batch; a future print-only view is allowed by the later lead-capture strategy. |
 | 6 | TikTok and Reels Creative Testing Tracker — `/tools/tiktok-reels-creative-testing-tracker` | Editable table | Session rows for channel, hook, visual, CTA, spend, impressions, clicks, installs, and conversions calculate CTR, install rate, CPA, and CPI and export CSV/Markdown. | No platform sync, attribution claims, persistent database, or production. |
 | 7 | UGC Creator Handoff Kit — `/tools/ugc-creator-handoff-kit` | Guided kit | Delivery checklist, folder layout, upload manifest, naming example, usage-information request, missing-file note, and reshoot template. | No upload portal, storage, payment, rights verification, or legal advice. |
 | 8 | What Should I Post? Decision Tree — `/tools/what-should-i-post-decision-tree` | Interactive decision | Goal, funnel stage, assets, on-camera preference, and capacity return one recommended format, three prompts, required captures, and one relevant next tool. | No finished scripts, calendar, scheduling, or production. |
 | 9 | App Marketing Content Calendar — `/tools/app-marketing-content-calendar` | Editable table | Month, cadence, campaign dates, pillars, channels, owners, and assets create dated publish slots with pillar, CTA role, owner, and status; export CSV. | No publishing, reminders, persistent collaboration, or media. |
-| 10 | Short-Form Ad Preflight Checklist — `/tools/short-form-ad-preflight-checklist` | Checklist | Twenty checks across hook, demo, proof, claims, CTA, captions, audio, framing, rights, and destination; safety blockers override the percentage. | No media analysis, rights verification, approval prediction, editing, or export. |
+| 10 | Short-Form Ad Preflight Checklist — `/tools/short-form-ad-preflight-checklist` | Checklist | Twenty checks across hook, demo, proof, claims, CTA, captions, audio, framing, rights, and destination; safety blockers override the percentage. | No media analysis, rights verification, approval prediction, editing, or export in this batch; a future print-only view is allowed by the later lead-capture strategy. |
 | 14 | 50 App-Ad Hook Structures — `/tools/app-ad-hook-structures` | Filterable collection | Fifty distinct frameworks with formula, intent, example, opening visual, misuse warning, and claim guardrail. | No unsupported “proven” claim, personalization, saving, or production. |
 | 16 | UGC Opening-Line Prompt Cards — `/tools/ugc-opening-line-prompt-cards` | Filterable collection | Twenty-four recording prompts across six categories, each with delivery direction, alternate take, and proof guardrail. | No complete scripts, personalized generation, recording, or assembly. |
 | 17 | App Category Hook Packs — `/tools/app-category-hook-packs` | Filterable collection | Six category packs with ten tailored fill-in structures and category-specific risky-claim reminders. | No app-specific generation, unlimited library, saving, or production. |
@@ -129,7 +146,7 @@ that the implementation does not provide.
 | 19 | App Hook Testing Matrix — `/tools/app-hook-testing-matrix` | Matrix builder | Up to five hooks, three visuals, and one stable CTA produce a capped control, hook-only challenger, and visual follow-up matrix with the changed variable named per row. | No assets, test execution, tracking, prediction, or persistence. |
 | 20 | Why Did This Ad Work? Template — `/tools/why-did-this-ad-work-template` | Worksheet | Manual beat and evidence fields produce a Markdown analysis separating observations, inferences, transferable principles, and one controlled follow-up hypothesis. | No media import, transcription, attribution, teardown library, or saving. |
 | 22 | App-Ad Dead-Space Finder — `/tools/app-ad-dead-space-finder` | Local media diagnostic | Bounded sparse audio RMS and frame-luma sampling identify timestamped spans worth human review with adjustable sensitivity and minimum duration. | Candidate detection only; no trimming, timeline, transformation, or export. |
-| 25 | TikTok Safe-Zone Overlay — `/tools/tiktok-safe-zone-overlay` | Local image preview | A local screenshot/frame and versioned placement preset show conservative obstruction areas and whether a draggable text box intersects them. | No burned-in text, edited-image export, storage, or permanent platform certification. |
+| 25 | TikTok Safe-Zone Overlay — `/tools/tiktok-safe-zone-overlay` | Local image preview | A local screenshot/frame and versioned placement preset show conservative obstruction areas and whether a draggable text box intersects them. | No burned-in text, visitor-image export, storage, or permanent platform certification; a future static reference pack must contain no visitor media. |
 | 26 | App Video Compression Estimator — `/tools/app-video-compression-estimator` | Calculator | Local facts or manual duration plus selected video/audio bitrates and upload speed produce output-size range, reduction range, bytes/minute, and transfer estimate. | No transcoding, compression, repair, upload, or file output. |
 | 27 | Short-Form Video Specs Cheat Sheet — `/tools/short-form-video-specs-cheat-sheet` | Versioned collection | Filterable placement records expose ratio, dimensions, duration, container, codec, frame-rate, audio, practical notes, authoritative source, and last-verified date. | Reference only; no certification, validation, or normalization. |
 | 28 | Clip Naming System Generator — `/tools/clip-naming-system-generator` | Generator | App, campaign, role, creator, concept, market, date, version, separator, and token order produce a sanitized convention, legend, and examples. | No file renaming, metadata persistence, asset library, or search. |
@@ -145,7 +162,7 @@ that the implementation does not provide.
 | 43 | UGC-to-App-Ad Mini-Course — `/tools/ugc-to-app-ad-mini-course` | Self-paced course | Five lessons each include explanation, example, exercise, answer rationale, completion check, and an accumulating campaign worksheet. | No creator sourcing, footage analysis, assembly, or export. |
 | 44 | App Creative Testing System Workshop — `/tools/app-creative-testing-system-workshop` | Interactive workshop | A 45-minute-equivalent workshop creates a recurring-system charter for goals, variable hierarchy, roles, naming, evidence, review cadence, and asset flow. | No tests, performance ingestion, asset management, or creatives. |
 | 45 | Short-Form Content System Notion-Ready Kit — `/tools/short-form-content-system-notion-kit` | Downloadable kit | Five valid importable CSV templates—Idea Bank, Shoot Planner, Asset Inventory, Publishing Calendar, Results Tracker—plus examples, property notes, and setup guide. | No Notion sync, duplicate-template integration, storage, publishing, or campaign management. |
-| 46 | App Ad Teardown Library — `/tools/app-ad-teardown-library` | Filterable collection | At least twelve original educational pattern teardowns with category, stage, hook, opening, handoff, proof, pacing, CTA, reusable pattern, limitations, and source context. | No copied media, unsupported performance claims, downloads, or production. |
+| 46 | App Ad Teardown Library — `/tools/app-ad-teardown-library` | Filterable collection | At least twelve original educational pattern teardowns with category, stage, hook, opening, handoff, proof, pacing, CTA, reusable pattern, limitations, and source context. | No copied media, unsupported performance claims, downloads in this batch, or production; a future text-only Markdown export is allowed by the later lead-capture strategy. |
 | 49 | Raw Clips to Campaign Planner — `/tools/raw-clips-to-campaign-planner` | Flagship planner | Named text-only asset inventory produces up to six diverse compatibility-scored concept cards, coverage, reuse counts, missing captures, and a production handoff. | No uploads, persistent library, stitching, rendering, or export. |
 | 50 | ClipStitchr Savings Report — `/tools/clipstitchr-savings-report` | Scenario calculator | Current and modeled monthly workflow inputs expose time and cost differences, cost/creative, utilization, assumptions, and formulas using the shared numeric plan source. | No guaranteed savings, production, or performance promise. |
 
@@ -185,8 +202,10 @@ that the implementation does not provide.
   meaningful records. Superficial cross-product permutations do not count.
 - The Notion-ready kit is complete only when all five CSV files download and
   import as valid tabular data.
-- The sprint, course, and workshop expose all promised material immediately;
-  the mailing-list form does not pretend to deliver them.
+- In the shipped batch, the sprint, course, and workshop expose all promised
+  material immediately; the mailing-list form does not pretend to deliver
+  them. Their approved future entry gates remain blocked on the verified Loops
+  Workflow, unsubscribe, retry, webhook, and failure-monitoring contract.
 - The campaign planner stays text-only and session-only. Accepting or retaining
   media would leak toward the paid asset library and production workflow.
 
@@ -213,5 +232,5 @@ that the implementation does not provide.
 | Keep one `/tools` catalog. | Add a parallel `/resources` catalog. | One source prevents drift across SEO, analytics, leads, and discovery. |
 | Reuse four resource engines. | Clone complete page trees or make one monolithic renderer. | Focused reusable behavior preserves atomicity while keeping each resource’s content and logic distinct. |
 | Rename “proven” structures and external “benchmark” claims. | Publish unsupported authority claims. | The deterministic library has no performance study or maintained market dataset. |
-| Keep results available before email capture. | Gate downloads or results. | Standalone usefulness is the approved acquisition rule, and the current form cannot deliver files. |
+| Ship the batch with results available before email capture. | Gate downloads or results during the initial build. | Standalone usefulness was the approved launch rule, and the current form cannot deliver files. The later hybrid strategy is documented separately and is not yet shipped. |
 | Defer AI, providers, Hook-library expansion, and platform sync. | Add them to all resources now. | Demand, privacy, cost, evaluation, and paid-boundary evidence must precede those integrations. |

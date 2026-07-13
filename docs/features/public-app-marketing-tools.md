@@ -42,8 +42,9 @@ hooks, names, and email addresses are not included in those page-view events.
 
 ## Shared Mailing-List Capture
 
-All fifty tools reuse `ToolLeadCaptureForm` and post to
-`/api/tools/[tool]/lead`. The browser sends only name and email. The dynamic
+All fifty tools currently expose their complete result before reusing the
+optional `ToolLeadCaptureForm` and posting to `/api/tools/[tool]/lead`. The
+browser sends only the required name and email fields. The dynamic
 route accepts only a fixed catalog key and uses that route key as the source,
 so a caller cannot choose an arbitrary source in the request body.
 
@@ -64,6 +65,53 @@ only the catalog tool source. They do not emit failure or
 created-versus-existing status events, and they do not fire a TikTok Lead
 conversion. The legacy `/sign-up` waitlist flow remains separate and
 unchanged.
+
+The current lead response does not return a download, result, access token,
+subscriber status, created-versus-existing status, or browser unlock. Existing
+waitlist entries are left unchanged, so a second accepted submission from a
+different tool does not preserve that later tool interest.
+
+## Approved Hybrid Lead Capture
+
+`docs/features/public-tool-lead-capture-strategy.md` records the approved next
+lead-capture design. It is not implemented yet and does not change the current
+verification baseline in this document.
+
+The future design assigns all fifty tools to exactly one mode:
+
+- Sixteen tools keep their complete core result open and use an optional
+  companion offer.
+- Thirteen tools show a useful result preview before unlocking deeper value.
+- Eighteen resources remain fully usable on-page while name and email unlock a
+  reusable export.
+- Three email-native experiences may require signup at entry only after a
+  reliable delivery system exists.
+
+Both name and email remain required. One accepted submission should return an
+opaque recognition token and set a non-identifying local marker that unlocks
+browser-local companion, preview, and portability value without storing either
+field locally. Email-native sequences still require explicit enrollment. The
+initial gated experience unlocks browser-local value; it must not claim to email
+reports, files, courses, or workshop access through the current waitlist flow.
+
+The future data model must preserve accepted form captures and bounded later
+token-recognized interactions separately from the canonical marketing contact
+so first-source, latest-source, repeat-tool, and gate-variant attribution can be
+measured. Tool inputs, generated results, selected media, and the unlock token
+remain excluded from analytics.
+
+Loops is the approved provider for the future email portion. ClipStitchr will
+use a focused Convex adapter over Loops' official `loops` JavaScript SDK rather
+than mount the community `@devwithbobby/loops` component as the foundational
+integration. Convex remains authoritative for contacts, consent, attribution,
+unlocks, and durable provider operations; Loops owns marketing Workflows,
+campaigns, templates, unsubscribe and suppression behavior, and delivery.
+Provider sync happens after the canonical capture transaction so a Loops outage
+does not block an earned browser result. Signed Loops webhooks reconcile
+opt-outs and delivery failures back into Convex. Browser value unlocks
+immediately, while a new or opted-out address completes a separate confirmation
+before any marketing Workflow begins. The full decision is recorded in
+`docs/backend/loops-email-integration.md`.
 
 ## Tool Execution and Privacy
 
@@ -206,6 +254,13 @@ and the fixed PostHog and TikTok page classifiers.
   shared resource engines, high-risk boundaries, and completion audit.
 - `docs/features/public-tool-quality-register.md` records candid readiness and
   refinement status for every public tool.
+- `docs/features/public-tool-lead-capture-strategy.md` records the approved
+  four-mode gating map, required-field contract, unlock behavior, measurement
+  plan, and rollout guardrails. It is a future implementation design.
+- `docs/backend/loops-email-integration.md` locks Loops as the future email
+  provider and defines the official-SDK adapter, source-of-truth boundary,
+  asynchronous provider operations, signed webhooks, consent rules, retries,
+  and marketing-versus-transactional classification.
 - Each public tool has a dedicated feature document beside this one.
 - `docs/backend/rate-limits.md` is the source of truth for both tool-lead and
   generator enforcement limits.

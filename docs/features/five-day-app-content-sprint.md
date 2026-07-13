@@ -23,6 +23,18 @@ draft, copy it, or download Markdown. No account or server storage is used.
 The sprint does not write finished scripts, record footage, assemble ads,
 schedule posts, or publish. Production remains the paid ClipStitchr job.
 
+## Approved Future Email Experience
+
+The current browser-local sprint remains unchanged until the hybrid
+lead-capture plan ships. Under that approved future plan, the public page keeps
+the curriculum, outcomes, and one complete sample day open. Required name and
+email unlock explicit enrollment in a five-message Loops marketing Workflow.
+The public sample remains available while a new or opted-out address confirms
+its email; the Workflow begins only after confirmation. The sequence must honor
+unsubscribe and must not use Loops transactional templates. See
+`docs/features/public-tool-lead-capture-strategy.md` and
+`docs/backend/loops-email-integration.md`.
+
 ## File Tree
 
 ```text

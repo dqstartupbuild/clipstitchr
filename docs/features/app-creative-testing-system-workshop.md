@@ -24,6 +24,19 @@ The workshop defines the operating system, while the existing blueprint and
 test-plan tools design individual campaigns. It does not execute tests, ingest
 performance, manage assets, or produce creative.
 
+## Approved Future Email Experience
+
+The current browser-local workshop remains unchanged until the hybrid
+lead-capture plan ships. Under that approved future plan, the public page keeps
+the agenda, outcomes, and a useful preview open. Required name and email unlock
+explicit enrollment in a Loops marketing Workflow that delivers workshop
+access and the Markdown workbook. The public preview remains available while a
+new or opted-out address confirms its email; delivery begins only after
+confirmation. The workshop must honor unsubscribe and must not use Loops
+transactional templates. See
+`docs/features/public-tool-lead-capture-strategy.md` and
+`docs/backend/loops-email-integration.md`.
+
 ## File Tree
 
 ```text

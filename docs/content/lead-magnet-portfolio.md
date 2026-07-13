@@ -4,15 +4,31 @@
 
 This portfolio contains 50 free tools and resources designed to attract indie app founders, app marketers, UGC creators and editors, and small app-marketing teams or agencies. Each lead magnet gives the visitor a useful result while leading naturally toward ClipStitchr's paid workflow.
 
+“Free” means no monetary charge and no ClipStitchr product account. Under the
+approved future gating strategy, some deeper results or portable artifacts also
+require the visitor's name and email after meaningful public value is shown.
+
 ## Implementation Status
 
 All 50 entries are implemented as individual public pages in the searchable
 ClipStitchr tools library. Each entry has a stable catalog identity, a
-dedicated feature document, automated coverage, related-tool links, an
+dedicated feature document, automated coverage, related-tool links, a current
 optional mailing-list path, and a paid-account call to action. The candid
 functional proof, standalone value, paid boundary, known limitation, and next
 refinement for every entry live in
 `docs/features/public-tool-quality-register.md`.
+
+The approved future lead-capture model is documented in
+`docs/features/public-tool-lead-capture-strategy.md`. It assigns every tool to
+an open-result, useful-preview, gated-portability, or email-native mode. That
+model has not shipped yet; the current pages still expose their complete result
+before the optional form.
+
+Loops is the selected provider for the future segmented nurture and bounded
+transactional-email capability. The approved implementation is a thin
+ClipStitchr-owned Convex adapter over Loops' official JavaScript SDK, not the
+community Loops Convex component. The full provider and consent boundary is in
+`docs/backend/loops-email-integration.md`.
 
 The free library intentionally stops at diagnosis, planning, education,
 estimation, and production preparation. It does not render finished ads,
@@ -23,7 +39,8 @@ The primary acquisition audience is indie app founders and app marketers. Creato
 
 ClipStitchr does not offer a free product tier. The intended conversion paths are:
 
-- Lead magnet to email signup to an email nurture sequence to a paid account.
+- Lead magnet to mailing-list signup to a future segmented nurture sequence to
+  a paid account.
 - High-intent interactive tool to a useful result or preview to a paid account.
 
 Free resources should help people diagnose, plan, calculate, organize, or prepare their short-form content. They should not export finished stitched videos, because producing and managing finished creative is the core paid job ClipStitchr performs.
@@ -39,7 +56,7 @@ Free resources should help people diagnose, plan, calculate, organize, or prepar
 
 The existing portfolio should supply the first SEO tool library. Do not create another arbitrary list of 50 tools before validating the search demand, competition, buyer intent, and conversion performance of these ideas.
 
-Each SEO tool should target one narrow problem an app founder or app marketer is already trying to solve. The page should provide a useful result, explain the next action in plain language, offer to email the complete or editable result when appropriate, and connect that result to a paid ClipStitchr workflow.
+Each SEO tool should target one narrow problem an app founder or app marketer is already trying to solve. The page should provide a useful result, explain the next action in plain language, offer an honest deeper result or reusable artifact when appropriate, and connect that result to a paid ClipStitchr workflow. Under the approved future model, accepted forms will unlock browser-local value immediately and will not claim that a result will arrive by email until delivery exists.
 
 Prioritize potential tools using these criteria:
 
@@ -55,23 +72,26 @@ Validate keyword demand before choosing final page names or URL slugs. Build add
 
 ### Priority SEO Tool Candidates
 
+The priority values below are search-strategy rankings, not the portfolio
+numbers used in the fifty-tool mapping.
+
 | Priority | Tool | Primary searcher | Why it fits ClipStitchr | Suggested conversion |
 |---|---|---|---|---|
-| 1 | App Hook Generator | App founders, App marketers | Solves an immediate app-ad ideation problem and leads directly into Hook Lab and Stitchr. | Email the complete hook set, then offer paid signup. |
+| 1 | App Hook Generator | App founders, App marketers | Solves an immediate app-ad ideation problem and leads directly into Hook Lab and Stitchr. | Show three complete hooks, unlock all eight, then offer paid signup. |
 | 2 | Ad Variant Calculator | App founders, App marketers | Makes the production potential of existing hooks, UGC clips, demos, and calls to action visible. | Show the calculation immediately, then offer a paid workflow for producing the variants. |
-| 3 | Product Demo Readiness Checker | App founders | Helps founders prepare the demo footage required by ClipStitchr's core workflow. | Email a detailed readiness report, then offer paid signup. |
-| 4 | Hook Strength Grader for App Ads | App founders, App marketers | Captures high-intent visitors actively improving an app ad. | Show the score and key fix, then email the full breakdown. |
-| 5 | UGC Ad Brief Builder for Apps | App founders, App marketers | Helps users commission footage that can later become reusable ClipStitchr source material. | Email or copy the completed brief, then introduce the paid production workflow. |
-| 6 | App Ad Hook Rewrite Tool | App founders, App marketers | Turns weak app-ad openings into testable alternatives and introduces creative variation. | Preview several rewrites and email the complete set. |
-| 7 | 9:16 App Demo Video Checker | App founders | Demonstrates ClipStitchr's video expertise while preparing footage for the product. | Show essential checks immediately and email the detailed report. |
-| 8 | App Ad Creative Test Plan Generator | App marketers, App founders | Creates demand for multiple creative variants and repeatable production. | Email the plan, then offer paid signup to produce it. |
-| 9 | Hook-to-Visual Matchmaker for App Ads | App founders, App marketers | Connects written hooks to UGC and product-demo visuals, closely matching ClipStitchr's content model. | Email the complete storyboard or testing set. |
-| 10 | App UGC Production Cost Calculator | App founders, App marketers | Makes editing, revision, creator, and unused-footage costs concrete. | Show estimated cost and offer a personalized savings report by email. |
+| 3 | Product Demo Readiness Checker | App founders | Helps founders prepare the demo footage required by ClipStitchr's core workflow. | Show the verdict and largest blocker, then unlock the detailed remediation report. |
+| 4 | Hook Strength Grader for App Ads | App founders, App marketers | Captures high-intent visitors actively improving an app ad. | Show the score and key fix, then unlock the full breakdown. |
+| 5 | UGC Ad Brief Builder for Apps | App founders, App marketers | Helps users commission footage that can later become reusable ClipStitchr source material. | Show the brief summary, unlock the complete handoff, then introduce the paid production workflow. |
+| 6 | App Ad Hook Rewrite Tool | App founders, App marketers | Turns weak app-ad openings into testable alternatives and introduces creative variation. | Show two complete rewrites and unlock the complete set. |
+| 7 | 9:16 App Demo Video Checker | App founders | Demonstrates ClipStitchr's video expertise while preparing footage for the product. | Show the complete technical verdict and offer an optional fix report. |
+| 8 | App Ad Creative Test Plan Generator | App marketers, App founders | Creates demand for multiple creative variants and repeatable production. | Show the hypothesis and first wave, then unlock the complete plan. |
+| 9 | Hook-to-Visual Matchmaker for App Ads | App founders, App marketers | Connects written hooks to UGC and product-demo visuals, closely matching ClipStitchr's content model. | Show the best match, then unlock alternatives and testing notes. |
+| 10 | App UGC Production Cost Calculator | App founders, App marketers | Makes editing, revision, creator, and unused-footage costs concrete. | Show the complete estimate and offer an optional editable budget sheet. |
 | 11 | App Ad Cost per Creative Calculator | App founders, App marketers | Appeals to budget-conscious buyers managing creative output. | Show results immediately with a direct paid-account call to action. |
-| 12 | App Ad Break-Even Calculator | App founders, App marketers | Attracts commercially motivated visitors, although it is less directly tied to production. | Email scenarios and connect creative testing to acquisition goals. |
-| 13 | App Ad Shot List Generator | App founders, App marketers | Helps users capture the source material needed for short-form app ads. | Email an editable shot list and introduce ClipStitchr. |
-| 14 | App UGC Clip Readiness Checker | App marketers, App founders | Helps buyers assess creator footage before editing and reuse. | Email the full clip report, then offer paid signup. |
-| 15 | App Ad Creative Testing Blueprint Builder | App marketers | Serves sophisticated, high-intent buyers who already understand creative testing. | Gate the personalized blueprint by email and follow with a paid-product invitation. |
+| 12 | App Ad Break-Even Calculator | App founders, App marketers | Attracts commercially motivated visitors, although it is less directly tied to production. | Show the complete scenario and offer an optional editable model. |
+| 13 | App Ad Shot List Generator | App founders, App marketers | Helps users capture the source material needed for short-form app ads. | Show the essential shots, then unlock the complete production list. |
+| 14 | App UGC Clip Readiness Checker | App marketers, App founders | Helps buyers assess creator footage before editing and reuse. | Show readiness and the top issue, then unlock the complete clip report. |
+| 15 | App Ad Creative Testing Blueprint Builder | App marketers | Serves sophisticated, high-intent buyers who already understand creative testing. | Show the testing lanes and first experiment, then unlock the complete blueprint. |
 
 ### Recommended Launch Sequence
 
@@ -91,7 +111,13 @@ Use a balanced funnel portfolio rather than relying on one format:
 - Approximately 15 lightweight interactive tools, including generators, graders, and calculators.
 - Approximately 10 higher-value tools or educational experiences.
 
-Downloadable resources primarily grow the mailing list. Interactive tools can collect an email to deliver a complete or editable result, then offer a direct paid-account call to action when the visitor shows strong intent.
+Under the approved future model, downloadable resources will primarily grow the
+mailing list by keeping their useful on-page version open and placing
+portability behind the required name-and-email exchange. Divisible interactive
+tools will expose a useful preview before unlocking the complete result.
+Calculators and technical checkers will keep their core answer open and use
+optional companion offers. The authoritative mapping lives in
+`docs/features/public-tool-lead-capture-strategy.md`.
 
 ## 1-10: Planning and Strategy Resources
 
@@ -101,7 +127,7 @@ Downloadable resources primarily grow the mailing list. Interactive tools can co
 | 2 | 100 Hooks for App Demo Videos | Founders, Marketers | Users find hooks, then need to turn them into finished UGC-demo ads. | Low |
 | 3 | UGC Ad Brief Template | Founders, Agencies | The brief generates footage that can be organized and stitched inside ClipStitchr. | Low |
 | 4 | Product Demo Recording Checklist | Founders | Helps users record clean demos ready for ClipStitchr. | Low |
-| 5 | Short-Form Ad Shot List Generator | Founders, Creators | Email the completed shot list, then introduce the workflow for assembling those clips. | Medium |
+| 5 | Short-Form Ad Shot List Generator | Founders, Creators | Show the essential shots, unlock the completed list, then introduce the workflow for assembling those clips. | Medium |
 | 6 | TikTok and Reels Creative Testing Tracker | Marketers, Agencies | Tracking multiple creatives highlights the need for batch production. | Low |
 | 7 | UGC Creator Handoff Kit | Founders, Agencies | Standardizes incoming footage before it enters the ClipStitchr library. | Low |
 | 8 | “What Should I Post?” Decision Tree | Founders | Recommendations link to relevant ClipStitchr workflows and educational emails. | Low |
@@ -112,7 +138,7 @@ Downloadable resources primarily grow the mailing list. Interactive tools can co
 
 | # | Lead magnet | Best audience | Conversion bridge | Effort |
 |---|---|---|---|---|
-| 11 | App Hook Generator | Founders, Marketers | Generate several hooks, email the full set, then show how Hook Lab and Stitchr turn them into ads. | Medium |
+| 11 | App Hook Generator | Founders, Marketers | Show three complete hooks, unlock all eight, then show how Hook Lab and Stitchr turn them into ads. | Medium |
 | 12 | Hook Strength Grader | All audiences | Scores clarity, curiosity, specificity, and fit; ClipStitchr becomes the next step for using the improved hook. | Medium |
 | 13 | Hook Rewrite Tool | Founders, Creators | Produces several clearer versions and introduces batch creative testing. | Medium |
 | 14 | 50 Proven Hook Structures | All audiences | A categorized swipe file that leads naturally into Hook Lab Ideas. | Low |
@@ -157,12 +183,12 @@ Downloadable resources primarily grow the mailing list. Interactive tools can co
 
 | # | Lead magnet | Best audience | Conversion bridge | Effort |
 |---|---|---|---|---|
-| 41 | Personalized Short-Form Content Audit | Founders, Marketers | Delivers an emailed scorecard with gaps, priorities, and a paid ClipStitchr call to action. | Medium |
-| 42 | Five-Day App Content Sprint | Founders | Uses a daily email challenge to move from footage inventory to five publishable ad concepts. | Low |
+| 41 | Personalized Short-Form Content Audit | Founders, Marketers | Shows a score and first priority before unlocking the complete audit and fourteen-day plan. | Medium |
+| 42 | Five-Day App Content Sprint | Founders | Becomes a guided email experience only after reliable delivery exists; the current browser-local sprint remains open. | Low |
 | 43 | UGC-to-App-Ad Mini-Course | Founders, Creators | Teaches the strategy while reserving fast, repeatable production for ClipStitchr. | Medium |
-| 44 | Build Your First Creative Testing System Workshop | Founders, Marketers | A live or recorded workshop that ends by demonstrating the ClipStitchr workflow. | Medium |
+| 44 | Build Your First Creative Testing System Workshop | Founders, Marketers | The current self-guided workshop demonstrates the ClipStitchr workflow; future email enrollment may deliver access and a workbook. | Medium |
 | 45 | Short-Form Content System Notion Kit | All audiences | Includes an idea bank, shoot planner, asset inventory, publishing calendar, and results tracker. | Medium |
-| 46 | App Ad Teardown Library | Founders, Marketers | Provides email-gated breakdowns of hooks, visuals, demos, proof, pacing, and reusable patterns. | High |
+| 46 | App Ad Teardown Library | Founders, Marketers | Keeps individual teardowns public and unlocks an organized portable library. | High |
 | 47 | UGC Brief Builder | Founders, Agencies | Produces an email-ready creator brief; paid ClipStitchr handles the resulting footage. | Medium |
 | 48 | Creative Testing Blueprint Builder | Marketers, Agencies | Creates a personalized testing map from product, audience, budget, and available assets. | High |
 | 49 | Raw-Clips-to-Campaign Planner | All audiences | Turns existing footage into recommended ad combinations and a production plan. | High |
@@ -184,14 +210,17 @@ The Ad Variant Calculator is the best low-effort interactive starting point. The
 
 Use plain, outcome-focused copy that matches the visitor's intent:
 
-- “Send me the full plan.”
-- “Email my results.”
+- “Unlock my complete plan.”
+- “Unlock all 8 hooks.”
 - “Get the editable version.”
 - “Turn these clips into ads with ClipStitchr.”
 - “Build your content system in ClipStitchr.”
 - “Stop planning and start producing.”
 
-Do not promise a free account, free trial, or free exports unless the product strategy changes.
+Do not promise emailed results until delivery exists. Do not promise a free
+account, free trial, or free finished-video export unless the product strategy
+changes. Browser-local worksheet and planning exports are allowed when the
+tool's documented contract includes them.
 
 ## Operating Assumptions
 
@@ -200,8 +229,24 @@ Do not promise a free account, free trial, or free exports unless the product st
 - Uploaded media should be processed in the browser when practical. Any stored media needs clear retention and deletion rules.
 - Interactive tools should fail gracefully and preserve visitor inputs when possible.
 - Evergreen resources are preferred over trend-dependent assets that require constant maintenance.
-- Every lead magnet must provide standalone value before asking for an email address or paid signup.
-- Email capture is the default conversion for lower-intent resources. A paid-account call to action can be shown directly after high-intent results.
+- Every lead magnet must provide meaningful standalone value before asking for
+  name and email. The three future email-native experiences instead expose
+  their curriculum, outcomes, and a useful sample before signup.
+- Both name and email are required by the shared form.
+- One accepted signup should use an opaque recognition token plus a
+  non-identifying local marker to unlock browser-local gated value without
+  storing the submitted name or email locally. Email-native sequences still
+  require explicit enrollment.
+- Browser value unlocks immediately, but a new or opted-out address must confirm
+  its email before a Loops marketing Workflow begins.
+- Email capture is the default conversion for lower-intent resources. A
+  paid-account call to action can be shown directly after high-intent results.
+- Loops owns future marketing Workflows, templates, unsubscribe and suppression
+  behavior, and delivery. Convex remains authoritative for contact consent,
+  tool attribution, browser unlock, and durable provider operations.
+- Courses, sprints, workshops, nurture, and paid-account invitations are
+  marketing email and must honor unsubscribe. They are never sent through a
+  transactional template.
 
 ## Decision Log
 
@@ -215,3 +260,8 @@ Do not promise a free account, free trial, or free exports unless the product st
 | Prioritize evergreen resources. | Center the portfolio on frequently changing trends. | Evergreen assets are easier to maintain and can compound over time. |
 | Prioritize app founders and app marketers for SEO. | Pursue larger, broader traffic from creators and general social marketers. | Smaller, higher-intent traffic is more likely to understand the problem and become a paid ClipStitchr customer. |
 | Build the initial SEO library from the existing portfolio. | Brainstorm another 50 SEO tools immediately. | Validating existing candidates prevents idea sprawl and reveals which keyword gaps are worth filling. |
+| Use a hybrid 16 open / 13 preview / 18 portability / 3 email-native gating model. | Keep all results open or gate every result. | The hybrid protects search usefulness and trust while creating honest qualified-email exchanges. |
+| Require both name and email. | Require email only or add more qualification fields. | A name supports human communication, while tool behavior is a better qualification signal than a long form. |
+| Unlock browser-local value until email delivery exists. | Promise emailed files, reports, or courses through the current waitlist flow. | The current lead endpoint stores contacts but does not deliver personalized artifacts. |
+| Use Loops through a thin Convex adapter over the official SDK. | Mount the community Loops component, build an email platform, or keep the provider undecided. | ClipStitchr keeps its consent, attribution, durability, and rate-limit contract while Loops owns Workflows and delivery. |
+| Separate immediate browser unlock from email verification. | Require an inbox click before value or nurture every syntactically valid address. | Visitors receive the promised value immediately while confirmed addresses define the qualified mailing audience. |
