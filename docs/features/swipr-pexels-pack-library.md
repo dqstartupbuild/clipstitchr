@@ -204,7 +204,8 @@ The import route consumes:
   legacy page/count path. Loaded-photo imports use the already-loaded results
   and do not call Pexels search again.
 - `pexelsImportImages` and `pexelsImportImagesGlobal` by requested import
-  count before downloading or saving images.
+  count before downloading or saving images. The global 500-image burst uses
+  four shards so each empty shard can accept the supported 120-image import.
 - `convexRecordSave` inside `swiprBackgrounds.save` for each imported photo.
 - `convexMetadataUpdate` when a pack is added to or removed from an account,
   and when a photo is removed from an account copy of a pack.

@@ -96,7 +96,7 @@ page is another Pexels search request, not a separate rate-limit surface.
 `consumePexelsImport` enforces:
 
 - 120 imported images/hour/user with burst 120.
-- 3,000 imported images/hour globally with burst 500 across 5 shards.
+- 3,000 imported images/hour globally with burst 500 across 4 shards.
 
 The import route consumes import-image limits before downloading Pexels images
 or writing to R2. Loaded-photo imports do not consume Pexels search limits
@@ -104,6 +104,10 @@ because the dashboard already consumed those limits while loading the result
 pages. Legacy page/count imports still consume search limits before calling
 Pexels. Each saved background also consumes the normal Convex record-save limit
 inside `swiprBackgrounds.save`.
+
+The four global shards each start with 125 burst tokens. This keeps the global
+limit sharded while allowing the dashboard's largest supported 120-image
+import to pass when the limiter has no existing shard state.
 
 The dashboard hides already-imported Pexels photos by checking `pexelsPhotoId`
 and, for older records, parsing the saved Pexels URL from hidden details. The

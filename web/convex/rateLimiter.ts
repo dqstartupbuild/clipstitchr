@@ -67,7 +67,7 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     rate: 3000,
     period: HOUR,
     capacity: 500,
-    shards: 5,
+    shards: 4,
   },
   replicateUploadAnalysis: {
     kind: "token bucket",
