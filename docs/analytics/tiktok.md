@@ -65,9 +65,9 @@ Current events:
 
 | Event | Trigger | Notes |
 | --- | --- | --- |
-| `ViewContent` | Initial page load and client route changes | Uses broad page names such as Homepage, Waitlist, Blog article, Docs article, or Dashboard. |
+| `ViewContent` | Initial page load and client route changes | Uses broad page names such as Homepage, App marketing tools, Waitlist, Blog article, Docs article, or Dashboard. Each of the fifty public tools has a fixed catalog identity; entered text, numbers, filenames, media facts, worksheet notes, and generated plans are never included. |
 | `ClickButton` | Marketing CTAs, auth header buttons, and waitlist submit clicks | Tracks button context, not user-entered form data. |
-| `Lead` | New waitlist row created in Convex | Fires only when `waitlist.submit` returns `{ status: "created" }`. |
+| `Lead` | New waitlist row created in Convex | Fires only when the legacy `/sign-up` form receives `{ status: "created" }` from `waitlist.submit`. |
 | `Purchase` | Future paid subscription confirmation | Helper exists, but should only be called after payment is confirmed. |
 
 `Search` support exists in
@@ -201,6 +201,8 @@ ttq.track("Lead", {
 The event fires only when `waitlist.submit` returns `{ status: "created" }`.
 Existing-email updates return `{ status: "updated" }` and do not fire another
 conversion, which avoids inflating sign-up counts from repeat submissions.
+Public tool mailing-list forms intentionally do not fire TikTok Lead events
+because their accepted response does not reveal whether an email was new.
 
 ## Future Subscription Purchase Tracking
 

@@ -273,7 +273,10 @@ Firecrawl website import:
 | Swipr Pexels search | `POST /api/swipr/pexels/search` | 120 searches/hour/user, burst 30; global 800 searches/hour, burst 200 across 4 shards. The route consumes this before calling Pexels with `PEXELS_API_KEY`; selected manual photo saves then use existing Swipr background analysis, private R2 upload, and Convex record-save limits. Loading more results for the same query passes a later Pexels `page` value and consumes the same search limits. |
 | Swipr Pexels query import | `POST /api/swipr/pexels/import` | Loaded-photo imports use the already-loaded dashboard results and do not call Pexels search again. The legacy page/count path still consumes the Swipr Pexels search limits before calling Pexels. Both paths consume 120 imported images/hour/user with burst 120 and global 3,000 imported images/hour with burst 500 across 5 shards before downloading new images or writing to R2. Each newly imported image also uses `swiprBackgrounds.save`, which consumes the shared Convex record-save limit. Already-imported global Pexels photo IDs are skipped before import quota is consumed. The route adds the pack to the user's account through `swiprBackgrounds.addLibraryPackToAccount`, which consumes `convexMetadataUpdate`. |
 | Swipr Pexels pack edits | `swiprBackgrounds.addLibraryPackToAccount`, `swiprBackgrounds.removeLibraryPackFromAccount`, `swiprBackgrounds.removeFromLibraryPack`, `swiprBackgrounds.removeLibraryPack` | Pack add/remove account actions consume `convexMetadataUpdate` after validating the global pack or account row. Photo removal consumes `convexMetadataUpdate` after validating that the shared pack is in the user's account, then writes a user-specific exclusion row. `removeLibraryPack` remains as a compatibility mutation, but it now removes only the account-pack row and per-photo exclusions. Shared Pexels pack records and R2 objects are not user-deletable. `swiprBackgrounds.renameLibraryPack` remains available only to throw because shared packs cannot be renamed by one user. |
-| Public waitlist submission | `waitlist.submit` from `/sign-up` | 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100 |
+| Public waitlist submission | `waitlist.submit` from the legacy `/sign-up` form | 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100. This existing flow keeps its created/updated response and TikTok conversion behavior. |
+| Public browser-local tool and resource execution | The calculators, checklists, worksheets, collections, courses, planners, local media reads, local CSV/Markdown downloads, and image overlays under `/tools` | Intentionally not server-rate-limited because execution, draft state, media reads, and generated files remain on the visitor's device and create no Convex, R2, provider, or shared compute cost. The separate mailing-list endpoint and App Hook Generator server route retain the limits below. |
+| Public tool mailing-list submission | `POST /api/tools/[tool]/lead`, enforced by secret-gated `toolLeads.submit` | 10/hour/client, burst 5; 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100 across 5 shards. The dynamic route accepts only one of the fifty fixed public-tool catalog keys, rejects unknown tool sources before Convex, accepts same-origin JSON only, rejects undeclared fields, and stream-limits the body to 2 KB before quota. The server creates an HMAC-SHA-256 client key from `cf-connecting-ip`, then `x-real-ip`, then the last valid `x-forwarded-for` address; user-agent is not included. Convex consumes all three dedicated limits before checking the email. New emails are inserted; existing emails are neither patched nor identified. Every accepted path returns the same `{ accepted: true }` response. |
+| Public App Hook Generator | `POST /api/tools/app-hook-generator` before deterministic hook assembly | 30 requests/hour/client fingerprint, burst 10; shared global bucket 3,000 requests/hour, burst 300 across 5 shards. The route accepts at most 8 KB, validates bounded inputs before consuming quota, and returns exactly 8 template-backed hooks per accepted request. It creates no provider, R2, or application-data write cost. The client key is a SHA-256 digest of `cf-connecting-ip`, then `x-real-ip`, then the last valid `x-forwarded-for` value; browser user-agent data is not included, and raw addresses are not stored in the rate-limit key. Rejections return `429` with `Retry-After` before catalog selection. |
 | TikTok Events API forwarding | `POST /api/analytics/tiktok/events` after marketing-cookie consent | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000 |
 | CLI device sign-in start | `POST /api/cli/auth/device` | 20/hour/client fingerprint, burst 5; shared global bucket 1,000/hour, burst 200 across 5 shards. The route stores only a hashed device code and a short user code, and the browser approval must happen through a normal Clerk-authenticated `/cli/connect` session. |
 | CLI device token polling | `POST /api/cli/auth/token` | 120/minute/client fingerprint, burst 30; shared global bucket 10,000/minute, burst 1,000 across 10 shards. Polling returns pending until the Clerk-authenticated browser approval succeeds, then creates one hashed 90-day CLI session token. |
@@ -336,6 +339,13 @@ update limit.
 | Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordAvatarImageOutput`, `cliprJobs.recordAvatarVideoOutput`, `cliprJobs.markBrowserSaving`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |
 
 ## Intentionally Not Rate-Limited
+
+The public Ad Variant Calculator runs entirely in the browser. Changing its
+inputs performs local arithmetic only and does not create a Convex write, use
+R2, call a provider, or consume server bandwidth beyond loading the page, so
+calculator generation is intentionally not rate-limited. Joining the mailing
+list from the calculator is a separate same-origin JSON request protected by
+the dedicated public tool mailing-list limits above.
 
 Aggregate library count reads through `libraryCounts.get` are authenticated,
 read-only Convex queries backed by the Aggregate component. They do not create
@@ -621,3 +631,17 @@ per-photo or per-object delete limits.
     inserted when the variation-weighted reservation cannot be satisfied.
 13. Confirm a successful 1/3/5 Idea use reserves two
     `hookLabIdeaAssetSave` units per variant before provider work.
+14. Temporarily reduce `appHookGeneratorByClient`, submit the same valid public
+    App Hook Generator request twice, and confirm the second request returns a
+    generic `429` with `Retry-After` before hook assembly. Confirm the response
+    contains no template ID, source label, risk label, or submitted client
+    fingerprint.
+15. Send a cross-site or non-JSON request to a public tool lead endpoint
+    and confirm it is rejected before `toolLeads.submit` runs. Send a chunked
+    body above 2 KB and confirm the stream is canceled with `413` before quota.
+16. Submit one unknown tool key, one new email, and one existing email through
+    the dynamic tool lead endpoint. Confirm the unknown key returns `404`
+    before Convex and the known-tool requests return only opaque acceptance;
+    confirm both return exactly `{ "accepted": true }`. Confirm the existing
+    row is not patched and all three dedicated limits are consumed before the
+    email lookup.

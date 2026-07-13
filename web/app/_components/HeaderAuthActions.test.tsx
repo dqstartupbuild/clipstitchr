@@ -23,7 +23,11 @@ vi.mock("@clerk/nextjs", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: (props: { children: unknown; href: string; onClick?: () => void }) => {
+  default: (props: {
+    children: unknown;
+    href: string;
+    onClick?: () => void;
+  }) => {
     mocks.linkProps = props;
     return {
       props,
@@ -42,7 +46,10 @@ vi.mock("@/lib/clipstitchr/analytics/trackTikTokButtonClick", () => ({
 
 function findElements(
   value: unknown,
-  predicate: (element: { props?: Record<string, unknown>; type?: unknown }) => boolean,
+  predicate: (element: {
+    props?: Record<string, unknown>;
+    type?: unknown;
+  }) => boolean,
 ): Array<{ props: Record<string, unknown>; type?: unknown }> {
   if (!value || typeof value !== "object") {
     return [];
@@ -56,14 +63,13 @@ function findElements(
     props?: { children?: unknown };
     type?: unknown;
   };
-  const matches = predicate(element as { props?: Record<string, unknown>; type?: unknown })
+  const matches = predicate(
+    element as { props?: Record<string, unknown>; type?: unknown },
+  )
     ? [element as { props: Record<string, unknown>; type?: unknown }]
     : [];
 
-  return [
-    ...matches,
-    ...findElements(element.props?.children, predicate),
-  ];
+  return [...matches, ...findElements(element.props?.children, predicate)];
 }
 
 describe("HeaderAuthActions", () => {
@@ -84,28 +90,40 @@ describe("HeaderAuthActions", () => {
     expect(element.props.className).toContain("h-9");
   });
 
-  it("tracks and redirects signed-out sign-in/sign-up actions", () => {
+  it("tracks sign-in and sends signed-out visitors to pricing", () => {
     const element = HeaderAuthActions({ variant: "desktop" }) as {
       props: { children: unknown };
     };
-    const [signInButton, signUpButton] = findElements(
+    const [signInButton] = findElements(
       element,
       (child) => child.type === "button",
     );
+    const [pricingLink] = findElements(
+      element,
+      (child) => child.props?.href === "/pricing",
+    );
 
     (signInButton.props.onClick as () => void)();
-    (signUpButton.props.onClick as () => void)();
+    (pricingLink.props.onClick as () => void)();
 
+    expect(pricingLink.props.children).toBe("See pricing");
     expect(mocks.redirectToSignIn).toHaveBeenCalled();
-    expect(mocks.redirectToSignUp).toHaveBeenCalled();
+    expect(mocks.redirectToSignUp).not.toHaveBeenCalled();
     expect(mocks.trackPostHogEvent).toHaveBeenCalledWith("auth_cta_clicked", {
       action: "sign_in",
       location: "header",
       variant: "desktop",
     });
+    expect(mocks.trackPostHogEvent).toHaveBeenCalledWith(
+      "pricing_cta_clicked",
+      {
+        location: "header",
+        variant: "desktop",
+      },
+    );
     expect(mocks.trackTikTokButtonClick).toHaveBeenCalledWith(
       expect.objectContaining({
-        contentId: "header_sign_up",
+        contentId: "header_pricing",
       }),
     );
   });

@@ -68,13 +68,14 @@ import {
 import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
 import { videoClipLibraryKindValidator } from "./validators/videoClipLibraryKind";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
+import { waitlistSourceValidator } from "./validators/waitlistSource";
 
 export default defineSchema({
   waitlist: defineTable({
     name: v.string(),
     email: v.string(),
     normalizedEmail: v.string(),
-    source: v.string(),
+    source: waitlistSourceValidator,
     createdAt: v.string(),
     updatedAt: v.string(),
   })

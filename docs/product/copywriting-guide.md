@@ -233,7 +233,9 @@ social falls off the list.
 - content person
 - editing day
 - finished verticals
-- start free
+- see pricing
+- get ClipStitchr
+- choose a plan
 
 ## Words To Use Carefully
 
@@ -275,8 +277,10 @@ If a line could appear unchanged on a competitor homepage, rewrite it.
 ## UI Copy Rules
 
 - Say what happens in plain words.
-- Keep buttons action-oriented: `Start free`, `Watch examples`, `Save
-  Template`, `Score stitch`, `Review draft`.
+- Keep buttons action-oriented: `See pricing`, `Get ClipStitchr`, `Watch
+examples`, `Save Template`, `Score stitch`, `Review draft`.
+- ClipStitchr has no free plan or trial. Do not use `free`, `try free`, or
+  no-credit-card language in account and pricing CTAs.
 - Avoid making users feel judged for having messy files or inconsistent posting.
 - Avoid exposing provider names, prompt mechanics, hidden hook styles, template
   IDs, or implementation details.

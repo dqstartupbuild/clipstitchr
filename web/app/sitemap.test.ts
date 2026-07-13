@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import sitemap from "@/app/sitemap";
+import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { publicToolKeys } from "@/lib/clipstitchr/tools/catalog/publicToolKeys";
 
 const mocks = vi.hoisted(() => ({
   fetchConvexBlogPostCards: vi.fn(),
@@ -30,6 +32,12 @@ describe("sitemap", () => {
     expect(urls).toContain("http://localhost:3000/docs");
     expect(urls).toContain("http://localhost:3000/examples");
     expect(urls).toContain("http://localhost:3000/pricing");
+    expect(urls).toContain("http://localhost:3000/tools");
+    for (const key of publicToolKeys) {
+      expect(urls).toContain(
+        `http://localhost:3000${publicToolCatalog[key].pathname}`,
+      );
+    }
     expect(urls).toContain(
       "http://localhost:3000/examples/stitchr-boyfriend-ten-out-of-ten",
     );

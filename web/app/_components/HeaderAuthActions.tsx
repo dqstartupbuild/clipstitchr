@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useClerk,
-  useUser,
-  UserButton,
-} from "@clerk/nextjs";
+import { useClerk, useUser, UserButton } from "@clerk/nextjs";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { trackTikTokButtonClick } from "@/lib/clipstitchr/analytics/trackTikTokButtonClick";
@@ -29,12 +25,7 @@ export function HeaderAuthActions({
     : "inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white shadow-[0_0_24px_rgba(139,92,246,0.28)] transition-colors hover:bg-accent-light";
 
   if (!isLoaded) {
-    return (
-      <div
-        aria-hidden
-        className={isMobile ? "h-9 w-28" : "h-10 w-40"}
-      />
-    );
+    return <div aria-hidden className={isMobile ? "h-9 w-28" : "h-10 w-40"} />;
   }
 
   const handleSignIn = () => {
@@ -51,18 +42,16 @@ export function HeaderAuthActions({
     void clerk.redirectToSignIn();
   };
 
-  const handleSignUp = () => {
-    trackPostHogEvent("auth_cta_clicked", {
-      action: "sign_up",
+  const handlePricingClick = () => {
+    trackPostHogEvent("pricing_cta_clicked", {
       location: "header",
       variant,
     });
     trackTikTokButtonClick({
-      contentCategory: "Auth",
-      contentId: "header_sign_up",
-      contentName: "Header sign up",
+      contentCategory: "Pricing",
+      contentId: "header_pricing",
+      contentName: "Header see pricing",
     });
-    void clerk.redirectToSignUp();
   };
 
   const handleDashboardClick = () => {
@@ -100,13 +89,13 @@ export function HeaderAuthActions({
           >
             Sign in
           </button>
-          <button
-            type="button"
+          <Link
+            href="/pricing"
             className={primaryButtonClassName}
-            onClick={handleSignUp}
+            onClick={handlePricingClick}
           >
-            Start free
-          </button>
+            {isMobile ? "Pricing" : "See pricing"}
+          </Link>
         </>
       )}
     </div>

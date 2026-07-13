@@ -72,7 +72,9 @@ docs/product/positioning.md
   content.
 - Prefer short lines that sound spoken: "Every tool feeds one library" and
   "Three steps. Zero timelines."
-- Use "Start free" for signed-out marketing CTAs.
+- ClipStitchr has paid plans only. Never imply there is a free plan or trial.
+- Use "See pricing" in shared navigation, "Get ClipStitchr" for direct account
+  CTAs, and plan-specific labels such as "Choose Pro" on the pricing page.
 - Keep AI secondary. It fills a thin library; it is not the main promise.
 
 ## Verification

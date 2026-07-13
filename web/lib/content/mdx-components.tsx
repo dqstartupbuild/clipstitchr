@@ -6,7 +6,6 @@ import { MdxImage } from "@/app/_components/content/MdxImage";
 import { MdxTable } from "@/app/_components/content/MdxTable";
 import { MdxTableCell } from "@/app/_components/content/MdxTableCell";
 import { MdxTableHeaderCell } from "@/app/_components/content/MdxTableHeaderCell";
-import { site } from "@/lib/site";
 
 type CallToActionProps = {
   href?: string;
@@ -14,14 +13,12 @@ type CallToActionProps = {
 };
 
 function CallToAction({
-  href = site.ctaUrl,
-  label = "Start free",
+  href = "/pricing",
+  label = "See pricing",
 }: CallToActionProps) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
-      <p className="text-sm font-bold uppercase text-accent-dark">
-        {label}
-      </p>
+      <p className="text-sm font-bold uppercase text-accent-dark">{label}</p>
       <p className="mt-3 text-base leading-7 text-text-secondary">
         Start with the clips you already have. Make the ad, review it, and get
         back to building.
@@ -63,7 +60,10 @@ export const mdxComponents = {
     <ul {...props} className="ml-6 list-disc space-y-3 text-text-secondary" />
   ),
   ol: (props: ComponentPropsWithoutRef<"ol">) => (
-    <ol {...props} className="ml-6 list-decimal space-y-3 text-text-secondary" />
+    <ol
+      {...props}
+      className="ml-6 list-decimal space-y-3 text-text-secondary"
+    />
   ),
   blockquote: (props: ComponentPropsWithoutRef<"blockquote">) => (
     <blockquote

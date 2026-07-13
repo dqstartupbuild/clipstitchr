@@ -3,12 +3,10 @@ import { pricingPlans } from "@/lib/clipstitchr/pricing/pricingPlans";
 
 export function PricingPlansSection() {
   return (
-    <section className="bg-surface-muted/45 px-6 py-24">
+    <section id="plans" className="scroll-mt-20 bg-surface-muted/45 px-6 py-24">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-3xl">
-          <p className="marketing-eyebrow">
-            Pick a plan
-          </p>
+          <p className="marketing-eyebrow">Pick a plan</p>
           <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
             All plans include every ClipStitchr tool.
           </h2>

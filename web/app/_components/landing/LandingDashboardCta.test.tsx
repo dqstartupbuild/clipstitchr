@@ -61,7 +61,7 @@ function renderCta() {
     className: "button",
     contentId: "landing_cta",
     contentName: "Landing CTA",
-    signedOutLabel: "Start for free",
+    signedOutLabel: "Get ClipStitchr",
   }) as {
     props: {
       href?: string;

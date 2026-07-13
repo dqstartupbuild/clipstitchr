@@ -1,0 +1,68 @@
+import type { ProductDemoQuestion } from "@/lib/clipstitchr/tools/productDemoReadiness/ProductDemoQuestion";
+
+export const productDemoQuestions: ProductDemoQuestion[] = [
+  {
+    allowsNotApplicable: false,
+    fix: "Trim or rearrange the opening so a useful product moment appears in the first two seconds.",
+    id: "useful-moment",
+    isCritical: false,
+    prompt: "A useful product moment appears in the first two seconds.",
+    target: "Show the viewer something useful before setup starts to drag.",
+  },
+  {
+    allowsNotApplicable: false,
+    fix: "Choose one job or outcome and remove side paths that compete with it.",
+    id: "one-outcome",
+    isCritical: false,
+    prompt: "The demo focuses on one outcome.",
+    target: "One clear promise the whole demo can support.",
+  },
+  {
+    allowsNotApplicable: false,
+    fix: "Keep both the important action and the visible result in the sequence.",
+    id: "action-and-result",
+    isCritical: false,
+    prompt: "The action and its result are both visible.",
+    target: "Let the viewer see what happened and what changed.",
+  },
+  {
+    allowsNotApplicable: false,
+    fix: "Crop closer, zoom intentionally, or record again so the important interface is readable on a phone.",
+    id: "phone-readable",
+    isCritical: true,
+    prompt: "The important interface is readable at phone size.",
+    target: "Important labels, taps, and results stay legible in a small preview.",
+  },
+  {
+    allowsNotApplicable: false,
+    fix: "Blur, replace, or rerecord any screen that exposes personal, customer, secret, or production data.",
+    id: "private-data-hidden",
+    isCritical: true,
+    prompt: "Personal, secret, and customer data is hidden.",
+    target: "Only safe demo data appears anywhere in the recording.",
+  },
+  {
+    allowsNotApplicable: true,
+    fix: "Add accurate captions for every spoken line that carries meaning.",
+    id: "spoken-words-captioned",
+    isCritical: false,
+    prompt: "Spoken words have captions.",
+    target: "The message still makes sense when someone watches without sound.",
+  },
+  {
+    allowsNotApplicable: false,
+    fix: "End with one plain next step that matches the action you want the viewer to take.",
+    id: "clear-next-step",
+    isCritical: false,
+    prompt: "The viewer gets a clear next step.",
+    target: "One obvious action follows the product moment.",
+  },
+  {
+    allowsNotApplicable: false,
+    fix: "Trim loading, cursor travel, pauses, and the empty beat after the result.",
+    id: "dead-time-removed",
+    isCritical: false,
+    prompt: "Dead time has been removed.",
+    target: "Every second either explains, demonstrates, or closes the idea.",
+  },
+];

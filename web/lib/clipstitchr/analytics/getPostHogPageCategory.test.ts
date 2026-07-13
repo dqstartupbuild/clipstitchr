@@ -8,6 +8,8 @@ describe("getPostHogPageCategory", () => {
     expect(getPostHogPageCategory("/sign-in")).toBe("auth_sign_in");
     expect(getPostHogPageCategory("/sign-up")).toBe("auth_sign_up");
     expect(getPostHogPageCategory("/docs/importing")).toBe("docs");
+    expect(getPostHogPageCategory("/tools")).toBe("tools");
+    expect(getPostHogPageCategory("/tools/app-hook-generator")).toBe("tools");
     expect(getPostHogPageCategory("/privacy")).toBe("legal");
     expect(getPostHogPageCategory("/blog")).toBe("site");
   });

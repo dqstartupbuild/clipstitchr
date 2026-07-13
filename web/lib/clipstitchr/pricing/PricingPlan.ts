@@ -2,6 +2,7 @@ export type PricingPlan = {
   key: string;
   name: string;
   price: string;
+  monthlyPriceUsd: number | null;
   bestFor: string;
   products: string;
   credits: string;

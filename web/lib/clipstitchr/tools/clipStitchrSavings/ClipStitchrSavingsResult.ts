@@ -1,0 +1,20 @@
+export type ClipStitchrSavingsResult = {
+  clipstitchrMonthlyPrice: number;
+  clipstitchrPlanName: string;
+  costDifference: number;
+  currentCostPerCreative: number | null;
+  currentFootageUtilizationPercent: number | null;
+  currentLaborCost: number;
+  currentLaborHours: number;
+  currentMonthlyCreativeCount: number;
+  currentTotalCost: number;
+  modeledCostPerCreative: number | null;
+  modeledFootageUtilizationPercent: number | null;
+  modeledLaborCost: number;
+  modeledLaborHours: number;
+  modeledMonthlyCreativeCount: number;
+  modeledTotalCost: number;
+  monthlySourceFootageCost: number;
+  timeDifferenceHours: number;
+  usableSourceClipCount: number;
+};
