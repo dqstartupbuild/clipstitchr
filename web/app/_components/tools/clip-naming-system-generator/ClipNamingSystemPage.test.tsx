@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("ClipNamingSystemPage", () => {
-  it("renders a sanitized convention, editable order, examples, and paid boundary", () => {
-    const markup = renderToStaticMarkup(<ClipNamingSystemRoutePage />);
+  it("renders a sanitized convention, editable order, examples, and paid boundary", async () => {
+    const markup = renderToStaticMarkup(await ClipNamingSystemRoutePage());
 
     expect(markup).toContain("Clip Naming System Generator");
     expect(markup).toContain("Filename order");

@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("WhatShouldIPostPage", () => {
-  it("shows one useful recommendation and an honest next step", () => {
-    const markup = renderToStaticMarkup(<WhatShouldIPostRoutePage />);
+  it("shows one useful recommendation and an honest next step", async () => {
+    const markup = renderToStaticMarkup(await WhatShouldIPostRoutePage());
 
     expect(markup).toContain("What Should I Post? Decision Tree");
     expect(markup).toContain("Voiceover app demo");

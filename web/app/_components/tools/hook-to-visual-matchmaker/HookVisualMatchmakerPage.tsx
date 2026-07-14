@@ -7,8 +7,15 @@ import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { hookVisualMatchmakerDescription } from "@/lib/clipstitchr/tools/hookVisualMatchmaker/hookVisualMatchmakerDescription";
 import { hookVisualMatchmakerFaqs } from "@/lib/clipstitchr/tools/hookVisualMatchmaker/hookVisualMatchmakerFaqs";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function HookVisualMatchmakerPage() {
+type HookVisualMatchmakerPageProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function HookVisualMatchmakerPage({
+  variant = "control",
+}: HookVisualMatchmakerPageProps) {
   return (
     <>
       <ToolStructuredData
@@ -18,12 +25,14 @@ export function HookVisualMatchmakerPage() {
         pathname="/tools/hook-to-visual-matchmaker"
       />
       <HookVisualMatchmakerHero />
-      <HookVisualMatchmakerClient />
-      <div className="px-6 pb-20">
-        <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source="hook-to-visual-matchmaker" />
+      <HookVisualMatchmakerClient variant={variant} />
+      {variant === "control" ? (
+        <div className="px-6 pb-20">
+          <div className="mx-auto max-w-4xl">
+            <ToolLeadCaptureForm source="hook-to-visual-matchmaker" />
+          </div>
         </div>
-      </div>
+      ) : null}
       <HookVisualMatchmakerGuide />
       <HookVisualMatchmakerFaq />
       <ToolDiscoveryLinks currentToolKey="hook-to-visual-matchmaker" />

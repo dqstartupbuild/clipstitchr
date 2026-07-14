@@ -23,6 +23,7 @@ vi.mock("@/lib/clipstitchr/analytics/trackTikTokButtonClick", () => ({
 
 describe("TrackedButtonLink", () => {
   it("tracks PostHog and TikTok click payloads", () => {
+    const onClick = vi.fn();
     const element = TrackedButtonLink({
       children: "Open",
       className: "button",
@@ -30,6 +31,7 @@ describe("TrackedButtonLink", () => {
       contentId: "cta_1",
       contentName: "CTA",
       href: "/dashboard",
+      onClick,
     }) as { props: { onClick: () => void } };
 
     element.props.onClick();
@@ -45,5 +47,6 @@ describe("TrackedButtonLink", () => {
       contentId: "cta_1",
       contentName: "CTA",
     });
+    expect(onClick).toHaveBeenCalledOnce();
   });
 });

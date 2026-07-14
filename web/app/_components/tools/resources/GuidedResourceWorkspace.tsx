@@ -1,20 +1,28 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CopyTextButton } from "@/app/_components/ui/CopyTextButton";
+import { GuidedResourcePortabilityActions } from "@/app/_components/tools/resources/GuidedResourcePortabilityActions";
 import { GuidedResourceSectionCard } from "@/app/_components/tools/resources/GuidedResourceSectionCard";
-import { ResourceDownloadButton } from "@/app/_components/tools/resources/ResourceDownloadButton";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
+import { usePublicToolBrowserUnlock } from "@/lib/clipstitchr/tools/publicToolGates/usePublicToolBrowserUnlock";
 import { createGuidedResourceMarkdown } from "@/lib/clipstitchr/tools/resources/createGuidedResourceMarkdown";
 import type { GuidedResourceDefinition } from "@/lib/clipstitchr/tools/resources/GuidedResourceDefinition";
 import type { GuidedResourceNotes } from "@/lib/clipstitchr/tools/resources/GuidedResourceNotes";
 
 type GuidedResourceWorkspaceProps = {
   definition: GuidedResourceDefinition;
+  isEmailNativeEnrolled?: boolean;
+  isEmailNativeGateActive?: boolean;
+  variant?: PublicToolGateVariant;
 };
 
 export function GuidedResourceWorkspace({
   definition,
+  isEmailNativeEnrolled = false,
+  isEmailNativeGateActive = false,
+  variant = "control",
 }: GuidedResourceWorkspaceProps) {
+  const isBrowserUnlocked = usePublicToolBrowserUnlock();
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [hasLoadedProgress, setHasLoadedProgress] = useState(
     !definition.progressStorageKey,
@@ -63,6 +71,14 @@ export function GuidedResourceWorkspace({
   );
   const progress =
     itemCount > 0 ? Math.round((completedIds.size / itemCount) * 100) : 0;
+  const hasEmailNativeAccess =
+    isEmailNativeEnrolled || isBrowserUnlocked;
+  const canUsePortableActions =
+    !isEmailNativeGateActive || hasEmailNativeAccess;
+  const visibleSections =
+    isEmailNativeGateActive && !hasEmailNativeAccess
+      ? definition.sections.slice(0, 1)
+      : definition.sections;
 
   return (
     <section
@@ -78,13 +94,13 @@ export function GuidedResourceWorkspace({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <CopyTextButton label="Copy my resource" text={markdown} />
-            <ResourceDownloadButton
-              contents={markdown}
-              fileName={`${definition.resourceKey}.md`}
-              label="Download Markdown"
-              type="text/markdown;charset=utf-8"
-            />
+            {canUsePortableActions ? (
+              <GuidedResourcePortabilityActions
+                definition={definition}
+                markdown={markdown}
+                variant={variant}
+              />
+            ) : null}
             <button
               className="inline-flex h-9 items-center justify-center rounded-lg border border-border px-3 text-sm font-bold text-text-secondary hover:border-accent"
               onClick={() => {
@@ -98,7 +114,7 @@ export function GuidedResourceWorkspace({
           </div>
         </div>
         <div className="mt-6 grid gap-6">
-          {definition.sections.map((section) => (
+          {visibleSections.map((section) => (
             <GuidedResourceSectionCard
               completedIds={completedIds}
               key={section.id}

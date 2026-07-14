@@ -1,4 +1,5 @@
 import { Info, ListTodo, ThumbsUp } from "lucide-react";
+import { PublicToolGateContentBoundary } from "@/app/_components/tools/gates/PublicToolGateContentBoundary";
 import { ProductDemoReadinessPricingCta } from "@/app/_components/tools/product-demo-readiness-checker/ProductDemoReadinessPricingCta";
 import { LocalVideoPreview } from "@/app/_components/tools/video/LocalVideoPreview";
 import { VideoCheckRow } from "@/app/_components/tools/video/VideoCheckRow";
@@ -12,12 +13,14 @@ import { createProductDemoReadinessChecks } from "@/lib/clipstitchr/tools/produc
 import { getProductDemoOrientationAdvice } from "@/lib/clipstitchr/tools/productDemoReadiness/getProductDemoOrientationAdvice";
 import { getProductDemoReadinessFixes } from "@/lib/clipstitchr/tools/productDemoReadiness/getProductDemoReadinessFixes";
 import { getProductDemoReadinessStatus } from "@/lib/clipstitchr/tools/productDemoReadiness/getProductDemoReadinessStatus";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 type ProductDemoReadinessResultsProps = {
   answers: ProductDemoAnswers;
   file: File;
   inspection: LocalVideoInspection;
   use: ProductDemoUse;
+  variant?: PublicToolGateVariant;
 };
 
 export function ProductDemoReadinessResults({
@@ -25,6 +28,7 @@ export function ProductDemoReadinessResults({
   file,
   inspection,
   use,
+  variant = "control",
 }: ProductDemoReadinessResultsProps) {
   const checks = createProductDemoReadinessChecks({ answers, inspection, use });
   const score = scoreVideoChecks(checks);
@@ -33,8 +37,14 @@ export function ProductDemoReadinessResults({
   const passes = checks.filter((check) => check.status === "pass");
   const orientationAdvice = getProductDemoOrientationAdvice(inspection);
 
+  const largestBlocker = fixes[0];
+
   return (
-    <div className="mt-8 grid gap-8">
+    <PublicToolGateContentBoundary
+      hasFunctionalUnlock
+      toolKey="product-demo-readiness-checker"
+      variant={variant}
+      publicContent={<div className="mt-8 grid gap-8">
       <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
         <LocalVideoPreview file={file} />
         <div className="grid gap-5">
@@ -43,7 +53,7 @@ export function ProductDemoReadinessResults({
             percentage={score.percentage}
             status={status}
           />
-          <ProductDemoReadinessPricingCta />
+          <ProductDemoReadinessPricingCta variant={variant} />
         </div>
       </div>
 
@@ -53,6 +63,34 @@ export function ProductDemoReadinessResults({
           {orientationAdvice}
         </p>
       ) : null}
+
+      <section
+        aria-labelledby="product-demo-largest-blocker-heading"
+        className="rounded-lg border border-border bg-surface-elevated p-5"
+      >
+        <h3
+          id="product-demo-largest-blocker-heading"
+          className="flex items-center gap-2 text-lg font-bold text-text-primary"
+        >
+          <ListTodo aria-hidden className="h-5 w-5 text-accent-dark" />
+          Largest blocker
+        </h3>
+        <p className="mt-4 text-sm leading-6 text-text-secondary">
+          {largestBlocker ? (
+            <>
+              <strong className="text-text-primary">
+                {largestBlocker.title}
+              </strong>
+              <br />
+              {largestBlocker.fix}
+            </>
+          ) : (
+            "No blocker remains in this checklist."
+          )}
+        </p>
+      </section>
+    </div>}
+      unlockedContent={<div className="mt-8 grid gap-8">
 
       <VideoInspectionFacts inspection={inspection} />
 
@@ -130,6 +168,7 @@ export function ProductDemoReadinessResults({
           ))}
         </div>
       </section>
-    </div>
+    </div>}
+    />
   );
 }

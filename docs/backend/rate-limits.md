@@ -52,6 +52,30 @@ npx convex dev --once
 - Must be a high-entropy random secret.
 - Must not be prefixed with `NEXT_PUBLIC_`.
 
+Public-tool gate and Loops variables:
+
+- `PUBLIC_TOOL_GATE_ROLLOUT` controls which of the fixed fifty public-tool keys
+  can receive `hybrid-v1` and what integer percentage from 0 through 100 is
+  assigned. Its strict JSON contract and safe rollout are documented in
+  `docs/backend/public-tool-email-rollout-runbook.md`.
+- `LOOPS_EMAIL_ENABLED`, `LOOPS_API_KEY`, `LOOPS_TEAM_ENVIRONMENT`, and, for a
+  development team, `LOOPS_DEVELOPMENT_RECIPIENTS` gate all provider dispatch.
+- `LOOPS_SIGNING_SECRET` and `LOOPS_WEBHOOKS_READY` gate signed webhook
+  readiness. The webhook never uses `RATE_LIMIT_API_SECRET`; authenticity is
+  established by the provider signature.
+- `LOOPS_CONTACT_PROPERTIES_READY`, `LOOPS_WORKFLOWS_READY`,
+  `LOOPS_EMAIL_NATIVE_ENABLED`,
+  `LOOPS_EMAIL_CONFIRMATION_TRANSACTIONAL_ID`, and
+  `EMAIL_CONFIRMATION_TOKEN_SECRET` gate progressively riskier contact,
+  Workflow, email-native, and confirmation behavior.
+- `NEXT_PUBLIC_SITE_URL` or `SITE_URL` supplies the absolute confirmation-link
+  origin. `RATE_LIMIT_API_SECRET` is still required in both Next.js and Convex
+  for lead, interaction, and confirmation mutations.
+
+Every readiness flag is recognized only as the exact string `true`. Missing,
+invalid, mismatched, or partially configured values fail closed; they do not
+fall back to a live provider call.
+
 `OPENAI_API_KEY`
 
 - Required in the Next.js runtime environment to use
@@ -274,8 +298,16 @@ Firecrawl website import:
 | Swipr Pexels query import | `POST /api/swipr/pexels/import` | Loaded-photo imports use the already-loaded dashboard results and do not call Pexels search again. The legacy page/count path still consumes the Swipr Pexels search limits before calling Pexels. Both paths consume 120 imported images/hour/user with burst 120 and global 3,000 imported images/hour with burst 500 across 4 shards before downloading new images or writing to R2. Four global shards give each empty shard 125 burst tokens, so the supported 120-image request can pass before any shard state exists. Each newly imported image also uses `swiprBackgrounds.save`, which consumes the shared Convex record-save limit. Already-imported global Pexels photo IDs are skipped before import quota is consumed. The route adds the pack to the user's account through `swiprBackgrounds.addLibraryPackToAccount`, which consumes `convexMetadataUpdate`. |
 | Swipr Pexels pack edits | `swiprBackgrounds.addLibraryPackToAccount`, `swiprBackgrounds.removeLibraryPackFromAccount`, `swiprBackgrounds.removeFromLibraryPack`, `swiprBackgrounds.removeLibraryPack` | Pack add/remove account actions consume `convexMetadataUpdate` after validating the global pack or account row. Photo removal consumes `convexMetadataUpdate` after validating that the shared pack is in the user's account, then writes a user-specific exclusion row. `removeLibraryPack` remains as a compatibility mutation, but it now removes only the account-pack row and per-photo exclusions. Shared Pexels pack records and R2 objects are not user-deletable. `swiprBackgrounds.renameLibraryPack` remains available only to throw because shared packs cannot be renamed by one user. |
 | Public waitlist submission | `waitlist.submit` from the legacy `/sign-up` form | 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100. This existing flow keeps its created/updated response and TikTok conversion behavior. |
-| Public browser-local tool and resource execution | The calculators, checklists, worksheets, collections, courses, planners, local media reads, local CSV/Markdown downloads, and image overlays under `/tools` | Intentionally not server-rate-limited because execution, draft state, media reads, and generated files remain on the visitor's device and create no Convex, R2, provider, or shared compute cost. The separate mailing-list endpoint and App Hook Generator server route retain the limits below. |
-| Public tool mailing-list submission | `POST /api/tools/[tool]/lead`, enforced by secret-gated `toolLeads.submit` | 10/hour/client, burst 5; 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100 across 5 shards. The dynamic route accepts only one of the fifty fixed public-tool catalog keys, rejects unknown tool sources before Convex, accepts same-origin JSON only, rejects undeclared fields, and stream-limits the body to 2 KB before quota. The server creates an HMAC-SHA-256 client key from `cf-connecting-ip`, then `x-real-ip`, then the last valid `x-forwarded-for` address; user-agent is not included. Convex consumes all three dedicated limits before checking the email. New emails are inserted; existing emails are neither patched nor identified. Every accepted path returns the same `{ accepted: true }` response. |
+| Public browser-local tool and resource execution | The calculators, checklists, worksheets, collections, courses, planners, local media reads, local CSV/Markdown downloads, and image overlays under `/tools` | Intentionally not server-rate-limited because execution, draft state, media reads, and generated files remain on the visitor's device and create no Convex, R2, provider, or shared compute cost. The separate lead, recognized-interaction, email-enrollment, confirmation, and App Hook Generator paths retain the limits below. |
+| Public tool lead submission | `POST /api/tools/[tool]/lead`, enforced by secret-gated `toolLeads.submitControl` for control or `toolLeads.submit` for `hybrid-v1` | 10/hour/client, burst 5; 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100 across 5 shards. The dynamic route accepts only one of the fifty fixed public-tool catalog keys, rejects unknown tool sources before Convex, accepts same-origin JSON only, rejects undeclared fields, and stream-limits the body to 2 KiB before quota. The server creates an HMAC-SHA-256 client key from `cf-connecting-ip`, then `x-real-ip`, then the last valid `x-forwarded-for` address; user-agent is not included. Convex consumes all three dedicated limits before an email lookup. Control preserves the legacy waitlist behavior. The hybrid transaction upserts canonical contact attribution, stores consent and capture evidence, rotates an opaque browser-recognition token, and conditionally creates a confirmation or Workflow outbox operation. Every accepted path returns the same `{ accepted: true }` response and never reveals contact state. |
+| Public tool recognized interaction | `POST /api/tools/[tool]/interaction`, limited in `toolLeads.recordInteraction` | 60/hour/opaque recognition-token hash, burst 20; 120/hour/client, burst 30; shared global bucket 5,000/hour, burst 1,000 across 5 shards. The route is same-origin JSON, uses the same 2 KiB streamed body cap, accepts exactly one fixed `interactionType` (`resultViewed`, `resourceUnlocked`, or `paidCtaClicked`), and returns opaque acceptance when no valid recognition token exists. A valid, unexpired, marketing-eligible token can advance bounded lead stage and queue contact sync; raw identity, result content, and tool inputs are not accepted. |
+| Email confirmation request | Created inside the `hybrid-v1` `toolLeads.submit` transaction before the confirmation outbox operation | 3/day/normalized email, burst 1; 5/hour/client, burst 2; shared global bucket 300/hour, burst 50 across 5 shards. The same transaction also consumes the transactional-email limits below before it rotates the forty-eight-hour, single-use confirmation token and creates a provider operation. Confirmation-only quota exhaustion remains non-enumerating: the capture and browser unlock are still accepted, while token and provider-operation creation are silently suppressed. |
+| Email confirmation redeem | Same-origin `POST /email/confirm`, enforced by `email.confirmEmailConsent` | 10/hour/token-record ID, burst 5; 20/hour/client, burst 5; shared global bucket 2,000/hour, burst 200 across 5 shards. The direct route caps the form body at 4 KiB, requires the ten-minute CSRF cookie, re-verifies the signed reference, and consumes all three quotas before consent changes. `GET /email/confirm` intentionally has no user quota: it requires an unguessable signed forty-eight-hour reference, performs one bounded indexed read, exposes no contact data, and never grants consent. A GET quota could let an email scanner exhaust the recipient's ability to see the explicit confirmation form. Rejected and expired references use non-enumerating responses. |
+| Email-native enrollment | Initial hybrid capture and recognized follow-up enrollment for the five-day sprint, UGC mini-course, or creative-testing workshop | 3/day/contact, burst 1; 10/hour/client, burst 3; shared global bucket 500/hour, burst 100 across 5 shards. Enrollment is restricted to one fixed tool-to-Workflow mapping and Workflow version `v1`. Follow-up retries dedupe before contact quota, while contact and provider-workflow quota exhaustion returns the same opaque accepted response as an invalid recognition token. One durable enrollment per contact, Workflow key, and version prevents repeated submissions from restarting a sequence. |
+| Loops Workflow event | Durable `workflowEvent` provider operations for the four allowlisted event names | 10/day/contact, burst 4; shared global bucket 2,000/hour, burst 400 across 5 shards. The contact burst fits the bounded confirmation transaction's general enrollment plus all three explicit email-native enrollments. Quota is consumed before the operation is inserted. Dispatch rechecks verified consent, subscription, suppression, deletion, tombstone, and dependency state. The operation ID is the Loops `Idempotency-Key`. |
+| Loops transactional email | The sole allowlisted `email-confirmation` provider operation | 10/day/contact, burst 3; shared global bucket 1,000/hour, burst 200 across 5 shards, in addition to the confirmation-send quotas above. The adapter maps a server-only template key to `LOOPS_EMAIL_CONFIRMATION_TRANSACTIONAL_ID`, sends only `confirmationUrl`, sets `addToAudience: false`, and uses no attachment. Marketing nurture, sprints, courses, and workshops cannot use this path. |
+| Loops provider pacing and retry | Every initial official-SDK call and retry, immediately before provider work | Shared token bucket of 8 requests/second with capacity 2. This leaves headroom below Loops' documented 10 requests/second/team ceiling. A local pacing miss releases the lease and uses the limiter's returned retry delay without consuming a provider-attempt slot. Operations use a four-minute lease, at most seven actual SDK attempts, and exponential delays beginning at 15 seconds and capped at 16 minutes. The twenty-four-hour provider idempotency window begins on the first actual SDK attempt. Acceptance-unknown network and `5xx` outcomes stop at that boundary; an explicit `429` remains retryable until the attempt limit. A `409` is accepted only for idempotency-supported Workflow and transactional operations; contact-operation conflicts dead-letter. Disabled dispatch moves due work to `held`; the secret-authorized operator resume processes at most 50 held records per call and has no public user quota. |
+| Loops signed webhook | `POST /webhooks/loops` on the Convex HTTP origin | Intentionally has no user quota because it is provider-originated and must accept legitimate delivery and consent reconciliation. Abuse controls are `application/json`, a 64 KiB declared-and-streamed raw-body cap, required bounded headers, a five-minute timestamp window, constant-time HMAC verification with `LOOPS_SIGNING_SECRET`, webhook schema `1.0.0`, an explicit event allowlist, and atomic `Webhook-Id` deduplication. Invalid traffic is rejected before reconciliation; a failed reconciliation returns `500` without committing the processed marker so Loops can retry. |
 | Public App Hook Generator | `POST /api/tools/app-hook-generator` before deterministic hook assembly | 30 requests/hour/client fingerprint, burst 10; shared global bucket 3,000 requests/hour, burst 300 across 5 shards. The route accepts at most 8 KB, validates bounded inputs before consuming quota, and returns exactly 8 template-backed hooks per accepted request. It creates no provider, R2, or application-data write cost. The client key is a SHA-256 digest of `cf-connecting-ip`, then `x-real-ip`, then the last valid `x-forwarded-for` value; browser user-agent data is not included, and raw addresses are not stored in the rate-limit key. Rejections return `429` with `Retry-After` before catalog selection. |
 | TikTok Events API forwarding | `POST /api/analytics/tiktok/events` after marketing-cookie consent | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000 |
 | CLI device sign-in start | `POST /api/cli/auth/device` | 20/hour/client fingerprint, burst 5; shared global bucket 1,000/hour, burst 200 across 5 shards. The route stores only a hashed device code and a short user code, and the browser approval must happen through a normal Clerk-authenticated `/cli/connect` session. |
@@ -340,12 +372,21 @@ update limit.
 
 ## Intentionally Not Rate-Limited
 
-The public Ad Variant Calculator runs entirely in the browser. Changing its
-inputs performs local arithmetic only and does not create a Convex write, use
-R2, call a provider, or consume server bandwidth beyond loading the page, so
-calculator generation is intentionally not rate-limited. Joining the mailing
-list from the calculator is a separate same-origin JSON request protected by
-the dedicated public tool mailing-list limits above.
+Public-tool calculations, checks, worksheets, guided resources, local media
+inspection, and browser-built downloads run on the visitor's device. They do
+not create a Convex write, use R2, call a provider, or consume shared compute,
+so that local execution is intentionally not rate-limited. Lead submission,
+recognized interaction, email-native enrollment, confirmation, and the public
+App Hook Generator server route are separate requests protected by the
+dedicated limits above.
+
+Signed Loops webhook delivery is intentionally not assigned a user quota. It
+must accept legitimate unsubscribe, suppression, bounce, deletion, list, and
+delivery reconciliation even when a recipient has reached an acquisition
+limit. Its 64 KiB body cap, five-minute timestamp window, strict schema and
+event allowlists, constant-time provider signature verification, and atomic
+`Webhook-Id` deduplication provide the appropriate provider-originated abuse
+boundary.
 
 Aggregate library count reads through `libraryCounts.get` are authenticated,
 read-only Convex queries backed by the Aggregate component. They do not create
@@ -638,10 +679,39 @@ per-photo or per-object delete limits.
     fingerprint.
 15. Send a cross-site or non-JSON request to a public tool lead endpoint
     and confirm it is rejected before `toolLeads.submit` runs. Send a chunked
-    body above 2 KB and confirm the stream is canceled with `413` before quota.
-16. Submit one unknown tool key, one new email, and one existing email through
-    the dynamic tool lead endpoint. Confirm the unknown key returns `404`
-    before Convex and the known-tool requests return only opaque acceptance;
-    confirm both return exactly `{ "accepted": true }`. Confirm the existing
-    row is not patched and all three dedicated limits are consumed before the
-    email lookup.
+    body above 2 KiB and confirm the stream is canceled with `413` before
+    quota.
+16. Leave `PUBLIC_TOOL_GATE_ROLLOUT` unset, submit one unknown tool key, one new
+    email, and one existing email through the dynamic lead endpoint. Confirm
+    the unknown key returns `404` before Convex, the known tools stay on
+    `submitControl`, and every accepted response is exactly
+    `{ "accepted": true }` without contact-state disclosure.
+17. In an isolated local or development environment, enable one fixed key at a
+    100 percent `hybrid-v1` rollout with provider dispatch still disabled.
+    Confirm the lead mutation consumes client, email, global, confirmation,
+    and transactional quotas before it commits canonical contact, consent,
+    capture, recognition, confirmation, and outbox state together. Confirm the
+    browser receives value without waiting for provider acceptance.
+18. Submit `resultViewed`, `resourceUnlocked`, and `paidCtaClicked` through the
+    interaction route with a valid recognition cookie. Confirm token, client,
+    and global quotas are consumed, only fixed interaction metadata is stored,
+    and missing, expired, or revoked tokens still receive opaque acceptance
+    without a contact update.
+19. Open a valid confirmation URL with `GET` and confirm consent does not
+    change. Submit the protected form and confirm token, client, and global
+    redeem limits are consumed before verification. Repeat with cross-site,
+    missing-CSRF, expired, used, and superseded references and confirm no
+    enrollment starts.
+20. Send a signed 64 KiB-or-smaller test event to `/webhooks/loops` and confirm
+    one reconciliation record commits. Replay the same `Webhook-Id` and confirm
+    idempotent success. Then verify a stale timestamp, invalid signature,
+    unsupported schema/event, and oversized streamed body are rejected before
+    state changes.
+21. In the separate development Loops team only, temporarily reduce
+    `loopsProviderRequest`, queue controlled contact operations, and confirm
+    initial calls and retries each consume the shared pacing bucket. Verify
+    capacity exhaustion defers work by the returned retry delay without
+    spending a provider attempt. Verify
+    `409` acceptance, retryable `429`/`5xx`/network outcomes, permanent `4xx`
+    dead-lettering, the seven-attempt cap, and the twenty-four-hour ambiguous
+    outcome cutoff without sending to a production subscriber.

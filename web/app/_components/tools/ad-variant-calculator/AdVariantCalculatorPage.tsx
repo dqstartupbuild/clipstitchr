@@ -1,14 +1,17 @@
 import { AdVariantCalculator } from "@/app/_components/tools/ad-variant-calculator/AdVariantCalculator";
+import { PublicToolGateCapture } from "@/app/_components/tools/gates/PublicToolGateCapture";
 import { AdVariantCalculatorFaq } from "@/app/_components/tools/ad-variant-calculator/AdVariantCalculatorFaq";
 import { AdVariantCalculatorGuide } from "@/app/_components/tools/ad-variant-calculator/AdVariantCalculatorGuide";
 import { AdVariantCalculatorHero } from "@/app/_components/tools/ad-variant-calculator/AdVariantCalculatorHero";
 import { ToolDiscoveryLinks } from "@/app/_components/tools/ToolDiscoveryLinks";
-import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm";
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { adVariantCalculatorDescription } from "@/lib/clipstitchr/tools/adVariantCalculator/adVariantCalculatorDescription";
 import { adVariantCalculatorFaqs } from "@/lib/clipstitchr/tools/adVariantCalculator/adVariantCalculatorFaqs";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 
-export function AdVariantCalculatorPage() {
+export function AdVariantCalculatorPage({
+  variant = "control",
+}: PublicToolPageGateProps) {
   return (
     <>
       <ToolStructuredData
@@ -18,10 +21,14 @@ export function AdVariantCalculatorPage() {
         pathname="/tools/ad-variant-calculator"
       />
       <AdVariantCalculatorHero />
-      <AdVariantCalculator />
+      <AdVariantCalculator variant={variant} />
       <div className="px-6 pb-20">
         <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source="ad-variant-calculator" />
+          <PublicToolGateCapture
+            hasFunctionalUnlock={false}
+            toolKey="ad-variant-calculator"
+            variant={variant}
+          />
         </div>
       </div>
       <AdVariantCalculatorGuide />

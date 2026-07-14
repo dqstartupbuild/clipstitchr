@@ -11,8 +11,8 @@ answer rationale, and completion check.
 
 `ugcMiniCourseDefinition.ts` owns twenty substantive lesson steps. Exercises
 accumulate in the shared guided workspace, with versioned browser-local
-progress, copy, reset, and Markdown download. The route uses the normal public
-lead form only as an optional mailing-list invitation.
+progress, copy, reset, and Markdown download. The worksheet remains local to
+the browser.
 
 ## Use Cases and Boundary
 
@@ -24,16 +24,23 @@ The course does not source creators, inspect footage, unlock the paid Hook
 library, produce assets, or export ads. It is educational preparation for the
 paid workflow.
 
-## Approved Future Email Experience
+## Staged Email Experience
 
-The current self-paced browser course remains unchanged until the hybrid
-lead-capture plan ships. Under that approved future plan, the public page keeps
-the curriculum and one complete sample lesson open. Required name and email
-unlock explicit enrollment in a five-lesson Loops marketing Workflow plus
-browser-local worksheets. The approved browser worksheets unlock immediately,
-while a new or opted-out address confirms its email before the Workflow begins.
-The course must honor unsubscribe and must not use Loops transactional
-templates. See
+The hybrid catalog now classifies this as an email-native experience, and the
+shared resource boundary preserves the curriculum and one complete sample
+lesson before the on-page step. In `control`, the complete browser course stays
+visible. In a server-approved `hybrid-v1` rollout, the required name-and-email
+submission unlocks all browser worksheets immediately and requests the exact
+mini-course marketing Workflow. A recognized returning browser also gets a
+one-click request while the full form remains available.
+
+A new or opted-out address must complete ClipStitchr's forty-eight-hour,
+single-use app confirmation before the Workflow begins. Loops dashboard double
+opt-in is disabled and does not replace that app-owned confirmation. The course
+honors unsubscribe and cannot use a transactional template. Email-native entry
+fails to `control` until the server verifies full Loops readiness and an
+explicit rollout assignment. No Loops dashboard configuration or live send was
+performed for this implementation. See
 `docs/features/public-tool-lead-capture-strategy.md` and
 `docs/backend/loops-email-integration.md`.
 
@@ -42,6 +49,9 @@ templates. See
 ```text
 web/app/(content)/tools/ugc-to-app-ad-mini-course/page.tsx
 web/lib/clipstitchr/tools/ugcMiniCourse/ugcMiniCourseDefinition.ts
+web/app/_components/tools/resources/GuidedResourcePage.tsx
+web/app/_components/tools/resources/GuidedResourceWorkspace.tsx
+web/lib/clipstitchr/tools/catalog/publicToolGateCatalog.ts
 ```
 
 See `docs/features/public-tool-quality-register.md` for candid release status.

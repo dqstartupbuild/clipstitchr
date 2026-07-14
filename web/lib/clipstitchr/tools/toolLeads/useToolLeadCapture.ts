@@ -2,11 +2,23 @@
 
 import type { FormEvent } from "react";
 import { useState } from "react";
-import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
+import type { PublicToolGateMode } from "@/lib/clipstitchr/tools/catalog/PublicToolGateMode";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
+import { setPublicToolBrowserUnlocked } from "@/lib/clipstitchr/tools/publicToolGates/setPublicToolBrowserUnlocked";
+import { trackPublicToolAnalyticsEvent } from "@/lib/clipstitchr/tools/publicToolGates/trackPublicToolAnalyticsEvent";
 import { submitToolLead } from "@/lib/clipstitchr/tools/toolLeads/submitToolLead";
 import type { ToolLeadSource } from "@/lib/clipstitchr/types/ToolLeadSource";
 
-export function useToolLeadCapture(source: ToolLeadSource) {
+export function useToolLeadCapture(
+  source: ToolLeadSource,
+  {
+    gateMode = "open-result",
+    variant = "control",
+  }: {
+    gateMode?: PublicToolGateMode;
+    variant?: PublicToolGateVariant;
+  } = {},
+) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -21,7 +33,14 @@ export function useToolLeadCapture(source: ToolLeadSource) {
     try {
       await submitToolLead({ email, name, source });
 
-      trackPostHogEvent("tool_lead_accepted", { source });
+      if (variant === "hybrid-v1") {
+        setPublicToolBrowserUnlocked();
+      }
+      trackPublicToolAnalyticsEvent("tool_lead_accepted", {
+        gateMode,
+        toolKey: source,
+        variant,
+      });
       setIsSubmitted(true);
       setName("");
       setEmail("");

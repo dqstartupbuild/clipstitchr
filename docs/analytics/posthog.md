@@ -1,6 +1,6 @@
 # PostHog Analytics
 
-Last updated: July 12, 2026
+Last updated: July 13, 2026
 
 ## Consent
 
@@ -42,7 +42,7 @@ Core browser tracking:
 | `waitlist_form_submitted` | Waitlist form submit | No name or email is sent in event properties. |
 | `waitlist_joined` | Waitlist entry saved | Tracks created/updated status only. |
 | `waitlist_join_failed` | Waitlist save fails | Tracks a simple error category only. |
-| `tool_lead_accepted` | Public tool mailing-list request accepted | Tracks only the fixed tool source after the server returns its opaque accepted response. |
+| `tool_lead_accepted` | Public tool mailing-list request accepted | Fires only after the server returns its exact opaque accepted response and uses the fixed public-tool metadata contract below. |
 | `app_hook_generator_submitted` | Public App Hook Generator request starts | Tracks only the selected edge level and whether this is the first or another set. |
 | `app_hook_generator_completed` | Public App Hook Generator returns results | Tracks edge level, request kind, and the fixed result count; no submitted or generated text. |
 | `app_hook_generator_failed` | Public App Hook Generator request fails | Tracks request kind and a simple rate-limited/request-failed category. |
@@ -79,6 +79,43 @@ Server-side product events:
 | `hook_lab_idea_analysis_started` | An initial or retry analysis job is accepted | Tracks retry/source metadata only. |
 | `hook_lab_idea_used` | An Idea use and its variants are created | Tracks requested variation count only. |
 
+## Public Tool Gate Event Contract
+
+The public-tool helper allowlists six event names:
+
+| Event | Intended seam |
+| --- | --- |
+| `tool_started` | A visitor deliberately starts an interactive public tool. |
+| `tool_result_displayed` | The assigned complete result or useful preview becomes visible. |
+| `tool_gate_displayed` | An approved inline value exchange is shown. |
+| `tool_lead_accepted` | The non-enumerating capture response is accepted. |
+| `tool_resource_unlocked` | Approved browser-local value becomes available. |
+| `tool_paid_cta_clicked` | A relevant paid ClipStitchr CTA is chosen. |
+
+Every one of these events has exactly four app-provided properties. PostHog may
+still add its standard consented session and page context:
+
+| Property | Allowed value |
+| --- | --- |
+| `event_type` | The allowlisted event name. |
+| `experiment_variant` | `control` or `hybrid-v1`. |
+| `gate_mode` | `open-result`, `useful-preview`, `gated-portability`, or `email-native`. |
+| `tool_key` | One fixed key from the fifty-tool catalog. |
+
+The shared lead form emits `tool_lead_accepted`. Every tool-specific paid-plan
+link uses the shared public-tool CTA wrapper, which preserves the existing
+general CTA analytics and also emits `tool_paid_cta_clicked` with the page's
+fixed tool key, gate mode, and assigned variant. The other names are available
+only for explicit tool-result, gate, and unlock seams as those seams are wired.
+The helper does not accept an open property bag, so callers cannot add name,
+email, token, or result content. PostHog still receives nothing when analytics
+consent is absent.
+
+Eligible result-view, resource-unlock, and paid-CTA events may also request a
+bounded server-side qualification interaction through the same-origin API. The
+server reads its opaque recognition cookie itself; that token is never copied
+into the PostHog event or browser JavaScript.
+
 Hook Lab lifecycle completion/failure events are browser events because the
 browser has the visitor's analytics-consent decision. They fire only when the
 live Hook Lab view observes the transition; closing the page before completion
@@ -94,10 +131,17 @@ For public tools, do not send names, email addresses, app names, product
 descriptions, audience details, hook or brief text, planning or cost numbers,
 campaign metrics, creator quotes, worksheet notes, course progress, filenames,
 video dimensions, codec details, sampled media signals, or generated results. The
-tool-lead event may include only the fixed catalog tool source. It must not
-include created/duplicate status, request failures, or other properties that
-could help enumerate an email address. Browser-local tool runs do not create a
-separate result event in this release.
+public-tool event boundary accepts only `event_type`, `experiment_variant`,
+`gate_mode`, and `tool_key`. It must not include created/duplicate status,
+request failures, the local unlock marker, the HttpOnly recognition token, a
+confirmation token, or any other property that could identify or enumerate an
+email address.
+
+`/email/confirm` is a standalone HTML route rather than a React page. It loads
+no PostHog script, emits no analytics event, uses no third-party resource, and
+sends `Referrer-Policy: no-referrer` plus `Cache-Control: private, no-store`.
+Its scanner-safe `GET` cannot record marketing consent; only the explicit
+same-origin, CSRF-protected `POST` can do so.
 
 For Hook Lab specifically, do not send source text, social URLs, usernames,
 captions, extracted post data, Actor dataset contents, provider payloads, or

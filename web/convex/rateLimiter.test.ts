@@ -14,3 +14,47 @@ describe("Pexels import rate-limit configuration", () => {
     );
   });
 });
+
+describe("public lead and email rate-limit configuration", () => {
+  it("defines every ingress boundary before durable email work", () => {
+    const requiredLimits = [
+      "toolLeadSubmitByClient",
+      "toolLeadSubmitByEmail",
+      "toolLeadSubmitGlobal",
+      "toolLeadInteractionByToken",
+      "toolLeadInteractionByClient",
+      "toolLeadInteractionGlobal",
+      "emailConfirmationSendByEmail",
+      "emailConfirmationSendByClient",
+      "emailConfirmationSendGlobal",
+      "emailConfirmationRedeemByToken",
+      "emailConfirmationRedeemByClient",
+      "emailConfirmationRedeemGlobal",
+      "emailNativeEnrollmentByContact",
+      "emailNativeEnrollmentByClient",
+      "emailNativeEnrollmentGlobal",
+      "emailWorkflowEventByContact",
+      "emailWorkflowEventGlobal",
+      "emailTransactionalByContact",
+      "emailTransactionalGlobal",
+    ] as const;
+
+    for (const limit of requiredLimits) {
+      expect(rateLimiter.limits?.[limit], limit).toBeDefined();
+    }
+  });
+
+  it("paces shared Loops traffic below ten requests per second", () => {
+    const config = rateLimiter.limits?.loopsProviderRequest;
+
+    expect(config).toMatchObject({
+      capacity: 2,
+      rate: 8,
+    });
+    expect(config).not.toHaveProperty("maxReserved");
+  });
+
+  it("fits every bounded pending workflow into one confirmation transaction", () => {
+    expect(rateLimiter.limits?.emailWorkflowEventByContact?.capacity).toBe(4);
+  });
+});

@@ -1,17 +1,30 @@
 import { CreativeTestingTrackerWorkspace } from "@/app/_components/tools/creative-testing-tracker/CreativeTestingTrackerWorkspace";
+import { PublicToolGateCapture } from "@/app/_components/tools/gates/PublicToolGateCapture";
 import { ResourceFaq } from "@/app/_components/tools/resources/ResourceFaq";
 import { ResourceGuide } from "@/app/_components/tools/resources/ResourceGuide";
 import { ResourceHero } from "@/app/_components/tools/resources/ResourceHero";
 import { ResourcePricingCta } from "@/app/_components/tools/resources/ResourcePricingCta";
 import { ToolDiscoveryLinks } from "@/app/_components/tools/ToolDiscoveryLinks";
-import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm";
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { creativeTestingTrackerFaqs } from "@/lib/clipstitchr/tools/creativeTestingTracker/creativeTestingTrackerFaqs";
+import { hasPublicToolPortabilityArtifactFormat } from "@/lib/clipstitchr/tools/catalog/hasPublicToolPortabilityArtifactFormat";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 const tool = publicToolCatalog["tiktok-reels-creative-testing-tracker"];
 
-export function CreativeTestingTrackerPage() {
+type CreativeTestingTrackerPageProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function CreativeTestingTrackerPage({
+  variant = "control",
+}: CreativeTestingTrackerPageProps) {
+  const hasFunctionalUnlock = hasPublicToolPortabilityArtifactFormat(
+    tool.key,
+    "csv",
+  );
+
   return (
     <>
       <ToolStructuredData
@@ -21,10 +34,17 @@ export function CreativeTestingTrackerPage() {
         pathname={tool.pathname}
       />
       <ResourceHero resourceKey={tool.key} />
-      <CreativeTestingTrackerWorkspace />
+      <CreativeTestingTrackerWorkspace
+        hasFunctionalUnlock={hasFunctionalUnlock}
+        variant={variant}
+      />
       <div className="px-6 pb-20">
         <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source={tool.key} />
+          <PublicToolGateCapture
+            hasFunctionalUnlock={hasFunctionalUnlock}
+            toolKey={tool.key}
+            variant={variant}
+          />
         </div>
       </div>
       <ResourceGuide
@@ -35,7 +55,7 @@ export function CreativeTestingTrackerPage() {
         ]}
       />
       <ResourceFaq faqs={creativeTestingTrackerFaqs} />
-      <ResourcePricingCta />
+      <ResourcePricingCta toolKey={tool.key} variant={variant} />
       <ToolDiscoveryLinks currentToolKey={tool.key} />
     </>
   );

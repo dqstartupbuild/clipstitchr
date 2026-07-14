@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { PublicToolGateActionBoundary } from "@/app/_components/tools/gates/PublicToolGateActionBoundary";
 import { ResourceDownloadButton } from "@/app/_components/tools/resources/ResourceDownloadButton";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import type { AppMarketingCalendarInput } from "@/lib/clipstitchr/tools/appMarketingCalendar/AppMarketingCalendarInput";
 import type { AppMarketingCalendarRow } from "@/lib/clipstitchr/tools/appMarketingCalendar/AppMarketingCalendarRow";
 import { createAppMarketingCalendarCsv } from "@/lib/clipstitchr/tools/appMarketingCalendar/createAppMarketingCalendarCsv";
@@ -10,7 +12,15 @@ import { formatAppMarketingCalendarCampaigns } from "@/lib/clipstitchr/tools/app
 import { generateAppMarketingCalendar } from "@/lib/clipstitchr/tools/appMarketingCalendar/generateAppMarketingCalendar";
 import { parseAppMarketingCalendarCampaigns } from "@/lib/clipstitchr/tools/appMarketingCalendar/parseAppMarketingCalendarCampaigns";
 
-export function AppMarketingContentCalendarWorkspace() {
+type AppMarketingContentCalendarWorkspaceProps = {
+  hasFunctionalUnlock?: boolean;
+  variant?: PublicToolGateVariant;
+};
+
+export function AppMarketingContentCalendarWorkspace({
+  hasFunctionalUnlock = false,
+  variant = "control",
+}: AppMarketingContentCalendarWorkspaceProps) {
   const [input, setInput] = useState<AppMarketingCalendarInput>(
     defaultAppMarketingCalendarInput,
   );
@@ -151,12 +161,18 @@ export function AppMarketingContentCalendarWorkspace() {
                 rows.
               </p>
             </div>
-            <ResourceDownloadButton
-              contents={createAppMarketingCalendarCsv(rows)}
-              fileName="clipstitchr-app-marketing-calendar.csv"
-              label="Download CSV"
-              type="text/csv;charset=utf-8"
-            />
+            <PublicToolGateActionBoundary
+              hasFunctionalUnlock={hasFunctionalUnlock}
+              toolKey="app-marketing-content-calendar"
+              variant={variant}
+            >
+              <ResourceDownloadButton
+                contents={createAppMarketingCalendarCsv(rows)}
+                fileName="clipstitchr-app-marketing-calendar.csv"
+                label="Download CSV"
+                type="text/csv;charset=utf-8"
+              />
+            </PublicToolGateActionBoundary>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">

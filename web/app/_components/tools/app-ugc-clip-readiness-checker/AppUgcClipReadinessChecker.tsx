@@ -10,8 +10,11 @@ import type { AppUgcClipAnswers } from "@/lib/clipstitchr/tools/appUgcClipReadin
 import type { AppUgcClipRole } from "@/lib/clipstitchr/tools/appUgcClipReadiness/AppUgcClipRole";
 import { defaultAppUgcClipAnswers } from "@/lib/clipstitchr/tools/appUgcClipReadiness/defaultAppUgcClipAnswers";
 import { useLocalVideoInspection } from "@/lib/clipstitchr/tools/localVideoInspection/useLocalVideoInspection";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 
-export function AppUgcClipReadinessChecker() {
+export function AppUgcClipReadinessChecker({
+  variant = "control",
+}: PublicToolPageGateProps) {
   const [role, setRole] = useState<AppUgcClipRole>("spoken-hook");
   const [answers, setAnswers] = useState<AppUgcClipAnswers>({
     ...defaultAppUgcClipAnswers,
@@ -66,6 +69,7 @@ export function AppUgcClipReadinessChecker() {
               file={file}
               inspection={inspection}
               role={role}
+              variant={variant}
             />
           ) : null}
         </Panel>

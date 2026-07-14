@@ -10,8 +10,11 @@ import { useLocalVideoInspection } from "@/lib/clipstitchr/tools/localVideoInspe
 import type { ProductDemoAnswers } from "@/lib/clipstitchr/tools/productDemoReadiness/ProductDemoAnswers";
 import type { ProductDemoUse } from "@/lib/clipstitchr/tools/productDemoReadiness/ProductDemoUse";
 import { defaultProductDemoAnswers } from "@/lib/clipstitchr/tools/productDemoReadiness/defaultProductDemoAnswers";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 
-export function ProductDemoReadinessChecker() {
+export function ProductDemoReadinessChecker({
+  variant = "control",
+}: PublicToolPageGateProps) {
   const [use, setUse] = useState<ProductDemoUse>("short-form-ad");
   const [answers, setAnswers] = useState<ProductDemoAnswers>({
     ...defaultProductDemoAnswers,
@@ -73,6 +76,7 @@ export function ProductDemoReadinessChecker() {
               file={file}
               inspection={inspection}
               use={use}
+              variant={variant}
             />
           ) : null}
         </Panel>

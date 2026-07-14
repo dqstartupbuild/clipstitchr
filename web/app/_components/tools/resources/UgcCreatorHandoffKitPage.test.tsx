@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("UgcCreatorHandoffKitPage", () => {
-  it("renders every handoff artifact and a paid conversion path", () => {
-    const markup = renderToStaticMarkup(<UgcCreatorHandoffKitRoutePage />);
+  it("renders every handoff artifact and a paid conversion path", async () => {
+    const markup = renderToStaticMarkup(await UgcCreatorHandoffKitRoutePage());
 
     expect(markup).toContain("UGC Creator Handoff Kit");
     expect(markup).toContain('"@type":"WebApplication"');

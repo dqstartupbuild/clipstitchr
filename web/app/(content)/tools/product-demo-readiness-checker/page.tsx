@@ -1,6 +1,7 @@
 import { ProductDemoReadinessPage } from "@/app/_components/tools/product-demo-readiness-checker/ProductDemoReadinessPage";
 import { productDemoReadinessDescription } from "@/lib/clipstitchr/tools/productDemoReadiness/productDemoReadinessDescription";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -11,6 +12,11 @@ export const metadata = createPageMetadata({
   keywords: publicToolCatalog["product-demo-readiness-checker"].keywords,
 });
 
-export default function ProductDemoReadinessRoutePage() {
-  return <ProductDemoReadinessPage />;
+export default async function ProductDemoReadinessRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(
+    "product-demo-readiness-checker",
+    false,
+  );
+
+  return <ProductDemoReadinessPage variant={variant} />;
 }

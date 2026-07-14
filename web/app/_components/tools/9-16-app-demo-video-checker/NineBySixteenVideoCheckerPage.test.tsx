@@ -24,10 +24,17 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("NineBySixteenVideoCheckerPage", () => {
-  it("renders local-only guidance, structured data, lead source, and discovery", () => {
+  it("renders local-only guidance, structured data, lead source, and discovery", async () => {
     const markup = renderToStaticMarkup(
-      <NineBySixteenVideoCheckerRoutePage />,
+      await NineBySixteenVideoCheckerRoutePage(),
     );
 
     expect(markup).toContain("9:16 App Demo Video Checker");

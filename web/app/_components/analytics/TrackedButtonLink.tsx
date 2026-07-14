@@ -12,6 +12,7 @@ type TrackedButtonLinkProps = {
   contentId: string;
   contentName: string;
   href: string;
+  onClick?: () => void;
 };
 
 export function TrackedButtonLink({
@@ -21,6 +22,7 @@ export function TrackedButtonLink({
   contentId,
   contentName,
   href,
+  onClick,
 }: TrackedButtonLinkProps) {
   const handleClick = () => {
     trackPostHogEvent("cta_clicked", {
@@ -34,6 +36,7 @@ export function TrackedButtonLink({
       contentId,
       contentName,
     });
+    onClick?.();
   };
 
   return (

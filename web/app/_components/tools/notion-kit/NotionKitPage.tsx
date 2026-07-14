@@ -1,12 +1,14 @@
+import { PublicToolGateCapture } from "@/app/_components/tools/gates/PublicToolGateCapture";
 import { NotionKitWorkspace } from "@/app/_components/tools/notion-kit/NotionKitWorkspace";
 import { ResourceFaq } from "@/app/_components/tools/resources/ResourceFaq";
 import { ResourceGuide } from "@/app/_components/tools/resources/ResourceGuide";
 import { ResourceHero } from "@/app/_components/tools/resources/ResourceHero";
 import { ResourcePricingCta } from "@/app/_components/tools/resources/ResourcePricingCta";
 import { ToolDiscoveryLinks } from "@/app/_components/tools/ToolDiscoveryLinks";
-import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm";
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
+import { hasPublicToolPortabilityArtifactFormat } from "@/lib/clipstitchr/tools/catalog/hasPublicToolPortabilityArtifactFormat";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 const resource = publicToolCatalog["short-form-content-system-notion-kit"];
 const faqs = [
@@ -22,7 +24,16 @@ const faqs = [
   },
 ];
 
-export function NotionKitPage() {
+type NotionKitPageProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function NotionKitPage({ variant = "control" }: NotionKitPageProps) {
+  const hasFunctionalUnlock = hasPublicToolPortabilityArtifactFormat(
+    resource.key,
+    "csv",
+  );
+
   return (
     <>
       <ToolStructuredData
@@ -32,10 +43,17 @@ export function NotionKitPage() {
         pathname={resource.pathname}
       />
       <ResourceHero resourceKey={resource.key} />
-      <NotionKitWorkspace />
+      <NotionKitWorkspace
+        hasFunctionalUnlock={hasFunctionalUnlock}
+        variant={variant}
+      />
       <div className="px-6 pb-20">
         <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source={resource.key} />
+          <PublicToolGateCapture
+            hasFunctionalUnlock={hasFunctionalUnlock}
+            toolKey={resource.key}
+            variant={variant}
+          />
         </div>
       </div>
       <ResourceGuide
@@ -47,7 +65,7 @@ export function NotionKitPage() {
         title="Set up the tables in a practical order."
       />
       <ResourceFaq faqs={faqs} />
-      <ResourcePricingCta />
+      <ResourcePricingCta toolKey={resource.key} variant={variant} />
       <ToolDiscoveryLinks currentToolKey={resource.key} />
     </>
   );

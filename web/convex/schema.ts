@@ -69,6 +69,30 @@ import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
 import { videoClipLibraryKindValidator } from "./validators/videoClipLibraryKind";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 import { waitlistSourceValidator } from "./validators/waitlistSource";
+import { browserRecognitionRevocationReasonValidator } from "./validators/browserRecognitionRevocationReason";
+import { emailDeliveryStatusValidator } from "./validators/emailDeliveryStatus";
+import { emailProviderAcceptanceStatusValidator } from "./validators/emailProviderAcceptanceStatus";
+import { emailProviderFailureCategoryValidator } from "./validators/emailProviderFailureCategory";
+import { emailProviderOperationKindValidator } from "./validators/emailProviderOperationKind";
+import { emailProviderOperationStatusValidator } from "./validators/emailProviderOperationStatus";
+import { emailTransactionalTemplateKeyValidator } from "./validators/emailTransactionalTemplateKey";
+import { loopsWebhookDispositionValidator } from "./validators/loopsWebhookDisposition";
+import { loopsWebhookEventTypeValidator } from "./validators/loopsWebhookEventType";
+import { marketingConsentStatusValidator } from "./validators/marketingConsentStatus";
+import { marketingDeletionStatusValidator } from "./validators/marketingDeletionStatus";
+import { marketingLeadSegmentValidator } from "./validators/marketingLeadSegment";
+import { marketingLeadStageValidator } from "./validators/marketingLeadStage";
+import { marketingMailingListMembershipStatusValidator } from "./validators/marketingMailingListMembershipStatus";
+import { marketingSubscriptionStatusValidator } from "./validators/marketingSubscriptionStatus";
+import { marketingSuppressionStatusValidator } from "./validators/marketingSuppressionStatus";
+import { marketingVerificationStatusValidator } from "./validators/marketingVerificationStatus";
+import { marketingWorkflowEnrollmentStatusValidator } from "./validators/marketingWorkflowEnrollmentStatus";
+import { marketingWorkflowKeyValidator } from "./validators/marketingWorkflowKey";
+import { marketingWorkflowVersionValidator } from "./validators/marketingWorkflowVersion";
+import { publicToolGateModeValidator } from "./validators/publicToolGateMode";
+import { publicToolGateVariantValidator } from "./validators/publicToolGateVariant";
+import { toolLeadInteractionTypeValidator } from "./validators/toolLeadInteractionType";
+import { toolLeadSourceValidator } from "./validators/toolLeadSource";
 
 export default defineSchema({
   waitlist: defineTable({
@@ -81,6 +105,181 @@ export default defineSchema({
   })
     .index("by_normalized_email", ["normalizedEmail"])
     .index("by_created", ["createdAt"]),
+  marketingContacts: defineTable({
+    normalizedEmail: v.string(),
+    contactName: v.string(),
+    providerContactKey: v.string(),
+    providerContactId: v.optional(v.string()),
+    consentStatus: marketingConsentStatusValidator,
+    verificationStatus: marketingVerificationStatusValidator,
+    subscriptionStatus: marketingSubscriptionStatusValidator,
+    suppressionStatus: marketingSuppressionStatusValidator,
+    deletionStatus: marketingDeletionStatusValidator,
+    marketingEligible: v.boolean(),
+    firstTool: v.optional(toolLeadSourceValidator),
+    latestTool: v.optional(toolLeadSourceValidator),
+    leadSegment: marketingLeadSegmentValidator,
+    leadStage: marketingLeadStageValidator,
+    currentConsentId: v.optional(v.id("marketingConsents")),
+    legacyWaitlistId: v.optional(v.id("waitlist")),
+    subscriptionChangedAt: v.optional(v.number()),
+    suppressionChangedAt: v.optional(v.number()),
+    deletionChangedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_normalized_email", ["normalizedEmail"])
+    .index("by_provider_contact_key", ["providerContactKey"])
+    .index("by_provider_contact_id", ["providerContactId"])
+    .index("by_legacy_waitlist_id", ["legacyWaitlistId"]),
+  marketingConsents: defineTable({
+    contactId: v.id("marketingContacts"),
+    status: marketingConsentStatusValidator,
+    copyVersion: v.optional(v.string()),
+    source: waitlistSourceValidator,
+    capturedAt: v.number(),
+    confirmedAt: v.optional(v.number()),
+    withdrawnAt: v.optional(v.number()),
+    legacyWaitlistId: v.optional(v.id("waitlist")),
+    createdAt: v.number(),
+  })
+    .index("by_contact_captured", ["contactId", "capturedAt"])
+    .index("by_contact_status", ["contactId", "status"])
+    .index("by_legacy_waitlist_id", ["legacyWaitlistId"]),
+  marketingMailingListMemberships: defineTable({
+    contactId: v.id("marketingContacts"),
+    providerMailingListId: v.string(),
+    status: marketingMailingListMembershipStatusValidator,
+    eventAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_contact_list", ["contactId", "providerMailingListId"])
+    .index("by_list_status", ["providerMailingListId", "status"]),
+  toolLeadCaptures: defineTable({
+    contactId: v.id("marketingContacts"),
+    consentId: v.id("marketingConsents"),
+    source: toolLeadSourceValidator,
+    gateMode: publicToolGateModeValidator,
+    gateVariant: publicToolGateVariantValidator,
+    capturedAt: v.number(),
+  })
+    .index("by_contact_captured", ["contactId", "capturedAt"])
+    .index("by_source_captured", ["source", "capturedAt"]),
+  toolLeadInteractions: defineTable({
+    contactId: v.id("marketingContacts"),
+    recognitionTokenId: v.id("browserRecognitionTokens"),
+    source: toolLeadSourceValidator,
+    interactionType: toolLeadInteractionTypeValidator,
+    gateMode: publicToolGateModeValidator,
+    gateVariant: publicToolGateVariantValidator,
+    occurredAt: v.number(),
+  })
+    .index("by_contact_occurred", ["contactId", "occurredAt"])
+    .index("by_token_occurred", ["recognitionTokenId", "occurredAt"]),
+  browserRecognitionTokens: defineTable({
+    contactId: v.id("marketingContacts"),
+    tokenHash: v.string(),
+    issuedAt: v.number(),
+    expiresAt: v.number(),
+    revokedAt: v.optional(v.number()),
+    revocationReason: v.optional(browserRecognitionRevocationReasonValidator),
+  })
+    .index("by_token_hash", ["tokenHash"])
+    .index("by_contact_issued", ["contactId", "issuedAt"]),
+  emailConfirmationTokens: defineTable({
+    contactId: v.id("marketingContacts"),
+    tokenRecordId: v.string(),
+    tokenDigest: v.string(),
+    generation: v.number(),
+    expiresAt: v.number(),
+    usedAt: v.optional(v.number()),
+    supersededAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_token_record_id", ["tokenRecordId"])
+    .index("by_contact_generation", ["contactId", "generation"]),
+  emailProviderOperations: defineTable({
+    contactId: v.id("marketingContacts"),
+    kind: emailProviderOperationKindValidator,
+    status: emailProviderOperationStatusValidator,
+    acceptanceStatus: emailProviderAcceptanceStatusValidator,
+    deliveryStatus: emailDeliveryStatusValidator,
+    workflowKey: v.optional(marketingWorkflowKeyValidator),
+    workflowVersion: v.optional(marketingWorkflowVersionValidator),
+    toolSource: v.optional(toolLeadSourceValidator),
+    gateMode: v.optional(publicToolGateModeValidator),
+    leadSegment: v.optional(marketingLeadSegmentValidator),
+    transactionalTemplateKey: v.optional(
+      emailTransactionalTemplateKeyValidator,
+    ),
+    confirmationTokenId: v.optional(v.id("emailConfirmationTokens")),
+    enrollmentId: v.optional(v.id("marketingWorkflowEnrollments")),
+    compensatesOperationId: v.optional(v.id("emailProviderOperations")),
+    dependsOnOperationId: v.optional(v.id("emailProviderOperations")),
+    attemptCount: v.number(),
+    nextAttemptAt: v.number(),
+    leaseOwner: v.optional(v.string()),
+    leaseExpiresAt: v.optional(v.number()),
+    attemptLeaseOwner: v.optional(v.string()),
+    idempotencyExpiresAt: v.number(),
+    ambiguousAt: v.optional(v.number()),
+    providerMessageId: v.optional(v.string()),
+    failureCategory: v.optional(emailProviderFailureCategoryValidator),
+    acceptedAt: v.optional(v.number()),
+    deliveredAt: v.optional(v.number()),
+    deliveryChangedAt: v.optional(v.number()),
+    terminalAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_status_next_attempt", ["status", "nextAttemptAt"])
+    .index("by_status_lease_expiration", ["status", "leaseExpiresAt"])
+    .index("by_contact_created", ["contactId", "createdAt"])
+    .index("by_contact_kind_status", ["contactId", "kind", "status"])
+    .index("by_compensated_operation", ["compensatesOperationId"])
+    .index("by_dependency_status", ["dependsOnOperationId", "status"])
+    .index("by_provider_message_id", ["providerMessageId"]),
+  marketingWorkflowEnrollments: defineTable({
+    contactId: v.id("marketingContacts"),
+    workflowKey: marketingWorkflowKeyValidator,
+    workflowVersion: marketingWorkflowVersionValidator,
+    status: marketingWorkflowEnrollmentStatusValidator,
+    operationId: v.optional(v.id("emailProviderOperations")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_contact_workflow_version", [
+      "contactId",
+      "workflowKey",
+      "workflowVersion",
+    ])
+    .index("by_contact_status", ["contactId", "status"]),
+  loopsWebhookEvents: defineTable({
+    webhookId: v.string(),
+    eventType: loopsWebhookEventTypeValidator,
+    schemaVersion: v.string(),
+    eventAt: v.number(),
+    disposition: loopsWebhookDispositionValidator,
+    contactId: v.optional(v.id("marketingContacts")),
+    operationId: v.optional(v.id("emailProviderOperations")),
+    processedAt: v.number(),
+  })
+    .index("by_webhook_id", ["webhookId"])
+    .index("by_event_at", ["eventAt"]),
+  providerDeletionTombstones: defineTable({
+    providerContactKey: v.string(),
+    providerContactId: v.optional(v.string()),
+    contactId: v.optional(v.id("marketingContacts")),
+    webhookId: v.string(),
+    eventAt: v.number(),
+    deletedAt: v.number(),
+    clearedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_provider_contact_key", ["providerContactKey"])
+    .index("by_provider_contact_id", ["providerContactId"])
+    .index("by_contact", ["contactId"]),
   blogPosts: defineTable({
     slug: v.string(),
     externalId: v.optional(v.string()),

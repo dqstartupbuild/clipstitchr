@@ -9,7 +9,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function TermsPage() {
-  const lastUpdated = "July 12, 2026";
+  const lastUpdated = "July 13, 2026";
 
   return (
     <article className="marketing-grid-bg px-6 py-20 md:py-28">
@@ -82,6 +82,15 @@ export default function TermsPage() {
             <p>
               Joining the mailing list does not create a ClipStitchr account.
               You can unsubscribe from marketing emails at any time.
+            </p>
+            <p>
+              Some optional tool extras unlock in that browser after an
+              accepted name-and-email form. This browser access is not a
+              product account or paid entitlement. A new or previously
+              opted-out address must confirm before marketing emails begin,
+              and each email course or workshop requires its own clear
+              enrollment request. Unsubscribing does not remove browser value
+              you already unlocked.
             </p>
           </section>
 

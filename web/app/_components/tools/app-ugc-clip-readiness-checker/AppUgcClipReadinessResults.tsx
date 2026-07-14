@@ -1,4 +1,5 @@
 import { ListTodo, ThumbsUp } from "lucide-react";
+import { PublicToolGateContentBoundary } from "@/app/_components/tools/gates/PublicToolGateContentBoundary";
 import { AppUgcClipPricingCta } from "@/app/_components/tools/app-ugc-clip-readiness-checker/AppUgcClipPricingCta";
 import { LocalVideoPreview } from "@/app/_components/tools/video/LocalVideoPreview";
 import { VideoCheckRow } from "@/app/_components/tools/video/VideoCheckRow";
@@ -15,12 +16,14 @@ import { getAppUgcClipReadinessFixes } from "@/lib/clipstitchr/tools/appUgcClipR
 import { getAppUgcClipReadinessStatus } from "@/lib/clipstitchr/tools/appUgcClipReadiness/getAppUgcClipReadinessStatus";
 import type { LocalVideoInspection } from "@/lib/clipstitchr/tools/localVideoInspection/LocalVideoInspection";
 import { scoreVideoChecks } from "@/lib/clipstitchr/tools/localVideoInspection/scoreVideoChecks";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 type AppUgcClipReadinessResultsProps = {
   answers: AppUgcClipAnswers;
   file: File;
   inspection: LocalVideoInspection;
   role: AppUgcClipRole;
+  variant?: PublicToolGateVariant;
 };
 
 export function AppUgcClipReadinessResults({
@@ -28,6 +31,7 @@ export function AppUgcClipReadinessResults({
   file,
   inspection,
   role,
+  variant = "control",
 }: AppUgcClipReadinessResultsProps) {
   const checks = createAppUgcClipReadinessChecks({ answers, inspection, role });
   const automaticChecks = createAppUgcClipAutomaticChecks(inspection, role);
@@ -39,8 +43,14 @@ export function AppUgcClipReadinessResults({
     (check) => check.status === "pass" && check.weight > 0,
   );
 
+  const topIssue = fixes[0];
+
   return (
-    <div className="mt-8 grid gap-8">
+    <PublicToolGateContentBoundary
+      hasFunctionalUnlock
+      toolKey="app-ugc-clip-readiness-checker"
+      variant={variant}
+      publicContent={<div className="mt-8 grid gap-8">
       <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
         <LocalVideoPreview file={file} />
         <div className="grid gap-5">
@@ -49,19 +59,38 @@ export function AppUgcClipReadinessResults({
             status={status}
             description="Technical facts come from the file. Framing, motion, voice quality, clean handles, modularity, edit treatment, and usage approval come only from your review."
           />
-          <CopyTextButton
-            label="Copy clip report"
-            copiedLabel="Clip report copied"
-            text={formatAppUgcClipReadinessReport({
-              checks,
-              percentage: score.percentage,
-              role,
-              status,
-            })}
-          />
-          <AppUgcClipPricingCta />
+          <AppUgcClipPricingCta variant={variant} />
         </div>
       </div>
+      <section className="rounded-lg border border-border p-5">
+        <h3 className="flex items-center gap-2 font-bold text-text-primary">
+          <ListTodo aria-hidden className="h-5 w-5 text-accent-dark" />
+          Top issue
+        </h3>
+        <p className="mt-4 text-sm leading-6 text-text-secondary">
+          {topIssue ? (
+            <>
+              <strong className="text-text-primary">{topIssue.title}</strong>
+              <br />
+              {topIssue.fix}
+            </>
+          ) : (
+            "No blocker remains in this checklist."
+          )}
+        </p>
+      </section>
+    </div>}
+      unlockedContent={<div className="mt-8 grid gap-8">
+      <CopyTextButton
+        label="Copy clip report"
+        copiedLabel="Clip report copied"
+        text={formatAppUgcClipReadinessReport({
+          checks,
+          percentage: score.percentage,
+          role,
+          status,
+        })}
+      />
       <VideoInspectionFacts inspection={inspection} />
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="rounded-lg border border-border p-5">
@@ -137,6 +166,7 @@ export function AppUgcClipReadinessResults({
           ))}
         </div>
       </section>
-    </div>
+    </div>}
+    />
   );
 }

@@ -1,6 +1,7 @@
 import { NineBySixteenVideoCheckerPage } from "@/app/_components/tools/9-16-app-demo-video-checker/NineBySixteenVideoCheckerPage";
 import { nineBySixteenVideoCheckerDescription } from "@/lib/clipstitchr/tools/nineBySixteenVideoChecker/nineBySixteenVideoCheckerDescription";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -11,6 +12,11 @@ export const metadata = createPageMetadata({
   keywords: publicToolCatalog["9-16-app-demo-video-checker"].keywords,
 });
 
-export default function NineBySixteenVideoCheckerRoutePage() {
-  return <NineBySixteenVideoCheckerPage />;
+export default async function NineBySixteenVideoCheckerRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(
+    "9-16-app-demo-video-checker",
+    false,
+  );
+
+  return <NineBySixteenVideoCheckerPage variant={variant} />;
 }

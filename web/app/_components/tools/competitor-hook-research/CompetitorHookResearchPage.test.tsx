@@ -11,9 +11,18 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("CompetitorHookResearchPage", () => {
-  it("separates entered evidence from visitor inference", () => {
-    const markup = renderToStaticMarkup(<CompetitorHookResearchRoutePage />);
+  it("separates entered evidence from visitor inference", async () => {
+    const markup = renderToStaticMarkup(
+      await CompetitorHookResearchRoutePage(),
+    );
 
     expect(markup).toContain("Competitor Hook Research Worksheet");
     expect(markup).toContain("Evidence entered");

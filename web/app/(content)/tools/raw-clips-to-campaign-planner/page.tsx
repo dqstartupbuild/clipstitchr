@@ -1,5 +1,6 @@
 import { RawCampaignPlannerPage } from "@/app/_components/tools/raw-clips-to-campaign-planner/RawCampaignPlannerPage";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -12,6 +13,8 @@ export const metadata = createPageMetadata({
   title: `${tool.name} | ${site.name}`,
 });
 
-export default function RawCampaignPlannerRoutePage() {
-  return <RawCampaignPlannerPage />;
+export default async function RawCampaignPlannerRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(tool.key, false);
+
+  return <RawCampaignPlannerPage variant={variant} />;
 }

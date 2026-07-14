@@ -1,5 +1,5 @@
-import type { PublicToolDefinition } from "@/lib/clipstitchr/tools/catalog/PublicToolDefinition";
-import type { PublicToolKey } from "@/lib/clipstitchr/tools/catalog/PublicToolKey";
+import type { PublicToolDefinition } from "./PublicToolDefinition";
+import type { PublicToolKey } from "./PublicToolKey";
 
 export const publicToolCatalog: Record<PublicToolKey, PublicToolDefinition> = {
   "ad-variant-calculator": {

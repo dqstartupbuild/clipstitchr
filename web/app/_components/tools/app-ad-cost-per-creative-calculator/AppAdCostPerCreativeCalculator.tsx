@@ -6,8 +6,13 @@ import { AppAdCostPerCreativeResults } from "@/app/_components/tools/app-ad-cost
 import type { AppAdCostPerCreativeInput } from "@/lib/clipstitchr/tools/appAdCostPerCreative/AppAdCostPerCreativeInput";
 import { calculateAppAdCostPerCreative } from "@/lib/clipstitchr/tools/appAdCostPerCreative/calculateAppAdCostPerCreative";
 import { defaultAppAdCostPerCreativeInput } from "@/lib/clipstitchr/tools/appAdCostPerCreative/defaultAppAdCostPerCreativeInput";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function AppAdCostPerCreativeCalculator() {
+export function AppAdCostPerCreativeCalculator({
+  variant = "control",
+}: {
+  variant?: PublicToolGateVariant;
+}) {
   const [input, setInput] = useState<AppAdCostPerCreativeInput>(
     defaultAppAdCostPerCreativeInput,
   );
@@ -20,7 +25,7 @@ export function AppAdCostPerCreativeCalculator() {
     >
       <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
         <AppAdCostPerCreativeForm value={input} onChange={setInput} />
-        <AppAdCostPerCreativeResults result={result} />
+        <AppAdCostPerCreativeResults result={result} variant={variant} />
       </div>
     </section>
   );

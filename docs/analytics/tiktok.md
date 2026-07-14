@@ -1,5 +1,7 @@
 # TikTok Analytics
 
+Last updated: July 13, 2026
+
 ## Purpose
 
 ClipStitchr uses the TikTok Pixel to measure website visits, waitlist sign-up
@@ -51,6 +53,22 @@ TikTok may set first-party advertising cookies such as `_ttp`, `ttclid`,
 `ttcsid`, or `ttcsid_<pixel id>` when marketing consent is allowed. TikTok may
 also set or read third-party advertising cookies through its own domains.
 
+### Public-tool storage is not TikTok storage
+
+An accepted public-tool capture uses two functional, non-advertising browser
+values that are separate from TikTok and the optional analytics categories:
+
+| Browser value | Location | Purpose | Lifetime |
+| --- | --- | --- | --- |
+| Public-tool unlock marker | Local browser storage | Remembers only that approved browser-local value was earned. It contains no name, email, token, or tool result. | Until the visitor clears site data. |
+| Opaque recognition token | HttpOnly, `SameSite=Strict` cookie | Lets the server recognize a bounded later tool interaction without exposing the token to page scripts. The server stores only its digest and contact association. | 180 days, rotated after a later accepted capture. |
+
+Neither value is sent to the TikTok Pixel, TikTok Events API, PostHog, a URL,
+or a general application log. Unsubscribe stops new contact-linked
+qualification without removing the non-identifying local unlock. A privacy
+deletion revokes the server association while the local marker remains until
+the visitor clears site data.
+
 ## Events
 
 TikTok events are routed through
@@ -69,6 +87,13 @@ Current events:
 | `ClickButton` | Marketing CTAs, auth header buttons, and waitlist submit clicks | Tracks button context, not user-entered form data. |
 | `Lead` | New waitlist row created in Convex | Fires only when the legacy `/sign-up` form receives `{ status: "created" }` from `waitlist.submit`. |
 | `Purchase` | Future paid subscription confirmation | Helper exists, but should only be called after payment is confirmed. |
+
+The standalone `/email/confirm` response bypasses the React layout and loads no
+TikTok Pixel, PostHog, analytics script, or third-party resource. A scanner-like
+`GET` cannot create consent or a conversion event. Only an explicit
+same-origin, CSRF-protected `POST` can confirm marketing consent, and that POST
+does not emit a TikTok event. The route exists independently of provider
+delivery; no live Loops send was performed while implementing it.
 
 `Search` support exists in
 `web/lib/clipstitchr/analytics/trackTikTokSearch.ts`, but it is not wired to
@@ -202,7 +227,9 @@ The event fires only when `waitlist.submit` returns `{ status: "created" }`.
 Existing-email updates return `{ status: "updated" }` and do not fire another
 conversion, which avoids inflating sign-up counts from repeat submissions.
 Public tool mailing-list forms intentionally do not fire TikTok Lead events
-because their accepted response does not reveal whether an email was new.
+because their accepted response does not reveal whether an email was new,
+already verified, or previously opted out. Their fixed gate metadata is a
+PostHog-only contract after analytics consent; it is not forwarded to TikTok.
 
 ## Future Subscription Purchase Tracking
 
@@ -250,6 +277,11 @@ Do not fire purchase events before payment is confirmed.
   but hashes them on the server before sending anything to TikTok.
 - First-party attribution cookies are stored in the browser only; they are not
   written to Convex.
+- The public-tool local marker and HttpOnly recognition cookie are functional
+  storage, not TikTok identifiers. Never copy either value into Pixel advanced
+  matching or an Events API payload.
+- Public-tool gate events never include name, email, tool input, result,
+  recognition token, confirmation token, or browser marker.
 - Purchase payloads should include only plan metadata, currency, and purchase
   value unless a later privacy review explicitly approves additional fields.
 - Keep `web/app/(content)/privacy/page.tsx` aligned with the cookie categories
@@ -270,6 +302,10 @@ In a browser, confirm that the TikTok script request is loaded from
 `https://analytics.tiktok.com/i18n/pixel/events.js` only after marketing
 cookies are accepted, and that a new waitlist submission fires one
 browser `Lead` event.
+
+Also confirm that an accepted public-tool mailing-list form does not fire a
+TikTok `Lead`, and that both `GET` and `POST` responses from `/email/confirm`
+contain no TikTok script or Events API request.
 
 In TikTok Events Manager, set:
 

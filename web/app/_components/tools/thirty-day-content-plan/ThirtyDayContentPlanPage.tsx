@@ -8,10 +8,17 @@ import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
 import { thirtyDayContentPlanFaqs } from "@/lib/clipstitchr/tools/thirtyDayContentPlan/thirtyDayContentPlanFaqs";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 const tool = publicToolCatalog["30-day-app-content-plan"];
 
-export function ThirtyDayContentPlanPage() {
+type ThirtyDayContentPlanPageProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function ThirtyDayContentPlanPage({
+  variant = "control",
+}: ThirtyDayContentPlanPageProps) {
   return (
     <>
       <ToolStructuredData
@@ -21,12 +28,14 @@ export function ThirtyDayContentPlanPage() {
         pathname={tool.pathname}
       />
       <ResourceHero resourceKey={tool.key} estimatedMinutes={5} />
-      <ThirtyDayContentPlanWorkspace />
-      <div className="px-6 pb-20">
-        <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source={tool.key} />
+      <ThirtyDayContentPlanWorkspace variant={variant} />
+      {variant === "control" ? (
+        <div className="px-6 pb-20">
+          <div className="mx-auto max-w-4xl">
+            <ToolLeadCaptureForm source={tool.key} />
+          </div>
         </div>
-      </div>
+      ) : null}
       <ResourceGuide
         title="Plan the work between posts, not just the posting dates."
         paragraphs={[
@@ -35,7 +44,7 @@ export function ThirtyDayContentPlanPage() {
         ]}
       />
       <ResourceFaq faqs={thirtyDayContentPlanFaqs} />
-      <ResourcePricingCta />
+      <ResourcePricingCta toolKey={tool.key} variant={variant} />
       <ToolDiscoveryLinks currentToolKey={tool.key} />
     </>
   );

@@ -13,6 +13,13 @@ vi.mock("@/lib/clipstitchr/analytics/trackTikTokButtonClick", () => ({
   trackTikTokButtonClick: vi.fn(),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ToolLeadCaptureForm: ({ source }: { source: string }) => (
     <section>Mailing list source: {source}. ClipStitchr is paid.</section>
@@ -20,8 +27,8 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
 }));
 
 describe("AppAdHookStructuresRoutePage", () => {
-  it("renders all 50 documented frameworks and the paid handoff", () => {
-    const markup = renderToStaticMarkup(<AppAdHookStructuresRoutePage />);
+  it("renders all 50 documented frameworks and the paid handoff", async () => {
+    const markup = renderToStaticMarkup(await AppAdHookStructuresRoutePage());
 
     expect(markup).toContain("50 App-Ad Hook Structures");
     expect(markup).toContain("Showing 50 of 50");

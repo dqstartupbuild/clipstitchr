@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppDemoRecordingChecklistPage", () => {
-  it("renders eighteen capture checks, blockers, and the paid path", () => {
-    const markup = renderToStaticMarkup(<AppDemoRecordingChecklistRoutePage />);
+  it("renders eighteen capture checks, blockers, and the paid path", async () => {
+    const markup = renderToStaticMarkup(await AppDemoRecordingChecklistRoutePage());
 
     expect(markup).toContain("Product Demo Recording Checklist");
     expect(markup).toContain('"@type":"WebApplication"');

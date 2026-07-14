@@ -6,8 +6,11 @@ import { AppAdTestPlanResults } from "@/app/_components/tools/app-ad-test-plan-g
 import type { AppAdTestPlanInput } from "@/lib/clipstitchr/tools/appAdTestPlan/AppAdTestPlanInput";
 import { createAppAdTestPlan } from "@/lib/clipstitchr/tools/appAdTestPlan/createAppAdTestPlan";
 import { defaultAppAdTestPlanInput } from "@/lib/clipstitchr/tools/appAdTestPlan/defaultAppAdTestPlanInput";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 
-export function AppAdTestPlanGenerator() {
+export function AppAdTestPlanGenerator({
+  variant = "control",
+}: PublicToolPageGateProps) {
   const [input, setInput] = useState<AppAdTestPlanInput>(
     defaultAppAdTestPlanInput,
   );
@@ -20,7 +23,7 @@ export function AppAdTestPlanGenerator() {
     >
       <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
         <AppAdTestPlanForm value={input} onChange={setInput} />
-        <AppAdTestPlanResults result={result} />
+        <AppAdTestPlanResults result={result} variant={variant} />
       </div>
     </section>
   );

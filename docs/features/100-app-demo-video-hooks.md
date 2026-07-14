@@ -2,7 +2,7 @@
 
 ## What It Does
 
-The public route `/tools/100-app-demo-video-hooks` provides exactly 100 individually authored app-demo openings. Visitors can search or filter the collection, copy one hook, copy the whole collection, or download it as Markdown.
+The public route `/tools/100-app-demo-video-hooks` provides exactly 100 individually authored app-demo openings. Visitors can search or filter the complete collection and copy any individual hook without signing up.
 
 Every entry includes:
 
@@ -18,6 +18,8 @@ The ten angles are pain recognition, desired outcome, hidden friction, demo reve
 `appDemoVideoHooks.ts` owns the finite collection. It does not call AI, import ClipStitchr's Hook library, or generate permutations from user data. `appDemoVideoHooksDefinition.ts` connects the collection to the shared collection-resource page, guide, FAQ, copy, download, email-capture, related-tool, and paid-account surfaces.
 
 Search and category filters run in the browser. The hook data is already part of the page, and the visitor's search phrase is not sent to ClipStitchr.
+
+The staged control keeps the original whole-collection copy and Markdown download. When the server selects the approved `hybrid-v1` experience, the complete searchable collection remains public and accepted name-and-email capture unlocks the exact CSV hook library in that browser. The CSV is generated locally from the same finite collection; it contains no visitor input and makes no email-delivery promise.
 
 ## Paid Boundary
 
@@ -41,9 +43,11 @@ web/lib/clipstitchr/tools/appDemoVideoHooks/
   appDemoVideoHooks.test.ts
   appDemoVideoHooksDefinition.ts
   appDemoVideoHooksFaqs.ts
+web/lib/clipstitchr/tools/resources/
+  createCollectionResourceCsv.ts
 ```
 
-Shared rendering lives under `web/app/_components/tools/resources/`. Catalog metadata lives in `web/lib/clipstitchr/tools/catalog/publicToolCatalog.ts`.
+Shared rendering and the format-aware portability action live under `web/app/_components/tools/resources/`. Gate metadata lives in `web/lib/clipstitchr/tools/catalog/publicToolGateCatalog.ts`.
 
 ## Source References
 
@@ -51,7 +55,7 @@ The collection is original project copy based on the approved contract in `docs/
 
 ## Verification
 
-The pure data test proves the exact count, unique IDs, unique titles, unique hook text, ten-angle distribution, and required visual and claim-check content. The page test verifies all 100 entries render with structured data, search/download controls, the exact lead source, related-tool links, canonical metadata, and the paid handoff.
+The pure data test proves the exact count, unique IDs, unique titles, unique hook text, ten-angle distribution, and required visual and claim-check content. Page and shared-resource tests verify all 100 entries remain public, the hybrid CSV action stays locked until browser unlock, the control actions remain unchanged, and structured data, lead attribution, related links, canonical metadata, and the paid handoff render.
 
 The candid release status and next refinement are recorded in
 `docs/features/public-tool-quality-register.md`.

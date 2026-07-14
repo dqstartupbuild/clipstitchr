@@ -17,6 +17,11 @@ Safety-sensitive checks use the `Must check` label. The percentage represents
 completion, not approval. Any unchecked Must check item remains a blocker even
 when most other checks are complete.
 
+The staged control retains the existing Markdown action. In the approved
+`hybrid-v1` experience, every check and note remains usable on the page while
+accepted name-and-email capture unlocks the exact browser print action. The
+print action does not upload notes, inspect the ad, or promise email delivery.
+
 ## Use Cases
 
 - Review the final file with and without sound.
@@ -36,6 +41,8 @@ stay browser-local and are not included in optional mailing-list capture.
 - `web/lib/clipstitchr/tools/shortFormAdPreflight/shortFormAdPreflightDefinition.test.ts`
 - `web/app/(content)/tools/short-form-ad-preflight-checklist/page.tsx`
 - `web/app/_components/tools/resources/ShortFormAdPreflightPage.test.tsx`
+- `web/app/_components/tools/resources/GuidedResourcePortabilityActions.tsx`
+- `web/app/_components/tools/resources/ResourcePrintButton.tsx`
 
 The page uses the shared guided-resource components and no provider, media,
 storage, or platform API.
@@ -45,6 +52,8 @@ storage, or platform API.
 Definition tests prove exactly twenty unique checks, coverage of all promised
 areas, at least ten explicit blockers, and no approval language. The page test
 covers count, blockers, exact lead source, canonical metadata, and pricing.
+Shared page tests prove the hybrid print action stays locked until browser
+unlock without hiding any checklist content.
 
 The candid release status and next refinement are recorded in
 `docs/features/public-tool-quality-register.md`.

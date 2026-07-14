@@ -11,9 +11,18 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("CreativeAssetInventoryPage", () => {
-  it("renders six editable asset types, four honest states, priorities, and exports", () => {
-    const markup = renderToStaticMarkup(<CreativeAssetInventoryRoutePage />);
+  it("renders six editable asset types, four honest states, priorities, and exports", async () => {
+    const markup = renderToStaticMarkup(
+      await CreativeAssetInventoryRoutePage(),
+    );
 
     expect(markup).toContain("App Creative Asset Inventory Template");
     expect(markup).toContain("Hooks and opening lines");

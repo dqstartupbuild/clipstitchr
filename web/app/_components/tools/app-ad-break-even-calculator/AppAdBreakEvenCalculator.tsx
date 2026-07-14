@@ -6,8 +6,13 @@ import { AppAdBreakEvenResults } from "@/app/_components/tools/app-ad-break-even
 import type { AppAdBreakEvenInput } from "@/lib/clipstitchr/tools/appAdBreakEven/AppAdBreakEvenInput";
 import { calculateAppAdBreakEven } from "@/lib/clipstitchr/tools/appAdBreakEven/calculateAppAdBreakEven";
 import { defaultAppAdBreakEvenInput } from "@/lib/clipstitchr/tools/appAdBreakEven/defaultAppAdBreakEvenInput";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function AppAdBreakEvenCalculator() {
+export function AppAdBreakEvenCalculator({
+  variant = "control",
+}: {
+  variant?: PublicToolGateVariant;
+}) {
   const [input, setInput] = useState<AppAdBreakEvenInput>(
     defaultAppAdBreakEvenInput,
   );
@@ -20,7 +25,7 @@ export function AppAdBreakEvenCalculator() {
     >
       <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
         <AppAdBreakEvenForm value={input} onChange={setInput} />
-        <AppAdBreakEvenResults result={result} />
+        <AppAdBreakEvenResults result={result} variant={variant} />
       </div>
     </section>
   );

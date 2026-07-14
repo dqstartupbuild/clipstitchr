@@ -13,6 +13,13 @@ vi.mock("@/lib/clipstitchr/analytics/trackTikTokButtonClick", () => ({
   trackTikTokButtonClick: vi.fn(),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ToolLeadCaptureForm: ({ source }: { source: string }) => (
     <section>Mailing list source: {source}. ClipStitchr is paid.</section>
@@ -20,8 +27,10 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
 }));
 
 describe("UgcOpeningLinePromptCardsRoutePage", () => {
-  it("renders all 24 creator prompts with recording guidance", () => {
-    const markup = renderToStaticMarkup(<UgcOpeningLinePromptCardsRoutePage />);
+  it("renders all 24 creator prompts with recording guidance", async () => {
+    const markup = renderToStaticMarkup(
+      await UgcOpeningLinePromptCardsRoutePage(),
+    );
 
     expect(markup).toContain("UGC Opening-Line Prompt Cards");
     expect(markup).toContain("Showing 24 of 24");

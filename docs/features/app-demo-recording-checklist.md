@@ -17,6 +17,12 @@ Critical privacy, readability, claim, payoff, playback, and clean-original
 items are marked `Must check`. The visible percentage reports completion only;
 an unchecked blocker cannot be averaged into a ready decision.
 
+The staged control retains the existing Markdown action. When the server
+selects the approved `hybrid-v1` experience, all eighteen checks, progress, and
+notes stay usable on the page while accepted name-and-email capture unlocks the
+exact print action in that browser. Printing uses the browser print dialog and
+does not upload checklist notes or promise inbox delivery.
+
 ## Use Cases
 
 - Prepare privacy-safe sample data and remove notification risks.
@@ -37,6 +43,8 @@ owns persistent asset organization and production.
 - `web/lib/clipstitchr/tools/appDemoRecordingChecklist/appDemoRecordingChecklistDefinition.test.ts`
 - `web/app/(content)/tools/app-demo-recording-checklist/page.tsx`
 - `web/app/_components/tools/resources/AppDemoRecordingChecklistPage.test.tsx`
+- `web/app/_components/tools/resources/GuidedResourcePortabilityActions.tsx`
+- `web/app/_components/tools/resources/ResourcePrintButton.tsx`
 
 The implementation reuses `GuidedResourcePage`. It does not invoke Media Bunny
 because the feature prepares recording rather than reading a media file.
@@ -44,8 +52,10 @@ because the feature prepares recording rather than reading a media file.
 ## Verification
 
 Definition tests prove exactly eighteen unique items, capture-method guidance,
-critical blockers, and Markdown notes. The page test covers count, blocker copy,
-download, lead source, canonical metadata, and paid conversion.
+critical blockers, and Markdown notes. Shared page tests prove the checklist
+stays complete while the hybrid print action is locked, then appears after
+browser unlock. The route test covers count, blocker copy, control download,
+lead source, canonical metadata, and paid conversion.
 
 The candid release status and next refinement are recorded in
 `docs/features/public-tool-quality-register.md`.

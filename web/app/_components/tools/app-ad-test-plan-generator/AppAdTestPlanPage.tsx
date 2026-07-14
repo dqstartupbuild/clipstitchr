@@ -7,8 +7,11 @@ import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { appAdTestPlanDescription } from "@/lib/clipstitchr/tools/appAdTestPlan/appAdTestPlanDescription";
 import { appAdTestPlanFaqs } from "@/lib/clipstitchr/tools/appAdTestPlan/appAdTestPlanFaqs";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 
-export function AppAdTestPlanPage() {
+export function AppAdTestPlanPage({
+  variant = "control",
+}: PublicToolPageGateProps) {
   return (
     <>
       <ToolStructuredData
@@ -18,12 +21,14 @@ export function AppAdTestPlanPage() {
         pathname="/tools/app-ad-test-plan-generator"
       />
       <AppAdTestPlanHero />
-      <AppAdTestPlanGenerator />
-      <div className="px-6 pb-20">
-        <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source="app-ad-test-plan-generator" />
+      <AppAdTestPlanGenerator variant={variant} />
+      {variant === "control" ? (
+        <div className="px-6 pb-20">
+          <div className="mx-auto max-w-4xl">
+            <ToolLeadCaptureForm source="app-ad-test-plan-generator" />
+          </div>
         </div>
-      </div>
+      ) : null}
       <AppAdTestPlanGuide />
       <AppAdTestPlanFaq />
       <ToolDiscoveryLinks currentToolKey="app-ad-test-plan-generator" />

@@ -10,7 +10,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function PrivacyPage() {
-  const lastUpdated = "July 12, 2026";
+  const lastUpdated = "July 13, 2026";
 
   return (
     <article className="marketing-grid-bg px-6 py-20 md:py-28">
@@ -125,9 +125,33 @@ export default function PrivacyPage() {
             </p>
             <p>
               If you join the mailing list from a public tool, we store your
-              name, email address, and the tool you joined from in Convex. We
-              use those details to send the practical resources and product
-              updates you requested. You can unsubscribe at any time.
+              name, email address, consent record, and the tool you joined from
+              in Convex. We do not attach your tool answers, notes, uploads, or
+              generated results to that mailing-list profile.
+            </p>
+            <p>
+              An accepted form can unlock approved extras in that browser right
+              away. Your browser saves a simple marker that says only that the
+              extras are unlocked. We also set a random 180-day recognition
+              cookie. It is an HttpOnly cookie, which means page scripts cannot
+              read it. It contains no name or email, and our server stores only
+              a one-way copy linked to the contact. A later accepted form
+              replaces the old recognition value.
+            </p>
+            <p>
+              A new or previously opted-out email must be confirmed before
+              marketing emails begin. The confirmation link lasts 48 hours and
+              works once. Opening it only shows a ClipStitchr page; it does not
+              confirm consent. You must press the confirmation button, and that
+              page loads no analytics or outside resources. Browser access does
+              not wait for email confirmation.
+            </p>
+            <p>
+              When email delivery is enabled, Loops delivers the confirmation
+              and marketing emails you request. ClipStitchr still requires its
+              own 48-hour confirmation before a new or previously opted-out
+              address can receive marketing emails. No live Loops email was
+              sent while this setup was added. You can unsubscribe at any time.
             </p>
 
             <h3>Information Collected Automatically</h3>
@@ -144,6 +168,12 @@ export default function PrivacyPage() {
               from, campaign links, ad click IDs, and events such as
               mailing-list sign-ups, public tool use, uploads, exports, AI
               generation requests, or future purchases.
+            </p>
+            <p>
+              Public-tool analytics use only a fixed event name, tool key, tool
+              experience type, and test version. They do not include your name,
+              email, answers, results, local unlock marker, recognition cookie,
+              or confirmation link.
             </p>
             <p>
               If analytics cookies are on, we use PostHog to understand how
@@ -189,9 +219,9 @@ export default function PrivacyPage() {
             <ul>
               <li>
                 <strong>Service providers:</strong> Third-party tools (e.g.,
-                hosting, storage, analytics, Apify, and AI processing) that help
-                us run the features you request, subject to their own privacy
-                policies and terms.
+                hosting, storage, analytics, Apify, AI processing, and email
+                delivery when enabled) that help us run the features you
+                request, subject to their own privacy policies and terms.
               </li>
               <li>
                 <strong>Ad tools:</strong> If you allow marketing cookies, we
@@ -218,6 +248,14 @@ export default function PrivacyPage() {
               sign-in, security, and the site itself working.
             </p>
             <p>
+              After an accepted public-tool form, local browser storage keeps a
+              non-identifying unlock marker until you clear site data. A
+              separate HttpOnly recognition cookie lasts up to 180 days and is
+              replaced after another accepted form. These values are not
+              advertising cookies, contain no name or email, and are not sent
+              to TikTok or PostHog.
+            </p>
+            <p>
               If you allow optional cookies, we use them to understand visits,
               remember where visitors came from, measure sign-ups or future
               purchases, and see which dashboard features people use most. If
@@ -240,6 +278,14 @@ export default function PrivacyPage() {
             <p>
               To exercise any of these rights, please contact us using the
               information below.
+            </p>
+            <p>
+              Unsubscribing stops future marketing and stops us from linking
+              later public-tool activity to your mailing-list profile. A
+              privacy deletion removes the server&apos;s recognition link. The
+              non-identifying browser unlock marker stays on that device until
+              you clear its site data, so a privacy request does not take away
+              browser value you already received.
             </p>
           </section>
 

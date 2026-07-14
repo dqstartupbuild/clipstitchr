@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("ShortFormAdPreflightPage", () => {
-  it("renders twenty checks, visible blockers, and no approval promise", () => {
-    const markup = renderToStaticMarkup(<ShortFormAdPreflightRoutePage />);
+  it("renders twenty checks, visible blockers, and no approval promise", async () => {
+    const markup = renderToStaticMarkup(await ShortFormAdPreflightRoutePage());
 
     expect(markup).toContain("Short-Form Ad Preflight Checklist");
     expect(markup).toContain('"@type":"WebApplication"');

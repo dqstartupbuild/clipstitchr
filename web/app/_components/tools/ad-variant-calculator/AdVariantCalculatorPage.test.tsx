@@ -21,9 +21,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AdVariantCalculatorPage", () => {
-  it("renders the calculator, immediate example results, guidance, and paid CTA", () => {
-    const markup = renderToStaticMarkup(<AdVariantCalculatorRoutePage />);
+  it("renders the calculator, immediate example results, guidance, and paid CTA", async () => {
+    const markup = renderToStaticMarkup(await AdVariantCalculatorRoutePage());
 
     expect(markup).toContain("Ad Variant Calculator for App Marketing");
     expect(markup).toContain('"@type":"WebApplication"');

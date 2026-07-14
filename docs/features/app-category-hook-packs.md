@@ -8,7 +8,9 @@ Each entry includes a bracketed structure, a category-specific filled example, a
 
 ## How It Works
 
-`appCategoryHookPacks.ts` owns all six packs. `appCategoryHookPacksDefinition.ts` connects them to the shared searchable collection page. Visitors can filter by category, search the text, copy one structure, copy the complete set, or download it as Markdown.
+`appCategoryHookPacks.ts` owns all six packs. `appCategoryHookPacksDefinition.ts` connects them to the shared searchable collection page. Visitors can filter by category, search the text, and copy any individual structure while all six packs remain visible.
+
+The staged control retains complete-set copy and Markdown download. In the approved `hybrid-v1` experience, accepted name-and-email capture unlocks the exact CSV category-pack collection in that browser. The CSV is built locally from the public pack data and contains no search input or contact information.
 
 The packs are fixed local data. They do not import ClipStitchr's Hook library, call an AI service, or claim to predict performance.
 
@@ -36,7 +38,7 @@ web/lib/clipstitchr/tools/appCategoryHookPacks/
   appCategoryHookPacksFaqs.ts
 ```
 
-The shared collection UI lives in `web/app/_components/tools/resources/`. Catalog metadata lives in `web/lib/clipstitchr/tools/catalog/publicToolCatalog.ts`.
+The shared collection and format-aware portability UI lives in `web/app/_components/tools/resources/`. CSV creation lives in `web/lib/clipstitchr/tools/resources/createCollectionResourceCsv.ts`, and gate metadata lives in `web/lib/clipstitchr/tools/catalog/publicToolGateCatalog.ts`.
 
 ## Source References
 
@@ -44,7 +46,7 @@ The structures and examples are original project copy implementing `docs/feature
 
 ## Verification
 
-The pure data test enforces exactly 60 unique structures, six expected categories with ten entries each, bracketed fill-ins, examples, and category reminders. The page test verifies all packs render with canonical metadata, structured data, copy/download controls, exact lead source, related links, and the paid CTA.
+The pure data test enforces exactly 60 unique structures, six expected categories with ten entries each, bracketed fill-ins, examples, and category reminders. Shared gate tests verify all packs stay public while the hybrid CSV is locked, then appears after browser unlock. Route tests cover canonical metadata, structured data, control actions, exact lead source, related links, and the paid CTA.
 
 The candid release status and next refinement are recorded in
 `docs/features/public-tool-quality-register.md`.

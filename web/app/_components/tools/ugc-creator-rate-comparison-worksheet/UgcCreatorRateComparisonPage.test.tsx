@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("UgcCreatorRateComparisonPage", () => {
-  it("compares the entered set without an outside benchmark", () => {
-    const markup = renderToStaticMarkup(<UgcCreatorRateComparisonRoutePage />);
+  it("compares the entered set without an outside benchmark", async () => {
+    const markup = renderToStaticMarkup(await UgcCreatorRateComparisonRoutePage());
 
     expect(markup).toContain("UGC Creator Rate Comparison Worksheet");
     expect(markup).toContain("3 quotes normalized");

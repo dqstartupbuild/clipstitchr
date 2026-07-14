@@ -5,13 +5,16 @@ import { AdVariantTestPlan } from "@/app/_components/tools/ad-variant-calculator
 import { Panel } from "@/app/_components/ui/Panel";
 import { PanelHeader } from "@/app/_components/ui/PanelHeader";
 import type { AdVariantCalculatorResult } from "@/lib/clipstitchr/tools/adVariantCalculator/AdVariantCalculatorResult";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 type AdVariantCalculatorResultsProps = {
   result: AdVariantCalculatorResult;
+  variant?: PublicToolGateVariant;
 };
 
 export function AdVariantCalculatorResults({
   result,
+  variant = "control",
 }: AdVariantCalculatorResultsProps) {
   return (
     <Panel className="p-5 md:p-6">
@@ -39,7 +42,7 @@ export function AdVariantCalculatorResults({
         />
       </div>
       <AdVariantTestPlan phases={result.testPhases} />
-      <AdVariantPricingCta />
+      <AdVariantPricingCta variant={variant} />
     </Panel>
   );
 }

@@ -8,8 +8,15 @@ import type { AppAdHookRewriterInput } from "@/lib/clipstitchr/tools/appAdHookRe
 import type { AppAdHookRewriterResult } from "@/lib/clipstitchr/tools/appAdHookRewriter/AppAdHookRewriterResult";
 import { defaultAppAdHookRewriterInput } from "@/lib/clipstitchr/tools/appAdHookRewriter/defaultAppAdHookRewriterInput";
 import { rewriteAppAdHook } from "@/lib/clipstitchr/tools/appAdHookRewriter/rewriteAppAdHook";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function AppAdHookRewriterClient() {
+type AppAdHookRewriterClientProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function AppAdHookRewriterClient({
+  variant = "control",
+}: AppAdHookRewriterClientProps) {
   const [input, setInput] = useState<AppAdHookRewriterInput>(
     defaultAppAdHookRewriterInput,
   );
@@ -27,7 +34,7 @@ export function AppAdHookRewriterClient() {
           }}
         />
         {result ? (
-          <AppAdHookRewriterResults result={result} />
+          <AppAdHookRewriterResults result={result} variant={variant} />
         ) : (
           <AppAdHookRewriterEmptyState />
         )}

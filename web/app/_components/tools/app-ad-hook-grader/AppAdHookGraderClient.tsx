@@ -8,8 +8,15 @@ import type { AppAdHookGraderInput } from "@/lib/clipstitchr/tools/appAdHookGrad
 import type { AppAdHookGraderResult } from "@/lib/clipstitchr/tools/appAdHookGrader/AppAdHookGraderResult";
 import { defaultAppAdHookGraderInput } from "@/lib/clipstitchr/tools/appAdHookGrader/defaultAppAdHookGraderInput";
 import { gradeAppAdHook } from "@/lib/clipstitchr/tools/appAdHookGrader/gradeAppAdHook";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function AppAdHookGraderClient() {
+type AppAdHookGraderClientProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function AppAdHookGraderClient({
+  variant = "control",
+}: AppAdHookGraderClientProps) {
   const [input, setInput] = useState<AppAdHookGraderInput>(
     defaultAppAdHookGraderInput,
   );
@@ -27,7 +34,7 @@ export function AppAdHookGraderClient() {
           }}
         />
         {result ? (
-          <AppAdHookGraderResults result={result} />
+          <AppAdHookGraderResults result={result} variant={variant} />
         ) : (
           <AppAdHookGraderEmptyState />
         )}

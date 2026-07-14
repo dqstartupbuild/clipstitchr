@@ -22,9 +22,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppAdBreakEvenPage", () => {
-  it("renders transparent break-even targets and an honest paid conversion", () => {
-    const markup = renderToStaticMarkup(<AppAdBreakEvenRoutePage />);
+  it("renders transparent break-even targets and an honest paid conversion", async () => {
+    const markup = renderToStaticMarkup(await AppAdBreakEvenRoutePage());
 
     expect(markup).toContain("App Ad Break-Even Calculator");
     expect(markup).toContain('"@type":"WebApplication"');

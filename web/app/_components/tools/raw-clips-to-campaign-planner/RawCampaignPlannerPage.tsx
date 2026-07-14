@@ -8,10 +8,13 @@ import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
 import { rawClipsCampaignPlannerFaqs } from "@/lib/clipstitchr/tools/rawClipsCampaignPlanner/rawClipsCampaignPlannerFaqs";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 
 const tool = publicToolCatalog["raw-clips-to-campaign-planner"];
 
-export function RawCampaignPlannerPage() {
+export function RawCampaignPlannerPage({
+  variant = "control",
+}: PublicToolPageGateProps) {
   return (
     <>
       <ToolStructuredData
@@ -21,12 +24,14 @@ export function RawCampaignPlannerPage() {
         pathname={tool.pathname}
       />
       <ResourceHero resourceKey={tool.key} />
-      <RawCampaignPlannerWorkspace />
-      <div className="px-6 pb-20">
-        <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source={tool.key} />
+      <RawCampaignPlannerWorkspace variant={variant} />
+      {variant === "control" ? (
+        <div className="px-6 pb-20">
+          <div className="mx-auto max-w-4xl">
+            <ToolLeadCaptureForm source={tool.key} />
+          </div>
         </div>
-      </div>
+      ) : null}
       <ResourceGuide
         title="Plan from the footage you already have before asking for more."
         paragraphs={[
@@ -35,7 +40,7 @@ export function RawCampaignPlannerPage() {
         ]}
       />
       <ResourceFaq faqs={rawClipsCampaignPlannerFaqs} />
-      <ResourcePricingCta />
+      <ResourcePricingCta toolKey={tool.key} variant={variant} />
       <ToolDiscoveryLinks currentToolKey={tool.key} />
     </>
   );

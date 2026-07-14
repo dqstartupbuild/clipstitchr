@@ -3,14 +3,19 @@ import { AppAdBreakEvenPricingCta } from "@/app/_components/tools/app-ad-break-e
 import { ToolMetricCard } from "@/app/_components/tools/ToolMetricCard";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { AppAdBreakEvenResult } from "@/lib/clipstitchr/tools/appAdBreakEven/AppAdBreakEvenResult";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import { getAppAdBreakEvenRevenueWindowLabel } from "@/lib/clipstitchr/tools/appAdBreakEven/getAppAdBreakEvenRevenueWindowLabel";
 import { formatUsd } from "@/lib/clipstitchr/tools/numbers/formatUsd";
 
 type AppAdBreakEvenResultsProps = {
   result: AppAdBreakEvenResult;
+  variant?: PublicToolGateVariant;
 };
 
-export function AppAdBreakEvenResults({ result }: AppAdBreakEvenResultsProps) {
+export function AppAdBreakEvenResults({
+  result,
+  variant = "control",
+}: AppAdBreakEvenResultsProps) {
   const revenueWindowLabel = getAppAdBreakEvenRevenueWindowLabel(
     result.revenueWindow,
   );
@@ -136,7 +141,7 @@ export function AppAdBreakEvenResults({ result }: AppAdBreakEvenResultsProps) {
         flow, taxes, refunds, app-store fees, servicing cost, or ad performance
         unless those effects are already reflected in your inputs.
       </p>
-      <AppAdBreakEvenPricingCta />
+      <AppAdBreakEvenPricingCta variant={variant} />
     </Panel>
   );
 }

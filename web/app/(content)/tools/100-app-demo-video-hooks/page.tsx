@@ -1,6 +1,7 @@
 import { CollectionResourcePage } from "@/app/_components/tools/resources/CollectionResourcePage";
 import { appDemoVideoHooksDefinition } from "@/lib/clipstitchr/tools/appDemoVideoHooks/appDemoVideoHooksDefinition";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -13,6 +14,16 @@ export const metadata = createPageMetadata({
   keywords: resource.keywords,
 });
 
-export default function AppDemoVideoHooksRoutePage() {
-  return <CollectionResourcePage definition={appDemoVideoHooksDefinition} />;
+export default async function AppDemoVideoHooksRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(
+    appDemoVideoHooksDefinition.resourceKey,
+    false,
+  );
+
+  return (
+    <CollectionResourcePage
+      definition={appDemoVideoHooksDefinition}
+      variant={variant}
+    />
+  );
 }

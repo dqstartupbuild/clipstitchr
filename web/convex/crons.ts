@@ -10,4 +10,11 @@ crons.cron(
   {},
 );
 
+crons.interval(
+  "recover email provider operations",
+  { minutes: 1 },
+  internal.email.recoverEmailProviderOperations.recoverEmailProviderOperations,
+  {},
+);
+
 export default crons;

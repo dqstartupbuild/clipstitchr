@@ -1,6 +1,7 @@
 import { AppAdBreakEvenPage } from "@/app/_components/tools/app-ad-break-even-calculator/AppAdBreakEvenPage";
 import { appAdBreakEvenDescription } from "@/lib/clipstitchr/tools/appAdBreakEven/appAdBreakEvenDescription";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -11,6 +12,11 @@ export const metadata = createPageMetadata({
   keywords: publicToolCatalog["app-ad-break-even-calculator"].keywords,
 });
 
-export default function AppAdBreakEvenRoutePage() {
-  return <AppAdBreakEvenPage />;
+export default async function AppAdBreakEvenRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(
+    "app-ad-break-even-calculator",
+    false,
+  );
+
+  return <AppAdBreakEvenPage variant={variant} />;
 }

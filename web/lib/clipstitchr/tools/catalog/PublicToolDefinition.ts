@@ -1,7 +1,7 @@
-import type { PublicToolCategory } from "@/lib/clipstitchr/tools/catalog/PublicToolCategory";
-import type { PublicToolFormat } from "@/lib/clipstitchr/tools/catalog/PublicToolFormat";
-import type { PublicToolIconKey } from "@/lib/clipstitchr/tools/catalog/PublicToolIconKey";
-import type { PublicToolKey } from "@/lib/clipstitchr/tools/catalog/PublicToolKey";
+import type { PublicToolCategory } from "./PublicToolCategory";
+import type { PublicToolFormat } from "./PublicToolFormat";
+import type { PublicToolIconKey } from "./PublicToolIconKey";
+import type { PublicToolKey } from "./PublicToolKey";
 
 export type PublicToolDefinition = {
   category: PublicToolCategory;

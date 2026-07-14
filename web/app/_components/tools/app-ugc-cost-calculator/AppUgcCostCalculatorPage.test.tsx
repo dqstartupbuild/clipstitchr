@@ -19,9 +19,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppUgcCostCalculatorPage", () => {
-  it("renders a bounded production estimate and honest paid conversion", () => {
-    const markup = renderToStaticMarkup(<AppUgcCostCalculatorRoutePage />);
+  it("renders a bounded production estimate and honest paid conversion", async () => {
+    const markup = renderToStaticMarkup(await AppUgcCostCalculatorRoutePage());
 
     expect(markup).toContain("App UGC Production Cost Calculator");
     expect(markup).toContain('"@type":"WebApplication"');

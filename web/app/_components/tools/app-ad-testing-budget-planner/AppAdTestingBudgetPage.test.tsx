@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppAdTestingBudgetPage", () => {
-  it("renders the entered allocation and paid boundary", () => {
-    const markup = renderToStaticMarkup(<AppAdTestingBudgetRoutePage />);
+  it("renders the entered allocation and paid boundary", async () => {
+    const markup = renderToStaticMarkup(await AppAdTestingBudgetRoutePage());
 
     expect(markup).toContain("App-Ad Creative Testing Budget Planner");
     expect(markup).toContain("$3,250.00 for active media");

@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("RawCampaignPlannerPage", () => {
-  it("renders six text-only concepts, coverage, reuse, missing captures, and Markdown", () => {
-    const markup = renderToStaticMarkup(<RawCampaignPlannerRoutePage />);
+  it("renders six text-only concepts, coverage, reuse, missing captures, and Markdown", async () => {
+    const markup = renderToStaticMarkup(await RawCampaignPlannerRoutePage());
 
     expect(markup).toContain("Raw Clips to Campaign Planner");
     expect(markup).toContain("Text-only inventory");

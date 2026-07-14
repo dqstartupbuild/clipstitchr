@@ -1,19 +1,23 @@
 import { RefreshCw } from "lucide-react";
 import { AppHookGeneratorPricingCta } from "@/app/_components/tools/app-hook-generator/AppHookGeneratorPricingCta";
 import { AppHookGeneratorResultCard } from "@/app/_components/tools/app-hook-generator/AppHookGeneratorResultCard";
+import { PublicToolGateContentBoundary } from "@/app/_components/tools/gates/PublicToolGateContentBoundary";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { AppHookGeneratorResult } from "@/lib/clipstitchr/tools/appHookGenerator/AppHookGeneratorResult";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 type AppHookGeneratorResultsProps = {
   isLoading: boolean;
   result: AppHookGeneratorResult;
+  variant?: PublicToolGateVariant;
   onRegenerate: () => void;
 };
 
 export function AppHookGeneratorResults({
   isLoading,
   result,
+  variant = "control",
   onRegenerate,
 }: AppHookGeneratorResultsProps) {
   return (
@@ -36,16 +40,34 @@ export function AppHookGeneratorResults({
           Another set
         </Button>
       </div>
-      <div className="mt-6 grid gap-4">
-        {result.hooks.map((hook, index) => (
-          <AppHookGeneratorResultCard
-            hook={hook}
-            index={index}
-            key={`${index}-${hook.text}`}
-          />
-        ))}
-      </div>
-      <AppHookGeneratorPricingCta />
+      <PublicToolGateContentBoundary
+        hasFunctionalUnlock
+        publicContent={
+          <div className="mt-6 grid gap-4">
+            {result.hooks.slice(0, 3).map((hook, index) => (
+              <AppHookGeneratorResultCard
+                hook={hook}
+                index={index}
+                key={`${index}-${hook.text}`}
+              />
+            ))}
+          </div>
+        }
+        toolKey="app-hook-generator"
+        unlockedContent={
+          <div className="mt-4 grid gap-4">
+            {result.hooks.slice(3).map((hook, index) => (
+              <AppHookGeneratorResultCard
+                hook={hook}
+                index={index + 3}
+                key={`${index + 3}-${hook.text}`}
+              />
+            ))}
+          </div>
+        }
+        variant={variant}
+      />
+      <AppHookGeneratorPricingCta variant={variant} />
     </Panel>
   );
 }

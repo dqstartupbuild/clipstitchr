@@ -1,4 +1,6 @@
 import { AppAdCreativeTestingBlueprintPricingCta } from "@/app/_components/tools/app-ad-creative-testing-blueprint-builder/AppAdCreativeTestingBlueprintPricingCta";
+import { PublicToolGateContentBoundary } from "@/app/_components/tools/gates/PublicToolGateContentBoundary";
+import { BlueprintCellCard } from "@/app/_components/tools/app-ad-creative-testing-blueprint-builder/BlueprintCellCard";
 import { BlueprintAssetGapCard } from "@/app/_components/tools/app-ad-creative-testing-blueprint-builder/BlueprintAssetGapCard";
 import { BlueprintDecisionRubric } from "@/app/_components/tools/app-ad-creative-testing-blueprint-builder/BlueprintDecisionRubric";
 import { BlueprintIncompleteState } from "@/app/_components/tools/app-ad-creative-testing-blueprint-builder/BlueprintIncompleteState";
@@ -8,19 +10,23 @@ import { CopyTextButton } from "@/app/_components/ui/CopyTextButton";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { AppAdCreativeTestingBlueprintBuild } from "@/lib/clipstitchr/tools/appAdCreativeTestingBlueprint/AppAdCreativeTestingBlueprintBuild";
 import { formatAppAdCreativeTestingBlueprintMarkdown } from "@/lib/clipstitchr/tools/appAdCreativeTestingBlueprint/formatAppAdCreativeTestingBlueprintMarkdown";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 type AppAdCreativeTestingBlueprintResultsProps = {
   build: AppAdCreativeTestingBlueprintBuild;
+  variant?: PublicToolGateVariant;
 };
 
 export function AppAdCreativeTestingBlueprintResults({
   build,
+  variant = "control",
 }: AppAdCreativeTestingBlueprintResultsProps) {
   if (build.status === "incomplete") {
     return <BlueprintIncompleteState missingFields={build.missingFields} />;
   }
 
   const { result } = build;
+  const firstExperiment = result.cells[0];
 
   return (
     <Panel className="p-5 md:p-6">
@@ -28,7 +34,7 @@ export function AppAdCreativeTestingBlueprintResults({
         Blueprint updated with {result.activeCellCount} active cells and{" "}
         {result.backlogCellCount} backlog cells.
       </p>
-      <div className="flex flex-col gap-4 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="border-b border-border pb-4">
         <div>
           <p className="text-xs font-bold uppercase text-accent-dark">
             Your testing blueprint
@@ -37,12 +43,6 @@ export function AppAdCreativeTestingBlueprintResults({
             Learn one thing at a time, then earn the next test.
           </h2>
         </div>
-        <CopyTextButton
-          className="shrink-0"
-          copiedLabel="Blueprint copied"
-          label="Copy blueprint"
-          text={formatAppAdCreativeTestingBlueprintMarkdown(result)}
-        />
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <div className="rounded-lg border border-border bg-surface-elevated p-4">
@@ -86,6 +86,44 @@ export function AppAdCreativeTestingBlueprintResults({
         </p>
       ) : null}
       <section className="mt-6">
+        <h3 className="text-sm font-bold text-text-primary">Testing lanes</h3>
+        <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+          {result.lanes.map((lane) => (
+            <li
+              className="rounded-lg border border-border bg-surface-elevated p-4"
+              key={lane.key}
+            >
+              <p className="font-bold text-text-primary">{lane.title}</p>
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                {lane.learningQuestion}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+      {firstExperiment ? (
+        <section className="mt-6">
+          <h3 className="text-sm font-bold text-text-primary">
+            First experiment
+          </h3>
+          <ul className="mt-3">
+            <BlueprintCellCard cell={firstExperiment} />
+          </ul>
+        </section>
+      ) : null}
+      <PublicToolGateContentBoundary
+        hasFunctionalUnlock
+        toolKey="app-ad-creative-testing-blueprint-builder"
+        variant={variant}
+        publicContent={null}
+        unlockedContent={<div className="mt-6 grid gap-6">
+      <CopyTextButton
+        className="justify-self-start"
+        copiedLabel="Blueprint copied"
+        label="Copy blueprint"
+        text={formatAppAdCreativeTestingBlueprintMarkdown(result)}
+      />
+      <section className="mt-6">
         <h3 className="text-sm font-bold text-text-primary">
           Hypothesis lanes and one-variable cells
         </h3>
@@ -127,7 +165,9 @@ export function AppAdCreativeTestingBlueprintResults({
         benchmark, forecast, performance prediction, persistent tracker, or ad
         platform integration, and it does not produce finished creative.
       </p>
-      <AppAdCreativeTestingBlueprintPricingCta />
+    </div>}
+      />
+      <AppAdCreativeTestingBlueprintPricingCta variant={variant} />
     </Panel>
   );
 }

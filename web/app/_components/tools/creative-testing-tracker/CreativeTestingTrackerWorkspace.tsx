@@ -6,11 +6,20 @@ import { CreativeTestingTrackerExports } from "@/app/_components/tools/creative-
 import { CreativeTestingTrackerTable } from "@/app/_components/tools/creative-testing-tracker/CreativeTestingTrackerTable";
 import { Panel } from "@/app/_components/ui/Panel";
 import { PanelHeader } from "@/app/_components/ui/PanelHeader";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import type { CreativeTestingExperiment } from "@/lib/clipstitchr/tools/creativeTestingTracker/CreativeTestingExperiment";
 import { createCreativeTestingExperiment } from "@/lib/clipstitchr/tools/creativeTestingTracker/createCreativeTestingExperiment";
 import { defaultCreativeTestingExperiments } from "@/lib/clipstitchr/tools/creativeTestingTracker/defaultCreativeTestingExperiments";
 
-export function CreativeTestingTrackerWorkspace() {
+type CreativeTestingTrackerWorkspaceProps = {
+  hasFunctionalUnlock?: boolean;
+  variant?: PublicToolGateVariant;
+};
+
+export function CreativeTestingTrackerWorkspace({
+  hasFunctionalUnlock = false,
+  variant = "control",
+}: CreativeTestingTrackerWorkspaceProps) {
   const [experiments, setExperiments] = useState<CreativeTestingExperiment[]>(
     defaultCreativeTestingExperiments,
   );
@@ -23,7 +32,13 @@ export function CreativeTestingTrackerWorkspace() {
           eyebrow="Browser-local tracker"
           title="Track the creative, then read only the metrics your row supports"
           description="Rows stay in this session. Empty denominators stay unavailable instead of turning into misleading zeroes."
-          actions={<CreativeTestingTrackerExports experiments={experiments} />}
+          actions={
+            <CreativeTestingTrackerExports
+              experiments={experiments}
+              hasFunctionalUnlock={hasFunctionalUnlock}
+              variant={variant}
+            />
+          }
         />
         <CreativeTestingTrackerTable
           experiments={experiments}

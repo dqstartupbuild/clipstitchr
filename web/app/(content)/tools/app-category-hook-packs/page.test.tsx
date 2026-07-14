@@ -13,6 +13,13 @@ vi.mock("@/lib/clipstitchr/analytics/trackTikTokButtonClick", () => ({
   trackTikTokButtonClick: vi.fn(),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ToolLeadCaptureForm: ({ source }: { source: string }) => (
     <section>Mailing list source: {source}. ClipStitchr is paid.</section>
@@ -20,8 +27,8 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
 }));
 
 describe("AppCategoryHookPacksRoutePage", () => {
-  it("renders six complete packs and category-specific claim reminders", () => {
-    const markup = renderToStaticMarkup(<AppCategoryHookPacksRoutePage />);
+  it("renders six complete packs and category-specific claim reminders", async () => {
+    const markup = renderToStaticMarkup(await AppCategoryHookPacksRoutePage());
 
     expect(markup).toContain("App Category Hook Packs");
     expect(markup).toContain("Showing 60 of 60");

@@ -1,6 +1,7 @@
 import { AppAdHookRewriterPage } from "@/app/_components/tools/app-ad-hook-rewriter/AppAdHookRewriterPage";
 import { appAdHookRewriterDescription } from "@/lib/clipstitchr/tools/appAdHookRewriter/appAdHookRewriterDescription";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -11,6 +12,11 @@ export const metadata = createPageMetadata({
   title: `App Ad Hook Rewrite Tool | ${site.name}`,
 });
 
-export default function AppAdHookRewriterRoutePage() {
-  return <AppAdHookRewriterPage />;
+export default async function AppAdHookRewriterRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(
+    "app-ad-hook-rewriter",
+    false,
+  );
+
+  return <AppAdHookRewriterPage variant={variant} />;
 }

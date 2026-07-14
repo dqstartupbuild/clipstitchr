@@ -13,7 +13,9 @@ Every card contains:
 
 ## How It Works
 
-`ugcOpeningLinePrompts.ts` owns the fixed prompt-card data. The shared collection browser handles category filtering, text search, individual copy, complete-resource copy, and Markdown download. No recording, search, or filter input leaves the browser.
+`ugcOpeningLinePrompts.ts` owns the fixed prompt-card data. The shared collection browser handles category filtering, text search, and individual copy while every card remains visible. No recording, search, or filter input leaves the browser.
+
+The staged control retains complete-resource copy and Markdown download. In the approved `hybrid-v1` experience, accepted name-and-email capture unlocks the exact browser print action. The browser-local unlock does not upload prompt data or imply that cards were emailed.
 
 The cards are original static content. They do not call AI or import ClipStitchr's Hook library.
 
@@ -41,7 +43,7 @@ web/lib/clipstitchr/tools/ugcOpeningLinePrompts/
   ugcOpeningLinePromptsFaqs.ts
 ```
 
-Shared collection rendering lives in `web/app/_components/tools/resources/`. Catalog metadata lives in `web/lib/clipstitchr/tools/catalog/publicToolCatalog.ts`.
+Shared collection rendering, format-aware portability, and the print action live in `web/app/_components/tools/resources/`. Gate metadata lives in `web/lib/clipstitchr/tools/catalog/publicToolGateCatalog.ts`.
 
 ## Source References
 
@@ -49,7 +51,7 @@ The prompts are original project copy created from the approved contract in `doc
 
 ## Verification
 
-The pure data test proves the exact 24-card count, uniqueness, six-category distribution, and required delivery, alternate, and proof sections. The page test proves the whole collection renders with the lead source, structured data, copy/download controls, related route, canonical metadata, and paid handoff.
+The pure data test proves the exact 24-card count, uniqueness, six-category distribution, and required delivery, alternate, and proof sections. Shared gate tests prove every card remains public while the hybrid print action is locked, then appears after browser unlock. The route test covers the lead source, structured data, control actions, related route, canonical metadata, and paid handoff.
 
 The candid release status and next refinement are recorded in
 `docs/features/public-tool-quality-register.md`.

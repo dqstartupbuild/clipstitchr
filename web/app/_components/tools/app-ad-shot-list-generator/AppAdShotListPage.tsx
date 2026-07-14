@@ -7,8 +7,15 @@ import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { appAdShotListDescription } from "@/lib/clipstitchr/tools/appAdShotList/appAdShotListDescription";
 import { appAdShotListFaqs } from "@/lib/clipstitchr/tools/appAdShotList/appAdShotListFaqs";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function AppAdShotListPage() {
+type AppAdShotListPageProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function AppAdShotListPage({
+  variant = "control",
+}: AppAdShotListPageProps) {
   return (
     <>
       <ToolStructuredData
@@ -18,12 +25,14 @@ export function AppAdShotListPage() {
         pathname="/tools/app-ad-shot-list-generator"
       />
       <AppAdShotListHero />
-      <AppAdShotListGenerator />
-      <div className="px-6 pb-20">
-        <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source="app-ad-shot-list-generator" />
+      <AppAdShotListGenerator variant={variant} />
+      {variant === "control" ? (
+        <div className="px-6 pb-20">
+          <div className="mx-auto max-w-4xl">
+            <ToolLeadCaptureForm source="app-ad-shot-list-generator" />
+          </div>
         </div>
-      </div>
+      ) : null}
       <AppAdShotListGuide />
       <AppAdShotListFaq />
       <ToolDiscoveryLinks currentToolKey="app-ad-shot-list-generator" />

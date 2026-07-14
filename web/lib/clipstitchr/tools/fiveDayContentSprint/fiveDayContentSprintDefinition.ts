@@ -7,7 +7,7 @@ export const fiveDayContentSprintDefinition: GuidedResourceDefinition = {
     {
       question: "Will the five days be emailed to me?",
       answer:
-        "No. Every day is available on this page now. Your checklist and notes stay in this browser, and you can download the whole sprint as Markdown.",
+        "If you explicitly request the email series, it can begin after your email is confirmed. Your browser workspace unlocks right away, keeps your notes here, and can download the whole sprint as Markdown.",
     },
     {
       question: "Will I finish with five edited ads?",

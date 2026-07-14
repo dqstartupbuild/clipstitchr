@@ -1,18 +1,22 @@
 import { CopyTextButton } from "@/app/_components/ui/CopyTextButton";
 import { Panel } from "@/app/_components/ui/Panel";
+import { PublicToolGateContentBoundary } from "@/app/_components/tools/gates/PublicToolGateContentBoundary";
 import { HookVisualMatchmakerPricingCta } from "@/app/_components/tools/hook-to-visual-matchmaker/HookVisualMatchmakerPricingCta";
 import { HookVisualStoryboard } from "@/app/_components/tools/hook-to-visual-matchmaker/HookVisualStoryboard";
 import type { HookVisualMatchResult } from "@/lib/clipstitchr/tools/hookVisualMatchmaker/HookVisualMatchResult";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import { formatHookVisualPlan } from "@/lib/clipstitchr/tools/hookVisualMatchmaker/formatHookVisualPlan";
 import { getHookVisualOpeningSourceLabel } from "@/lib/clipstitchr/tools/hookVisualMatchmaker/getHookVisualOpeningSourceLabel";
 import { getPublicHookIntentLabel } from "@/lib/clipstitchr/tools/publicHooks/getPublicHookIntentLabel";
 
 type HookVisualMatchmakerResultsProps = {
   result: HookVisualMatchResult;
+  variant?: PublicToolGateVariant;
 };
 
 export function HookVisualMatchmakerResults({
   result,
+  variant = "control",
 }: HookVisualMatchmakerResultsProps) {
   return (
     <Panel className="p-5 md:p-6">
@@ -48,21 +52,32 @@ export function HookVisualMatchmakerResults({
         </p>
       </div>
       <HookVisualStoryboard beats={result.primary.storyboard} />
-      <section className="mt-6 border-t border-border pt-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-base font-bold text-text-primary">
-            Alternate opening: {getHookVisualOpeningSourceLabel(result.alternate.openingSource)}
-          </h2>
-          <CopyTextButton
-            label="Copy alternate"
-            text={formatHookVisualPlan(result.alternate)}
-          />
-        </div>
-        <p className="mt-3 text-sm leading-6 text-text-secondary">
-          {result.alternate.openingShot}
-        </p>
-      </section>
-      <HookVisualMatchmakerPricingCta />
+      <PublicToolGateContentBoundary
+        hasFunctionalUnlock
+        publicContent={null}
+        toolKey="hook-to-visual-matchmaker"
+        unlockedContent={
+          <section className="mt-6 border-t border-border pt-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-base font-bold text-text-primary">
+                Alternate opening:{" "}
+                {getHookVisualOpeningSourceLabel(
+                  result.alternate.openingSource,
+                )}
+              </h2>
+              <CopyTextButton
+                label="Copy alternate"
+                text={formatHookVisualPlan(result.alternate)}
+              />
+            </div>
+            <p className="mt-3 text-sm leading-6 text-text-secondary">
+              {result.alternate.openingShot}
+            </p>
+          </section>
+        }
+        variant={variant}
+      />
+      <HookVisualMatchmakerPricingCta variant={variant} />
     </Panel>
   );
 }

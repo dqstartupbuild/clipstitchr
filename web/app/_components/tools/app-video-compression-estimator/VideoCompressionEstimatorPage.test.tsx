@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("VideoCompressionEstimatorPage", () => {
-  it("renders the formula, local boundary, estimate, and conversion path", () => {
-    const markup = renderToStaticMarkup(<VideoCompressionEstimatorRoutePage />);
+  it("renders the formula, local boundary, estimate, and conversion path", async () => {
+    const markup = renderToStaticMarkup(await VideoCompressionEstimatorRoutePage());
 
     expect(markup).toContain("App Video Compression Estimator");
     expect(markup).toContain("Choose a video to fill in local facts");

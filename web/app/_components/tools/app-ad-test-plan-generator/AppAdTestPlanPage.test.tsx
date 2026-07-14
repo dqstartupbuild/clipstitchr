@@ -19,9 +19,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppAdTestPlanPage", () => {
-  it("renders a three-wave plan, copy action, lead source, and paid CTA", () => {
-    const markup = renderToStaticMarkup(<AppAdTestPlanRoutePage />);
+  it("renders a three-wave plan, copy action, lead source, and paid CTA", async () => {
+    const markup = renderToStaticMarkup(await AppAdTestPlanRoutePage());
 
     expect(markup).toContain("App Ad Creative Test Plan Generator");
     expect(markup).toContain('"@type":"WebApplication"');

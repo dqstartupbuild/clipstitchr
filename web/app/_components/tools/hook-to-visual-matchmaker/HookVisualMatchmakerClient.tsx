@@ -8,8 +8,15 @@ import type { HookVisualMatchmakerInput } from "@/lib/clipstitchr/tools/hookVisu
 import type { HookVisualMatchResult } from "@/lib/clipstitchr/tools/hookVisualMatchmaker/HookVisualMatchResult";
 import { defaultHookVisualMatchmakerInput } from "@/lib/clipstitchr/tools/hookVisualMatchmaker/defaultHookVisualMatchmakerInput";
 import { matchHookToVisual } from "@/lib/clipstitchr/tools/hookVisualMatchmaker/matchHookToVisual";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function HookVisualMatchmakerClient() {
+type HookVisualMatchmakerClientProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function HookVisualMatchmakerClient({
+  variant = "control",
+}: HookVisualMatchmakerClientProps) {
   const [input, setInput] = useState<HookVisualMatchmakerInput>(
     defaultHookVisualMatchmakerInput,
   );
@@ -27,7 +34,7 @@ export function HookVisualMatchmakerClient() {
           }}
         />
         {result ? (
-          <HookVisualMatchmakerResults result={result} />
+          <HookVisualMatchmakerResults result={result} variant={variant} />
         ) : (
           <HookVisualMatchmakerEmptyState />
         )}

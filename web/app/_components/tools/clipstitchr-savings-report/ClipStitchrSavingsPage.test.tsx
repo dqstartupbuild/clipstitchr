@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("ClipStitchrSavingsPage", () => {
-  it("renders the transparent default scenario and paid path", () => {
-    const markup = renderToStaticMarkup(<ClipStitchrSavingsRoutePage />);
+  it("renders the transparent default scenario and paid path", async () => {
+    const markup = renderToStaticMarkup(await ClipStitchrSavingsRoutePage());
 
     expect(markup).toContain("Interactive ClipStitchr Savings Report");
     expect(markup).toContain("$1,101.00 less");

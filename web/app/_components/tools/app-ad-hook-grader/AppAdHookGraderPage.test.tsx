@@ -13,6 +13,13 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppAdHookGraderPage", () => {
   it("renders the local grader, SEO content, and paid conversion path", () => {
     const markup = renderToStaticMarkup(<AppAdHookGraderPage />);

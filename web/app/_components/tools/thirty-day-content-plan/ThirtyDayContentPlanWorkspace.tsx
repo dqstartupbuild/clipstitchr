@@ -1,13 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { PublicToolGateContentBoundary } from "@/app/_components/tools/gates/PublicToolGateContentBoundary";
 import { ResourceDownloadButton } from "@/app/_components/tools/resources/ResourceDownloadButton";
+import { ThirtyDayContentPlanActionCard } from "@/app/_components/tools/thirty-day-content-plan/ThirtyDayContentPlanActionCard";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import type { ThirtyDayContentPlanInput } from "@/lib/clipstitchr/tools/thirtyDayContentPlan/ThirtyDayContentPlanInput";
 import { createThirtyDayContentPlan } from "@/lib/clipstitchr/tools/thirtyDayContentPlan/createThirtyDayContentPlan";
 import { defaultThirtyDayContentPlanInput } from "@/lib/clipstitchr/tools/thirtyDayContentPlan/defaultThirtyDayContentPlanInput";
 import { formatThirtyDayContentPlanMarkdown } from "@/lib/clipstitchr/tools/thirtyDayContentPlan/formatThirtyDayContentPlanMarkdown";
 
-export function ThirtyDayContentPlanWorkspace() {
+type ThirtyDayContentPlanWorkspaceProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function ThirtyDayContentPlanWorkspace({
+  variant = "control",
+}: ThirtyDayContentPlanWorkspaceProps) {
   const [input, setInput] = useState<ThirtyDayContentPlanInput>(
     defaultThirtyDayContentPlanInput,
   );
@@ -159,36 +168,42 @@ export function ThirtyDayContentPlanWorkspace() {
                 forward.
               </p>
             </div>
-            <ResourceDownloadButton
-              contents={formatThirtyDayContentPlanMarkdown(actions)}
-              fileName="clipstitchr-30-day-content-plan.md"
-              label="Download plan"
-              type="text/markdown;charset=utf-8"
-            />
           </div>
-          <ol className="grid gap-3 md:grid-cols-2">
-            {actions.map((action) => (
-              <li className="marketing-card p-5" key={action.date}>
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-bold text-accent-dark">
-                    Day {action.dayNumber} · {action.kind}
-                  </p>
-                  <time className="text-xs font-semibold text-text-tertiary">
-                    {action.date}
-                  </time>
+          <PublicToolGateContentBoundary
+            hasFunctionalUnlock
+            publicContent={
+              <ol className="grid gap-3 md:grid-cols-2">
+                {actions.slice(0, 7).map((action) => (
+                  <ThirtyDayContentPlanActionCard
+                    action={action}
+                    key={action.date}
+                  />
+                ))}
+              </ol>
+            }
+            toolKey="30-day-app-content-plan"
+            unlockedContent={
+              <>
+                <div className="flex justify-end">
+                  <ResourceDownloadButton
+                    contents={formatThirtyDayContentPlanMarkdown(actions)}
+                    fileName="clipstitchr-30-day-content-plan.md"
+                    label="Download plan"
+                    type="text/markdown;charset=utf-8"
+                  />
                 </div>
-                <h3 className="mt-2 text-lg font-bold text-text-primary">
-                  {action.title}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">
-                  {action.detail}
-                </p>
-                <p className="mt-3 text-xs font-semibold text-text-tertiary">
-                  Source needed: {action.asset}
-                </p>
-              </li>
-            ))}
-          </ol>
+                <ol className="grid gap-3 md:grid-cols-2">
+                  {actions.slice(7).map((action) => (
+                    <ThirtyDayContentPlanActionCard
+                      action={action}
+                      key={action.date}
+                    />
+                  ))}
+                </ol>
+              </>
+            }
+            variant={variant}
+          />
         </div>
       </div>
     </section>

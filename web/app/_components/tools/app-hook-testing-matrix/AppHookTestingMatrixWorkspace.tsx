@@ -1,13 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { ResourceDownloadButton } from "@/app/_components/tools/resources/ResourceDownloadButton";
+import { AppHookTestingMatrixPortabilityAction } from "@/app/_components/tools/app-hook-testing-matrix/AppHookTestingMatrixPortabilityAction";
 import type { AppHookTestingMatrixInput } from "@/lib/clipstitchr/tools/appHookTestingMatrix/AppHookTestingMatrixInput";
 import { buildAppHookTestingMatrix } from "@/lib/clipstitchr/tools/appHookTestingMatrix/buildAppHookTestingMatrix";
 import { defaultAppHookTestingMatrixInput } from "@/lib/clipstitchr/tools/appHookTestingMatrix/defaultAppHookTestingMatrixInput";
-import { formatAppHookTestingMatrixMarkdown } from "@/lib/clipstitchr/tools/appHookTestingMatrix/formatAppHookTestingMatrixMarkdown";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function AppHookTestingMatrixWorkspace() {
+type AppHookTestingMatrixWorkspaceProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function AppHookTestingMatrixWorkspace({
+  variant = "control",
+}: AppHookTestingMatrixWorkspaceProps) {
   const [input, setInput] = useState<AppHookTestingMatrixInput>(
     defaultAppHookTestingMatrixInput,
   );
@@ -99,11 +105,9 @@ export function AppHookTestingMatrixWorkspace() {
                 selecting one hook.
               </p>
             </div>
-            <ResourceDownloadButton
-              contents={formatAppHookTestingMatrixMarkdown(result)}
-              fileName="clipstitchr-app-hook-testing-matrix.md"
-              label="Download matrix"
-              type="text/markdown;charset=utf-8"
+            <AppHookTestingMatrixPortabilityAction
+              result={result}
+              variant={variant}
             />
           </div>
           {result.cells.map((cell, index) => (

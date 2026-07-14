@@ -7,8 +7,15 @@ import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { appHookGeneratorDescription } from "@/lib/clipstitchr/tools/appHookGenerator/appHookGeneratorDescription";
 import { appHookGeneratorFaqs } from "@/lib/clipstitchr/tools/appHookGenerator/appHookGeneratorFaqs";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function AppHookGeneratorPage() {
+type AppHookGeneratorPageProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function AppHookGeneratorPage({
+  variant = "control",
+}: AppHookGeneratorPageProps) {
   return (
     <>
       <ToolStructuredData
@@ -18,12 +25,14 @@ export function AppHookGeneratorPage() {
         pathname="/tools/app-hook-generator"
       />
       <AppHookGeneratorHero />
-      <AppHookGeneratorClient />
-      <div className="px-6 pb-20">
-        <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source="app-hook-generator" />
+      <AppHookGeneratorClient variant={variant} />
+      {variant === "control" ? (
+        <div className="px-6 pb-20">
+          <div className="mx-auto max-w-4xl">
+            <ToolLeadCaptureForm source="app-hook-generator" />
+          </div>
         </div>
-      </div>
+      ) : null}
       <AppHookGeneratorGuide />
       <AppHookGeneratorFaq />
       <ToolDiscoveryLinks currentToolKey="app-hook-generator" />

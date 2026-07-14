@@ -3,15 +3,20 @@ import { CreativeAssetInventoryGapList } from "@/app/_components/tools/creative-
 import { ToolMetricCard } from "@/app/_components/tools/ToolMetricCard";
 import { Panel } from "@/app/_components/ui/Panel";
 import { PanelHeader } from "@/app/_components/ui/PanelHeader";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import { calculateCreativeAssetInventory } from "@/lib/clipstitchr/tools/creativeAssetInventory/calculateCreativeAssetInventory";
 import type { CreativeAssetInventoryRow } from "@/lib/clipstitchr/tools/creativeAssetInventory/CreativeAssetInventoryRow";
 
 type CreativeAssetInventoryResultsProps = {
+  hasFunctionalUnlock?: boolean;
   rows: readonly CreativeAssetInventoryRow[];
+  variant?: PublicToolGateVariant;
 };
 
 export function CreativeAssetInventoryResults({
+  hasFunctionalUnlock = false,
   rows,
+  variant = "control",
 }: CreativeAssetInventoryResultsProps) {
   const result = calculateCreativeAssetInventory(rows);
 
@@ -25,7 +30,13 @@ export function CreativeAssetInventoryResults({
             : `${result.coveragePercent.toFixed(1)}% marked ready`
         }
         description="Coverage is ready divided by every counted status. It is not a quality or rights approval."
-        actions={<CreativeAssetInventoryExports rows={rows} />}
+        actions={
+          <CreativeAssetInventoryExports
+            hasFunctionalUnlock={hasFunctionalUnlock}
+            rows={rows}
+            variant={variant}
+          />
+        }
       />
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <ToolMetricCard

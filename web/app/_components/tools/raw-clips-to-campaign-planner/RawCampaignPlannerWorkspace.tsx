@@ -6,8 +6,11 @@ import { RawCampaignPlanResults } from "@/app/_components/tools/raw-clips-to-cam
 import type { RawCampaignAsset } from "@/lib/clipstitchr/tools/rawClipsCampaignPlanner/RawCampaignAsset";
 import { buildRawClipsCampaignPlan } from "@/lib/clipstitchr/tools/rawClipsCampaignPlanner/buildRawClipsCampaignPlan";
 import { defaultRawCampaignAssets } from "@/lib/clipstitchr/tools/rawClipsCampaignPlanner/defaultRawCampaignAssets";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 
-export function RawCampaignPlannerWorkspace() {
+export function RawCampaignPlannerWorkspace({
+  variant = "control",
+}: PublicToolPageGateProps) {
   const [assets, setAssets] = useState<readonly RawCampaignAsset[]>(
     defaultRawCampaignAssets,
   );
@@ -19,6 +22,7 @@ export function RawCampaignPlannerWorkspace() {
         <RawCampaignPlanResults
           assets={assets}
           plan={buildRawClipsCampaignPlan(assets)}
+          variant={variant}
         />
       </div>
     </section>

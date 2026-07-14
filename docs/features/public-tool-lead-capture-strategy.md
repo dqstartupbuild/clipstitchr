@@ -3,26 +3,41 @@
 ## Status
 
 This document records the approved acquisition design for ClipStitchr's fifty
-public app-marketing tools. The design was approved on July 13, 2026. It is a
-future implementation contract, not a description of behavior that has already
-shipped.
+public app-marketing tools. The design was approved on July 13, 2026, and its
+catalog, browser-unlock, confirmation, analytics, and rollout foundations are
+now implemented behind a fail-closed control.
 
-Current behavior remains unchanged until this strategy is implemented:
+The shipped foundation includes:
 
-- Every tool exposes its complete result or browser-local download before an
-  optional mailing-list form.
-- The shared form requires both name and email.
-- Accepted submissions store a waitlist record with one tool source.
-- The form does not email a result, start a course, create an account, or return
-  an unlock entitlement.
+- Typed metadata assigning all fifty tools to the exact approved gate mode and
+  value contract.
+- A server-controlled `control` versus `hybrid-v1` rollout that requires an
+  explicit tool allowlist, allocation, approved variant, and opaque visitor
+  key. Missing or invalid configuration stays in control.
+- A shared name-and-email form that unlocks approved browser-local value after
+  the server returns the same opaque accepted response for every contact
+  state.
+- A non-identifying browser-only unlock marker plus an opaque 180-day
+  recognition token in an HttpOnly, same-site cookie. Page scripts cannot read
+  that token, and the server stores only its digest and contact association.
+- A standalone app-owned confirmation page whose scanner-safe `GET` cannot
+  record consent. Only its explicit same-origin, CSRF-protected `POST` can use a
+  valid forty-eight-hour, single-use confirmation.
+- A fixed public-tool analytics boundary that excludes contact details, token
+  values, tool inputs, and results.
+- Route integration for all fifty tools, including the exact thirteen useful
+  previews and all eighteen catalog-matched Markdown, CSV, or print
+  portability actions.
 
-The approved future behavior keeps every resource free of monetary charge but
-uses four different value exchanges. A successful form submission initially
-unlocks the promised result or file in the browser. Loops is the selected email
-provider, but personalized email delivery, drip courses, and workshop delivery
-must not be promised until the approved Loops integration is implemented and
-verified. `docs/backend/loops-email-integration.md` is the source of truth for
-that provider boundary.
+This does not silently turn on all fifty gates. Current routes retain their
+complete control experience unless an implemented, functional value seam is
+explicitly selected for `hybrid-v1`. The three email-native routes derive
+readiness on the server and fail closed to their complete browser-local control
+experience unless the full Loops contract and rollout selection are present.
+No Loops dashboard configuration or live email send was performed as part of
+this implementation.
+`docs/backend/loops-email-integration.md` remains the source of truth for the
+provider boundary.
 
 ## Goals
 
@@ -69,6 +84,12 @@ full-page interruption.
 | Email-native experience | 3 | Curriculum, outcomes, examples, and a sample lesson or day | Guided course, sprint, or workshop delivery after that delivery system exists |
 
 The four groups cover all fifty portfolio numbers exactly once.
+
+`publicToolGateCatalog.ts` now encodes this mapping and each tool's public
+value, unlocked value, outcome CTA, and supported artifact or email Workflow
+contract. Catalog metadata does not activate a gate by itself: rollout remains
+control unless the route has a functional unlock and the server explicitly
+selects the approved variant.
 
 ## Open Core Results
 
@@ -148,9 +169,14 @@ copy, or organized collection.
 
 ## Email-Native Experiences
 
-These three experiences may require signup at entry only when reliable delivery
-has been implemented. Until then, their complete current browser-local versions
-and optional mailing-list forms remain unchanged.
+The typed catalog, shared resource boundaries, and server-derived enrollment
+endpoint recognize these three email-native experiences. Their routes evaluate
+the full Loops readiness contract and remain in complete browser-local control
+when any required setting is absent. When both readiness and the approved
+rollout select `hybrid-v1`, the public sample stays open and the explicit form
+remains visible. A recognized browser may also request the catalog-defined
+sequence with one click; the client cannot choose a Workflow key, token, or
+contact.
 
 | # | Catalog capability | Catalog key | Public landing-page value | Future delivered experience |
 | ---: | --- | --- | --- | --- |
@@ -158,15 +184,21 @@ and optional mailing-list forms remain unchanged.
 | 43 | UGC-to-App-Ad Mini-Course | `ugc-to-app-ad-mini-course` | Curriculum and a complete sample lesson | Five-lesson sequence and browser worksheets |
 | 44 | Build Your First Creative Testing System Workshop | `app-creative-testing-system-workshop` | Agenda, outcomes, and a useful preview | Enrollment email, self-guided workshop access, and Markdown workbook |
 
-Launching these entry gates requires the approved Loops integration, consent
+Activating these entry gates still requires verified Loops readiness, consent
 and unsubscribe handling, delivery retries, rate limits before each provider
-operation, bounce handling, and failure monitoring. The current waitlist
-mutation does not satisfy that contract.
+operation, bounce handling, failure monitoring, and a functional enrollment
+control. A generic browser-local unlock may reveal the self-guided browser
+content, but it never enrolls the sequence and never removes the explicit
+enrollment form. No live Loops configuration or delivery was exercised in this
+change.
+Loops dashboard double opt-in is disabled and, in any case, does not cover
+API-created contacts; it does not replace ClipStitchr's app-owned confirmation.
 
 ## Shared Unlock Experience
 
-The shared experience for open-result, useful-preview, and gated-portability
-tools follows one consistent sequence:
+When a functional tool seam is selected for the approved hybrid variant, the
+shared experience for open-result, useful-preview, and gated-portability tools
+follows one consistent sequence:
 
 1. A visitor reaches a public tool page and can read the explanation, examples,
    guide, FAQ, and related resources.
@@ -179,23 +211,30 @@ tools follows one consistent sequence:
    requests entry to the ClipStitchr app-marketing mailing list, that a new
    address must be confirmed before marketing begins, and that no product
    account is created.
-7. An accepted submission immediately unlocks the promised browser-local value.
-8. A new or opted-out address receives a separate confirmation email before any
-   marketing Workflow begins; the browser unlock does not wait for that click.
+7. An accepted submission immediately sets the non-identifying local marker,
+   rotates the HttpOnly recognition cookie, and unlocks the promised
+   browser-local value.
+8. Once provider delivery is enabled, a new or opted-out address receives a
+   separate confirmation email before any marketing Workflow begins; the
+   browser unlock never waits for that click.
 9. A relevant paid ClipStitchr CTA appears after the visitor receives that
    value.
 
 Email-native experiences are the deliberate exception. Their public page and
 sample remain open, but starting the delivered sequence becomes the requested
-value exchange once delivery exists. A visitor whose browser is already
-unlocked should be able to enroll without re-entering name and email.
+value exchange once delivery is verified and explicitly enabled. The routes
+fail closed to provider-disabled control, so they do not hide lessons or
+promise an inbox sequence when readiness is incomplete. A visitor with a valid
+server-side browser-recognition cookie can request enrollment without
+re-entering name and email, while the regular form remains available for an
+unrecognized browser, confirmation, or updated details.
 
 Buttons use the promised outcome, such as “Unlock my complete plan,” “Unlock all
 8 hooks,” or “Unlock the download.” Generic “Submit” copy is not used.
 
-Until email delivery exists, user-facing copy must not say “Email my results,”
-“Send me the file,” “Start the daily email course,” or otherwise imply that a
-personalized artifact will arrive in the inbox.
+While provider readiness is disabled, user-facing copy must not say “Email my
+results,” “Send me the file,” “Start the daily email course,” or otherwise imply
+that a personalized artifact will arrive in the inbox.
 
 ## Required Fields and Browser Unlock
 
@@ -208,11 +247,14 @@ portability value on that browser. It does not silently enroll the contact in
 the three email-native sequences; each sequence still requires an explicit
 one-click enrollment action.
 
-The browser stores an opaque random unlock token and a non-identifying local
-unlock marker, never the submitted name or email. The server stores only a hash
-of the token and uses its associated contact reference to recognize later
-approved tool interactions. The token is not a readable contact identifier and
-is never emitted to product analytics.
+Page-readable browser storage contains only a non-identifying local unlock
+marker, never the submitted name, email, or recognition token. The server sets
+the opaque random recognition token as an HttpOnly, `SameSite=Strict` cookie,
+which keeps its plaintext in the browser while preventing page scripts from
+reading it. The server stores only a hash of that token and its contact
+association for later approved interactions. The token is not a readable
+contact identifier and is never emitted to product analytics, URLs, or general
+application logs.
 
 The server-linked recognition token expires 180 days after issuance and is
 rotated when that browser completes another accepted capture. Expiration,
@@ -230,11 +272,10 @@ boundary.
 
 ## Contact Data and Attribution
 
-The current `waitlist` row cannot represent the approved measurement model. It
+The legacy `waitlist` row cannot represent the approved measurement model. It
 stores one source and leaves an existing row unchanged, so later use of other
-tools is lost.
-
-The future data model must distinguish three logical records:
+tools is lost. The canonical model therefore distinguishes three logical
+records:
 
 - A canonical marketing contact keyed by normalized email, with required name,
   consent timestamp and copy version, verification status, subscription status,
@@ -247,9 +288,9 @@ The future data model must distinguish three logical records:
   These interactions update latest-source and qualification signals without
   collecting the tool's inputs or result.
 
-Implementation may migrate the waitlist data or introduce dedicated tables,
-but it must preserve existing contacts and avoid leaking created-versus-existing
-status to the browser.
+Legacy records remain preserved, and migration must not manufacture consent.
+Every public capture continues to avoid leaking created-versus-existing status
+to the browser.
 
 The email model additionally requires durable provider operations, logical
 Workflow enrollments keyed by contact plus Workflow version, provider-deletion
@@ -265,8 +306,8 @@ content.
 ## Approved Loops Email Boundary
 
 Loops is locked in as the provider for marketing Workflows and bounded future
-transactional email. ClipStitchr will integrate it through a focused Convex
-adapter that uses the official `loops` JavaScript SDK. The community
+transactional email. ClipStitchr integrates through a focused Convex adapter
+that uses the official `loops` JavaScript SDK. The community
 `@devwithbobby/loops` Convex component will not be mounted as the foundational
 integration.
 
@@ -276,13 +317,12 @@ tool attribution, captures, interactions, unlock hashes, and durable provider
 operation state. Loops retains the delivery projection used for Workflows,
 campaigns, templates, unsubscribe handling, suppression, and message delivery.
 
-An accepted capture commits its canonical records and a durable provider
-operation before returning the browser unlock. A scheduled internal action
-syncs Loops afterward, so a provider outage cannot hide an already-earned
-result or lose the local consent record. Workflow events and transactional
-sends use durable operation IDs as idempotency keys where Loops supports them.
-Transient failures retry within a documented bound; permanent failures enter a
-reviewable dead-letter state.
+The provider adapter and durable operation path remain guarded by explicit
+readiness settings. When enabled, an accepted capture commits its canonical
+records and durable provider work before returning the browser unlock. The
+browser does not wait for Loops, so a provider outage cannot hide
+already-earned local value. No live Loops operation was enabled or sent while
+implementing this path.
 
 Signed Loops webhooks reconcile audience unsubscribe, list membership,
 deletion, hard bounce, and complaint or suppression state into Convex. Normal
@@ -290,7 +330,8 @@ contact sync omits Loops' `subscribed` property so a retry or later tool visit
 cannot silently resubscribe a person who opted out. Explicit re-consent is a
 separate operation with a new consent timestamp and copy version.
 
-A browser unlock does not prove that an address is deliverable. A new address
+A browser unlock does not prove that an address is deliverable. Once email
+dispatch is enabled, a new address
 receives a bounded transactional confirmation with no promotional copy and is
 not added to a marketing Workflow until its forty-eight-hour, single-use token
 is confirmed. Opening the link renders a no-side-effect, analytics-free page;
@@ -298,8 +339,10 @@ only an explicit same-origin confirmation button records consent. A resend
 rotates the token, cancels older pending sends, and prevents stale operations
 from emailing invalid links. This is app-owned because Loops' built-in double
 opt-in currently does not gate API-created contacts. Existing verified
-subscribers are not asked to confirm again. An opted-out contact must complete
-the same explicit re-consent path before marketing can resume.
+subscribers are not asked to confirm again. The Loops dashboard's disabled
+double-opt-in setting does not change this app-owned requirement, because
+API-created contacts are outside that dashboard flow. An opted-out contact must
+complete the same explicit re-consent path before marketing can resume.
 
 Public-tool nurture, welcome messages, courses, sprints, workshops, and paid
 product invitations are marketing email and use Loops Workflows. They do not
@@ -342,19 +385,26 @@ determines lead quality.
 
 ## Analytics Contract
 
-The current implementation emits only `tool_lead_accepted`. The approved tests
-need privacy-safe events for:
+The typed public-tool analytics boundary allowlists these privacy-safe events:
 
-- Tool started.
+- Deliberate tool start, reserved for an actual interactive start action.
 - Useful result displayed.
 - Gate displayed.
 - Lead accepted.
 - Resource unlocked.
 - Paid CTA clicked.
 
-Every event uses the fixed catalog tool key and approved gate mode. An accepted
-event may include an experiment variant but never includes name, email, tool
-inputs, generated output, media facts, or file metadata.
+Every event has exactly four app-provided properties: `event_type`, the fixed
+catalog `tool_key`, the approved `gate_mode`, and `experiment_variant`
+(`control` or `hybrid-v1`). The shared capture emits `tool_lead_accepted` only
+after the server returns its exact opaque accepted response. Other event names
+are used only at explicit tool seams as rollout integration reaches them. The
+shared gate boundary emits result-displayed, gate-displayed, and
+resource-unlocked transitions once; passive component mount and nested capture
+rendering do not emit `tool_started` or duplicate lifecycle events. No event
+includes name, email, local marker, recognition token, confirmation token, tool
+inputs, generated output, media facts, or file metadata. The standalone email
+confirmation route mounts no PostHog, TikTok, or other analytics script.
 
 Primary SEO and trust measures are organic impressions and clicks, tool-start
 rate, result-view rate, repeat visits, multiple-tool use, and earned links or
@@ -377,10 +427,16 @@ accounts by first and latest tool, and time from first tool use to payment.
 6. Launch the three email-native gates only after the delivery contract is
    complete.
 
-Initial experiments use control versus one variation, stable visitor
-assignment, one canonical URL, and identical public SEO content. Gate behavior
-does not change according to whether a visitor came from Google or another
-source.
+Initial experiments use control versus one variation, stable opaque visitor
+assignment, one canonical URL, and identical public SEO content. The
+`PUBLIC_TOOL_GATE_ROLLOUT` environment value must be one strict JSON object,
+for example
+`{"variant":"hybrid-v1","tools":["app-hook-generator"],"allocationPercent":50}`.
+Missing, malformed, unknown-tool, duplicate-tool, or out-of-range configuration
+fails closed to control. Email-native selection additionally requires provider
+readiness derived on the server. Gate behavior does not change according to
+whether a visitor came from Google or another source. No production allocation
+was enabled in this implementation.
 
 Pause a test when result completion declines by more than ten percent relative
 to its control. Reject a gate that increases raw submissions without improving
@@ -437,18 +493,23 @@ Current files that own the shipped lead path:
 ```text
 web/
   app/_components/tools/ToolLeadCaptureForm.tsx
+  app/_components/tools/gates/
+  app/email/confirm/route.ts
+  app/api/tools/[tool]/email-native-enrollment/route.ts
   app/api/tools/[tool]/lead/route.ts
   convex/toolLeads/submit.ts
-  lib/clipstitchr/tools/catalog/publicToolCatalog.ts
+  lib/clipstitchr/email/confirmation/
+  lib/clipstitchr/tools/browserRecognition/
+  lib/clipstitchr/tools/catalog/publicToolGateCatalog.ts
+  lib/clipstitchr/tools/catalog/rollout/
+  lib/clipstitchr/tools/publicToolGates/
   lib/clipstitchr/tools/toolLeads/
 ```
 
-The implementation must add focused atomic files for gate mode, catalog gating
-metadata, the inline unlock presentation, browser unlock state, capture
-attribution, and analytics events. Each component, hook, type, validator, and
-helper remains in its own file under the nearest existing tool-lead or catalog
-folder. Exact filenames are selected during the implementation plan after the
-current tree and tests are inspected.
+These focused folders keep gate metadata, rollout resolution, browser unlock,
+recognition, confirmation, capture attribution, and analytics responsibilities
+separate. Routes with custom result or export behavior must still opt into a
+functional seam before their approved gate can activate.
 
 The email portion must also add the app-owned contact and durable provider
 operation model, private official-SDK adapter, bounded retry state machine, and
@@ -519,7 +580,7 @@ arbitrary Workflow event or transactional template ID.
 | Use a 16 open / 13 preview / 18 portability / 3 email-native split. | Keep all fifty open or apply one gate to every tool. | Search intent and the divisibility of each result differ across the portfolio. |
 | Require both name and email. | Require email only or add a longer qualification form. | A name supports human communication while tool behavior supplies stronger qualification than extra form questions. |
 | Unlock all browser-local gated value after one accepted signup while requiring explicit email-native enrollment. | Require a form for every tool, silently enroll every sequence, or build paid-style entitlements. | Repeated forms damage trust, while explicit enrollment prevents unwanted course or workshop messages. |
-| Unlock browser-local value before promising email delivery. | Claim that the current waitlist flow sends files, reports, or courses. | The existing endpoint stores a lead but has no delivery capability. |
+| Unlock browser-local value before promising email delivery. | Claim that a provider-disabled flow sends files, reports, or courses. | The browser value is immediate, while readiness checks keep inbox promises and live sends disabled until Loops is configured and verified. |
 | Use an opaque unlock token and record accepted captures plus bounded later interactions separately from the canonical contact. | Store only the first waitlist source, use a boolean that cannot support attribution, or keep contact details in the browser. | Multi-tool behavior is necessary for qualification and first/latest-source attribution without placing name or email on the device. |
 | Expire server-linked recognition after 180 days while preserving a local unlock marker. | Keep a permanent contact-linked browser token or revoke already-earned value on unsubscribe. | Finite recognition reduces the privacy lifetime; unsubscribe and deletion stop linked behavior without turning a free resource into DRM. |
 | Keep tool inputs, results, and media out of contact records and analytics. | Store personalized results with the lead. | The approved unlock can operate locally without expanding the current privacy surface. |

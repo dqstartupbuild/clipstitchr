@@ -11,10 +11,17 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppMarketingContentCalendarPage", () => {
-  it("renders editable calendar rows and CSV export", () => {
+  it("renders editable calendar rows and CSV export", async () => {
     const markup = renderToStaticMarkup(
-      <AppMarketingContentCalendarRoutePage />,
+      await AppMarketingContentCalendarRoutePage(),
     );
 
     expect(markup).toContain("App Marketing Content Calendar");

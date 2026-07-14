@@ -2,14 +2,17 @@ import { AppAdCostPerCreativePricingCta } from "@/app/_components/tools/app-ad-c
 import { ToolMetricCard } from "@/app/_components/tools/ToolMetricCard";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { AppAdCostPerCreativeResult } from "@/lib/clipstitchr/tools/appAdCostPerCreative/AppAdCostPerCreativeResult";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import { formatUsd } from "@/lib/clipstitchr/tools/numbers/formatUsd";
 
 type AppAdCostPerCreativeResultsProps = {
   result: AppAdCostPerCreativeResult;
+  variant?: PublicToolGateVariant;
 };
 
 export function AppAdCostPerCreativeResults({
   result,
+  variant = "control",
 }: AppAdCostPerCreativeResultsProps) {
   const changeDirection =
     result.dollarChangePerCreative === null ||
@@ -124,7 +127,7 @@ export function AppAdCostPerCreativeResults({
         predict performance, or promise that ClipStitchr will produce the same
         cost change.
       </p>
-      <AppAdCostPerCreativePricingCta />
+      <AppAdCostPerCreativePricingCta variant={variant} />
     </Panel>
   );
 }

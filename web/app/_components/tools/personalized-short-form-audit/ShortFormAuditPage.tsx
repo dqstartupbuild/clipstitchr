@@ -7,11 +7,14 @@ import { ToolDiscoveryLinks } from "@/app/_components/tools/ToolDiscoveryLinks";
 import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm";
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { personalizedShortFormAuditFaqs } from "@/lib/clipstitchr/tools/personalizedShortFormAudit/personalizedShortFormAuditFaqs";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
 
 const tool = publicToolCatalog["personalized-short-form-content-audit"];
 
-export function ShortFormAuditPage() {
+export function ShortFormAuditPage({
+  variant = "control",
+}: PublicToolPageGateProps) {
   return (
     <>
       <ToolStructuredData
@@ -21,12 +24,14 @@ export function ShortFormAuditPage() {
         pathname={tool.pathname}
       />
       <ResourceHero resourceKey={tool.key} />
-      <ShortFormAuditWorkspace />
-      <div className="px-6 pb-20">
-        <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source={tool.key} />
+      <ShortFormAuditWorkspace variant={variant} />
+      {variant === "control" ? (
+        <div className="px-6 pb-20">
+          <div className="mx-auto max-w-4xl">
+            <ToolLeadCaptureForm source={tool.key} />
+          </div>
         </div>
-      </div>
+      ) : null}
       <ResourceGuide
         title="Use the score to find the dependency, not to judge the team."
         paragraphs={[
@@ -35,7 +40,7 @@ export function ShortFormAuditPage() {
         ]}
       />
       <ResourceFaq faqs={personalizedShortFormAuditFaqs} />
-      <ResourcePricingCta />
+      <ResourcePricingCta toolKey={tool.key} variant={variant} />
       <ToolDiscoveryLinks currentToolKey={tool.key} />
     </>
   );

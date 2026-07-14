@@ -1,7 +1,16 @@
 import { NotionKitTemplateCard } from "@/app/_components/tools/notion-kit/NotionKitTemplateCard";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import { notionKitTemplates } from "@/lib/clipstitchr/tools/notionKit/notionKitTemplates";
 
-export function NotionKitWorkspace() {
+type NotionKitWorkspaceProps = {
+  hasFunctionalUnlock?: boolean;
+  variant?: PublicToolGateVariant;
+};
+
+export function NotionKitWorkspace({
+  hasFunctionalUnlock = false,
+  variant = "control",
+}: NotionKitWorkspaceProps) {
   return (
     <section
       className="px-6 py-16 md:py-20"
@@ -34,7 +43,12 @@ export function NotionKitWorkspace() {
         </div>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           {notionKitTemplates.map((template) => (
-            <NotionKitTemplateCard key={template.name} template={template} />
+            <NotionKitTemplateCard
+              hasFunctionalUnlock={hasFunctionalUnlock}
+              key={template.name}
+              template={template}
+              variant={variant}
+            />
           ))}
         </div>
       </div>

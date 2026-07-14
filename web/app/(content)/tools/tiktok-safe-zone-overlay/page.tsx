@@ -1,5 +1,6 @@
 import { TikTokSafeZonePage } from "@/app/_components/tools/tiktok-safe-zone/TikTokSafeZonePage";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -12,6 +13,11 @@ export const metadata = createPageMetadata({
   keywords: resource.keywords,
 });
 
-export default function TikTokSafeZoneRoutePage() {
-  return <TikTokSafeZonePage />;
+export default async function TikTokSafeZoneRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(
+    resource.key,
+    false,
+  );
+
+  return <TikTokSafeZonePage variant={variant} />;
 }

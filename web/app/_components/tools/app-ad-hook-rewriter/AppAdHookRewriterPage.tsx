@@ -7,8 +7,15 @@ import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { appAdHookRewriterDescription } from "@/lib/clipstitchr/tools/appAdHookRewriter/appAdHookRewriterDescription";
 import { appAdHookRewriterFaqs } from "@/lib/clipstitchr/tools/appAdHookRewriter/appAdHookRewriterFaqs";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function AppAdHookRewriterPage() {
+type AppAdHookRewriterPageProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function AppAdHookRewriterPage({
+  variant = "control",
+}: AppAdHookRewriterPageProps) {
   return (
     <>
       <ToolStructuredData
@@ -18,12 +25,14 @@ export function AppAdHookRewriterPage() {
         pathname="/tools/app-ad-hook-rewriter"
       />
       <AppAdHookRewriterHero />
-      <AppAdHookRewriterClient />
-      <div className="px-6 pb-20">
-        <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source="app-ad-hook-rewriter" />
+      <AppAdHookRewriterClient variant={variant} />
+      {variant === "control" ? (
+        <div className="px-6 pb-20">
+          <div className="mx-auto max-w-4xl">
+            <ToolLeadCaptureForm source="app-ad-hook-rewriter" />
+          </div>
         </div>
-      </div>
+      ) : null}
       <AppAdHookRewriterGuide />
       <AppAdHookRewriterFaq />
       <ToolDiscoveryLinks currentToolKey="app-ad-hook-rewriter" />

@@ -9,15 +9,18 @@ import { scoreVideoChecks } from "@/lib/clipstitchr/tools/localVideoInspection/s
 import { createNineBySixteenCompatibilityNotes } from "@/lib/clipstitchr/tools/nineBySixteenVideoChecker/createNineBySixteenCompatibilityNotes";
 import { createNineBySixteenVideoChecks } from "@/lib/clipstitchr/tools/nineBySixteenVideoChecker/createNineBySixteenVideoChecks";
 import { getNineBySixteenVideoStatus } from "@/lib/clipstitchr/tools/nineBySixteenVideoChecker/getNineBySixteenVideoStatus";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 type NineBySixteenVideoCheckerResultsProps = {
   file: File;
   inspection: LocalVideoInspection;
+  variant?: PublicToolGateVariant;
 };
 
 export function NineBySixteenVideoCheckerResults({
   file,
   inspection,
+  variant = "control",
 }: NineBySixteenVideoCheckerResultsProps) {
   const checks = createNineBySixteenVideoChecks(inspection);
   const score = scoreVideoChecks(checks);
@@ -34,7 +37,7 @@ export function NineBySixteenVideoCheckerResults({
             percentage={score.percentage}
             status={status}
           />
-          <NineBySixteenVideoCheckerPricingCta />
+          <NineBySixteenVideoCheckerPricingCta variant={variant} />
         </div>
       </div>
 

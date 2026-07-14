@@ -1,5 +1,6 @@
 import { GuidedResourcePage } from "@/app/_components/tools/resources/GuidedResourcePage";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { whyDidThisAdWorkDefinition } from "@/lib/clipstitchr/tools/whyDidThisAdWork/whyDidThisAdWorkDefinition";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
@@ -13,6 +14,16 @@ export const metadata = createPageMetadata({
   keywords: resource.keywords,
 });
 
-export default function WhyDidThisAdWorkRoutePage() {
-  return <GuidedResourcePage definition={whyDidThisAdWorkDefinition} />;
+export default async function WhyDidThisAdWorkRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(
+    whyDidThisAdWorkDefinition.resourceKey,
+    false,
+  );
+
+  return (
+    <GuidedResourcePage
+      definition={whyDidThisAdWorkDefinition}
+      variant={variant}
+    />
+  );
 }

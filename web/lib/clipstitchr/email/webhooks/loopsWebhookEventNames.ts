@@ -1,0 +1,18 @@
+import type { LoopsWebhookEventName } from "./LoopsWebhookEventName";
+
+export const loopsWebhookEventNames = [
+  "contact.created",
+  "contact.unsubscribed",
+  "contact.deleted",
+  "contact.mailingList.subscribed",
+  "contact.mailingList.unsubscribed",
+  "loop.email.sent",
+  "transactional.email.sent",
+  "email.delivered",
+  "email.softBounced",
+  "email.hardBounced",
+  "email.unsubscribed",
+  "email.resubscribed",
+  "email.spamReported",
+  "testing.testEvent",
+] as const satisfies readonly LoopsWebhookEventName[];

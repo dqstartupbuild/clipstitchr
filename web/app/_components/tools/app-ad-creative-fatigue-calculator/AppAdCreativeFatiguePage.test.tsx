@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppAdCreativeFatiguePage", () => {
-  it("renders a useful exposure model without a performance promise", () => {
-    const markup = renderToStaticMarkup(<AppAdCreativeFatigueRoutePage />);
+  it("renders a useful exposure model without a performance promise", async () => {
+    const markup = renderToStaticMarkup(await AppAdCreativeFatigueRoutePage());
 
     expect(markup).toContain("App-Ad Creative Fatigue Calculator");
     expect(markup).toContain("2.80x modeled frequency");

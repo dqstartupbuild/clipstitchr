@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("ShortFormAuditPage", () => {
-  it("renders a transparent five-dimension score and all fourteen plan days", () => {
-    const markup = renderToStaticMarkup(<ShortFormAuditRoutePage />);
+  it("renders a transparent five-dimension score and all fourteen plan days", async () => {
+    const markup = renderToStaticMarkup(await ShortFormAuditRoutePage());
 
     expect(markup).toContain("Personalized Short-Form Content Audit");
     expect(markup).toContain("50/100");

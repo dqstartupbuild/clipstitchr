@@ -1,16 +1,20 @@
 import Link from "next/link";
 import { AppAdHookRewriteCard } from "@/app/_components/tools/app-ad-hook-rewriter/AppAdHookRewriteCard";
 import { AppAdHookRewriterPricingCta } from "@/app/_components/tools/app-ad-hook-rewriter/AppAdHookRewriterPricingCta";
+import { PublicToolGateContentBoundary } from "@/app/_components/tools/gates/PublicToolGateContentBoundary";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { AppAdHookRewriterResult } from "@/lib/clipstitchr/tools/appAdHookRewriter/AppAdHookRewriterResult";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import { getPublicHookIntentLabel } from "@/lib/clipstitchr/tools/publicHooks/getPublicHookIntentLabel";
 
 type AppAdHookRewriterResultsProps = {
   result: AppAdHookRewriterResult;
+  variant?: PublicToolGateVariant;
 };
 
 export function AppAdHookRewriterResults({
   result,
+  variant = "control",
 }: AppAdHookRewriterResultsProps) {
   return (
     <Panel className="p-5 md:p-6">
@@ -35,15 +39,33 @@ export function AppAdHookRewriterResults({
           </p>
         </div>
       ) : null}
-      <div className="mt-6 grid gap-4">
-        {result.rewrites.map((rewrite, index) => (
-          <AppAdHookRewriteCard
-            index={index}
-            key={rewrite.direction}
-            rewrite={rewrite}
-          />
-        ))}
-      </div>
+      <PublicToolGateContentBoundary
+        hasFunctionalUnlock
+        publicContent={
+          <div className="mt-6 grid gap-4">
+            {result.rewrites.slice(0, 2).map((rewrite, index) => (
+              <AppAdHookRewriteCard
+                index={index}
+                key={rewrite.direction}
+                rewrite={rewrite}
+              />
+            ))}
+          </div>
+        }
+        toolKey="app-ad-hook-rewriter"
+        unlockedContent={
+          <div className="mt-4 grid gap-4">
+            {result.rewrites.slice(2).map((rewrite, index) => (
+              <AppAdHookRewriteCard
+                index={index + 2}
+                key={rewrite.direction}
+                rewrite={rewrite}
+              />
+            ))}
+          </div>
+        }
+        variant={variant}
+      />
       <div className="mt-6 flex flex-wrap gap-4 border-t border-border pt-5 text-sm font-bold">
         <Link className="text-accent-dark underline underline-offset-4" href="/tools/app-ad-hook-grader">
           Grade another hook
@@ -52,7 +74,7 @@ export function AppAdHookRewriterResults({
           Match a hook to a visual
         </Link>
       </div>
-      <AppAdHookRewriterPricingCta />
+      <AppAdHookRewriterPricingCta variant={variant} />
     </Panel>
   );
 }

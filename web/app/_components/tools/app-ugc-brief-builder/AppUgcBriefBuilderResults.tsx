@@ -1,16 +1,20 @@
 import { AppUgcBriefPricingCta } from "@/app/_components/tools/app-ugc-brief-builder/AppUgcBriefPricingCta";
+import { PublicToolGateContentBoundary } from "@/app/_components/tools/gates/PublicToolGateContentBoundary";
 import { AppUgcBriefShotCard } from "@/app/_components/tools/app-ugc-brief-builder/AppUgcBriefShotCard";
 import { CopyTextButton } from "@/app/_components/ui/CopyTextButton";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { AppUgcBriefResult } from "@/lib/clipstitchr/tools/appUgcBriefBuilder/AppUgcBriefResult";
 import { formatAppUgcBriefText } from "@/lib/clipstitchr/tools/appUgcBriefBuilder/formatAppUgcBriefText";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 type AppUgcBriefBuilderResultsProps = {
   result: AppUgcBriefResult;
+  variant?: PublicToolGateVariant;
 };
 
 export function AppUgcBriefBuilderResults({
   result,
+  variant = "control",
 }: AppUgcBriefBuilderResultsProps) {
   return (
     <Panel className="p-5 md:p-6">
@@ -18,7 +22,7 @@ export function AppUgcBriefBuilderResults({
         Brief updated with {result.deliverables.totalClips} separate source
         clips.
       </p>
-      <div className="flex flex-col gap-4 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="border-b border-border pb-4">
         <div>
           <p className="text-xs font-bold uppercase text-accent-dark">
             Copyable creator brief
@@ -27,12 +31,6 @@ export function AppUgcBriefBuilderResults({
             {result.appName} UGC direction
           </h2>
         </div>
-        <CopyTextButton
-          className="shrink-0"
-          label="Copy full brief"
-          copiedLabel="Brief copied"
-          text={formatAppUgcBriefText(result)}
-        />
       </div>
       <div className="mt-5 grid gap-5">
         <section>
@@ -41,6 +39,19 @@ export function AppUgcBriefBuilderResults({
             {result.objective}
           </p>
         </section>
+      </div>
+      <PublicToolGateContentBoundary
+        hasFunctionalUnlock
+        toolKey="app-ugc-brief-builder"
+        variant={variant}
+        publicContent={null}
+        unlockedContent={<div className="mt-6 grid gap-5">
+        <CopyTextButton
+          className="justify-self-start"
+          label="Copy full brief"
+          copiedLabel="Brief copied"
+          text={formatAppUgcBriefText(result)}
+        />
         <section>
           <h3 className="text-sm font-bold text-text-primary">
             Creator direction
@@ -101,8 +112,9 @@ export function AppUgcBriefBuilderResults({
             ))}
           </ul>
         </section>
-      </div>
-      <AppUgcBriefPricingCta />
+      </div>}
+      />
+      <AppUgcBriefPricingCta variant={variant} />
     </Panel>
   );
 }

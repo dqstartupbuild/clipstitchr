@@ -13,6 +13,13 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("HookVisualMatchmakerPage", () => {
   it("renders the local footage-aware workflow and paid conversion path", () => {
     const markup = renderToStaticMarkup(<HookVisualMatchmakerPage />);

@@ -328,6 +328,12 @@ describe("content pages", () => {
       "The Ad Variant Calculator and the other public calculators",
     );
     expect(privacyMarkup).toContain("not uploaded to ClipStitchr");
+    expect(privacyMarkup).toContain("simple marker");
+    expect(privacyMarkup).toContain("180-day recognition cookie");
+    expect(privacyMarkup).toContain("Opening it only shows a ClipStitchr page");
+    expect(privacyMarkup).toContain("loads no analytics or outside resources");
+    expect(privacyMarkup).toContain("No live Loops email was sent");
+    expect(privacyMarkup).toContain("does not take away browser value");
     expect(termsMarkup).toContain("Terms of Use");
     expect(termsMarkup).toContain("Browser Processing Limits");
     expect(termsMarkup).toContain("Public Tools");

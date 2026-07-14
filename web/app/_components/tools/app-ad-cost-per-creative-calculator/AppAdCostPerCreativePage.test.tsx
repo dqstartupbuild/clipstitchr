@@ -22,9 +22,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppAdCostPerCreativePage", () => {
-  it("renders the reuse comparison and honest paid conversion", () => {
-    const markup = renderToStaticMarkup(<AppAdCostPerCreativeRoutePage />);
+  it("renders the reuse comparison and honest paid conversion", async () => {
+    const markup = renderToStaticMarkup(await AppAdCostPerCreativeRoutePage());
 
     expect(markup).toContain("App Ad Cost per Creative Calculator");
     expect(markup).toContain('"@type":"WebApplication"');

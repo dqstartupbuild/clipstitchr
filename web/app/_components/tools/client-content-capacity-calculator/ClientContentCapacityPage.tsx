@@ -1,17 +1,20 @@
 import { ClientContentCapacityCalculator } from "@/app/_components/tools/client-content-capacity-calculator/ClientContentCapacityCalculator";
+import { PublicToolGateCapture } from "@/app/_components/tools/gates/PublicToolGateCapture";
 import { ResourceFaq } from "@/app/_components/tools/resources/ResourceFaq";
 import { ResourceGuide } from "@/app/_components/tools/resources/ResourceGuide";
 import { ResourceHero } from "@/app/_components/tools/resources/ResourceHero";
 import { ResourcePricingCta } from "@/app/_components/tools/resources/ResourcePricingCta";
 import { ToolDiscoveryLinks } from "@/app/_components/tools/ToolDiscoveryLinks";
-import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm";
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { clientContentCapacityFaqs } from "@/lib/clipstitchr/tools/clientContentCapacity/clientContentCapacityFaqs";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 
 const tool = publicToolCatalog["client-content-capacity-calculator"];
 
-export function ClientContentCapacityPage() {
+export function ClientContentCapacityPage({
+  variant = "control",
+}: PublicToolPageGateProps) {
   return (
     <>
       <ToolStructuredData
@@ -24,7 +27,11 @@ export function ClientContentCapacityPage() {
       <ClientContentCapacityCalculator />
       <div className="px-6 pb-20">
         <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source={tool.key} />
+          <PublicToolGateCapture
+            hasFunctionalUnlock={false}
+            toolKey={tool.key}
+            variant={variant}
+          />
         </div>
       </div>
       <ResourceGuide
@@ -35,7 +42,7 @@ export function ClientContentCapacityPage() {
         ]}
       />
       <ResourceFaq faqs={clientContentCapacityFaqs} />
-      <ResourcePricingCta />
+      <ResourcePricingCta toolKey={tool.key} variant={variant} />
       <ToolDiscoveryLinks currentToolKey={tool.key} />
     </>
   );

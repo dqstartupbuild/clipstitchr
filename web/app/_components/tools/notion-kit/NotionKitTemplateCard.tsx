@@ -1,13 +1,19 @@
+import { PublicToolGateActionBoundary } from "@/app/_components/tools/gates/PublicToolGateActionBoundary";
 import { ResourceDownloadButton } from "@/app/_components/tools/resources/ResourceDownloadButton";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import { createNotionKitTemplateCsv } from "@/lib/clipstitchr/tools/notionKit/createNotionKitTemplateCsv";
 import type { NotionKitTemplate } from "@/lib/clipstitchr/tools/notionKit/NotionKitTemplate";
 
 type NotionKitTemplateCardProps = {
+  hasFunctionalUnlock?: boolean;
   template: NotionKitTemplate;
+  variant?: PublicToolGateVariant;
 };
 
 export function NotionKitTemplateCard({
+  hasFunctionalUnlock = false,
   template,
+  variant = "control",
 }: NotionKitTemplateCardProps) {
   return (
     <article className="marketing-card p-5 md:p-6">
@@ -25,12 +31,18 @@ export function NotionKitTemplateCard({
           <li key={note}>• {note}</li>
         ))}
       </ul>
-      <ResourceDownloadButton
-        contents={createNotionKitTemplateCsv(template)}
-        fileName={template.fileName}
-        label={`Download ${template.name} CSV`}
-        type="text/csv;charset=utf-8"
-      />
+      <PublicToolGateActionBoundary
+        hasFunctionalUnlock={hasFunctionalUnlock}
+        toolKey="short-form-content-system-notion-kit"
+        variant={variant}
+      >
+        <ResourceDownloadButton
+          contents={createNotionKitTemplateCsv(template)}
+          fileName={template.fileName}
+          label={`Download ${template.name} CSV`}
+          type="text/csv;charset=utf-8"
+        />
+      </PublicToolGateActionBoundary>
     </article>
   );
 }

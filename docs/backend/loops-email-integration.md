@@ -4,18 +4,24 @@ Reviewed: 2026-07-13
 
 ## Status
 
-This document is the approved architecture decision for ClipStitchr email.
-Loops is the selected marketing and transactional email provider. The provider
-integration has not been implemented yet, so this document describes the
-required future behavior rather than the current runtime.
+The app-owned Loops adapter, canonical Convex records, durable provider outbox,
+signed webhook route, app-owned confirmation route, browser-recognition token,
+and strict fifty-tool gate rollout control are implemented. The official
+`loops` JavaScript SDK is installed at the `^7.0.0` package range. All provider
+dispatch and public gate changes remain fail-closed behind explicit environment
+configuration.
 
-No package has been installed and no application code, privacy copy, or email
-delivery behavior changed as part of this decision.
+No Loops dashboard properties, templates, Workflows, webhook endpoint, sending
+domain, or separate team setup was created or verified during this change. No
+deployment or live provider send was performed. Keep `LOOPS_EMAIL_ENABLED`
+unset or set to anything other than the exact string `true`, and keep
+`PUBLIC_TOOL_GATE_ROLLOUT` unset, until the operator checklist in
+`docs/backend/public-tool-email-rollout-runbook.md` is complete.
 
 ## Decision
 
-ClipStitchr will integrate Loops through a small app-owned Convex adapter using
-the official `loops` JavaScript SDK.
+ClipStitchr integrates Loops through a small app-owned Convex adapter using the
+official `loops` JavaScript SDK.
 
 ClipStitchr will not mount `@devwithbobby/loops` as the foundational email
 integration. The community component can create contacts, send events, and send
@@ -96,6 +102,9 @@ The scheduled internal action uses `LoopsClient` from the official `loops`
 package. It performs only an allowlisted provider operation:
 
 - Upsert a contact.
+- Explicitly resubscribe a contact after app-owned re-consent.
+- Apply an opaque-user-ID unsubscribe correction when a raced resubscribe must
+  be reversed.
 - Send an approved event that can start a Loops Workflow.
 - Send an approved transactional template.
 
@@ -108,8 +117,20 @@ dead-letter state.
 Before an SDK call, an internal mutation atomically claims the operation with a
 bounded lease. A terminal operation cannot be claimed again. A worker may
 reclaim an expired lease only when the operation is still inside its approved
-retry window. This local claim is the first duplicate-send boundary; the Loops
-idempotency key is the second.
+retry window. Each claim schedules one recovery wakeup just after lease expiry,
+so an action crash cannot strand the operation. Shared Loops pacing is consumed
+next. If capacity is unavailable, the local limiter's returned retry delay
+releases the lease and reschedules the operation without spending an attempt.
+Only the mutation immediately before the final canonical projection read and
+SDK call increments the provider-attempt count. This local claim is the first
+duplicate-send boundary; the Loops idempotency key is the second.
+
+When provider dispatch is disabled, due pending operations move to `held`
+without a recurring retry loop. After configuration is deliberately restored,
+an operator can call
+`email/resumeHeldEmailProviderOperations:resumeHeldEmailProviderOperations`
+with `RATE_LIMIT_API_SECRET` and a server timestamp. It resumes at most fifty
+operations per call and reports whether another bounded batch remains.
 
 Immediately before dispatch, the processor re-reads the canonical contact and
 operation authorization. Marketing contact sync and Workflow events are
@@ -118,9 +139,11 @@ tombstoned, or no longer eligible for that enrollment. A contact-projection
 operation must succeed before a dependent Workflow-event operation becomes
 claimable.
 
-The provider API key is read only from the Convex deployment environment. It
-is never passed through a client request, stored in a table, logged, or exposed
-through a public function argument.
+The provider API key is consumed only by the Convex dispatch action. The
+server-only Next.js readiness check also requires it to be configured before an
+email-native gate can leave control, but it never creates a provider client or
+sends with that key. The key is never passed through a client request, stored
+in a table, logged, or exposed through a public function argument.
 
 ### Signed webhooks reconcile provider state
 
@@ -140,6 +163,20 @@ A dedicated Convex HTTP route receives Loops webhooks. The handler must:
 - Record only bounded operational metadata needed for support and delivery
   health.
 
+The implemented route is `POST /webhooks/loops` on the Convex HTTP origin. It
+requires `application/json`, caps both declared and streamed raw bodies at 64
+KiB, limits `Webhook-Id` to 256 characters, and accepts a timestamp only within
+five minutes of server time. It verifies the Loops `v1` HMAC in constant time
+over `Webhook-Id.Webhook-Timestamp.rawBody` before JSON parsing. Supported
+payloads use webhook schema `1.0.0` and the explicit event allowlist in
+`loopsWebhookEventNames.ts`; unknown versions and event names are rejected.
+The current allowlist is `contact.created`, `contact.unsubscribed`,
+`contact.deleted`, `contact.mailingList.subscribed`,
+`contact.mailingList.unsubscribed`, `loop.email.sent`,
+`transactional.email.sent`, `email.delivered`, `email.softBounced`,
+`email.hardBounced`, `email.unsubscribed`, `email.resubscribed`,
+`email.spamReported`, and `testing.testEvent`.
+
 After signature and payload validation, one internal Convex mutation checks the
 `Webhook-Id`, applies the supported state transition, and records the processed
 ID atomically. The HTTP action returns success only after that transaction
@@ -154,7 +191,7 @@ contact `userId` or an already-linked Loops contact ID is available.
 The Loops contact is a delivery projection of the Convex contact, not a second
 source of truth for acquisition attribution.
 
-The first implementation may send only these bounded fields:
+The current adapter sends only these bounded fields:
 
 | Loops field | ClipStitchr value |
 | --- | --- |
@@ -226,6 +263,13 @@ in a referrer, analytics event, or log. The no-side-effect `GET` prevents common
 email security scanners from granting marketing consent merely by following a
 link.
 
+The direct `GET` and `POST` route is intentionally excluded from the shared
+Clerk proxy and app layout. It emits no scripts and sets `noindex`, `nosniff`,
+frame denial, a restrictive content security policy, and private no-store
+headers. The short-lived CSRF cookie lasts ten minutes. The `POST` requires the
+same origin, caps the form body at 4 KiB, re-verifies the signed reference, and
+consumes token, client, and global redemption quota before changing consent.
+
 Immediately before sending a confirmation, dispatch rechecks that the token
 record is still the contact's current generation and that the operation was not
 superseded. A delayed or retried older operation therefore cannot email a link
@@ -280,9 +324,10 @@ product rule and a new enrollment generation; merely creating a new provider
 operation ID is not permission to restart a sequence.
 
 Where the Loops SDK permits it, the operation ID is also the provider
-`Idempotency-Key`. A provider `409` for a previously accepted idempotency key is
-treated as previously accepted, not retried as a new send. Loops retains
-idempotency keys for only twenty-four hours. An ambiguous operation may retry
+`Idempotency-Key`. A provider `409` for a previously accepted Workflow event or
+transactional idempotency key is treated as previously accepted, not retried as
+a new send; a contact-update `409` is not acceptance. Loops retains
+idempotency keys for only twenty-four hours after the first provider attempt. An ambiguous operation may retry
 with the same key only inside that provider window. Once the window expires, an
 operation whose acceptance outcome is unknown moves to dead-letter for
 inspection instead of being automatically replayed with a new key.
@@ -328,26 +373,31 @@ Every transactional send must:
 ## Reliability And Rate Limits
 
 Loops documents a baseline API limit of ten requests per second per team and
-returns `429` responses when that provider limit is exceeded. ClipStitchr must
-protect both its own send policy and the provider ceiling.
+returns `429` responses when that provider limit is exceeded. ClipStitchr
+protects both its own send policy and the provider ceiling with these current
+limits:
 
-Before the integration ships, `docs/backend/rate-limits.md` must define and test:
+| Boundary | Current limit |
+| --- | --- |
+| Lead capture | 10/hour/client with burst 5; 3/hour/normalized email with burst 3; 500/hour globally with burst 100 across 5 shards |
+| Browser-recognized interaction | 60/hour/token with burst 20; 120/hour/client with burst 30; 5,000/hour globally with burst 1,000 across 5 shards |
+| Confirmation send | 3/day/email with burst 1; 5/hour/client with burst 2; 300/hour globally with burst 50 across 5 shards |
+| Confirmation redeem | 10/hour/token with burst 5; 20/hour/client with burst 5; 2,000/hour globally with burst 200 across 5 shards |
+| Email-native enrollment | 3/day/contact with burst 1; 10/hour/client with burst 3; 500/hour globally with burst 100 across 5 shards |
+| Workflow event | 10/day/contact with burst 4; 2,000/hour globally with burst 400 across 5 shards |
+| Transactional send | 10/day/contact with burst 3; 1,000/hour globally with burst 200 across 5 shards |
+| Loops API pacing | 8 requests/second with initial capacity 2, below the provider's 10 requests/second/team ceiling |
 
-- Ingress fairness and abuse limits consumed before an outbox operation is
-  created.
-- Contact-sync pacing and a shared Loops API bucket below the provider ceiling.
-- Per-contact and global Workflow-event limits.
-- Per-recipient, per-authenticated-user when applicable, per-template, and
-  global transactional-send limits.
-- Email-native enrollment limits before an outbox operation is created.
-- A bounded retry count, maximum retry age, exponential backoff, and dead-letter
-  behavior.
-- A documented no-user-quota rationale for signed provider webhooks, plus body,
-  timestamp, event-type, deduplication, and operational circuit-breaker bounds.
+All global ingress and send buckets use their documented shards. The
+confirmation and email-native quotas are consumed in the canonical Convex
+mutation before the matching outbox operation is created. Every initial Loops
+call and retry separately consumes shared provider pacing immediately before
+the official SDK call. Capacity exhaustion uses the limiter's returned retry
+delay and does not consume one of the seven provider-attempt slots.
 
 Ingress fairness and abuse quota is consumed in Convex before an operation is
 created. Separately, every initial SDK call, retry, or deliberately approved
-replay must reserve the shared Loops provider-pacing bucket immediately before
+replay must consume the shared Loops provider-pacing bucket immediately before
 the call. A retry does not consume a second user acquisition allotment, but it
 does consume provider pacing. The Loops API's own `429` is a third safety
 boundary, not ClipStitchr's primary abuse control. Authorization, consent,
@@ -356,6 +406,18 @@ quota.
 
 No raw name, email, API key, signing secret, or message body is written to
 general application logs. Support records prefer contact and operation IDs.
+
+Provider operations use a four-minute claim lease and at most seven attempts.
+Retryable network errors, provider `429` responses, and provider `5xx`
+responses wait 15, 30, 60, 120, 240, 480, then at most 960 seconds between
+attempts. Workflow and transactional retries reuse the original operation ID as
+the same provider idempotency key; contact updates reuse the stable `userId` and
+bounded projection. A Loops `409` is treated as acceptance only for an existing
+Workflow or transactional idempotent operation. Validation errors, contact
+update conflicts, and other permanent `4xx` responses
+dead-letter immediately. An acceptance-unknown operation cannot be
+automatically replayed once its twenty-four-hour Loops idempotency window
+expires.
 
 ## Failure Behavior
 
@@ -379,34 +441,52 @@ general application logs. Support records prefer contact and operation IDs.
 - An unsubscribe, hard bounce, or complaint stops later marketing operations
   even if older queued operations still exist. Dispatch rechecks eligibility
   and cancels stale queued work before the provider call.
+- If an explicit resubscribe provider call was already in flight when canonical
+  unsubscribe or privacy deletion won, its rejected acceptance fence queues one
+  opaque-user-ID `subscribed: false` correction. That correction rechecks
+  canonical state immediately before dispatch and cancels itself if the contact
+  explicitly re-consented in the meantime.
 
 ## Environment And Provider Setup
 
-The future implementation requires:
+The runtime uses these exact server-side variables and flags:
 
-- `LOOPS_API_KEY` in each Convex deployment that sends email.
-- `LOOPS_SIGNING_SECRET` in each Convex deployment that receives webhooks.
-- `EMAIL_CONFIRMATION_TOKEN_SECRET` in each Convex deployment that creates or
-  verifies confirmation links.
-- Server-side mappings for approved Workflow event names and transactional
-  template IDs.
-- The corresponding contact properties created in Loops before production
-  sync is enabled.
-- A verified sending domain, sender identity, reply-to policy, and production
-  unsubscribe footer in Loops.
-- Distinct development and production Loops accounts or teams so tests cannot
-  send to production subscribers. Loops currently permits one webhook endpoint
-  per account, so separate API keys inside one account are not sufficient
-  isolation unless an explicitly approved webhook router is introduced.
+| Variable | Purpose and fail-closed rule |
+| --- | --- |
+| `PUBLIC_TOOL_GATE_ROLLOUT` | Strict JSON rollout object. Missing, malformed, unknown-key, duplicate-tool, unsupported-variant, or out-of-range input resolves every tool to `control`. |
+| `LOOPS_EMAIL_ENABLED` | Provider dispatch is requested only when its value is exactly `true`. |
+| `LOOPS_API_KEY` | Private key used only by the server-side official SDK adapter. |
+| `LOOPS_TEAM_ENVIRONMENT` | Must be exactly `development` outside a production app runtime and exactly `production` in production. A mismatch disables dispatch. |
+| `LOOPS_DEVELOPMENT_RECIPIENTS` | Comma-separated, normalized allowlist required for a development Loops team. Development contact sync and sends reject every address outside it. |
+| `LOOPS_SIGNING_SECRET` | Secret used to verify the raw-body HMAC on `/webhooks/loops`. |
+| `LOOPS_WEBHOOKS_READY` | Must be exactly `true`, with a signing secret, before Workflow readiness can pass. |
+| `LOOPS_CONTACT_PROPERTIES_READY` | Must be exactly `true` after the six approved custom properties exist in the selected Loops team. |
+| `LOOPS_WORKFLOWS_READY` | Must be exactly `true` after all required event-triggered marketing Workflows and unsubscribe behavior are verified. |
+| `LOOPS_EMAIL_NATIVE_ENABLED` | Must be exactly `true` before the three email-native tools can leave control, and only becomes ready after confirmation, contact, webhook, and Workflow readiness all pass. |
+| `LOOPS_EMAIL_CONFIRMATION_TRANSACTIONAL_ID` | Server-only mapping for the sole approved `email-confirmation` transactional template. |
+| `EMAIL_CONFIRMATION_TOKEN_SECRET` | Server-only HMAC secret used to sign the forty-eight-hour confirmation reference. |
+| `NEXT_PUBLIC_SITE_URL` or `SITE_URL` | Absolute public origin used to build confirmation links. Configure one; the standard site URL resolver applies. |
+| `RATE_LIMIT_API_SECRET` | Shared Next.js-to-Convex secret used by lead, interaction, and confirmation mutations after request validation. |
+
+The selected Loops team must also have a verified sending domain, sender
+identity, reply-to policy, production unsubscribe footer, the approved contact
+properties, the confirmation transactional template, and the four named
+Workflows before a matching readiness flag is set. These provider assets are
+operator prerequisites; this repository change does not create or prove them.
+
+Use distinct development and production Loops accounts or teams so tests
+cannot send to production subscribers. Loops permits one webhook endpoint per
+account, so separate API keys inside one account are not sufficient isolation
+unless an explicitly approved webhook router is introduced.
 
 Secrets stay in deployment configuration and are never committed. Template IDs
 may be server-side environment values or focused server constants, but they are
 never accepted from a public request.
 
-## Planned Atomic File Shape
+## Implemented Atomic File Shape
 
-The exact names are finalized after the implementation tree is inspected, but
-the responsibility split must remain equivalent to this shape:
+The implementation keeps provider, operation, webhook, confirmation, rollout,
+and Convex responsibilities in focused files under their closest domains:
 
 ```text
 web/
@@ -422,23 +502,29 @@ web/
     schema.ts
   lib/clipstitchr/email/
     contact/
-      MarketingContact.ts
-      MarketingConsent.ts
-      MarketingWorkflowEnrollment.ts
+      LeadSegment.ts
+      LeadStage.ts
+    confirmation/
+      <one focused type, validator, signer, renderer, or handler per file>
     loops/
       createLoopsClient.ts
       createLoopsContactProperties.ts
-      getLoopsRetryDecision.ts
-      LoopsEventName.ts
+      getLoopsReadiness.ts
+      LoopsWorkflowEventName.ts
       LoopsTransactionalTemplateKey.ts
     operations/
-      EmailProviderOperationKind.ts
-      EmailProviderOperationStatus.ts
+      dispatchEmailProviderOperation.ts
+      getEmailProviderRetryDecision.ts
     webhooks/
-      getLoopsWebhookIsAuthentic.ts
+      verifyLoopsWebhookSignature.ts
+      parseLoopsWebhookEvent.ts
       LoopsWebhookEvent.ts
-  app/_components/tools/
-    <existing lead-capture components>
+  lib/clipstitchr/tools/catalog/rollout/
+    parsePublicToolGateRollout.ts
+    resolvePublicToolGateRollout.ts
+    resolvePublicToolGateVariantForRequest.ts
+  app/email/confirm/
+    route.ts
 ```
 
 Every component, function, type, validator, constant set, and action remains in
@@ -448,35 +534,61 @@ transactional email rather than duplicated per feature.
 
 ## Migration And Rollout
 
-1. Create the canonical contact, consent, capture, interaction, provider
-   operation, and webhook-deduplication records without changing public gate
-   behavior.
-2. Migrate existing waitlist contacts while retaining their original source and
-   timestamps. Do not manufacture consent evidence that the old row did not
-   collect or begin marketing sends to a legacy contact until its documented
-   consent basis is reviewed or it completes the new confirmation path. A
-   migrated row without evidence is explicitly `consentUnknown` and
-   `marketingEligible: false`.
-3. Add the official `loops` SDK, private provider adapter, shared pacing, retry
-   state machine, and a development-only recipient allowlist.
-4. Sync a controlled development cohort and verify contact properties without
-   sending a Workflow.
-5. Add signed webhook reconciliation and prove unsubscribe, hard-bounce,
-   complaint, duplicate, stale, and invalid-signature behavior.
-6. Enable one general marketing Workflow event for a small production cohort.
-7. Enable browser unlock and gated-portability experiments independently from
-   email delivery.
-8. Launch each email-native experience only after its event, Workflow,
-   unsubscribe, retry, and failure-monitoring path passes end-to-end tests.
-9. Add future transactional templates one use case at a time after explicitly
-   classifying each message and documenting its limits.
+The code and data-model foundation is complete, but activation remains staged:
 
-The privacy policy, terms or consent copy where applicable, lead-capture docs,
-analytics docs, and `docs/backend/rate-limits.md` must be updated in the same
-change that first sends contact data or email through Loops. Until that runtime
-change ships, current behavior remains the Convex-only waitlist path.
+1. The canonical contact, consent, capture, interaction, recognition-token,
+   provider-operation, Workflow-enrollment, confirmation-token,
+   webhook-deduplication, and deletion-tombstone records are present.
+2. The waitlist migration preserves the original source and timestamp and marks
+   rows without new consent evidence as `consentUnknown` and
+   `marketingEligible: false`. Running the migration is an explicit operator
+   step; the implementation does not manufacture consent or enroll those rows.
+3. The official SDK adapter, shared provider pacing, bounded retry state
+   machine, development recipient allowlist, signed webhook reconciliation,
+   and app-owned confirmation path are present and covered by local tests.
+4. All tools remain `control` unless `PUBLIC_TOOL_GATE_ROLLOUT` parses as the
+   exact JSON contract below. An invalid value always fails to control.
+5. Development contact sync, confirmation, Workflow, unsubscribe, duplicate,
+   and retry smokes must pass against a separate development Loops team before
+   any production allocation is nonzero.
+6. Production starts with a named subset of the fixed fifty-tool catalog and a
+   low allocation. Expand tools or percentage only after metrics and operational
+   health are reviewed. The three email-native experiences remain control until
+   `emailNativeReady` passes in addition to rollout assignment.
+
+`PUBLIC_TOOL_GATE_ROLLOUT` accepts exactly this shape and no additional keys:
+
+```json
+{"variant":"hybrid-v1","tools":["app-hook-generator"],"allocationPercent":1}
+```
+
+- `variant` must be exactly `hybrid-v1`.
+- `tools` must contain unique keys from the fixed fifty-tool catalog; it may be
+  an empty list for an inert configuration.
+- `allocationPercent` must be an integer from `0` through `100`.
+- Assignment uses an opaque, one-year, HttpOnly visitor cookie and a stable
+  10,000-bucket hash. A person remains in the same percentage cohort without
+  placing identity or submitted tool data in the rollout key.
+- A tool not listed, a visitor without a valid opaque key, a zero allocation,
+  or any malformed configuration receives `control`.
+- Lead capture itself also fails back to control without
+  `EMAIL_CONFIRMATION_TOKEN_SECRET`. Email-native tools additionally require
+  the full Loops `emailNativeReady` chain.
+
+The app-owned forty-eight-hour confirmation remains required even though Loops
+dashboard double opt-in is disabled. Loops' API contact operations bypass the
+form-only double-opt-in behavior, so disabling the dashboard option neither
+confirms nor weakens ClipStitchr's own consent step.
 
 ## Verification Contract
+
+Focused automated tests cover the rollout parser and stable assignment,
+browser-recognition rotation, canonical lead transactions, confirmation token
+rotation and redemption guards, provider projections, official SDK calls,
+allowlists, readiness, retry decisions, leases, webhook body/signature parsing,
+and the direct confirmation route. The following contract remains the release
+bar; provider-dashboard and deployed smokes are intentionally still
+outstanding:
 
 - Contact tests prove new and existing emails return the same public response,
   preserve first and latest attribution, and store required consent evidence.
@@ -514,10 +626,11 @@ change ships, current behavior remains the Convex-only waitlist path.
   cannot use a transactional template.
 - Privacy tests prove tool inputs, results, media, raw unlock tokens, and PII do
   not enter analytics or general logs.
-- An end-to-end development smoke proves contact sync, one Workflow event, one
-  transactional test template, unsubscribe reconciliation, and duplicate-send
-  prevention before production enablement. Development uses a separate Loops
-  account or team and webhook endpoint from production.
+- Before production enablement, run an end-to-end development smoke for contact
+  sync, one Workflow event, the confirmation transactional template,
+  unsubscribe reconciliation, and duplicate-send prevention. Development must
+  use a separate Loops account or team and webhook endpoint from production.
+  This smoke was not run as part of the implementation change.
 
 ## Revisit Triggers
 

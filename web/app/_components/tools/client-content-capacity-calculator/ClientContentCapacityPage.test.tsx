@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("ClientContentCapacityPage", () => {
-  it("shows the limiting stage and transparent capacity", () => {
-    const markup = renderToStaticMarkup(<ClientContentCapacityRoutePage />);
+  it("shows the limiting stage and transparent capacity", async () => {
+    const markup = renderToStaticMarkup(await ClientContentCapacityRoutePage());
 
     expect(markup).toContain("Client Content Capacity Calculator");
     expect(markup).toContain("12 deliverables");

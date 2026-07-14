@@ -57,9 +57,16 @@ const inspection: LocalVideoInspection = {
   width: 1080,
 };
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppUgcClipReadinessPage", () => {
-  it("renders the local-only self-review and exact lead source", () => {
-    const markup = renderToStaticMarkup(<AppUgcClipReadinessRoutePage />);
+  it("renders the local-only self-review and exact lead source", async () => {
+    const markup = renderToStaticMarkup(await AppUgcClipReadinessRoutePage());
 
     expect(markup).toContain("App UGC Clip Readiness Checker");
     expect(markup).toContain('"@type":"WebApplication"');

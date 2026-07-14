@@ -55,6 +55,36 @@ validated, but the limitation and the next refinement must remain explicit.
 - **Deployed-smoked:** The production-shaped route, environment, and external
   services were exercised successfully.
 
+## Hybrid Gate And Email Runtime Status
+
+The fixed fifty-tool catalog now has one typed gate contract per tool, one
+strict rollout parser, a stable opaque visitor assignment, browser-local unlock
+state, bounded recognized-interaction tracking, canonical Convex contact and
+consent records, a durable email outbox, an app-owned confirmation route, and a
+thin adapter over the official `loops` JavaScript SDK.
+
+This foundation is automated-test evidence, not deployed-provider proof. The
+safe default for all fifty tools is still `control`. A tool can receive
+`hybrid-v1` only when its exact catalog key appears in a valid
+`PUBLIC_TOOL_GATE_ROLLOUT` JSON object and its stable allocation bucket is below
+the configured integer percentage. Invalid JSON, extra keys, duplicate or
+unknown tools, unsupported variants, out-of-range percentages, missing visitor
+keys, and a missing confirmation signing secret fail back to control.
+
+The three email-native experiences have an additional provider-readiness
+boundary. They cannot leave control until confirmation, contact properties,
+signed webhooks, marketing Workflows, and the dedicated email-native flag are
+all ready. Loops dashboard double opt-in is disabled, but ClipStitchr still
+requires its own forty-eight-hour, single-use confirmation because API-created
+contacts do not receive that form-only protection.
+
+No development or production Loops properties, templates, Workflows, webhook,
+sending-domain setup, deployment, or live email send was performed in this
+implementation change. Until the separate development-team smoke in
+`docs/backend/public-tool-email-rollout-runbook.md` succeeds, keep every row's
+runtime proof rating based on its tool implementation only; do not infer email
+or deployed gate proof from a passing build.
+
 ## Current Register
 
 | # | Tool | Functional proof | Standalone value | Paid boundary | Runtime proof | Optional intelligence | Known limitation | Next refinement |

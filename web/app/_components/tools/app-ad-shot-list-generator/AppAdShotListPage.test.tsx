@@ -11,6 +11,12 @@ vi.mock("@/lib/clipstitchr/analytics/trackPostHogEvent", () => ({
 vi.mock("@/lib/clipstitchr/analytics/trackTikTokButtonClick", () => ({
   trackTikTokButtonClick: vi.fn(),
 }));
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
 vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ToolLeadCaptureForm: ({ source }: { source: string }) => (
     <section>Mailing list source: {source}. ClipStitchr is paid.</section>
@@ -18,8 +24,8 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
 }));
 
 describe("AppAdShotListPage", () => {
-  it("renders an individual capture plan and paid conversion path", () => {
-    const markup = renderToStaticMarkup(<AppAdShotListRoutePage />);
+  it("renders an individual capture plan and paid conversion path", async () => {
+    const markup = renderToStaticMarkup(await AppAdShotListRoutePage());
 
     expect(markup).toContain("App Ad Shot List Generator");
     expect(markup).toContain('"@type":"WebApplication"');

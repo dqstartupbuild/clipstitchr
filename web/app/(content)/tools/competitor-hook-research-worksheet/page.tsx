@@ -1,5 +1,6 @@
 import { CompetitorHookResearchPage } from "@/app/_components/tools/competitor-hook-research/CompetitorHookResearchPage";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -12,6 +13,11 @@ export const metadata = createPageMetadata({
   title: `${tool.name} | ${site.name}`,
 });
 
-export default function CompetitorHookResearchRoutePage() {
-  return <CompetitorHookResearchPage />;
+export default async function CompetitorHookResearchRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(
+    tool.key,
+    false,
+  );
+
+  return <CompetitorHookResearchPage variant={variant} />;
 }

@@ -3,9 +3,14 @@
 import { Panel } from "@/app/_components/ui/Panel";
 import { LocalVideoDropzone } from "@/app/_components/tools/video/LocalVideoDropzone";
 import { NineBySixteenVideoCheckerResults } from "@/app/_components/tools/9-16-app-demo-video-checker/NineBySixteenVideoCheckerResults";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import { useLocalVideoInspection } from "@/lib/clipstitchr/tools/localVideoInspection/useLocalVideoInspection";
 
-export function NineBySixteenVideoChecker() {
+export function NineBySixteenVideoChecker({
+  variant = "control",
+}: {
+  variant?: PublicToolGateVariant;
+}) {
   const {
     errorMessage,
     file,
@@ -46,6 +51,7 @@ export function NineBySixteenVideoChecker() {
             <NineBySixteenVideoCheckerResults
               file={file}
               inspection={inspection}
+              variant={variant}
             />
           ) : null}
         </Panel>

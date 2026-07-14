@@ -19,10 +19,17 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppAdCreativeTestingBlueprintPage", () => {
-  it("renders a substantive blueprint, exact lead source, and paid handoff", () => {
+  it("renders a substantive blueprint, exact lead source, and paid handoff", async () => {
     const markup = renderToStaticMarkup(
-      <AppAdCreativeTestingBlueprintRoutePage />,
+      await AppAdCreativeTestingBlueprintRoutePage(),
     );
 
     expect(markup).toContain("App Ad Creative Testing Blueprint Builder");

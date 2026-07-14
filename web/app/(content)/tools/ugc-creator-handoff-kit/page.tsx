@@ -1,5 +1,6 @@
 import { GuidedResourcePage } from "@/app/_components/tools/resources/GuidedResourcePage";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { ugcCreatorHandoffKitDefinition } from "@/lib/clipstitchr/tools/ugcCreatorHandoffKit/ugcCreatorHandoffKitDefinition";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
@@ -13,6 +14,16 @@ export const metadata = createPageMetadata({
   keywords: resource.keywords,
 });
 
-export default function UgcCreatorHandoffKitRoutePage() {
-  return <GuidedResourcePage definition={ugcCreatorHandoffKitDefinition} />;
+export default async function UgcCreatorHandoffKitRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(
+    ugcCreatorHandoffKitDefinition.resourceKey,
+    false,
+  );
+
+  return (
+    <GuidedResourcePage
+      definition={ugcCreatorHandoffKitDefinition}
+      variant={variant}
+    />
+  );
 }

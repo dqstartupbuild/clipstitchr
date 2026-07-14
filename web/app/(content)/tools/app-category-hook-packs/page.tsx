@@ -1,6 +1,7 @@
 import { CollectionResourcePage } from "@/app/_components/tools/resources/CollectionResourcePage";
 import { appCategoryHookPacksDefinition } from "@/lib/clipstitchr/tools/appCategoryHookPacks/appCategoryHookPacksDefinition";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -13,6 +14,16 @@ export const metadata = createPageMetadata({
   keywords: resource.keywords,
 });
 
-export default function AppCategoryHookPacksRoutePage() {
-  return <CollectionResourcePage definition={appCategoryHookPacksDefinition} />;
+export default async function AppCategoryHookPacksRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(
+    appCategoryHookPacksDefinition.resourceKey,
+    false,
+  );
+
+  return (
+    <CollectionResourcePage
+      definition={appCategoryHookPacksDefinition}
+      variant={variant}
+    />
+  );
 }

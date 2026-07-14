@@ -6,8 +6,11 @@ import { ShortFormAuditResults } from "@/app/_components/tools/personalized-shor
 import { calculatePersonalizedShortFormAudit } from "@/lib/clipstitchr/tools/personalizedShortFormAudit/calculatePersonalizedShortFormAudit";
 import { defaultShortFormAuditResponses } from "@/lib/clipstitchr/tools/personalizedShortFormAudit/defaultShortFormAuditResponses";
 import type { ShortFormAuditResponses } from "@/lib/clipstitchr/tools/personalizedShortFormAudit/ShortFormAuditResponses";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 
-export function ShortFormAuditWorkspace() {
+export function ShortFormAuditWorkspace({
+  variant = "control",
+}: PublicToolPageGateProps) {
   const [responses, setResponses] = useState<ShortFormAuditResponses>(
     defaultShortFormAuditResponses,
   );
@@ -18,6 +21,7 @@ export function ShortFormAuditWorkspace() {
         <ShortFormAuditForm responses={responses} onChange={setResponses} />
         <ShortFormAuditResults
           result={calculatePersonalizedShortFormAudit(responses)}
+          variant={variant}
         />
       </div>
     </section>

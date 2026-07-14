@@ -1,12 +1,13 @@
 import { ResourceFaq } from "@/app/_components/tools/resources/ResourceFaq";
+import { PublicToolGateCapture } from "@/app/_components/tools/gates/PublicToolGateCapture";
 import { ResourceGuide } from "@/app/_components/tools/resources/ResourceGuide";
 import { ResourceHero } from "@/app/_components/tools/resources/ResourceHero";
 import { ResourcePricingCta } from "@/app/_components/tools/resources/ResourcePricingCta";
 import { TikTokSafeZoneTool } from "@/app/_components/tools/tiktok-safe-zone/TikTokSafeZoneTool";
 import { ToolDiscoveryLinks } from "@/app/_components/tools/ToolDiscoveryLinks";
-import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm";
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 
 const resource = publicToolCatalog["tiktok-safe-zone-overlay"];
 const faqs = [
@@ -27,7 +28,9 @@ const faqs = [
   },
 ];
 
-export function TikTokSafeZonePage() {
+export function TikTokSafeZonePage({
+  variant = "control",
+}: PublicToolPageGateProps) {
   return (
     <>
       <ToolStructuredData
@@ -40,7 +43,11 @@ export function TikTokSafeZonePage() {
       <TikTokSafeZoneTool />
       <div className="px-6 pb-20">
         <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source={resource.key} />
+          <PublicToolGateCapture
+            hasFunctionalUnlock={false}
+            toolKey={resource.key}
+            variant={variant}
+          />
         </div>
       </div>
       <ResourceGuide
@@ -52,7 +59,7 @@ export function TikTokSafeZonePage() {
         title="Check placement early, then preview the real ad setup."
       />
       <ResourceFaq faqs={faqs} />
-      <ResourcePricingCta />
+      <ResourcePricingCta toolKey={resource.key} variant={variant} />
       <ToolDiscoveryLinks currentToolKey={resource.key} />
     </>
   );

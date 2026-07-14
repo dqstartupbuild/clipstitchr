@@ -14,6 +14,13 @@ vi.mock("@/lib/clipstitchr/analytics/trackTikTokButtonClick", () => ({
   trackTikTokButtonClick: vi.fn(),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ToolLeadCaptureForm: () => (
     <section>
@@ -23,8 +30,8 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
 }));
 
 describe("AppHookGeneratorPage", () => {
-  it("renders the tool inputs, usage guidance, and privacy promise", () => {
-    const markup = renderToStaticMarkup(<AppHookGeneratorRoutePage />);
+  it("renders the tool inputs, usage guidance, and privacy promise", async () => {
+    const markup = renderToStaticMarkup(await AppHookGeneratorRoutePage());
 
     expect(markup).toContain("App Hook Generator for Short-Form Ads");
     expect(markup).toContain('"@type":"WebApplication"');

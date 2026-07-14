@@ -11,9 +11,18 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("ThirtyDayContentPlanPage", () => {
-  it("renders all thirty useful actions and the paid boundary", () => {
-    const markup = renderToStaticMarkup(<ThirtyDayContentPlanRoutePage />);
+  it("renders all thirty useful actions and the paid boundary", async () => {
+    const markup = renderToStaticMarkup(
+      await ThirtyDayContentPlanRoutePage(),
+    );
 
     expect(markup).toContain("30-Day Short-Form Content Plan for App Founders");
     expect(markup).toContain("30 useful days");

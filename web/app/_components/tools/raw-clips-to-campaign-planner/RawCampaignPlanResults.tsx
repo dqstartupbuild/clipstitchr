@@ -1,19 +1,23 @@
 import { RawCampaignConceptCard } from "@/app/_components/tools/raw-clips-to-campaign-planner/RawCampaignConceptCard";
+import { PublicToolGateContentBoundary } from "@/app/_components/tools/gates/PublicToolGateContentBoundary";
 import { CopyTextButton } from "@/app/_components/ui/CopyTextButton";
 import { Panel } from "@/app/_components/ui/Panel";
 import { PanelHeader } from "@/app/_components/ui/PanelHeader";
 import type { RawCampaignAsset } from "@/lib/clipstitchr/tools/rawClipsCampaignPlanner/RawCampaignAsset";
 import type { RawCampaignPlan } from "@/lib/clipstitchr/tools/rawClipsCampaignPlanner/RawCampaignPlan";
 import { createRawCampaignPlanMarkdown } from "@/lib/clipstitchr/tools/rawClipsCampaignPlanner/createRawCampaignPlanMarkdown";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 type RawCampaignPlanResultsProps = {
   assets: readonly RawCampaignAsset[];
   plan: RawCampaignPlan;
+  variant?: PublicToolGateVariant;
 };
 
 export function RawCampaignPlanResults({
   assets,
   plan,
+  variant = "control",
 }: RawCampaignPlanResultsProps) {
   return (
     <Panel className="p-5 md:p-6">
@@ -21,12 +25,29 @@ export function RawCampaignPlanResults({
         eyebrow="Production handoff"
         title={`${plan.concepts.length} campaign concepts from ${plan.assetCount} named assets`}
         description="Compatibility scores use role completeness and repeated tags. They do not predict ad results."
-        actions={
-          <CopyTextButton
-            label="Copy Markdown handoff"
-            text={createRawCampaignPlanMarkdown(plan, assets)}
-          />
-        }
+      />
+      {plan.concepts[0] ? (
+        <div className="mt-5">
+          <p className="mb-3 text-sm font-bold text-text-primary">
+            Strongest clip combination
+          </p>
+          <RawCampaignConceptCard concept={plan.concepts[0]} index={0} />
+        </div>
+      ) : (
+        <p className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
+          Add at least one named hook and one named UGC or demo body clip to
+          build concepts.
+        </p>
+      )}
+      <PublicToolGateContentBoundary
+        hasFunctionalUnlock
+        toolKey="raw-clips-to-campaign-planner"
+        variant={variant}
+        publicContent={null}
+        unlockedContent={<div className="mt-6 grid gap-6">
+      <CopyTextButton
+        label="Copy Markdown handoff"
+        text={createRawCampaignPlanMarkdown(plan, assets)}
       />
       <div className="mt-5 grid gap-3 sm:grid-cols-5">
         {plan.coverage.map((item) => (
@@ -43,20 +64,14 @@ export function RawCampaignPlanResults({
         {plan.coveragePercent.toFixed(0)}% role coverage
       </p>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        {plan.concepts.map((concept, index) => (
+        {plan.concepts.slice(1).map((concept, index) => (
           <RawCampaignConceptCard
             key={concept.id}
             concept={concept}
-            index={index}
+            index={index + 1}
           />
         ))}
       </div>
-      {plan.concepts.length === 0 ? (
-        <p className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
-          Add at least one named hook and one named UGC or demo body clip to
-          build concepts.
-        </p>
-      ) : null}
       <div className="mt-6 grid gap-5 md:grid-cols-2">
         <div>
           <h3 className="font-bold text-text-primary">Missing captures</h3>
@@ -84,6 +99,8 @@ export function RawCampaignPlanResults({
         Session-only text planning. No uploads, asset storage, stitching,
         rendering, scheduling, or campaign publishing.
       </p>
+    </div>}
+      />
     </Panel>
   );
 }

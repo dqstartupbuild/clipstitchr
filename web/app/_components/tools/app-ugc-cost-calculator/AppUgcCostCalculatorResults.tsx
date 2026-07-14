@@ -4,13 +4,16 @@ import { AppUgcCostPricingCta } from "@/app/_components/tools/app-ugc-cost-calcu
 import { Panel } from "@/app/_components/ui/Panel";
 import type { AppUgcCostResult } from "@/lib/clipstitchr/tools/appUgcCostCalculator/AppUgcCostResult";
 import { formatAppUgcCostUsd } from "@/lib/clipstitchr/tools/appUgcCostCalculator/formatAppUgcCostUsd";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 type AppUgcCostCalculatorResultsProps = {
   result: AppUgcCostResult;
+  variant?: PublicToolGateVariant;
 };
 
 export function AppUgcCostCalculatorResults({
   result,
+  variant = "control",
 }: AppUgcCostCalculatorResultsProps) {
   return (
     <Panel className="p-5 md:p-6">
@@ -86,7 +89,7 @@ export function AppUgcCostCalculatorResults({
         taxes, software, and any other cost you did not enter. It does not use
         creator-rate benchmarks or promise savings.
       </p>
-      <AppUgcCostPricingCta />
+      <AppUgcCostPricingCta variant={variant} />
     </Panel>
   );
 }

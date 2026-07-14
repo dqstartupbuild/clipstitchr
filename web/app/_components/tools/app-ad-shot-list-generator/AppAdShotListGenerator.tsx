@@ -8,8 +8,15 @@ import type { AppAdShotListInput } from "@/lib/clipstitchr/tools/appAdShotList/A
 import { createAppAdShotList } from "@/lib/clipstitchr/tools/appAdShotList/createAppAdShotList";
 import { defaultAppAdShotListInput } from "@/lib/clipstitchr/tools/appAdShotList/defaultAppAdShotListInput";
 import { getAppAdShotListMissingFields } from "@/lib/clipstitchr/tools/appAdShotList/getAppAdShotListMissingFields";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function AppAdShotListGenerator() {
+type AppAdShotListGeneratorProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function AppAdShotListGenerator({
+  variant = "control",
+}: AppAdShotListGeneratorProps) {
   const [input, setInput] = useState<AppAdShotListInput>(
     defaultAppAdShotListInput,
   );
@@ -25,7 +32,10 @@ export function AppAdShotListGenerator() {
         {missingFields.length > 0 ? (
           <AppAdShotListEmptyState missingFields={missingFields} />
         ) : (
-          <AppAdShotListResults result={createAppAdShotList(input)} />
+          <AppAdShotListResults
+            result={createAppAdShotList(input)}
+            variant={variant}
+          />
         )}
       </div>
     </section>

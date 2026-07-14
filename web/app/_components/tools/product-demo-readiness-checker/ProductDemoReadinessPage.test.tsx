@@ -25,9 +25,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("ProductDemoReadinessPage", () => {
-  it("renders the private checklist, structured data, lead source, and discovery", () => {
-    const markup = renderToStaticMarkup(<ProductDemoReadinessRoutePage />);
+  it("renders the private checklist, structured data, lead source, and discovery", async () => {
+    const markup = renderToStaticMarkup(await ProductDemoReadinessRoutePage());
 
     expect(markup).toContain("Product Demo Readiness Checker");
     expect(markup).toContain('"@type":"WebApplication"');

@@ -3,6 +3,7 @@ import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 import { appHookGeneratorDescription } from "@/lib/clipstitchr/tools/appHookGenerator/appHookGeneratorDescription";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 
 export const metadata = createPageMetadata({
   title: `App Hook Generator for Short-Form Ads | ${site.name}`,
@@ -11,6 +12,11 @@ export const metadata = createPageMetadata({
   keywords: publicToolCatalog["app-hook-generator"].keywords,
 });
 
-export default function AppHookGeneratorRoutePage() {
-  return <AppHookGeneratorPage />;
+export default async function AppHookGeneratorRoutePage() {
+  const variant = await resolvePublicToolGateVariantForRequest(
+    "app-hook-generator",
+    false,
+  );
+
+  return <AppHookGeneratorPage variant={variant} />;
 }

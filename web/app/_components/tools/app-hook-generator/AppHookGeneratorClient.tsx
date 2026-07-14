@@ -3,9 +3,16 @@
 import { AppHookGeneratorEmptyState } from "@/app/_components/tools/app-hook-generator/AppHookGeneratorEmptyState";
 import { AppHookGeneratorForm } from "@/app/_components/tools/app-hook-generator/AppHookGeneratorForm";
 import { AppHookGeneratorResults } from "@/app/_components/tools/app-hook-generator/AppHookGeneratorResults";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import { useAppHookGenerator } from "@/lib/clipstitchr/tools/appHookGenerator/useAppHookGenerator";
 
-export function AppHookGeneratorClient() {
+type AppHookGeneratorClientProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function AppHookGeneratorClient({
+  variant = "control",
+}: AppHookGeneratorClientProps) {
   const {
     error,
     input,
@@ -30,6 +37,7 @@ export function AppHookGeneratorClient() {
           <AppHookGeneratorResults
             isLoading={isLoading}
             result={result}
+            variant={variant}
             onRegenerate={regenerate}
           />
         ) : (

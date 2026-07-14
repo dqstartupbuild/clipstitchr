@@ -1,17 +1,20 @@
 import { VideoCompressionEstimator } from "@/app/_components/tools/app-video-compression-estimator/VideoCompressionEstimator";
+import { PublicToolGateCapture } from "@/app/_components/tools/gates/PublicToolGateCapture";
 import { ResourceFaq } from "@/app/_components/tools/resources/ResourceFaq";
 import { ResourceGuide } from "@/app/_components/tools/resources/ResourceGuide";
 import { ResourceHero } from "@/app/_components/tools/resources/ResourceHero";
 import { ResourcePricingCta } from "@/app/_components/tools/resources/ResourcePricingCta";
 import { ToolDiscoveryLinks } from "@/app/_components/tools/ToolDiscoveryLinks";
-import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm";
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
 import { videoCompressionEstimatorFaqs } from "@/lib/clipstitchr/tools/videoCompressionEstimator/videoCompressionEstimatorFaqs";
+import type { PublicToolPageGateProps } from "@/lib/clipstitchr/tools/catalog/PublicToolPageGateProps";
 
 const tool = publicToolCatalog["app-video-compression-estimator"];
 
-export function VideoCompressionEstimatorPage() {
+export function VideoCompressionEstimatorPage({
+  variant = "control",
+}: PublicToolPageGateProps) {
   return (
     <>
       <ToolStructuredData
@@ -24,7 +27,11 @@ export function VideoCompressionEstimatorPage() {
       <VideoCompressionEstimator />
       <div className="px-6 pb-20">
         <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source={tool.key} />
+          <PublicToolGateCapture
+            hasFunctionalUnlock={false}
+            toolKey={tool.key}
+            variant={variant}
+          />
         </div>
       </div>
       <ResourceGuide
@@ -35,7 +42,7 @@ export function VideoCompressionEstimatorPage() {
         ]}
       />
       <ResourceFaq faqs={videoCompressionEstimatorFaqs} />
-      <ResourcePricingCta />
+      <ResourcePricingCta toolKey={tool.key} variant={variant} />
       <ToolDiscoveryLinks currentToolKey={tool.key} />
     </>
   );

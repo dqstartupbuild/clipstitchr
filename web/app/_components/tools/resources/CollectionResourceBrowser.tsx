@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CopyTextButton } from "@/app/_components/ui/CopyTextButton";
 import { CollectionResourceCard } from "@/app/_components/tools/resources/CollectionResourceCard";
-import { ResourceDownloadButton } from "@/app/_components/tools/resources/ResourceDownloadButton";
+import { CollectionResourcePortabilityActions } from "@/app/_components/tools/resources/CollectionResourcePortabilityActions";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import type { CollectionResourceDefinition } from "@/lib/clipstitchr/tools/resources/CollectionResourceDefinition";
 import { createCollectionResourceMarkdown } from "@/lib/clipstitchr/tools/resources/createCollectionResourceMarkdown";
 import { filterCollectionResourceItems } from "@/lib/clipstitchr/tools/resources/filterCollectionResourceItems";
@@ -12,10 +12,12 @@ import { getCollectionResourceCategories } from "@/lib/clipstitchr/tools/resourc
 
 type CollectionResourceBrowserProps = {
   definition: CollectionResourceDefinition;
+  variant?: PublicToolGateVariant;
 };
 
 export function CollectionResourceBrowser({
   definition,
+  variant = "control",
 }: CollectionResourceBrowserProps) {
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
@@ -61,15 +63,11 @@ export function CollectionResourceBrowser({
               </select>
             </label>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <CopyTextButton label="Copy full collection" text={markdown} />
-            <ResourceDownloadButton
-              contents={markdown}
-              fileName={`${definition.resourceKey}.md`}
-              label="Download collection"
-              type="text/markdown;charset=utf-8"
-            />
-          </div>
+          <CollectionResourcePortabilityActions
+            definition={definition}
+            markdown={markdown}
+            variant={variant}
+          />
         </div>
         <p
           className="mt-5 text-sm font-semibold text-text-secondary"

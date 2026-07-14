@@ -1,3 +1,3 @@
-import type { publicToolKeys } from "@/lib/clipstitchr/tools/catalog/publicToolKeys";
+import type { publicToolKeys } from "./publicToolKeys";
 
 export type PublicToolKey = (typeof publicToolKeys)[number];

@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppUgcAdBriefTemplatePage", () => {
-  it("renders the blank brief, example, immediate download, and paid path", () => {
-    const markup = renderToStaticMarkup(<AppUgcAdBriefTemplateRoutePage />);
+  it("renders the blank brief, example, immediate download, and paid path", async () => {
+    const markup = renderToStaticMarkup(await AppUgcAdBriefTemplateRoutePage());
 
     expect(markup).toContain("App UGC Ad Brief Template");
     expect(markup).toContain('"@type":"WebApplication"');

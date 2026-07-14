@@ -6,8 +6,13 @@ import { AdVariantCalculatorResults } from "@/app/_components/tools/ad-variant-c
 import type { AdVariantCalculatorInput } from "@/lib/clipstitchr/tools/adVariantCalculator/AdVariantCalculatorInput";
 import { calculateAdVariantPlan } from "@/lib/clipstitchr/tools/adVariantCalculator/calculateAdVariantPlan";
 import { defaultAdVariantCalculatorInput } from "@/lib/clipstitchr/tools/adVariantCalculator/defaultAdVariantCalculatorInput";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
-export function AdVariantCalculator() {
+export function AdVariantCalculator({
+  variant = "control",
+}: {
+  variant?: PublicToolGateVariant;
+}) {
   const [input, setInput] = useState<AdVariantCalculatorInput>(
     defaultAdVariantCalculatorInput,
   );
@@ -26,7 +31,7 @@ export function AdVariantCalculator() {
             }))
           }
         />
-        <AdVariantCalculatorResults result={result} />
+        <AdVariantCalculatorResults result={result} variant={variant} />
       </div>
     </section>
   );

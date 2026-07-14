@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { PublicToolGateActionBoundary } from "@/app/_components/tools/gates/PublicToolGateActionBoundary";
 import { ResourceDownloadButton } from "@/app/_components/tools/resources/ResourceDownloadButton";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import type { CompetitorHookObservation } from "@/lib/clipstitchr/tools/competitorHookResearch/CompetitorHookObservation";
 import type { CompetitorHookPattern } from "@/lib/clipstitchr/tools/competitorHookResearch/CompetitorHookPattern";
 import { createEmptyCompetitorHookObservation } from "@/lib/clipstitchr/tools/competitorHookResearch/createEmptyCompetitorHookObservation";
@@ -9,7 +11,15 @@ import { defaultCompetitorHookObservations } from "@/lib/clipstitchr/tools/compe
 import { formatCompetitorHookResearchMarkdown } from "@/lib/clipstitchr/tools/competitorHookResearch/formatCompetitorHookResearchMarkdown";
 import { synthesizeCompetitorHookResearch } from "@/lib/clipstitchr/tools/competitorHookResearch/synthesizeCompetitorHookResearch";
 
-export function CompetitorHookResearchWorkspace() {
+type CompetitorHookResearchWorkspaceProps = {
+  hasFunctionalUnlock?: boolean;
+  variant?: PublicToolGateVariant;
+};
+
+export function CompetitorHookResearchWorkspace({
+  hasFunctionalUnlock = false,
+  variant = "control",
+}: CompetitorHookResearchWorkspaceProps) {
   const [observations, setObservations] = useState<CompetitorHookObservation[]>(
     defaultCompetitorHookObservations,
   );
@@ -262,12 +272,18 @@ export function CompetitorHookResearchWorkspace() {
                 {result.observationsUsed} manual observations used
               </h2>
             </div>
-            <ResourceDownloadButton
-              contents={formatCompetitorHookResearchMarkdown(result)}
-              fileName="clipstitchr-competitor-hook-research.md"
-              label="Download notes"
-              type="text/markdown;charset=utf-8"
-            />
+            <PublicToolGateActionBoundary
+              hasFunctionalUnlock={hasFunctionalUnlock}
+              toolKey="competitor-hook-research-worksheet"
+              variant={variant}
+            >
+              <ResourceDownloadButton
+                contents={formatCompetitorHookResearchMarkdown(result)}
+                fileName="clipstitchr-competitor-hook-research.md"
+                label="Download notes"
+                type="text/markdown;charset=utf-8"
+              />
+            </PublicToolGateActionBoundary>
           </div>
           <h3 className="mt-8 text-lg font-bold text-text-primary">
             Repeated pattern counts

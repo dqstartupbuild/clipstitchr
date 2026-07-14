@@ -11,9 +11,16 @@ vi.mock("@/app/_components/tools/ToolLeadCaptureForm", () => ({
   ),
 }));
 
+vi.mock(
+  "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest",
+  () => ({
+    resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
+  }),
+);
+
 describe("AppRawFootageIntakePage", () => {
-  it("renders selectable footage roles and the complete handoff request", () => {
-    const markup = renderToStaticMarkup(<AppRawFootageIntakeRoutePage />);
+  it("renders selectable footage roles and the complete handoff request", async () => {
+    const markup = renderToStaticMarkup(await AppRawFootageIntakeRoutePage());
 
     expect(markup).toContain("App Raw Footage Intake Checklist");
     expect(markup).toContain('"@type":"WebApplication"');

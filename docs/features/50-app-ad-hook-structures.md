@@ -8,7 +8,9 @@ The five framework families are direct clarity, problem reframe, demonstration, 
 
 ## How It Works
 
-`appAdHookStructures.ts` owns the fixed framework data. `appAdHookStructuresDefinition.ts` supplies the guide and filtering copy to the shared collection-resource page. Visitors can filter locally, copy an individual example, copy the complete resource, or download Markdown.
+`appAdHookStructures.ts` owns the fixed framework data. `appAdHookStructuresDefinition.ts` supplies the guide and filtering copy to the shared collection-resource page. Visitors can filter locally and copy any individual example while the complete collection remains visible.
+
+The staged control retains whole-resource copy and Markdown download. In the approved `hybrid-v1` experience, accepted name-and-email capture unlocks the exact CSV swipe file in that browser. The CSV is generated locally from the same public framework data and does not send search text or examples to the server.
 
 The page does not use AI, a provider request, performance data, or ClipStitchr's internal Hook library. It is an educational reference, not a personalized generator.
 
@@ -36,7 +38,7 @@ web/lib/clipstitchr/tools/appAdHookStructures/
   appAdHookStructuresFaqs.ts
 ```
 
-The shared collection components live in `web/app/_components/tools/resources/`. Catalog metadata lives in `web/lib/clipstitchr/tools/catalog/publicToolCatalog.ts`.
+The shared collection and format-aware portability components live in `web/app/_components/tools/resources/`. CSV creation lives in `web/lib/clipstitchr/tools/resources/createCollectionResourceCsv.ts`, and gate metadata lives in `web/lib/clipstitchr/tools/catalog/publicToolGateCatalog.ts`.
 
 ## Source References
 
@@ -44,7 +46,7 @@ The structures and examples are original project copy implementing `docs/feature
 
 ## Verification
 
-The data test enforces exactly 50 unique IDs, titles, and examples; five equal framework families; and all five promised content fields. The page test verifies the complete collection, canonical metadata, structured data, lead source, related links, copy/download controls, and paid CTA.
+The data test enforces exactly 50 unique IDs, titles, and examples; five equal framework families; and all five promised content fields. Shared gate tests verify the collection stays public while the hybrid CSV is locked, then appears after browser unlock. Route tests cover canonical metadata, structured data, lead source, related links, control actions, and the paid CTA.
 
 The candid release status and next refinement are recorded in
 `docs/features/public-tool-quality-register.md`.

@@ -1,17 +1,30 @@
 import { AppMarketingContentCalendarWorkspace } from "@/app/_components/tools/app-marketing-content-calendar/AppMarketingContentCalendarWorkspace";
+import { PublicToolGateCapture } from "@/app/_components/tools/gates/PublicToolGateCapture";
 import { ResourceFaq } from "@/app/_components/tools/resources/ResourceFaq";
 import { ResourceGuide } from "@/app/_components/tools/resources/ResourceGuide";
 import { ResourceHero } from "@/app/_components/tools/resources/ResourceHero";
 import { ResourcePricingCta } from "@/app/_components/tools/resources/ResourcePricingCta";
 import { ToolDiscoveryLinks } from "@/app/_components/tools/ToolDiscoveryLinks";
-import { ToolLeadCaptureForm } from "@/app/_components/tools/ToolLeadCaptureForm";
 import { ToolStructuredData } from "@/app/_components/tools/ToolStructuredData";
 import { appMarketingCalendarFaqs } from "@/lib/clipstitchr/tools/appMarketingCalendar/appMarketingCalendarFaqs";
+import { hasPublicToolPortabilityArtifactFormat } from "@/lib/clipstitchr/tools/catalog/hasPublicToolPortabilityArtifactFormat";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
+import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 
 const tool = publicToolCatalog["app-marketing-content-calendar"];
 
-export function AppMarketingContentCalendarPage() {
+type AppMarketingContentCalendarPageProps = {
+  variant?: PublicToolGateVariant;
+};
+
+export function AppMarketingContentCalendarPage({
+  variant = "control",
+}: AppMarketingContentCalendarPageProps) {
+  const hasFunctionalUnlock = hasPublicToolPortabilityArtifactFormat(
+    tool.key,
+    "csv",
+  );
+
   return (
     <>
       <ToolStructuredData
@@ -21,10 +34,17 @@ export function AppMarketingContentCalendarPage() {
         pathname={tool.pathname}
       />
       <ResourceHero resourceKey={tool.key} estimatedMinutes={5} />
-      <AppMarketingContentCalendarWorkspace />
+      <AppMarketingContentCalendarWorkspace
+        hasFunctionalUnlock={hasFunctionalUnlock}
+        variant={variant}
+      />
       <div className="px-6 pb-20">
         <div className="mx-auto max-w-4xl">
-          <ToolLeadCaptureForm source={tool.key} />
+          <PublicToolGateCapture
+            hasFunctionalUnlock={hasFunctionalUnlock}
+            toolKey={tool.key}
+            variant={variant}
+          />
         </div>
       </div>
       <ResourceGuide
@@ -35,7 +55,7 @@ export function AppMarketingContentCalendarPage() {
         ]}
       />
       <ResourceFaq faqs={appMarketingCalendarFaqs} />
-      <ResourcePricingCta />
+      <ResourcePricingCta toolKey={tool.key} variant={variant} />
       <ToolDiscoveryLinks currentToolKey={tool.key} />
     </>
   );
