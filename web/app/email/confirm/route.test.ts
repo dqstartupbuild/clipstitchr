@@ -147,7 +147,7 @@ describe("email confirmation route", () => {
   });
 
   it("confirms only after an explicit same-origin POST with matching CSRF", async () => {
-    const response = await POST(createConfirmationPost());
+    const response = await POST(createConfirmationPost({ origin: null }));
     const html = await response.text();
 
     expect(response.status).toBe(200);

@@ -2,8 +2,12 @@ export function getEmailConfirmationRequestIsSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   const fetchSite = request.headers.get("sec-fetch-site")?.toLowerCase();
 
-  if (!origin || fetchSite === "cross-site") {
+  if (fetchSite === "cross-site") {
     return false;
+  }
+
+  if (!origin) {
+    return fetchSite === "same-origin";
   }
 
   try {
