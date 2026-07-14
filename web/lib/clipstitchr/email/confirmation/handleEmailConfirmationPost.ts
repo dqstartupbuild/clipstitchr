@@ -7,6 +7,7 @@ import { createEmailConfirmationVerificationUrl } from "@/lib/clipstitchr/email/
 import { createExpiredEmailConfirmationCsrfCookie } from "@/lib/clipstitchr/email/confirmation/createExpiredEmailConfirmationCsrfCookie";
 import { getEmailConfirmationCsrfIsValid } from "@/lib/clipstitchr/email/confirmation/getEmailConfirmationCsrfIsValid";
 import { getEmailConfirmationRequestIsSameOrigin } from "@/lib/clipstitchr/email/confirmation/getEmailConfirmationRequestIsSameOrigin";
+import { logEmailConfirmationDevelopmentStage } from "@/lib/clipstitchr/email/confirmation/logEmailConfirmationDevelopmentStage";
 import { readEmailConfirmationCsrfCookie } from "@/lib/clipstitchr/email/confirmation/readEmailConfirmationCsrfCookie";
 import { readEmailConfirmationPostFields } from "@/lib/clipstitchr/email/confirmation/readEmailConfirmationPostFields";
 import { renderEmailConfirmationStatusHtml } from "@/lib/clipstitchr/email/confirmation/renderEmailConfirmationStatusHtml";
@@ -15,6 +16,7 @@ import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRa
 
 export async function handleEmailConfirmationPost(request: Request) {
   if (!getEmailConfirmationRequestIsSameOrigin(request)) {
+    logEmailConfirmationDevelopmentStage("origin-rejected");
     return createEmailConfirmationHtmlResponse(
       renderEmailConfirmationStatusHtml("unavailable"),
       { status: 403 },
@@ -28,6 +30,7 @@ export async function handleEmailConfirmationPost(request: Request) {
     );
 
     if (!getEmailConfirmationCsrfIsValid(cookieToken, fields.csrfToken)) {
+      logEmailConfirmationDevelopmentStage("csrf-rejected");
       return createEmailConfirmationHtmlResponse(
         renderEmailConfirmationStatusHtml("unavailable"),
         { status: 403 },
@@ -43,6 +46,7 @@ export async function handleEmailConfirmationPost(request: Request) {
       reference.tokenRecordId !== fields.tokenRecordId ||
       reference.expiresAt !== Number(fields.expires)
     ) {
+      logEmailConfirmationDevelopmentStage("reference-rejected");
       return createEmailConfirmationHtmlResponse(
         renderEmailConfirmationStatusHtml("unavailable"),
       );
@@ -57,12 +61,14 @@ export async function handleEmailConfirmationPost(request: Request) {
     const setCookie = createExpiredEmailConfirmationCsrfCookie(request.url);
 
     if (confirmation.status !== "confirmed") {
+      logEmailConfirmationDevelopmentStage("provider-unavailable");
       return createEmailConfirmationHtmlResponse(
         renderEmailConfirmationStatusHtml("unavailable"),
         { setCookie },
       );
     }
 
+    logEmailConfirmationDevelopmentStage("confirmed");
     return createEmailConfirmationHtmlResponse(
       renderEmailConfirmationStatusHtml("confirmed"),
       { setCookie },
@@ -75,12 +81,14 @@ export async function handleEmailConfirmationPost(request: Request) {
     }
 
     if (error instanceof EmailConfirmationRequestError) {
+      logEmailConfirmationDevelopmentStage("request-rejected");
       return createEmailConfirmationHtmlResponse(
         renderEmailConfirmationStatusHtml("unavailable"),
         { status: error.status },
       );
     }
 
+    logEmailConfirmationDevelopmentStage("server-error");
     return createEmailConfirmationHtmlResponse(
       renderEmailConfirmationStatusHtml("error"),
       { status: 500 },

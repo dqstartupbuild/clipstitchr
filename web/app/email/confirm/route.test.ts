@@ -57,11 +57,13 @@ function createConfirmationUrl() {
 function createConfirmationPost({
   cookieToken = csrfToken,
   contentLength,
+  fetchSite = "same-origin",
   formToken = csrfToken,
   origin = "https://clipstitchr.com",
 }: {
   cookieToken?: string;
   contentLength?: string;
+  fetchSite?: string | null;
   formToken?: string;
   origin?: string | null;
 } = {}) {
@@ -74,9 +76,9 @@ function createConfirmationPost({
   const headers = new Headers({
     "content-type": "application/x-www-form-urlencoded",
     cookie: `clipstitchr_email_confirmation_csrf=${cookieToken}`,
-    "sec-fetch-site": "same-origin",
   });
 
+  if (fetchSite) headers.set("sec-fetch-site", fetchSite);
   if (origin) headers.set("origin", origin);
   if (contentLength) headers.set("content-length", contentLength);
 
@@ -147,7 +149,9 @@ describe("email confirmation route", () => {
   });
 
   it("confirms only after an explicit same-origin POST with matching CSRF", async () => {
-    const response = await POST(createConfirmationPost({ origin: null }));
+    const response = await POST(
+      createConfirmationPost({ fetchSite: null, origin: null }),
+    );
     const html = await response.text();
 
     expect(response.status).toBe(200);

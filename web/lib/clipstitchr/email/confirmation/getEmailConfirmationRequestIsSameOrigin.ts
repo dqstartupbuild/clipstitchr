@@ -7,7 +7,7 @@ export function getEmailConfirmationRequestIsSameOrigin(request: Request) {
   }
 
   if (!origin) {
-    return fetchSite === "same-origin";
+    return !fetchSite || fetchSite === "same-origin";
   }
 
   try {

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getEmailConfirmationRequestIsSameOrigin } from "@/lib/clipstitchr/email/confirmation/getEmailConfirmationRequestIsSameOrigin";
 
 describe("getEmailConfirmationRequestIsSameOrigin", () => {
-  it("accepts exact origin or same-origin fetch metadata and rejects ambiguous requests", () => {
+  it("accepts non-contradictory browser evidence and rejects cross-site requests", () => {
     const createRequest = (origin: string | null, fetchSite?: string) => {
       const headers = new Headers();
       if (origin) headers.set("origin", origin);
@@ -21,7 +21,7 @@ describe("getEmailConfirmationRequestIsSameOrigin", () => {
       ),
     ).toBe(true);
     expect(getEmailConfirmationRequestIsSameOrigin(createRequest(null))).toBe(
-      false,
+      true,
     );
     expect(
       getEmailConfirmationRequestIsSameOrigin(createRequest(null, "same-site")),
