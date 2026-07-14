@@ -7,6 +7,9 @@ type ConvexFunction<Args, Result> = {
 
 const mocks = vi.hoisted(() => ({
   cancelEmailProviderOperationsForContact: vi.fn(),
+  enqueueInitialContactDeleteOperation: vi.fn(),
+  rateLimit: vi.fn(),
+  resumeHeldContactDeleteOperationsForContact: vi.fn(),
   revokeBrowserRecognitionTokensForContact: vi.fn(),
 }));
 
@@ -24,13 +27,29 @@ vi.mock("../email/cancelEmailProviderOperationsForContact", () => ({
   cancelEmailProviderOperationsForContact:
     mocks.cancelEmailProviderOperationsForContact,
 }));
+vi.mock("../email/enqueueInitialContactDeleteOperation", () => ({
+  enqueueInitialContactDeleteOperation:
+    mocks.enqueueInitialContactDeleteOperation,
+}));
+vi.mock("../email/resumeHeldContactDeleteOperationsForContact", () => ({
+  resumeHeldContactDeleteOperationsForContact:
+    mocks.resumeHeldContactDeleteOperationsForContact,
+}));
+vi.mock("../rateLimiter", () => ({
+  rateLimiter: { limit: mocks.rateLimit },
+}));
 
 function getHandler<Args, Result>(convexFunction: unknown) {
   return (convexFunction as ConvexFunction<Args, Result>).handler;
 }
 
 describe("marketing contact privacy deletion", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.enqueueInitialContactDeleteOperation.mockResolvedValue(
+      "delete_operation_1",
+    );
+  });
 
   it("revokes associations and deletes migrated legacy waitlist PII", async () => {
     const contact = {
@@ -73,7 +92,15 @@ describe("marketing contact privacy deletion", () => {
         contactId: "contact_1",
         deletedAt: 100,
       }),
-    ).resolves.toEqual({ deleted: true });
+    ).resolves.toEqual({
+      deleted: true,
+      providerDeleteOperationId: "delete_operation_1",
+    });
+    expect(mocks.rateLimit).toHaveBeenCalledWith(
+      ctx,
+      "marketingPrivacyDeletionOperator",
+      { throws: true },
+    );
     expect(mocks.revokeBrowserRecognitionTokensForContact).toHaveBeenCalledWith(
       ctx,
       "contact_1",
@@ -82,7 +109,15 @@ describe("marketing contact privacy deletion", () => {
       ctx,
       "contact_1",
       100,
+      { providerDeletionFence: true },
     );
+    expect(mocks.enqueueInitialContactDeleteOperation).toHaveBeenCalledWith(
+      ctx,
+      { contactId: "contact_1", now: 100 },
+    );
+    expect(
+      mocks.resumeHeldContactDeleteOperationsForContact,
+    ).toHaveBeenCalledWith(ctx, { contactId: "contact_1", now: 100 });
     expect(ctx.db.patch).toHaveBeenCalledWith(
       "consent_1",
       expect.objectContaining({

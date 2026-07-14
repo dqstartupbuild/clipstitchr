@@ -37,6 +37,7 @@ describe("public lead and email rate-limit configuration", () => {
       "emailWorkflowEventGlobal",
       "emailTransactionalByContact",
       "emailTransactionalGlobal",
+      "marketingPrivacyDeletionOperator",
     ] as const;
 
     for (const limit of requiredLimits) {

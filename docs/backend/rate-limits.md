@@ -52,14 +52,32 @@ npx convex dev --once
 - Must be a high-entropy random secret.
 - Must not be prefixed with `NEXT_PUBLIC_`.
 
+`PRIVACY_DELETION_OPERATOR_SECRET`
+
+- Required only in Convex for the reviewed marketing-contact deletion action.
+- Must be a separate high-entropy secret and must never be exposed to a browser
+  or reused as the Loops API key.
+- Is checked before local deletion, provider pacing, or any provider request.
+
 Public-tool gate and Loops variables:
 
 - `PUBLIC_TOOL_GATE_ROLLOUT` controls which of the fixed fifty public-tool keys
   can receive `hybrid-v1` and what integer percentage from 0 through 100 is
   assigned. Its strict JSON contract and safe rollout are documented in
   `docs/backend/public-tool-email-rollout-runbook.md`.
+- `CLIPSTITCHR_DEPLOYMENT_ENVIRONMENT` is required in both Next.js and Convex
+  and must be exactly `development` or `production`. It is the explicit source
+  of deployment intent; readiness does not infer the Loops team from
+  `NODE_ENV`. Vercel preview and development environments require the explicit
+  development value even when `NODE_ENV=production`, while Vercel production
+  requires the production value.
 - `LOOPS_EMAIL_ENABLED`, `LOOPS_API_KEY`, `LOOPS_TEAM_ENVIRONMENT`, and, for a
-  development team, `LOOPS_DEVELOPMENT_RECIPIENTS` gate all provider dispatch.
+  development team, `LOOPS_DEVELOPMENT_RECIPIENTS` gate all email and marketing
+  provider dispatch. A privacy `contactDelete` operation intentionally ignores
+  `LOOPS_EMAIL_ENABLED` while still requiring the matching deployment, team,
+  and API key.
+  `LOOPS_TEAM_ENVIRONMENT` must exactly match the explicit ClipStitchr
+  deployment environment; missing, invalid, or mismatched values fail closed.
 - `LOOPS_SIGNING_SECRET` and `LOOPS_WEBHOOKS_READY` gate signed webhook
   readiness. The webhook never uses `RATE_LIMIT_API_SECRET`; authenticity is
   established by the provider signature.
@@ -306,7 +324,8 @@ Firecrawl website import:
 | Email-native enrollment | Initial hybrid capture and recognized follow-up enrollment for the five-day sprint, UGC mini-course, or creative-testing workshop | 3/day/contact, burst 1; 10/hour/client, burst 3; shared global bucket 500/hour, burst 100 across 5 shards. Enrollment is restricted to one fixed tool-to-Workflow mapping and Workflow version `v1`. Follow-up retries dedupe before contact quota, while contact and provider-workflow quota exhaustion returns the same opaque accepted response as an invalid recognition token. One durable enrollment per contact, Workflow key, and version prevents repeated submissions from restarting a sequence. |
 | Loops Workflow event | Durable `workflowEvent` provider operations for the four allowlisted event names | 10/day/contact, burst 4; shared global bucket 2,000/hour, burst 400 across 5 shards. The contact burst fits the bounded confirmation transaction's general enrollment plus all three explicit email-native enrollments. Quota is consumed before the operation is inserted. Dispatch rechecks verified consent, subscription, suppression, deletion, tombstone, and dependency state. The operation ID is the Loops `Idempotency-Key`. |
 | Loops transactional email | The sole allowlisted `email-confirmation` provider operation | 10/day/contact, burst 3; shared global bucket 1,000/hour, burst 200 across 5 shards, in addition to the confirmation-send quotas above. The adapter maps a server-only template key to `LOOPS_EMAIL_CONFIRMATION_TRANSACTIONAL_ID`, sends only `confirmationUrl`, sets `addToAudience: false`, and uses no attachment. Marketing nurture, sprints, courses, and workshops cannot use this path. |
-| Loops provider pacing and retry | Every initial official-SDK call and retry, immediately before provider work | Shared token bucket of 8 requests/second with capacity 2. This leaves headroom below Loops' documented 10 requests/second/team ceiling. A local pacing miss releases the lease and uses the limiter's returned retry delay without consuming a provider-attempt slot. Operations use a four-minute lease, at most seven actual SDK attempts, and exponential delays beginning at 15 seconds and capped at 16 minutes. The twenty-four-hour provider idempotency window begins on the first actual SDK attempt. Acceptance-unknown network and `5xx` outcomes stop at that boundary; an explicit `429` remains retryable until the attempt limit. A `409` is accepted only for idempotency-supported Workflow and transactional operations; contact-operation conflicts dead-letter. Disabled dispatch moves due work to `held`; the secret-authorized operator resume processes at most 50 held records per call and has no public user quota. |
+| Loops provider pacing and retry | Every initial official-SDK call and retry, immediately before provider work | Shared token bucket of 8 requests/second with capacity 2. This leaves headroom below Loops' documented 10 requests/second/team ceiling. A local pacing miss releases the lease and uses the limiter's returned retry delay without consuming a provider-attempt slot. Operations use a four-minute lease, at most seven actual SDK attempts, and exponential delays beginning at 15 seconds and capped at 16 minutes. The twenty-four-hour provider idempotency window begins on the first actual SDK attempt. Acceptance-unknown email and marketing outcomes stop at that boundary; an explicit `429` remains retryable until the attempt limit. Opaque-key `contactDelete` is safely idempotent, treats provider `404` as accepted, and may retry an ambiguous deletion beyond the email idempotency window up to the same attempt cap. A `409` is accepted only for idempotency-supported Workflow and transactional operations; other contact-operation conflicts dead-letter. Disabled email dispatch moves due work to `held`; privacy deletion remains independently available. The secret-authorized operator resume processes at most 50 held records per call and has no public user quota. |
+| Marketing contact privacy deletion | Secret-authorized `marketingContacts/deleteMarketingContactForPrivacyOperator:deleteMarketingContactForPrivacyOperator` using a stable Convex contact ID | Shared operator bucket 100/hour, burst 20, consumed inside the local deletion transaction before identity cleanup. The same transaction cancels every non-delete provider operation and creates a durable opaque-key `contactDelete`; every in-flight or acceptance-unknown operation also gets one delayed final-delete fence that is expedited if acceptance arrives late. Every delete attempt consumes the normal 8 requests/second provider bucket. Local PII deletion and recognition-token revocation commit even when the matching provider team is unavailable; the operator returns only `not-found`, `not-configured`, or `queued`. |
 | Loops signed webhook | `POST /webhooks/loops` on the Convex HTTP origin | Intentionally has no user quota because it is provider-originated and must accept legitimate delivery and consent reconciliation. Abuse controls are `application/json`, a 64 KiB declared-and-streamed raw-body cap, required bounded headers, a five-minute timestamp window, constant-time HMAC verification with `LOOPS_SIGNING_SECRET`, webhook schema `1.0.0`, an explicit event allowlist, and atomic `Webhook-Id` deduplication. Invalid traffic is rejected before reconciliation; a failed reconciliation returns `500` without committing the processed marker so Loops can retry. |
 | Public App Hook Generator | `POST /api/tools/app-hook-generator` before deterministic hook assembly | 30 requests/hour/client fingerprint, burst 10; shared global bucket 3,000 requests/hour, burst 300 across 5 shards. The route accepts at most 8 KB, validates bounded inputs before consuming quota, and returns exactly 8 template-backed hooks per accepted request. It creates no provider, R2, or application-data write cost. The client key is a SHA-256 digest of `cf-connecting-ip`, then `x-real-ip`, then the last valid `x-forwarded-for` value; browser user-agent data is not included, and raw addresses are not stored in the rate-limit key. Rejections return `429` with `Retry-After` before catalog selection. |
 | TikTok Events API forwarding | `POST /api/analytics/tiktok/events` after marketing-cookie consent | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000 |

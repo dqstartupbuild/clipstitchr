@@ -6,6 +6,7 @@ import { emailProviderIdempotencyLifetimeMs } from "./emailProviderIdempotencyLi
 type EnqueueEmailProviderOperationArgs = {
   contactId: Id<"marketingContacts">;
   kind:
+    | "contactDelete"
     | "contactSync"
     | "contactResubscribe"
     | "contactUnsubscribe"
@@ -28,12 +29,14 @@ type EnqueueEmailProviderOperationArgs = {
   >;
   gateMode?: import("../_generated/dataModel").Doc<"toolLeadCaptures">["gateMode"];
   leadSegment?: import("../_generated/dataModel").Doc<"marketingContacts">["leadSegment"];
+  nextAttemptAt?: number;
 };
 
 export async function enqueueEmailProviderOperation(
   ctx: MutationCtx,
   args: EnqueueEmailProviderOperationArgs,
 ) {
+  const nextAttemptAt = args.nextAttemptAt ?? args.now;
   const operationId = await ctx.db.insert("emailProviderOperations", {
     contactId: args.contactId,
     kind: args.kind,
@@ -62,17 +65,25 @@ export async function enqueueEmailProviderOperation(
       ? { dependsOnOperationId: args.dependsOnOperationId }
       : {}),
     attemptCount: 0,
-    nextAttemptAt: args.now,
+    nextAttemptAt,
     idempotencyExpiresAt: args.now + emailProviderIdempotencyLifetimeMs,
     createdAt: args.now,
     updatedAt: args.now,
   });
 
-  await ctx.scheduler.runAfter(
-    0,
-    internal.email.processEmailProviderOperation.processEmailProviderOperation,
-    { operationId },
-  );
+  if (nextAttemptAt > args.now) {
+    await ctx.scheduler.runAt(
+      nextAttemptAt,
+      internal.email.processEmailProviderOperation.processEmailProviderOperation,
+      { operationId },
+    );
+  } else {
+    await ctx.scheduler.runAfter(
+      0,
+      internal.email.processEmailProviderOperation.processEmailProviderOperation,
+      { operationId },
+    );
+  }
 
   return operationId;
 }

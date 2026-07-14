@@ -62,6 +62,7 @@ export async function applyProviderDeletionTombstone(
     ctx,
     contact._id,
     args.appliedAt,
+    { providerDeletionFence: true },
   );
 
   return { applied: true as const, contactId: contact._id, tombstoneId };

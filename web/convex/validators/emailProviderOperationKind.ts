@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 
 export const emailProviderOperationKindValidator = v.union(
+  v.literal("contactDelete"),
   v.literal("contactSync"),
   v.literal("contactResubscribe"),
   v.literal("contactUnsubscribe"),

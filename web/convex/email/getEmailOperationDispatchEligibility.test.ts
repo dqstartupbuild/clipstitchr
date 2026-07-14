@@ -81,10 +81,76 @@ describe("email dispatch eligibility", () => {
     ).toEqual({ eligible: true });
     expect(
       getEmailOperationDispatchEligibility({
+        contact: {
+          ...contact,
+          deletionStatus: "privacyDeleted",
+          marketingEligible: false,
+          subscriptionStatus: "unsubscribed",
+        } as Doc<"marketingContacts">,
+        operation: compensation,
+        tombstone: null,
+      }),
+    ).toEqual({ eligible: false, reason: "deleted" });
+    expect(
+      getEmailOperationDispatchEligibility({
         contact,
         operation: compensation,
         tombstone: null,
       }),
     ).toEqual({ eligible: false, reason: "alreadyEligible" });
+  });
+
+  it("allows only contact deletion after a privacy deletion", () => {
+    const privacyDeletedContact = {
+      ...contact,
+      deletionStatus: "privacyDeleted",
+      marketingEligible: false,
+      subscriptionStatus: "unsubscribed",
+    } as Doc<"marketingContacts">;
+
+    expect(
+      getEmailOperationDispatchEligibility({
+        contact: privacyDeletedContact,
+        operation: {
+          kind: "contactDelete",
+        } as Doc<"emailProviderOperations">,
+        tombstone: null,
+      }),
+    ).toEqual({ eligible: true });
+    expect(
+      getEmailOperationDispatchEligibility({
+        contact: privacyDeletedContact,
+        operation: workflowOperation,
+        tombstone: null,
+      }),
+    ).toEqual({ eligible: false, reason: "deleted" });
+  });
+
+  it("prevents an unsubscribe update from recreating a provider-deleted contact", () => {
+    const providerDeletedContact = {
+      ...contact,
+      deletionStatus: "providerDeleted",
+      marketingEligible: false,
+      subscriptionStatus: "unsubscribed",
+    } as Doc<"marketingContacts">;
+
+    expect(
+      getEmailOperationDispatchEligibility({
+        contact: providerDeletedContact,
+        operation: {
+          kind: "contactUnsubscribe",
+        } as Doc<"emailProviderOperations">,
+        tombstone: {} as Doc<"providerDeletionTombstones">,
+      }),
+    ).toEqual({ eligible: false, reason: "providerDeleted" });
+    expect(
+      getEmailOperationDispatchEligibility({
+        contact: providerDeletedContact,
+        operation: {
+          kind: "contactDelete",
+        } as Doc<"emailProviderOperations">,
+        tombstone: {} as Doc<"providerDeletionTombstones">,
+      }),
+    ).toEqual({ eligible: true });
   });
 });

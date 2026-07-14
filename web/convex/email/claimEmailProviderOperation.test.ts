@@ -96,6 +96,32 @@ describe("email provider operation claim", () => {
     );
   });
 
+  it("keeps idempotent contact deletion retryable after that window", async () => {
+    const operation = {
+      _id: "operation_1",
+      acceptanceStatus: "unknown",
+      attemptCount: 1,
+      contactId: "contact_1",
+      idempotencyExpiresAt: now,
+      kind: "contactDelete",
+      nextAttemptAt: 0,
+      status: "pending",
+    };
+    const ctx = createContext(operation);
+
+    await expect(
+      getHandler(claimEmailProviderOperation)(ctx, claimArgs),
+    ).resolves.toMatchObject({
+      kind: "contactDelete",
+      leaseOwner: "worker_1",
+      status: "claimed",
+    });
+    expect(ctx.db.patch).not.toHaveBeenCalledWith(
+      "operation_1",
+      expect.objectContaining({ status: "deadLetter" }),
+    );
+  });
+
   it("assigns a bounded lease without consuming a provider attempt", async () => {
     const operation = {
       _id: "operation_1",

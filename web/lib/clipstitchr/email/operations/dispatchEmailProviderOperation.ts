@@ -2,6 +2,7 @@ import type { LoopsClient } from "loops";
 import { createEmailConfirmationSignature } from "../confirmation/createEmailConfirmationSignature";
 import { createEmailConfirmationTokenDigest } from "../confirmation/createEmailConfirmationTokenDigest";
 import { createEmailConfirmationUrl } from "../confirmation/createEmailConfirmationUrl";
+import { deleteLoopsContact } from "../loops/deleteLoopsContact";
 import { getLoopsTransactionalId } from "../loops/getLoopsTransactionalId";
 import { isAllowedLoopsRecipient } from "../loops/isAllowedLoopsRecipient";
 import { isLoopsWorkflowEventName } from "../loops/isLoopsWorkflowEventName";
@@ -17,7 +18,7 @@ import type { EmailProviderDispatchProjection } from "./EmailProviderDispatchPro
 type DispatchEmailProviderOperationOptions = Readonly<{
   client: Pick<
     LoopsClient,
-    "sendEvent" | "sendTransactionalEmail" | "updateContact"
+    "deleteContact" | "sendEvent" | "sendTransactionalEmail" | "updateContact"
   >;
   confirmationSigningSecret?: string;
   developmentRecipientList?: string;
@@ -36,6 +37,14 @@ export async function dispatchEmailProviderOperation({
   siteUrl,
   teamEnvironment,
 }: DispatchEmailProviderOperationOptions) {
+  if (projection.operation.kind === "contactDelete") {
+    await deleteLoopsContact({
+      client,
+      providerContactKey: projection.contact.providerContactKey,
+    });
+    return;
+  }
+
   if (projection.operation.kind === "contactUnsubscribe") {
     if (
       !isAllowedLoopsRecipient(

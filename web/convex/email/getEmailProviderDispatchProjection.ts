@@ -40,7 +40,8 @@ export const getEmailProviderDispatchProjection = internalQuery({
         operation,
         tombstone: activeTombstone,
       }).eligible ||
-      (operation.kind !== "contactUnsubscribe" &&
+      (operation.kind !== "contactDelete" &&
+        operation.kind !== "contactUnsubscribe" &&
         (!contact.firstTool || !contact.latestTool))
     ) {
       return null;

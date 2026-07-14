@@ -3,6 +3,7 @@ import { internal } from "../_generated/api";
 import { internalMutation } from "../_generated/server";
 import { emailProviderFailureCategoryValidator } from "../validators/emailProviderFailureCategory";
 import { emailProviderMaxAttempts } from "./emailProviderMaxAttempts";
+import { enqueueContactDeleteCompensation } from "./enqueueContactDeleteCompensation";
 import { getEmailProviderRetryDelayMs } from "./getEmailProviderRetryDelayMs";
 
 export const recordEmailProviderOperationFailure = internalMutation({
@@ -17,20 +18,39 @@ export const recordEmailProviderOperationFailure = internalMutation({
   handler: async (ctx, args) => {
     const operation = await ctx.db.get(args.operationId);
 
-    if (
-      !operation ||
-      operation.status !== "claimed" ||
-      operation.leaseOwner !== args.workerId ||
-      !Number.isFinite(args.failedAt)
-    ) {
+    if (!operation || !Number.isFinite(args.failedAt)) {
       return { status: "ignored" as const };
+    }
+
+    if (
+      operation.status !== "claimed" ||
+      operation.leaseOwner !== args.workerId
+    ) {
+      const compensationOperationId =
+        operation.status === "canceled" &&
+        operation.kind !== "contactDelete" &&
+        operation.attemptCount >= 1 &&
+        args.acceptanceUnknown
+          ? await enqueueContactDeleteCompensation(ctx, {
+              compensatesOperationId: operation._id,
+              contactId: operation.contactId,
+              now: args.failedAt,
+            })
+          : null;
+
+      return {
+        compensationQueued: compensationOperationId !== null,
+        status: "ignored" as const,
+      };
     }
 
     const idempotencyExpired = args.failedAt >= operation.idempotencyExpiresAt;
     const attemptsExhausted = operation.attemptCount >= emailProviderMaxAttempts;
     const shouldDeadLetter =
       !args.retryable || attemptsExhausted ||
-      (args.acceptanceUnknown && idempotencyExpired);
+      (operation.kind !== "contactDelete" &&
+        args.acceptanceUnknown &&
+        idempotencyExpired);
 
     if (shouldDeadLetter) {
       await ctx.db.patch(operation._id, {
@@ -39,7 +59,10 @@ export const recordEmailProviderOperationFailure = internalMutation({
         ambiguousAt: args.acceptanceUnknown
           ? (operation.ambiguousAt ?? args.failedAt)
           : operation.ambiguousAt,
-        failureCategory: args.acceptanceUnknown && idempotencyExpired
+        failureCategory:
+          operation.kind !== "contactDelete" &&
+          args.acceptanceUnknown &&
+          idempotencyExpired
           ? "ambiguous"
           : attemptsExhausted
             ? "retryLimit"

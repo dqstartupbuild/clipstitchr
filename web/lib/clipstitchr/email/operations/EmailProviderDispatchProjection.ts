@@ -21,6 +21,7 @@ export type EmailProviderDispatchProjection = Readonly<{
   }>;
   operation: Readonly<{
     kind:
+      | "contactDelete"
       | "contactSync"
       | "contactResubscribe"
       | "contactUnsubscribe"

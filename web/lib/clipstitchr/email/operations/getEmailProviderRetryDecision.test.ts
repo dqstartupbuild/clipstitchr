@@ -10,6 +10,18 @@ const createdAt = Date.UTC(2026, 6, 13, 12);
 const idempotencyExpiresAt = createdAt + 24 * 60 * 60 * 1_000;
 
 describe("getEmailProviderRetryDecision", () => {
+  it("treats an already-absent contact as a successful delete", () => {
+    expect(
+      getEmailProviderRetryDecision(new APIError(404, null), {
+        acceptanceUnknown: false,
+        attemptCount: 1,
+        now: createdAt + 1_000,
+        idempotencyExpiresAt,
+        operationKind: "contactDelete",
+      }),
+    ).toEqual({ outcome: "accepted", reason: "already-deleted" });
+  });
+
   it("treats a duplicate idempotency response as accepted", () => {
     const error = new APIError(409, {
       success: false,
@@ -85,6 +97,18 @@ describe("getEmailProviderRetryDecision", () => {
         operationKind: "transactional",
       }),
     ).toEqual({ outcome: "retry", reason: "provider-rate-limit" });
+  });
+
+  it("retries ambiguous contact deletion beyond the send idempotency window", () => {
+    expect(
+      getEmailProviderRetryDecision(new Error("connection reset"), {
+        acceptanceUnknown: true,
+        attemptCount: 2,
+        now: createdAt + 25 * 60 * 60 * 1_000,
+        idempotencyExpiresAt,
+        operationKind: "contactDelete",
+      }),
+    ).toEqual({ outcome: "retry", reason: "network" });
   });
 
   it("dead-letters invalid requests and exhausted retries", () => {

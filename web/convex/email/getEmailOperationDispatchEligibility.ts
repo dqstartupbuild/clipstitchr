@@ -14,14 +14,33 @@ export function getEmailOperationDispatchEligibility({
     return { eligible: false as const, reason: "deleted" as const };
   }
 
-  if (operation.kind === "contactUnsubscribe") {
-    return getMarketingContactNeedsProviderUnsubscribe(contact)
+  if (operation.kind === "contactDelete") {
+    return contact.deletionStatus === "privacyDeleted" ||
+      contact.deletionStatus === "providerDeleted"
       ? { eligible: true as const }
       : { eligible: false as const, reason: "alreadyEligible" as const };
   }
 
   if (contact.deletionStatus === "privacyDeleted") {
     return { eligible: false as const, reason: "deleted" as const };
+  }
+
+  if (tombstone || contact.deletionStatus === "providerDeleted") {
+    if (
+      operation.kind === "transactional" &&
+      operation.transactionalTemplateKey === "email-confirmation" &&
+      contact.suppressionStatus === "none"
+    ) {
+      return { eligible: true as const };
+    }
+
+    return { eligible: false as const, reason: "providerDeleted" as const };
+  }
+
+  if (operation.kind === "contactUnsubscribe") {
+    return getMarketingContactNeedsProviderUnsubscribe(contact)
+      ? { eligible: true as const }
+      : { eligible: false as const, reason: "alreadyEligible" as const };
   }
 
   if (contact.suppressionStatus !== "none") {
@@ -33,10 +52,6 @@ export function getEmailOperationDispatchEligibility({
     operation.transactionalTemplateKey === "email-confirmation"
   ) {
     return { eligible: true as const };
-  }
-
-  if (tombstone || contact.deletionStatus === "providerDeleted") {
-    return { eligible: false as const, reason: "providerDeleted" as const };
   }
 
   if (

@@ -1,5 +1,6 @@
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
+import { enqueueContactDeleteCompensation } from "./enqueueContactDeleteCompensation";
 import { enqueueContactUnsubscribeCompensation } from "./enqueueContactUnsubscribeCompensation";
 import { getEmailProviderOperationIsTerminal } from "./getEmailProviderOperationIsTerminal";
 
@@ -7,6 +8,7 @@ export async function cancelEmailProviderOperationsForContact(
   ctx: MutationCtx,
   contactId: Id<"marketingContacts">,
   canceledAt: number,
+  options: { providerDeletionFence?: boolean } = {},
 ) {
   const operations = await ctx.db
     .query("emailProviderOperations")
@@ -17,11 +19,34 @@ export async function cancelEmailProviderOperationsForContact(
   let canceledCount = 0;
 
   for (const operation of operations) {
-    if (operation.kind === "contactUnsubscribe") {
+    if (operation.kind === "contactDelete") {
       continue;
     }
 
     if (
+      operation.kind === "contactUnsubscribe" &&
+      !options.providerDeletionFence
+    ) {
+      continue;
+    }
+
+    if (
+      options.providerDeletionFence &&
+      operation.attemptCount >= 1 &&
+      (operation.status === "claimed" ||
+        operation.acceptanceStatus === "unknown" ||
+        operation.ambiguousAt !== undefined)
+    ) {
+      await enqueueContactDeleteCompensation(ctx, {
+        compensatesOperationId: operation._id,
+        contactId: operation.contactId,
+        notBefore: operation.idempotencyExpiresAt + 1_000,
+        now: canceledAt,
+      });
+    }
+
+    if (
+      !options.providerDeletionFence &&
       operation.kind === "contactResubscribe" &&
       operation.acceptanceStatus === "accepted" &&
       operation.status !== "canceled"

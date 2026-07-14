@@ -7,6 +7,7 @@ type ConvexFunction<Args, Result> = {
 
 const mocks = vi.hoisted(() => ({
   dispatchEmailProviderOperation: vi.fn(),
+  getLoopsPrivacyDeletionConfiguration: vi.fn(),
   getLoopsReadiness: vi.fn(),
 }));
 
@@ -19,6 +20,13 @@ vi.mock("../../lib/clipstitchr/email/loops/createLoopsClient", () => ({
 vi.mock("../../lib/clipstitchr/email/loops/getLoopsReadiness", () => ({
   getLoopsReadiness: mocks.getLoopsReadiness,
 }));
+vi.mock(
+  "../../lib/clipstitchr/email/loops/getLoopsPrivacyDeletionConfiguration",
+  () => ({
+    getLoopsPrivacyDeletionConfiguration:
+      mocks.getLoopsPrivacyDeletionConfiguration,
+  }),
+);
 vi.mock(
   "../../lib/clipstitchr/email/operations/dispatchEmailProviderOperation",
   () => ({
@@ -42,6 +50,10 @@ describe("email provider operation processor", () => {
       dispatchEnabled: true,
       teamEnvironment: "production",
       workflowReady: true,
+    });
+    mocks.getLoopsPrivacyDeletionConfiguration.mockReturnValue({
+      apiKey: "configured",
+      teamEnvironment: "production",
     });
   });
 
@@ -82,7 +94,10 @@ describe("email provider operation processor", () => {
           compensationQueued: true,
           recorded: false,
         }),
-      runQuery: vi.fn(async () => projection),
+      runQuery: vi
+        .fn()
+        .mockResolvedValueOnce("contactResubscribe")
+        .mockResolvedValueOnce(projection),
     };
 
     await expect(
@@ -108,7 +123,10 @@ describe("email provider operation processor", () => {
           started: true,
         })
         .mockResolvedValueOnce({ status: "deadLetter" }),
-      runQuery: vi.fn(async () => null),
+      runQuery: vi
+        .fn()
+        .mockResolvedValueOnce("transactional")
+        .mockResolvedValueOnce(null),
     };
 
     await expect(
@@ -116,7 +134,7 @@ describe("email provider operation processor", () => {
         operationId: "operation_1",
       }),
     ).resolves.toEqual({ processed: false, reason: "ineligible" });
-    expect(ctx.runQuery).toHaveBeenCalledOnce();
+    expect(ctx.runQuery).toHaveBeenCalledTimes(2);
     expect(mocks.dispatchEmailProviderOperation).not.toHaveBeenCalled();
     expect(ctx.runMutation).toHaveBeenLastCalledWith(
       expect.anything(),
@@ -153,22 +171,78 @@ describe("email provider operation processor", () => {
           compensationQueued: false,
           recorded: true,
         }),
-      runQuery: vi.fn(async () => ({
-        confirmation: null,
-        contact: {
-          contactName: "Deleted contact",
-          leadSegment: "unclassified",
-          leadStage: "captured",
-          normalizedEmail: "deleted-contact_1",
-          providerContactKey: "provider_key",
-        },
-        operation: {
-          kind: "contactUnsubscribe",
-          operationId: "operation_1",
-        },
-        transactionalTemplateKey: null,
-        workflow: null,
-      })),
+      runQuery: vi
+        .fn()
+        .mockResolvedValueOnce("contactUnsubscribe")
+        .mockResolvedValueOnce({
+          confirmation: null,
+          contact: {
+            contactName: "Deleted contact",
+            leadSegment: "unclassified",
+            leadStage: "captured",
+            normalizedEmail: "deleted-contact_1",
+            providerContactKey: "provider_key",
+          },
+          operation: {
+            kind: "contactUnsubscribe",
+            operationId: "operation_1",
+          },
+          transactionalTemplateKey: null,
+          workflow: null,
+        }),
+    };
+
+    await expect(
+      getHandler(processEmailProviderOperation)(ctx, {
+        operationId: "operation_1",
+      }),
+    ).resolves.toEqual({ processed: true });
+    expect(mocks.dispatchEmailProviderOperation).toHaveBeenCalledOnce();
+  });
+
+  it("processes privacy deletion while email dispatch is disabled", async () => {
+    mocks.getLoopsReadiness.mockReturnValue({
+      confirmationReady: false,
+      contactSyncReady: false,
+      dispatchEnabled: false,
+      teamEnvironment: "production",
+      workflowReady: false,
+    });
+    const projection = {
+      confirmation: null,
+      contact: {
+        contactName: "Deleted contact",
+        leadSegment: "unclassified",
+        leadStage: "captured",
+        normalizedEmail: "deleted-contact_1",
+        providerContactKey: "provider_key",
+      },
+      operation: {
+        idempotencyExpiresAt: Date.now() + 100_000,
+        kind: "contactDelete",
+        operationId: "operation_1",
+      },
+      transactionalTemplateKey: null,
+      workflow: null,
+    };
+    const ctx = {
+      runMutation: vi
+        .fn()
+        .mockResolvedValueOnce({ kind: "contactDelete", status: "claimed" })
+        .mockResolvedValueOnce({ ok: true })
+        .mockResolvedValueOnce({
+          attemptCount: 1,
+          idempotencyExpiresAt: Date.now() + 100_000,
+          started: true,
+        })
+        .mockResolvedValueOnce({
+          compensationQueued: false,
+          recorded: true,
+        }),
+      runQuery: vi
+        .fn()
+        .mockResolvedValueOnce("contactDelete")
+        .mockResolvedValueOnce(projection),
     };
 
     await expect(

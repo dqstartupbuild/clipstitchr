@@ -11,8 +11,11 @@ asset states, and charter ownership.
 
 `testingSystemWorkshopDefinition.ts` owns seven exercises and the charter
 fields. The shared guided workspace keeps progress in versioned local storage
-and creates a copyable or downloadable Markdown charter. No provider, ad
-platform, project-management system, or backend storage is involved.
+and creates a copyable or downloadable Markdown charter. The browser workshop
+itself does not call a provider, ad platform, project-management system, or
+backend storage. Only an explicit email-enrollment request uses the documented
+Convex and Loops confirmation path; workshop answers and charter content stay
+on the device.
 
 ## Use Cases and Boundary
 

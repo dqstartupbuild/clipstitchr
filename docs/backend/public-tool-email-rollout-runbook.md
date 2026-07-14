@@ -10,10 +10,34 @@ adapter, and signed webhook handler are implemented. Provider dispatch and all
 fifty gate variants default to a fail-closed state and must remain there until
 an operator completes this runbook.
 
-No Loops contact properties, transactional template, marketing Workflows,
-webhook endpoint, sender configuration, development or production team setup,
-deployment, migration, or live email send was performed while implementing the
-feature. Nothing in this document claims those provider assets exist.
+The signed-in Loops workspace is temporarily the FollowUs AI team. ClipStitchr
+assets there are namespaced and must not alter the team's existing FollowUs
+assets. The six contact properties, confirmation template, and four marketing
+Workflows listed below exist, but every Workflow remains a draft. The shared
+sending domain is still processing part of its DNS verification, and no webhook
+endpoint or dashboard-issued signing secret exists. Distinct ClipStitchr
+development and production teams, deployment, migration, provider smoke test,
+Workflow activation, and live email sending remain incomplete.
+
+Temporary FollowUs AI asset inventory:
+
+| Asset | Provider ID or state |
+| --- | --- |
+| ClipStitchr transactional group | `cmrk2s70j0csq0jxxwng33rqn` |
+| `email-confirmation` transactional template | `cmrk2s9a001bh0j2xe7ykklh4` |
+| Published confirmation message | `cmrk4b58l0fr60jzqnyjxgnot` |
+| `tool_lead_captured` Workflow | `cmrk3btgq0dec0iyeq1sp5hxl` (draft) |
+| `five_day_content_sprint_enrolled` Workflow | `cmrk3edej0dwe0j36wgugcd8o` (draft) |
+| `ugc_app_ad_course_enrolled` Workflow | `cmrk3g0cf0dwv0jxz6lq99gmn` (draft) |
+| `creative_testing_workshop_enrolled` Workflow | `cmrk3hfml0drr0jxxluu90yr1` (draft) |
+| Shared sender domain | `mail.followusai.com`; DKIM and Loops verification present, MX and SPF/DMARC still processing |
+| Loops webhook | Not configured |
+| Expected current development webhook | `https://neighborly-beagle-365.convex.site/webhooks/loops` after the Convex functions are deployed |
+| Current production webhook candidate | `https://whimsical-ptarmigan-764.convex.site/webhooks/loops`; confirm the production Convex deployment before configuring it |
+
+These temporary IDs are an operator record, not permission to use FollowUs AI
+as production. Replace them with IDs from the matching dedicated ClipStitchr
+team before enabling that environment.
 
 Loops dashboard double opt-in is disabled. That setting does not replace or
 remove ClipStitchr's forty-eight-hour, single-use app confirmation. Loops API
@@ -92,12 +116,22 @@ Every boolean flag is enabled only by the exact lowercase string `true`.
 Anything else is false. Secrets must never be committed, printed in test output,
 or placed in a `NEXT_PUBLIC_` variable.
 
+`NODE_ENV` is not the deployment selector. Vercel preview functions commonly
+run with `NODE_ENV=production`, so previews must explicitly use
+`CLIPSTITCHR_DEPLOYMENT_ENVIRONMENT=development` and a development Loops team.
+As an additional fail-closed check, `VERCEL_ENV=production` accepts only the
+explicit production value, while `VERCEL_ENV=preview` or `development` accepts
+only the explicit development value. Configure the explicit value in both
+Next.js and Convex because Convex provider actions do not inherit Vercel
+environment variables.
+
 | Variable                                    | Required value and scope                                                                                                                                                                 |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PUBLIC_TOOL_GATE_ROLLOUT`                  | Next.js server. Strict JSON with exactly `variant`, `tools`, and `allocationPercent`. Omit it for the safest control state.                                                              |
+| `CLIPSTITCHR_DEPLOYMENT_ENVIRONMENT`        | Next.js server and Convex. Exactly `development` for local, development, and Vercel preview deployments; exactly `production` only for production. Missing or invalid values disable dispatch. |
 | `LOOPS_EMAIL_ENABLED`                       | Next.js server readiness and Convex dispatch. Set to `true` only after the matching team is ready.                                                                                       |
 | `LOOPS_API_KEY`                             | Server-side key for the selected Loops team. Convex uses it for dispatch; the Next.js server also needs the readiness value for email-native gating. Never expose it to client code.     |
-| `LOOPS_TEAM_ENVIRONMENT`                    | Exactly `development` for non-production app runtime or `production` for production. A mismatch disables dispatch.                                                                       |
+| `LOOPS_TEAM_ENVIRONMENT`                    | Must exactly match `CLIPSTITCHR_DEPLOYMENT_ENVIRONMENT`. A missing, invalid, or mismatched value disables dispatch.                                                                       |
 | `LOOPS_DEVELOPMENT_RECIPIENTS`              | Required comma-separated allowlist in development. Include only controlled test inboxes. Development adapter calls reject every other address.                                           |
 | `LOOPS_SIGNING_SECRET`                      | Signing secret for the matching team's `/webhooks/loops` endpoint. Required in Convex; also present in Next.js readiness configuration before email-native rollout.                      |
 | `LOOPS_WEBHOOKS_READY`                      | `true` only after valid, invalid, stale, duplicate, and reconciliation tests pass.                                                                                                       |
@@ -108,11 +142,13 @@ or placed in a `NEXT_PUBLIC_` variable.
 | `EMAIL_CONFIRMATION_TOKEN_SECRET`           | High-entropy server secret used to sign confirmation references. Configure the same value in the Next.js server and Convex deployment that create, dispatch, inspect, and redeem links.  |
 | `NEXT_PUBLIC_SITE_URL` or `SITE_URL`        | One absolute public app origin used by the standard site resolver to create confirmation links. Do not use a preview or localhost origin in production.                                  |
 | `RATE_LIMIT_API_SECRET`                     | Same high-entropy secret in Next.js and Convex. It authorizes the app's secret-gated lead, interaction, enrollment, and confirmation mutations; it does not authenticate Loops webhooks. |
+| `PRIVACY_DELETION_OPERATOR_SECRET`           | Convex only. A separate high-entropy operator secret for reviewed marketing-contact deletion requests. Never reuse the Loops API key or expose it to a browser.                            |
 
 The readiness ladder is cumulative:
 
-1. `dispatchEnabled` requires email enabled, API key, the exact matching team
-   environment, and the development allowlist when applicable.
+1. `dispatchEnabled` requires email enabled, API key, an explicit deployment
+   environment, the exact matching Loops team environment, Vercel consistency
+   when applicable, and the development allowlist when applicable.
 2. `contactSyncReady` adds verified contact properties.
 3. `confirmationReady` adds the confirmation token secret, transactional ID,
    and site URL.

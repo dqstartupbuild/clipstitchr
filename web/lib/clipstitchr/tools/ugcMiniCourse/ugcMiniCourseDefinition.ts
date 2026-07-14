@@ -7,7 +7,7 @@ export const ugcMiniCourseDefinition: GuidedResourceDefinition = {
     {
       question: "Is this course sent by email?",
       answer:
-        "No. All five lessons and exercises are available here immediately. Joining the mailing list is optional and separate.",
+        "All five lessons and exercises are available here immediately. When the email version is available, you can also choose to receive the five-day lesson sequence after confirming your email.",
     },
     {
       question: "Does the course create the finished ad?",

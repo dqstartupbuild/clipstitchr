@@ -18,6 +18,14 @@ export function getEmailProviderRetryDecision(
     operationKind: EmailProviderDispatchProjection["operation"]["kind"];
   }>,
 ): EmailProviderRetryDecision {
+  if (
+    options.operationKind === "contactDelete" &&
+    error instanceof APIError &&
+    error.statusCode === 404
+  ) {
+    return { outcome: "accepted", reason: "already-deleted" };
+  }
+
   if (error instanceof APIError && error.statusCode === 409) {
     return options.operationKind === "workflowEvent" ||
       options.operationKind === "transactional"
@@ -44,6 +52,7 @@ export function getEmailProviderRetryDecision(
   }
 
   if (
+    options.operationKind !== "contactDelete" &&
     options.acceptanceUnknown &&
     options.now >= options.idempotencyExpiresAt
   ) {

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MutationCtx } from "../_generated/server";
 import { applyProviderDeletionTombstone } from "./applyProviderDeletionTombstone";
 
@@ -31,6 +31,32 @@ function createContext(contact: Record<string, unknown>) {
 }
 
 describe("provider deletion tombstone precedence", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("fences in-flight provider updates after applying a deletion", async () => {
+    const contact = {
+      _id: "contact_1",
+      deletionStatus: "active",
+      providerContactKey: "provider_key_1",
+    };
+    const ctx = createContext(contact);
+
+    await expect(
+      applyProviderDeletionTombstone(ctx as unknown as MutationCtx, {
+        appliedAt: 300,
+        eventAt: 200,
+        providerContactKey: "provider_key_1",
+        webhookId: "webhook_1",
+      }),
+    ).resolves.toMatchObject({ applied: true, contactId: "contact_1" });
+    expect(mocks.cancelEmailProviderOperationsForContact).toHaveBeenCalledWith(
+      ctx,
+      "contact_1",
+      300,
+      { providerDeletionFence: true },
+    );
+  });
+
   it("never revives or relinks a privacy-deleted contact", async () => {
     const contact = {
       _id: "contact_1",

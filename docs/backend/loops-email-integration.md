@@ -11,11 +11,15 @@ and strict fifty-tool gate rollout control are implemented. The official
 dispatch and public gate changes remain fail-closed behind explicit environment
 configuration.
 
-No Loops dashboard properties, templates, Workflows, webhook endpoint, sending
-domain, or separate team setup was created or verified during this change. No
-deployment or live provider send was performed. Keep `LOOPS_EMAIL_ENABLED`
-unset or set to anything other than the exact string `true`, and keep
-`PUBLIC_TOOL_GATE_ROLLOUT` unset, until the operator checklist in
+The temporary FollowUs AI team now contains the six bounded contact properties,
+one confirmation-only transactional template, and four ClipStitchr marketing
+Workflows. The Workflows remain drafts. The shared sender domain is not fully
+verified, no webhook is configured, and distinct ClipStitchr development and
+production teams do not exist yet. No deployment, Workflow activation, test or
+live email send, migration, or public rollout was performed. Keep
+`LOOPS_EMAIL_ENABLED=false`, `LOOPS_WEBHOOKS_READY=false`,
+`LOOPS_WORKFLOWS_READY=false`, `LOOPS_EMAIL_NATIVE_ENABLED=false`, and
+`PUBLIC_TOOL_GATE_ROLLOUT` unset until the operator checklist in
 `docs/backend/public-tool-email-rollout-runbook.md` is complete.
 
 ## Decision
@@ -215,13 +219,23 @@ with its own consent timestamp and copy version; retries or later tool use must
 never silently reverse an unsubscribe.
 
 A Loops `contact.deleted` webhook creates a provider-deletion tombstone in
-Convex. Normal contact sync and Workflow events cannot recreate that contact.
+Convex. It cancels every non-delete provider operation, including unsubscribe
+updates, and fences every in-flight or acceptance-unknown call with one final
+delete. Normal contact sync and Workflow events therefore cannot recreate that
+contact.
 Only a later confirmed re-consent flow may deliberately clear a provider-only
-tombstone; a ClipStitchr privacy-deletion request removes the canonical contact
-and cannot be reversed by an email operation.
+tombstone. A ClipStitchr privacy-deletion request anonymizes and retains the
+canonical row as a deletion fence, removes every identity and recognition
+link, and queues an opaque-key `contactDelete` operation. Every other provider
+operation is blocked. A claimed operation that finishes late queues one final
+delete compensation, and any late acceptance expedites that matching fence
+regardless of the operation's later terminal state. A previously ambiguous
+operation already has the same delayed fence. Email work therefore cannot
+recreate the Loops contact.
 
 The initial integration does not depend on mailing lists for correctness.
-Approved custom properties and Workflow events provide segmentation without
+The approved built-in `source` property, five custom properties, and Workflow
+events provide segmentation without
 making one provider list membership the only record of consent. If mailing
 lists are added later, their IDs are server-side configuration and membership
 changes must reconcile through signed webhooks.
@@ -441,11 +455,12 @@ expires.
 - An unsubscribe, hard bounce, or complaint stops later marketing operations
   even if older queued operations still exist. Dispatch rechecks eligibility
   and cancels stale queued work before the provider call.
-- If an explicit resubscribe provider call was already in flight when canonical
-  unsubscribe or privacy deletion won, its rejected acceptance fence queues one
-  opaque-user-ID `subscribed: false` correction. That correction rechecks
-  canonical state immediately before dispatch and cancels itself if the contact
-  explicitly re-consented in the meantime.
+- If an explicit resubscribe call was already in flight when canonical
+  unsubscribe won, its rejected acceptance fence queues one opaque-user-ID
+  `subscribed: false` correction. Privacy deletion instead cancels every
+  non-delete operation and fences any started or acceptance-unknown call with
+  one opaque-user-ID `contactDelete` compensation. Late acceptance or an
+  ambiguous completion expedites that final delete.
 
 ## Environment And Provider Setup
 
@@ -454,19 +469,38 @@ The runtime uses these exact server-side variables and flags:
 | Variable | Purpose and fail-closed rule |
 | --- | --- |
 | `PUBLIC_TOOL_GATE_ROLLOUT` | Strict JSON rollout object. Missing, malformed, unknown-key, duplicate-tool, unsupported-variant, or out-of-range input resolves every tool to `control`. |
+| `CLIPSTITCHR_DEPLOYMENT_ENVIRONMENT` | Explicit app deployment intent shared by Next.js and Convex. It must be exactly `development` for local, development, and Vercel preview deployments or exactly `production` for production. Missing or invalid values disable dispatch. |
 | `LOOPS_EMAIL_ENABLED` | Provider dispatch is requested only when its value is exactly `true`. |
 | `LOOPS_API_KEY` | Private key used only by the server-side official SDK adapter. |
-| `LOOPS_TEAM_ENVIRONMENT` | Must be exactly `development` outside a production app runtime and exactly `production` in production. A mismatch disables dispatch. |
+| `LOOPS_TEAM_ENVIRONMENT` | Must exactly match `CLIPSTITCHR_DEPLOYMENT_ENVIRONMENT`. A missing, invalid, or mismatched team value disables dispatch. |
 | `LOOPS_DEVELOPMENT_RECIPIENTS` | Comma-separated, normalized allowlist required for a development Loops team. Development contact sync and sends reject every address outside it. |
 | `LOOPS_SIGNING_SECRET` | Secret used to verify the raw-body HMAC on `/webhooks/loops`. |
 | `LOOPS_WEBHOOKS_READY` | Must be exactly `true`, with a signing secret, before Workflow readiness can pass. |
-| `LOOPS_CONTACT_PROPERTIES_READY` | Must be exactly `true` after the six approved custom properties exist in the selected Loops team. |
+| `LOOPS_CONTACT_PROPERTIES_READY` | Must be exactly `true` only after the built-in `source` property and five approved custom properties exist in the selected Loops team and a development contact projection is verified. |
 | `LOOPS_WORKFLOWS_READY` | Must be exactly `true` after all required event-triggered marketing Workflows and unsubscribe behavior are verified. |
 | `LOOPS_EMAIL_NATIVE_ENABLED` | Must be exactly `true` before the three email-native tools can leave control, and only becomes ready after confirmation, contact, webhook, and Workflow readiness all pass. |
 | `LOOPS_EMAIL_CONFIRMATION_TRANSACTIONAL_ID` | Server-only mapping for the sole approved `email-confirmation` transactional template. |
 | `EMAIL_CONFIRMATION_TOKEN_SECRET` | Server-only HMAC secret used to sign the forty-eight-hour confirmation reference. |
 | `NEXT_PUBLIC_SITE_URL` or `SITE_URL` | Absolute public origin used to build confirmation links. Configure one; the standard site URL resolver applies. |
 | `RATE_LIMIT_API_SECRET` | Shared Next.js-to-Convex secret used by lead, interaction, and confirmation mutations after request validation. |
+| `PRIVACY_DELETION_OPERATOR_SECRET` | Dedicated Convex operator secret for canonical marketing-contact privacy deletion. It must differ from public API, rate-limit, and Loops credentials. |
+
+Readiness does not infer deployment intent from `NODE_ENV`. Vercel preview
+functions can report `NODE_ENV=production`, so a preview must explicitly select
+`development` and use the development Loops team and recipient allowlist. On
+Vercel, `VERCEL_ENV` is an additional consistency guard: production accepts
+only explicit production intent, while preview and development accept only
+explicit development intent. An unknown non-empty Vercel environment also
+fails closed. Convex must receive the explicit deployment value separately;
+it does not inherit the Vercel runtime environment.
+
+Privacy deletion is a separate operator path and remains available while email
+dispatch is paused. It atomically removes local identity and recognition links,
+then creates a durable Loops contact-deletion operation using only the opaque
+`userId`. Delete operations use the normal provider pacing, lease, retry, and
+dead-letter machinery but do not depend on `LOOPS_EMAIL_ENABLED`. See
+`docs/backend/marketing-contact-privacy-deletion.md` for the bounded action,
+retry states, and dedicated-secret contract.
 
 The selected Loops team must also have a verified sending domain, sender
 identity, reply-to policy, production unsubscribe footer, the approved contact
@@ -492,12 +526,17 @@ and Convex responsibilities in focused files under their closest domains:
 web/
   convex/
     email/
+      cancelEmailProviderOperationsForContact.ts
       claimEmailProviderOperation.ts
+      enqueueContactDeleteCompensation.ts
       enqueueEmailProviderOperation.ts
+      enqueueInitialContactDeleteOperation.ts
+      getEmailProviderOperationKind.ts
       processEmailProviderOperation.ts
       recordEmailProviderOperationAccepted.ts
       recordEmailProviderOperationFailure.ts
       reconcileLoopsWebhookEvent.ts
+      resumeHeldContactDeleteOperationsForContact.ts
     http.ts
     schema.ts
   lib/clipstitchr/email/
@@ -509,6 +548,8 @@ web/
     loops/
       createLoopsClient.ts
       createLoopsContactProperties.ts
+      deleteLoopsContact.ts
+      getLoopsPrivacyDeletionConfiguration.ts
       getLoopsReadiness.ts
       LoopsWorkflowEventName.ts
       LoopsTransactionalTemplateKey.ts

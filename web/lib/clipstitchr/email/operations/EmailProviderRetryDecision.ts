@@ -1,5 +1,8 @@
 export type EmailProviderRetryDecision =
-  | Readonly<{ outcome: "accepted"; reason: "duplicate-idempotency-key" }>
+  | Readonly<{
+      outcome: "accepted";
+      reason: "already-deleted" | "duplicate-idempotency-key";
+    }>
   | Readonly<{
       outcome: "retry";
       reason: "network" | "provider-rate-limit" | "provider-unavailable";

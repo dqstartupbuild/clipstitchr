@@ -409,6 +409,12 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     period: SECOND,
     capacity: 2,
   },
+  marketingPrivacyDeletionOperator: {
+    kind: "token bucket",
+    rate: 100,
+    period: HOUR,
+    capacity: 20,
+  },
   appHookGeneratorByClient: {
     kind: "token bucket",
     rate: 30,

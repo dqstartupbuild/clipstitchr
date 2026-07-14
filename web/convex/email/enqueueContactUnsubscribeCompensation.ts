@@ -17,12 +17,17 @@ export async function enqueueContactUnsubscribeCompensation(
     return null;
   }
 
-  const existing = await ctx.db
+  const compensations = await ctx.db
     .query("emailProviderOperations")
     .withIndex("by_compensated_operation", (query) =>
       query.eq("compensatesOperationId", args.compensatesOperationId),
     )
-    .unique();
+    .collect();
+  const existing = compensations.find(
+    (operation) =>
+      operation.kind === "contactUnsubscribe" &&
+      operation.compensatesOperationId === args.compensatesOperationId,
+  );
 
   if (existing) return existing._id;
 

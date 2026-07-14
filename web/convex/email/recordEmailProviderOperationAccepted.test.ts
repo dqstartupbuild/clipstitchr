@@ -9,7 +9,14 @@ vi.mock("../_generated/server", () => ({
   internalMutation: vi.fn((value) => value),
 }));
 const mocks = vi.hoisted(() => ({
+  enqueueContactDeleteCompensation: vi.fn(
+    async (): Promise<string | null> => null,
+  ),
   enqueueContactUnsubscribeCompensation: vi.fn(),
+}));
+vi.mock("./enqueueContactDeleteCompensation", () => ({
+  enqueueContactDeleteCompensation:
+    mocks.enqueueContactDeleteCompensation,
 }));
 vi.mock("./enqueueContactUnsubscribeCompensation", () => ({
   enqueueContactUnsubscribeCompensation:
@@ -85,6 +92,81 @@ describe("provider acceptance recording", () => {
         contactId: "contact_1",
         now: 100,
       },
+    );
+  });
+
+  it("queues provider deletion when a contact sync returns after privacy cancellation", async () => {
+    const operation = {
+      _id: "operation_1",
+      attemptCount: 1,
+      contactId: "contact_1",
+      kind: "contactSync",
+      status: "canceled",
+      updatedAt: 90,
+    };
+    const ctx = {
+      db: {
+        get: vi.fn(async () => operation),
+        patch: vi.fn(),
+      },
+    };
+    mocks.enqueueContactDeleteCompensation.mockResolvedValueOnce(
+      "delete_operation_1",
+    );
+
+    await expect(
+      getHandler(recordEmailProviderOperationAccepted)(ctx, {
+        acceptedAt: 100,
+        operationId: "operation_1",
+        workerId: "stale_worker",
+      }),
+    ).resolves.toEqual({ compensationQueued: true, recorded: false });
+    expect(mocks.enqueueContactDeleteCompensation).toHaveBeenCalledWith(ctx, {
+      compensatesOperationId: "operation_1",
+      contactId: "contact_1",
+      now: 100,
+    });
+  });
+
+  it("queues provider deletion when an ambiguous dead letter accepts late", async () => {
+    const operation = {
+      _id: "operation_1",
+      acceptanceStatus: "unknown",
+      ambiguousAt: 80,
+      attemptCount: 7,
+      contactId: "contact_1",
+      kind: "contactSync",
+      status: "deadLetter",
+      updatedAt: 90,
+    };
+    const ctx = {
+      db: {
+        get: vi.fn(async () => operation),
+        patch: vi.fn(),
+      },
+    };
+    mocks.enqueueContactDeleteCompensation.mockResolvedValueOnce(
+      "delete_operation_1",
+    );
+
+    await expect(
+      getHandler(recordEmailProviderOperationAccepted)(ctx, {
+        acceptedAt: 100,
+        operationId: "operation_1",
+        workerId: "stale_worker",
+      }),
+    ).resolves.toEqual({ compensationQueued: true, recorded: false });
+    expect(mocks.enqueueContactDeleteCompensation).toHaveBeenCalledWith(ctx, {
+      compensatesOperationId: "operation_1",
+      contactId: "contact_1",
+      now: 100,
+    });
+    expect(ctx.db.patch).toHaveBeenCalledWith(
+      "operation_1",
+      expect.objectContaining({
+        acceptanceStatus: "accepted",
+        acceptedAt: 100,
+      }),
     );
   });
 });

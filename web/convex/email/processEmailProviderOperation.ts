@@ -7,6 +7,7 @@ import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
 import { createLoopsClient } from "../../lib/clipstitchr/email/loops/createLoopsClient";
+import { getLoopsPrivacyDeletionConfiguration } from "../../lib/clipstitchr/email/loops/getLoopsPrivacyDeletionConfiguration";
 import { getLoopsReadiness } from "../../lib/clipstitchr/email/loops/getLoopsReadiness";
 import { EmailProviderConfigurationError } from "../../lib/clipstitchr/email/operations/EmailProviderConfigurationError";
 import type { EmailProviderDispatchProjection } from "../../lib/clipstitchr/email/operations/EmailProviderDispatchProjection";
@@ -23,8 +24,24 @@ export const processEmailProviderOperation = internalAction({
   },
   handler: async (ctx, { operationId }): Promise<EmailProviderProcessResult> => {
     const readiness = getLoopsReadiness(process.env);
+    const operationKind = await ctx.runQuery(
+      internal.email.getEmailProviderOperationKind.getEmailProviderOperationKind,
+      { operationId },
+    );
+    const privacyDeletionConfiguration =
+      operationKind === "contactDelete"
+        ? getLoopsPrivacyDeletionConfiguration(process.env)
+        : null;
+    const providerIsReady =
+      operationKind === "contactDelete"
+        ? privacyDeletionConfiguration !== null
+        : readiness.dispatchEnabled && readiness.teamEnvironment !== null;
 
-    if (!readiness.dispatchEnabled || !readiness.teamEnvironment) {
+    if (!operationKind) {
+      return { processed: false as const, reason: "not-claimable" as const };
+    }
+
+    if (!providerIsReady) {
       await ctx.runMutation(
         internal.email.holdEmailProviderOperation.holdEmailProviderOperation,
         { heldAt: Date.now(), operationId },
@@ -49,8 +66,16 @@ export const processEmailProviderOperation = internalAction({
     }
 
     const kind = operation.kind;
+    const providerTeamEnvironment =
+      kind === "contactDelete"
+        ? privacyDeletionConfiguration?.teamEnvironment
+        : readiness.teamEnvironment;
+    const providerApiKey =
+      kind === "contactDelete"
+        ? (privacyDeletionConfiguration?.apiKey ?? "")
+        : (process.env.LOOPS_API_KEY ?? "");
     const configurationReady =
-      kind === "contactUnsubscribe"
+      kind === "contactDelete" || kind === "contactUnsubscribe"
         ? true
         : kind === "contactSync" || kind === "contactResubscribe"
           ? readiness.contactSyncReady
@@ -58,7 +83,7 @@ export const processEmailProviderOperation = internalAction({
             ? readiness.workflowReady
             : readiness.confirmationReady;
 
-    if (!configurationReady) {
+    if (!configurationReady || !providerTeamEnvironment) {
       await ctx.runMutation(
         internal.email.recordEmailProviderOperationFailure
           .recordEmailProviderOperationFailure,
@@ -133,14 +158,14 @@ export const processEmailProviderOperation = internalAction({
 
     try {
       await dispatchEmailProviderOperation({
-        client: createLoopsClient(process.env.LOOPS_API_KEY ?? ""),
+        client: createLoopsClient(providerApiKey),
         confirmationSigningSecret:
           process.env.EMAIL_CONFIRMATION_TOKEN_SECRET,
         developmentRecipientList: process.env.LOOPS_DEVELOPMENT_RECIPIENTS,
         environment: process.env,
         projection: projection as EmailProviderDispatchProjection,
         siteUrl: resolveSiteUrl(process.env),
-        teamEnvironment: readiness.teamEnvironment,
+        teamEnvironment: providerTeamEnvironment,
       });
       const acceptance: {
         compensationQueued?: boolean;

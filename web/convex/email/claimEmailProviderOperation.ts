@@ -69,6 +69,7 @@ export const claimEmailProviderOperation = internalMutation({
     }
 
     if (
+      operation.kind !== "contactDelete" &&
       (operation.acceptanceStatus === "unknown" ||
         isRecoveringStartedAttempt) &&
       operation.idempotencyExpiresAt <= now

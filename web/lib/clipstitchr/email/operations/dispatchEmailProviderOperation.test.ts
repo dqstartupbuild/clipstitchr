@@ -28,6 +28,7 @@ const baseProjection = {
 
 function createClient() {
   return {
+    deleteContact: vi.fn().mockResolvedValue({ success: true }),
     sendEvent: vi.fn().mockResolvedValue({ success: true }),
     sendTransactionalEmail: vi.fn().mockResolvedValue({ success: true }),
     updateContact: vi.fn().mockResolvedValue({
@@ -45,8 +46,11 @@ function dispatch(
     client,
     promise: dispatchEmailProviderOperation({
       client: client as unknown as Pick<
-        LoopsClient,
-        "sendEvent" | "sendTransactionalEmail" | "updateContact"
+      LoopsClient,
+        | "deleteContact"
+        | "sendEvent"
+        | "sendTransactionalEmail"
+        | "updateContact"
       >,
       confirmationSigningSecret: confirmationSecret,
       developmentRecipientList: "person@example.com",
@@ -61,6 +65,29 @@ function dispatch(
 }
 
 describe("dispatchEmailProviderOperation", () => {
+  it("deletes by only the opaque provider key", async () => {
+    const deletion = dispatch({
+      ...baseProjection,
+      contact: {
+        ...baseProjection.contact,
+        contactName: "Deleted contact",
+        firstTool: undefined,
+        latestTool: undefined,
+        normalizedEmail: "deleted-contact_1",
+      },
+      operation: {
+        ...baseProjection.operation,
+        kind: "contactDelete",
+      },
+    });
+
+    await deletion.promise;
+    expect(deletion.client.deleteContact).toHaveBeenCalledWith({
+      userId: baseProjection.contact.providerContactKey,
+    });
+    expect(deletion.client.updateContact).not.toHaveBeenCalled();
+  });
+
   it("keeps normal contact sync separate from explicit resubscription", async () => {
     const normal = dispatch(baseProjection);
     await normal.promise;

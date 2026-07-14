@@ -5,8 +5,16 @@ type ConvexFunction<Args, Result> = {
   handler: (ctx: unknown, args: Args) => Promise<Result>;
 };
 
+const mocks = vi.hoisted(() => ({
+  enqueueContactDeleteCompensation: vi.fn(),
+}));
+
 vi.mock("../_generated/server", () => ({
   internalMutation: vi.fn((value) => value),
+}));
+vi.mock("./enqueueContactDeleteCompensation", () => ({
+  enqueueContactDeleteCompensation:
+    mocks.enqueueContactDeleteCompensation,
 }));
 
 function getHandler<Args, Result>(convexFunction: unknown) {
@@ -47,5 +55,75 @@ describe("email provider operation failure recording", () => {
         failureCategory: "retryLimit",
       }),
     );
+  });
+
+  it("retries ambiguous contact deletion after the email idempotency window", async () => {
+    const operation = {
+      _id: "operation_1",
+      attemptCount: 1,
+      idempotencyExpiresAt: 100,
+      kind: "contactDelete",
+      leaseOwner: "worker_1",
+      status: "claimed",
+    };
+    const ctx = {
+      db: {
+        get: vi.fn(async () => operation),
+        patch: vi.fn(),
+      },
+      scheduler: { runAt: vi.fn() },
+    };
+
+    await expect(
+      getHandler(recordEmailProviderOperationFailure)(ctx, {
+        acceptanceUnknown: true,
+        failedAt: 200,
+        failureCategory: "network",
+        operationId: "operation_1",
+        retryable: true,
+        workerId: "worker_1",
+      }),
+    ).resolves.toMatchObject({ status: "pending" });
+    expect(ctx.db.patch).toHaveBeenCalledWith(
+      "operation_1",
+      expect.objectContaining({ status: "pending" }),
+    );
+  });
+
+  it("queues deletion after an ambiguous provider call finishes late", async () => {
+    mocks.enqueueContactDeleteCompensation.mockResolvedValueOnce(
+      "delete_operation_1",
+    );
+    const operation = {
+      _id: "operation_1",
+      attemptCount: 1,
+      contactId: "contact_1",
+      kind: "contactSync",
+      leaseOwner: undefined,
+      status: "canceled",
+    };
+    const ctx = {
+      db: { get: vi.fn(async () => operation) },
+      scheduler: { runAt: vi.fn() },
+    };
+
+    await expect(
+      getHandler(recordEmailProviderOperationFailure)(ctx, {
+        acceptanceUnknown: true,
+        failedAt: 200,
+        failureCategory: "network",
+        operationId: "operation_1",
+        retryable: true,
+        workerId: "worker_1",
+      }),
+    ).resolves.toEqual({
+      compensationQueued: true,
+      status: "ignored",
+    });
+    expect(mocks.enqueueContactDeleteCompensation).toHaveBeenCalledWith(ctx, {
+      compensatesOperationId: "operation_1",
+      contactId: "contact_1",
+      now: 200,
+    });
   });
 });

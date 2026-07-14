@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
+import { enqueueContactDeleteCompensation } from "./enqueueContactDeleteCompensation";
 import { enqueueContactUnsubscribeCompensation } from "./enqueueContactUnsubscribeCompensation";
 
 export const recordEmailProviderOperationAccepted = internalMutation({
@@ -26,6 +27,26 @@ export const recordEmailProviderOperationAccepted = internalMutation({
       operation.status !== "claimed" ||
       operation.leaseOwner !== args.workerId
     ) {
+      const deleteCompensationOperationId =
+        operation.kind !== "contactDelete" && operation.attemptCount >= 1
+          ? await enqueueContactDeleteCompensation(ctx, {
+              compensatesOperationId: operation._id,
+              contactId: operation.contactId,
+              now: args.acceptedAt,
+            })
+          : null;
+
+      if (deleteCompensationOperationId) {
+        await ctx.db.patch(operation._id, {
+          acceptanceStatus: "accepted",
+          acceptedAt: operation.acceptedAt ?? args.acceptedAt,
+          attemptLeaseOwner: undefined,
+          updatedAt: Math.max(operation.updatedAt, args.acceptedAt),
+        });
+
+        return { compensationQueued: true as const, recorded: false as const };
+      }
+
       if (
         operation.kind === "contactResubscribe" &&
         operation.status !== "canceled" &&
@@ -50,6 +71,7 @@ export const recordEmailProviderOperationAccepted = internalMutation({
         attemptLeaseOwner: undefined,
         updatedAt: Math.max(operation.updatedAt, args.acceptedAt),
       });
+
       if (operation.enrollmentId) {
         const enrollment = await ctx.db.get(operation.enrollmentId);
 

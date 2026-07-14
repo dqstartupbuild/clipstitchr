@@ -1,5 +1,7 @@
 import type { LoopsReadiness } from "./LoopsReadiness";
 import type { LoopsTeamEnvironment } from "./LoopsTeamEnvironment";
+import { getClipStitchrDeploymentEnvironment } from "./getClipStitchrDeploymentEnvironment";
+import { getClipStitchrDeploymentEnvironmentIsVercelCompatible } from "./getClipStitchrDeploymentEnvironmentIsVercelCompatible";
 import { hasNonEmptyEnvironmentValue } from "./hasNonEmptyEnvironmentValue";
 
 export function getLoopsReadiness(
@@ -12,17 +14,37 @@ export function getLoopsReadiness(
     configuredTeamEnvironment === "production"
       ? configuredTeamEnvironment
       : null;
-  const expectedTeamEnvironment =
-    environment.NODE_ENV === "production" ? "production" : "development";
+  const deploymentEnvironment = getClipStitchrDeploymentEnvironment(
+    environment.CLIPSTITCHR_DEPLOYMENT_ENVIRONMENT,
+  );
+  const deploymentEnvironmentIsVercelCompatible =
+    deploymentEnvironment !== null &&
+    getClipStitchrDeploymentEnvironmentIsVercelCompatible(
+      deploymentEnvironment,
+      environment.VERCEL_ENV,
+    );
+  const teamEnvironmentMatchesDeployment =
+    deploymentEnvironment !== null &&
+    teamEnvironment !== null &&
+    teamEnvironment === deploymentEnvironment;
   const dispatchRequested = environment.LOOPS_EMAIL_ENABLED === "true";
 
   if (!dispatchRequested) reasons.push("provider dispatch is disabled");
   if (!hasNonEmptyEnvironmentValue(environment.LOOPS_API_KEY)) {
     reasons.push("API key is missing");
   }
+  if (!deploymentEnvironment) {
+    reasons.push("deployment environment is missing or invalid");
+  } else if (!deploymentEnvironmentIsVercelCompatible) {
+    reasons.push("deployment environment does not match the Vercel environment");
+  }
   if (!teamEnvironment) reasons.push("team environment is missing or invalid");
-  if (teamEnvironment && teamEnvironment !== expectedTeamEnvironment) {
-    reasons.push("team environment does not match the app environment");
+  if (
+    deploymentEnvironment &&
+    teamEnvironment &&
+    !teamEnvironmentMatchesDeployment
+  ) {
+    reasons.push("team environment does not match the deployment environment");
   }
   if (
     teamEnvironment === "development" &&
@@ -34,7 +56,8 @@ export function getLoopsReadiness(
   const dispatchEnabled =
     dispatchRequested &&
     hasNonEmptyEnvironmentValue(environment.LOOPS_API_KEY) &&
-    teamEnvironment === expectedTeamEnvironment &&
+    deploymentEnvironmentIsVercelCompatible &&
+    teamEnvironmentMatchesDeployment &&
     (teamEnvironment !== "development" ||
       hasNonEmptyEnvironmentValue(environment.LOOPS_DEVELOPMENT_RECIPIENTS));
   const webhookReady =
@@ -62,6 +85,7 @@ export function getLoopsReadiness(
   return {
     confirmationReady,
     contactSyncReady,
+    deploymentEnvironment,
     dispatchEnabled,
     emailNativeReady,
     reasons,
