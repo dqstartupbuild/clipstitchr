@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { emailConfirmationRequestLogIgnorePattern } from "./lib/clipstitchr/email/confirmation/emailConfirmationRequestLogIgnorePattern";
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -23,6 +24,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  logging: {
+    incomingRequests: {
+      ignore: [emailConfirmationRequestLogIgnorePattern],
+    },
+  },
   skipTrailingSlashRedirect: true,
   async headers() {
     return [
