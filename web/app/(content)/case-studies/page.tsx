@@ -20,43 +20,37 @@ export default function CaseStudiesIndexPage() {
   const categories = getCaseStudyCategories();
 
   return (
-    <div className="marketing-grid-bg px-6 py-20 md:py-28">
-      <div className="mx-auto max-w-6xl">
-        <div className="max-w-3xl">
-          <p className="marketing-eyebrow">
-            Case studies
-          </p>
-          <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
-            Proof from people who would rather build than edit content.
-          </h1>
-          <p className="mt-6 text-lg leading-8 text-text-secondary">
-            Real examples from apps using short-form without making content the
-            whole job.
-          </p>
-          {categories.length > 0 && (
-            <div className="mt-8 flex flex-wrap gap-3 text-sm text-text-tertiary">
-              {categories.map((category) => (
-                <span
-                  key={category}
-                  className="rounded-md border border-border bg-surface px-3 py-1.5"
-                >
-                  {category}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+    <div className="case-studies-index-page">
+      <div className="case-studies-index-inner">
+        <header className="case-studies-index-hero">
+          <p>Case studies / campaign evidence, not testimonials</p>
+          <h1 className="marketing-heading">Real work. Real numbers.</h1>
+          <div>
+            <p>
+              Real examples from apps using short-form without making content
+              the whole job.
+            </p>
+            {categories.length > 0 && (
+              <div className="case-studies-categories">
+                {categories.map((category, index) => (
+                  <span key={category}>
+                    {index > 0 ? " / " : ""}
+                    {category}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </header>
 
         {featured ? (
-          <section className="mt-14">
-            <p className="text-sm font-semibold text-accent-dark">
-              Featured case study
-            </p>
-            <CaseStudyIndexCard caseStudy={featured} />
+          <section className="case-studies-featured">
+            <p>Lead evidence</p>
+            <CaseStudyIndexCard caseStudy={featured} featured />
           </section>
         ) : null}
 
-        <section className="mt-14 grid gap-6 md:grid-cols-2">
+        <section className="case-studies-list">
           {caseStudies.map((caseStudy) => (
             <CaseStudyIndexCard caseStudy={caseStudy} key={caseStudy.slug} />
           ))}

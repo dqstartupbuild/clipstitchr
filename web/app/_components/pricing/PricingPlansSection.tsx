@@ -3,22 +3,26 @@ import { pricingPlans } from "@/lib/clipstitchr/pricing/pricingPlans";
 
 export function PricingPlansSection() {
   return (
-    <section id="plans" className="scroll-mt-20 bg-surface-muted/45 px-6 py-24">
-      <div className="mx-auto max-w-6xl">
-        <div className="max-w-3xl">
-          <p className="marketing-eyebrow">Pick a plan</p>
-          <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
-            All plans include every ClipStitchr tool.
-          </h2>
-          <p className="mt-5 leading-7 text-text-secondary">
+    <section id="plans" className="pricing-plans scroll-mt-20">
+      <div className="pricing-section-inner">
+        <div className="pricing-plans-intro">
+          <h2 className="marketing-heading">Compare the plans.</h2>
+          <p>
             Choose based on how many products, credits, daily drafts, and saved
             media you need. Pro is the main plan for builders who need regular
             ads without regular editing days.
           </p>
         </div>
-        <div className="mt-10 grid gap-5 lg:grid-cols-4">
-          {pricingPlans.map((plan) => (
-            <PricingPlanCard key={plan.key} plan={plan} />
+        <div className="pricing-ledger">
+          <div className="pricing-ledger-head" aria-hidden="true">
+            <span>Plan</span>
+            <span>Monthly</span>
+            <span>Capacity</span>
+            <span>What changes</span>
+            <span>Choose</span>
+          </div>
+          {pricingPlans.map((plan, index) => (
+            <PricingPlanCard key={plan.key} plan={plan} index={index} />
           ))}
         </div>
       </div>

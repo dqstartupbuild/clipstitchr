@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
@@ -8,8 +8,11 @@ const toolsDirectory = fileURLToPath(
   new URL("../../../../app/(content)/tools/", import.meta.url),
 );
 const featureDocsDirectory = fileURLToPath(
-  new URL("../../../../../docs/features/", import.meta.url),
+  new URL("../../../../../docs/features/public-tools/", import.meta.url),
 );
+const featureDocPaths = readdirSync(featureDocsDirectory, {
+  recursive: true,
+}).filter((path) => String(path).endsWith(".md"));
 
 const featureDocFileOverrides = {
   "app-ad-hook-structures": "50-app-ad-hook-structures.md",
@@ -22,11 +25,16 @@ describe("public tool artifact coverage", () => {
       const featureDocFile =
         featureDocFileOverrides[key as keyof typeof featureDocFileOverrides] ??
         `${key}.md`;
-      const featureDocPath = `${featureDocsDirectory}${featureDocFile}`;
+      const featureDocRelativePath = featureDocPaths.find(
+        (path) =>
+          String(path) === featureDocFile ||
+          String(path).endsWith(`/${featureDocFile}`),
+      );
+      const featureDocPath = `${featureDocsDirectory}${featureDocRelativePath}`;
 
       expect(existsSync(routePath), `Missing route for ${key}`).toBe(true);
       expect(
-        existsSync(featureDocPath),
+        featureDocRelativePath !== undefined && existsSync(featureDocPath),
         `Missing feature document for ${key}`,
       ).toBe(true);
       expect(readFileSync(featureDocPath, "utf8")).toContain(

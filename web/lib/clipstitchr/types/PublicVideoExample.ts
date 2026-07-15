@@ -4,6 +4,7 @@ export type PublicVideoExample = {
   id: string;
   slug: string;
   title: string;
+  displayTitle: string;
   description: string;
   kind: PublicVideoExampleKind;
   videoSrc: string;

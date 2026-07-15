@@ -13,16 +13,11 @@ export default function PrivacyPage() {
   const lastUpdated = "July 15, 2026";
 
   return (
-    <article className="marketing-grid-bg px-6 py-20 md:py-28">
-      <div className="marketing-card mx-auto max-w-3xl p-6 md:p-10">
-        <header className="mb-12">
-          <p className="marketing-eyebrow mb-5">Legal</p>
-          <h1 className="marketing-heading mb-4 text-5xl text-text-primary md:text-7xl">
-            Privacy Policy
-          </h1>
-          <p className="text-sm text-text-tertiary">
-            Last updated: {lastUpdated}
-          </p>
+    <article className="legal-page">
+      <div className="legal-document">
+        <header className="legal-header">
+          <p>Legal / Last updated {lastUpdated}</p>
+          <h1 className="marketing-heading">Privacy Policy</h1>
         </header>
 
         <div className="prose-legal">
@@ -98,10 +93,10 @@ export default function PrivacyPage() {
             <h3>Public Tools and Mailing List</h3>
             <p>
               The Ad Variant Calculator and the other public calculators,
-              graders, brief builders, planners, checklists, kits,
-              trackers, and worksheets work in your browser. We do not send
-              their writing, notes, planning numbers, campaign metrics, quotes,
-              costs, or results to our servers just to show your result.
+              graders, brief builders, planners, checklists, kits, trackers, and
+              worksheets work in your browser. We do not send their writing,
+              notes, planning numbers, campaign metrics, quotes, costs, or
+              results to our servers just to show your result.
             </p>
             <p>
               The public video tools read the video or image you choose in your
@@ -265,8 +260,8 @@ export default function PrivacyPage() {
               non-identifying unlock marker until you clear site data. A
               separate HttpOnly recognition cookie lasts up to 180 days and is
               replaced after another accepted form. These values are not
-              advertising cookies, contain no name or email, and are not sent
-              to TikTok or PostHog.
+              advertising cookies, contain no name or email, and are not sent to
+              TikTok or PostHog.
             </p>
             <p>
               Confirming a course also sets a separate random HttpOnly course
@@ -301,8 +296,8 @@ export default function PrivacyPage() {
             </p>
             <p>
               Unsubscribing stops future marketing and stops us from linking
-              later public-tool activity to your mailing-list profile. A
-              privacy deletion removes the server&apos;s recognition link. The
+              later public-tool activity to your mailing-list profile. A privacy
+              deletion removes the server&apos;s recognition link. The
               non-identifying browser unlock marker stays on that device until
               you clear its site data, so a privacy request does not take away
               browser value you already received.

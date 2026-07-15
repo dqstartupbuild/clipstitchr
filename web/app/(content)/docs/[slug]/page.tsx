@@ -31,7 +31,9 @@ export async function generateMetadata({ params }: DocsArticlePageProps) {
   });
 }
 
-export default async function DocsArticlePage({ params }: DocsArticlePageProps) {
+export default async function DocsArticlePage({
+  params,
+}: DocsArticlePageProps) {
   const { slug } = await params;
   const doc = getCustomerDocBySlug(slug);
 
@@ -44,30 +46,20 @@ export default async function DocsArticlePage({ params }: DocsArticlePageProps) 
   );
 
   return (
-    <div className="marketing-grid-bg px-6 py-20 md:py-28">
-      <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,1fr)_18rem]">
-        <article className="min-w-0">
-          <Link
-            href="/docs"
-            className="text-sm font-semibold text-text-tertiary transition-colors hover:text-accent-dark"
-          >
+    <div className="docs-article-page">
+      <div className="docs-article-layout">
+        <article className="docs-article-body">
+          <Link href="/docs" className="public-back-link">
             Back to docs
           </Link>
 
-          <header className="mt-8 max-w-3xl">
-            <p className="marketing-eyebrow">Docs</p>
-            <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
-              {doc.title}
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-text-secondary">
-              {doc.description}
-            </p>
-            <p className="mt-5 text-sm text-text-tertiary">
-              Updated {doc.updated}
-            </p>
+          <header className="docs-article-header">
+            <p>Field manual / Updated {doc.updated}</p>
+            <h1 className="marketing-heading">{doc.title}</h1>
+            <p>{doc.description}</p>
           </header>
 
-          <div className="mt-12 space-y-12">
+          <div className="docs-article-sections">
             {doc.sections.map((section) => (
               <section key={section.title}>
                 <h2 className="marketing-subheading text-3xl text-text-primary">
@@ -120,10 +112,7 @@ export default async function DocsArticlePage({ params }: DocsArticlePageProps) 
                           {cardContent}
                         </Link>
                       ) : (
-                        <div
-                          key={card.title}
-                          className="marketing-card p-5"
-                        >
+                        <div key={card.title} className="marketing-card p-5">
                           {cardContent}
                         </div>
                       );
@@ -180,15 +169,15 @@ export default async function DocsArticlePage({ params }: DocsArticlePageProps) 
           </div>
         </article>
 
-        <aside className="lg:pt-24">
-            <div className="marketing-card sticky top-8 p-5">
-            <p className="text-sm font-bold text-text-primary">More docs</p>
-            <nav className="mt-4 space-y-2">
+        <aside className="docs-article-aside">
+          <div>
+            <p>More field notes</p>
+            <nav>
               {relatedDocs.map((relatedDoc) => (
                 <Link
                   key={relatedDoc.slug}
                   href={`/docs/${relatedDoc.slug}`}
-                  className="block rounded-md px-3 py-2 text-sm font-semibold text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
+                  className="docs-article-aside-link"
                 >
                   {relatedDoc.title}
                 </Link>

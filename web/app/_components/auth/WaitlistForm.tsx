@@ -73,12 +73,10 @@ export function WaitlistForm() {
   };
 
   return (
-    <div className="w-full max-w-md rounded-lg border border-border bg-white p-6 shadow-sm">
-      <p className="text-sm font-semibold text-accent-dark">Invite-only beta</p>
-      <h2 className="mt-3 text-2xl font-bold text-text-primary">
-        Join the ClipStitchr waitlist
-      </h2>
-      <p className="mt-3 text-sm leading-6 text-text-secondary">
+    <div className="auth-waitlist-form">
+      <p>Invite-only beta</p>
+      <h2>Join the waitlist.</h2>
+      <p>
         Sign-ups are closed while access stays private. Leave your details and
         you will be first in line when more seats open.
       </p>
@@ -115,7 +113,7 @@ export function WaitlistForm() {
               value={name}
               onChange={(event) => setName(event.target.value)}
               autoComplete="name"
-              className="h-11 rounded-lg border border-border bg-white px-3 text-sm font-medium text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
+              className="h-11 border border-border bg-white px-3 text-sm font-medium text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
               placeholder="Your name"
             />
           </label>
@@ -128,7 +126,7 @@ export function WaitlistForm() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete="email"
-              className="h-11 rounded-lg border border-border bg-white px-3 text-sm font-medium text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
+              className="h-11 border border-border bg-white px-3 text-sm font-medium text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
               placeholder="you@example.com"
             />
           </label>
@@ -140,7 +138,7 @@ export function WaitlistForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-bold text-white transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:bg-text-tertiary"
+            className="public-primary-action inline-flex h-11 items-center justify-center gap-2 bg-accent px-4 text-sm font-bold text-text-inverse transition-colors hover:bg-accent-light disabled:cursor-not-allowed disabled:bg-text-tertiary"
           >
             {isSubmitting ? "Joining..." : "Join waitlist"}
             <ArrowRight aria-hidden className="h-4 w-4" />

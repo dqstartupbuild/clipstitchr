@@ -8,9 +8,9 @@ export function CaseStudyHeroMetric({
   value,
 }: CaseStudyHeroMetricProps) {
   return (
-    <div className="rounded-lg border border-border bg-surface-muted p-4">
-      <p className="marketing-subheading text-3xl text-text-primary">{value}</p>
-      <p className="mt-1 text-sm text-text-tertiary">{label}</p>
+    <div className="case-study-hero-metric">
+      <p>{value}</p>
+      <span>{label}</span>
     </div>
   );
 }

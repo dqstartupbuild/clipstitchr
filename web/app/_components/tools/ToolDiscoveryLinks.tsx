@@ -6,23 +6,22 @@ type ToolDiscoveryLinksProps = {
   currentToolKey: PublicToolKey;
 };
 
-export function ToolDiscoveryLinks({ currentToolKey }: ToolDiscoveryLinksProps) {
+export function ToolDiscoveryLinks({
+  currentToolKey,
+}: ToolDiscoveryLinksProps) {
   const currentTool = publicToolCatalog[currentToolKey];
   const relatedTools = currentTool.relatedToolKeys.map(
     (relatedKey) => publicToolCatalog[relatedKey],
   );
 
   return (
-    <nav
-      aria-label="More app marketing tools"
-      className="bg-surface-muted/45 px-6 py-20 md:py-24"
-    >
-      <div className="mx-auto max-w-4xl">
-        <p className="marketing-eyebrow">Keep planning</p>
-        <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-5xl">
+    <nav aria-label="More app marketing tools" className="tool-discovery-links">
+      <div>
+        <p>Keep planning</p>
+        <h2 className="marketing-heading">
           Take the next step with another free tool.
         </h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
+        <div className="tool-discovery-grid">
           {relatedTools.map((tool) => (
             <ToolDiscoveryCard
               description={tool.description}

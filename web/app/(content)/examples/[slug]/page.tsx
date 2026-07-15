@@ -38,7 +38,7 @@ export default async function ExampleOutputPage({
   }
 
   return (
-    <div className="marketing-grid-bg px-6 py-20 md:py-28">
+    <div className="example-detail-page">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -46,53 +46,40 @@ export default async function ExampleOutputPage({
         }}
       />
 
-      <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(260px,380px)] lg:items-start">
-        <div>
-          <Link
-            href="/examples"
-            className="text-sm font-semibold text-text-tertiary hover:text-accent-dark"
-          >
+      <div className="example-detail-layout">
+        <div className="example-detail-copy">
+          <Link href="/examples" className="public-back-link">
             Back to examples
           </Link>
 
-          <header className="mt-8">
-            <p className="marketing-eyebrow">
-              {example.kind}
-            </p>
-            <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
-              {example.title}
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-text-secondary">
-              {example.description}
-            </p>
+          <header className="example-detail-header">
+            <p>{example.kind}</p>
+            <h1 className="marketing-heading">{example.displayTitle}</h1>
+            <p>{example.description}</p>
           </header>
 
-          <section className="marketing-card mt-10 p-6">
-            <h2 className="marketing-subheading text-3xl text-text-primary">
-              What this example shows
-            </h2>
-            <p className="mt-4 leading-8 text-text-secondary">
+          <section className="example-detail-note">
+            <h2>What this example shows</h2>
+            <p>
               This public example shows a {example.kind.toLowerCase()} created
               for a vertical short-form workflow. The same kind of output can be
               organized in the ClipStitchr library, reused as source footage, or
               paired with product demos depending on the workflow.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              {example.tags.map((tag) => (
-                <span
-                  className="rounded-md border border-border bg-surface px-3 py-1 text-xs text-text-tertiary"
-                  key={tag}
-                >
+            <div>
+              {example.tags.map((tag, index) => (
+                <span key={tag}>
+                  {index > 0 ? " / " : ""}
                   {tag}
                 </span>
               ))}
             </div>
           </section>
 
-          <div className="mt-10">
+          <div className="example-detail-action">
             <Link
               href="/dashboard"
-              className="inline-flex items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-bold text-white shadow-[0_0_24px_rgba(139,92,246,0.28)] transition-colors hover:bg-accent-light"
+              className="public-primary-action inline-flex items-center justify-center bg-accent px-5 py-3 text-sm font-bold text-text-inverse transition-colors hover:bg-accent-light"
             >
               Open Dashboard
             </Link>

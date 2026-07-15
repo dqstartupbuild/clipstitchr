@@ -21,25 +21,25 @@ export default function ExamplesIndexPage() {
   const examples = getPublicVideoExamples();
 
   return (
-    <div className="marketing-grid-bg px-6 py-20 md:py-28">
-      <div className="mx-auto max-w-6xl">
-        <div className="max-w-3xl">
-          <p className="marketing-eyebrow">
-            Example outputs
-          </p>
-          <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
-            See what happens when clips finally leave the folder.
-          </h1>
-          <p className="mt-6 text-lg leading-8 text-text-secondary">
+    <div className="examples-index-page">
+      <div className="examples-index-inner">
+        <header className="examples-index-hero">
+          <p>{examples.length} finished outputs</p>
+          <h1 className="marketing-heading">Clips become campaigns.</h1>
+          <p>
             These are sample Stitchr, Clipr, and Swapr outputs. Use them to see
             how saved Hook/UGC clips and product demos can turn into short-form
             ads without starting from a blank editor.
           </p>
-        </div>
+        </header>
 
-        <section className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {examples.map((example) => (
-            <ExampleOutputCard example={example} key={example.id} />
+        <section className="examples-film-strip" aria-label="Example outputs">
+          {examples.map((example, index) => (
+            <ExampleOutputCard
+              example={example}
+              index={index}
+              key={example.id}
+            />
           ))}
         </section>
       </div>

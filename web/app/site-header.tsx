@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandMark } from "@/app/_components/BrandMark";
 import { HeaderAuthActions } from "@/app/_components/HeaderAuthActions";
+import { PublicMobileNavigation } from "@/app/_components/navigation/PublicMobileNavigation";
 
 /**
  * Shared site header used across the landing page and content pages.
@@ -16,91 +17,60 @@ export function SiteHeader({
 }) {
   const isLanding = variant === "landing";
 
+  if (!isLanding) {
+    return (
+      <nav id="navbar" className="public-site-header">
+        <div className="public-site-header-inner">
+          <BrandMark />
+
+          <div className="public-site-navigation" aria-label="Main navigation">
+            <Link href="/">Product</Link>
+            <Link href="/examples">Examples</Link>
+            <Link href="/case-studies">Case studies</Link>
+            <Link href="/tools">Tools</Link>
+            <Link href="/docs">Docs</Link>
+            <Link href="/blog">Blog</Link>
+          </div>
+
+          <div className="public-site-header-auth">
+            <HeaderAuthActions />
+          </div>
+
+          <div className="public-site-header-mobile">
+            <PublicMobileNavigation />
+            <HeaderAuthActions variant="mobile" />
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
   return (
     <nav
       id="navbar"
-      className={`z-50 flex items-center justify-between px-6 py-3 ${
-        isLanding
-          ? "absolute left-0 right-0 top-0"
-          : "border-b border-border bg-surface/95 backdrop-blur-xl"
-      }`}
+      className="absolute left-0 right-0 top-0 z-50 flex items-center justify-between px-6 py-3"
     >
       <BrandMark />
 
       <div className="hidden items-center gap-6 text-sm text-text-secondary lg:flex">
-        {isLanding ? (
-          <>
-            <a
-              href="#workflow"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              How it works
-            </a>
-            <Link
-              href="/examples"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Examples
-            </Link>
-            <Link
-              href="/pricing"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Pricing
-            </Link>
-          </>
-        ) : (
-          <>
-            <Link
-              href="/"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Home
-            </Link>
-            <Link
-              href="/blog"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Blog
-            </Link>
-            <Link
-              href="/case-studies"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Case studies
-            </Link>
-            <Link
-              href="/examples"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Examples
-            </Link>
-            <Link
-              href="/docs"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Docs
-            </Link>
-            <Link
-              href="/tools"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Tools
-            </Link>
-            <Link
-              href="/pricing"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Pricing
-            </Link>
-            <Link
-              href="/dashboard"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Dashboard
-            </Link>
-          </>
-        )}
+        <a
+          href="#workflow"
+          className="font-semibold transition-colors hover:text-text-primary"
+        >
+          How it works
+        </a>
+        <Link
+          href="/examples"
+          className="font-semibold transition-colors hover:text-text-primary"
+        >
+          Examples
+        </Link>
+        <Link
+          href="/pricing"
+          className="font-semibold transition-colors hover:text-text-primary"
+        >
+          Pricing
+        </Link>
         <HeaderAuthActions />
       </div>
 

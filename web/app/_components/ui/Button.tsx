@@ -10,7 +10,8 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses = {
   primary: "bg-accent text-white hover:bg-accent-dark",
-  secondary: "border border-border bg-surface text-text-primary hover:border-accent",
+  secondary:
+    "border border-border bg-surface text-text-primary hover:border-accent",
   subtle: "bg-surface-muted text-text-primary hover:bg-white",
   danger: "border border-red-200 bg-white text-red-600 hover:bg-red-50",
 };
@@ -33,7 +34,7 @@ export function Button({
   return (
     <button
       className={[
-        "inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60",
+        "ui-button inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60",
         variantClasses[variant],
         sizeClasses[size],
         className,
@@ -43,7 +44,11 @@ export function Button({
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading ? <Loader2 aria-hidden className="h-4 w-4 animate-spin" /> : icon}
+      {isLoading ? (
+        <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
+      ) : (
+        icon
+      )}
       {children}
     </button>
   );

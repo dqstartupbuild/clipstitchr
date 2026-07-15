@@ -106,8 +106,10 @@ describe("LandingPage", () => {
     expect(
       landingMarkup.indexOf("/example-outputs/clipstitchr-example-11.webm"),
     ).toBeLessThan(landingMarkup.indexOf("One demo in. Ads out"));
-    expect(contentHeaderMarkup).toContain("Home");
+    expect(contentHeaderMarkup).toContain("Product");
     expect(contentHeaderMarkup).toContain("Pricing");
-    expect(contentHeaderMarkup).toContain("Dashboard");
+    expect(contentHeaderMarkup).toContain("Case studies");
+    expect(contentHeaderMarkup).toContain("Menu");
+    expect(contentHeaderMarkup).toContain('href="/tools"');
   });
 });

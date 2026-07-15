@@ -7,6 +7,7 @@ type ToolIndexCardProps = {
   eyebrow: string;
   href: string;
   icon: ReactNode;
+  index: number;
   title: string;
 };
 
@@ -15,26 +16,19 @@ export function ToolIndexCard({
   eyebrow,
   href,
   icon,
+  index,
   title,
 }: ToolIndexCardProps) {
   return (
-    <article className="marketing-card flex h-full flex-col p-6 transition-colors hover:border-accent md:p-8">
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent-dark">
-        {icon}
-      </div>
-      <p className="mt-6 text-sm font-bold text-accent-dark">{eyebrow}</p>
-      <h2 className="marketing-subheading mt-3 text-3xl text-text-primary">
-        {title}
-      </h2>
-      <p className="mt-4 flex-1 leading-8 text-text-secondary">
-        {description}
-      </p>
-      <Link
-        href={href}
-        className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-accent-dark transition-colors hover:text-accent"
-      >
+    <article className="tool-index-row">
+      <span>{String(index + 1).padStart(2, "0")}</span>
+      <div className="tool-index-icon">{icon}</div>
+      <p>{eyebrow}</p>
+      <h2>{title}</h2>
+      <p>{description}</p>
+      <Link href={href} className="tool-index-link">
         Use this tool
-        <ArrowRight aria-hidden className="h-4 w-4" />
+        <ArrowRight aria-hidden />
       </Link>
     </article>
   );

@@ -2,67 +2,44 @@ import Link from "next/link";
 import { BrandMark } from "@/app/_components/BrandMark";
 import { site } from "@/lib/site";
 
-const footerColumns = [
-  {
-    heading: "Product",
-    links: [
-      { href: "/", label: "Features" },
-      { href: "/examples", label: "Examples" },
-      { href: "/pricing", label: "Pricing" },
-      { href: "/dashboard", label: "Dashboard" },
-    ],
-  },
-  {
-    heading: "Resources",
-    links: [
-      { href: "/tools", label: "Tools" },
-      { href: "/docs", label: "Docs" },
-      { href: "/blog", label: "Blog" },
-      { href: "/case-studies", label: "Case studies" },
-    ],
-  },
-  {
-    heading: "Company",
-    links: [
-      { href: "/privacy", label: "Privacy" },
-      { href: "/terms", label: "Terms" },
-    ],
-  },
-];
+const footerLinks = [
+  { href: "/examples", label: "Watch the work" },
+  { href: "/case-studies", label: "See the proof" },
+  { href: "/tools", label: "Plan the campaign" },
+  { href: "/docs", label: "Read the field manual" },
+  { href: "/blog", label: "Read the notes" },
+  { href: "/pricing", label: "Choose a plan" },
+] as const;
 
 /** Shared site footer used across all pages. */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-surface px-6 py-12">
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 md:flex-row md:items-start md:justify-between">
-        <div className="max-w-sm">
+    <footer className="public-site-footer">
+      <div className="public-site-footer-grid">
+        <div className="public-site-footer-brand">
           <BrandMark />
-          <p className="mt-4 text-sm leading-6 text-text-secondary">
-            {site.defaultDescription}
-          </p>
+          <p>Raw clips in. A campaign you can actually publish out.</p>
         </div>
-        <nav className="grid grid-cols-2 gap-8 text-sm sm:grid-cols-3">
-          {footerColumns.map((column) => (
-            <div className="flex flex-col gap-3" key={column.heading}>
-              <p className="text-xs font-bold text-text-primary">
-                {column.heading}
-              </p>
-              {column.links.map((link) => (
-                <Link
-                  href={link.href}
-                  className="text-text-secondary transition-colors hover:text-text-primary"
-                  key={link.href}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+        <nav
+          className="public-site-footer-index"
+          aria-label="Footer navigation"
+        >
+          {footerLinks.map((link, index) => (
+            <Link href={link.href} key={link.href}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              {link.label}
+            </Link>
           ))}
         </nav>
       </div>
-      <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-3 border-t border-border pt-6 text-xs text-text-tertiary md:flex-row md:items-center md:justify-between">
-        <p>© {new Date().getFullYear()} {site.name}. All rights reserved.</p>
-        <p>Built for indie builders worldwide.</p>
+      <div className="public-site-footer-meta">
+        <p>
+          © {new Date().getFullYear()} {site.name}. All rights reserved.
+        </p>
+        <div>
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
+        </div>
       </div>
     </footer>
   );

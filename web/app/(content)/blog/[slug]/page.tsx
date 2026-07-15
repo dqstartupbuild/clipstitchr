@@ -62,7 +62,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     ].filter(Boolean);
 
     return (
-      <div className="marketing-grid-bg px-6 py-20 md:py-28">
+      <div className="article-page">
         {structuredData.map((data, index) => (
           <script
             key={index}
@@ -71,17 +71,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           />
         ))}
 
-        <div className="mx-auto max-w-3xl">
-          <Link
-            href="/blog"
-            className="text-sm font-semibold text-text-tertiary hover:text-accent-dark"
-          >
+        <div className="article-page-inner">
+          <Link href="/blog" className="public-back-link">
             Back to the blog
           </Link>
 
           <ArticleHeader
             category={post.category}
             title={post.title}
+            displayTitle={post.displayTitle}
             description={post.description}
             author={post.author}
             date={post.date}
@@ -164,17 +162,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   };
 
   return (
-    <div className="marketing-grid-bg px-6 py-20 md:py-28">
+    <div className="article-page">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
       />
 
-      <div className="mx-auto max-w-3xl">
-        <Link
-          href="/blog"
-          className="text-sm font-semibold text-text-tertiary hover:text-accent-dark"
-        >
+      <div className="article-page-inner">
+        <Link href="/blog" className="public-back-link">
           Back to the blog
         </Link>
 

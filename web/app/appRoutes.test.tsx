@@ -135,11 +135,9 @@ describe("app route wrappers", () => {
 
     expect(markup).toContain("Sign in to ClipStitchr.");
     expect(markup).toContain("Clerk sign in");
-    expect(markup).toContain(
-      "Turn raw footage into finished ads while access is still private.",
-    );
+    expect(markup).toContain("Private access. Finished ads.");
     expect(markup).toContain("Waitlist form");
-    expect(markup).toContain("Inside ClipStitchr");
+    expect(markup).toContain("Hook/UGC + demo Stitches");
   });
 
   it("renders dashboard page wrapper clients and provider layout", async () => {

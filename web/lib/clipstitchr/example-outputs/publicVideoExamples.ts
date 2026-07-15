@@ -7,6 +7,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-11",
     slug: "stitchr-boyfriend-ten-out-of-ten",
     title: "Stitchr Boyfriend 10 Out Of 10 Fitness Ad Example",
+    displayTitle: "Boyfriend 10/10",
     description:
       "A Stitchr example that opens with a creator reaction hook, then moves into a dark fitness-app demo that measures strength progress.",
     kind: "Stitchr stitch",
@@ -22,6 +23,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-02",
     slug: "stitchr-boyfriend-strength-demo",
     title: "Stitchr Boyfriend Strength Demo Ad Example",
+    displayTitle: "Boyfriend Strength",
     description:
       "A vertical Stitchr output where a creator hook about strength leads into a fitness-app progress screen.",
     kind: "Stitchr stitch",
@@ -37,6 +39,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-06",
     slug: "stitchr-motivation-fitness-demo",
     title: "Stitchr Motivation Hook Fitness Demo Example",
+    displayTitle: "Motivation Hook",
     description:
       "A Stitchr sample that pairs a close-up motivation hook with a fitness-app scoring demo for a short-form ad flow.",
     kind: "Stitchr stitch",
@@ -52,6 +55,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-15",
     slug: "stitchr-calisthenics-body-scan",
     title: "Stitchr Calisthenics Body Scan Ad Example",
+    displayTitle: "Calisthenics Body Scan",
     description:
       "A Stitchr output that combines calisthenics transformation footage with a body-scan style product demo.",
     kind: "Stitchr stitch",
@@ -67,6 +71,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-10",
     slug: "stitchr-fitness-change-score",
     title: "Stitchr Fitness Change Score Ad Example",
+    displayTitle: "Fitness Change Score",
     description:
       "A Stitchr sample where a creator reaction hook transitions into a fitness score screen and starting recommendations.",
     kind: "Stitchr stitch",
@@ -82,6 +87,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-03",
     slug: "stitchr-never-work-fitness-demo",
     title: "Stitchr Never Work Fitness Demo Example",
+    displayTitle: "Never Work",
     description:
       "A creator-style Stitchr ad example that uses a skeptical hook before showing a fitness-app progress demo.",
     kind: "Stitchr stitch",
@@ -97,6 +103,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-07",
     slug: "stitchr-people-quit-demo",
     title: "Stitchr People Quit Fitness Demo Example",
+    displayTitle: "People Quit",
     description:
       "A Stitchr output that places a high-energy creator hook before a fitness-app demo for vertical ad testing.",
     kind: "Stitchr stitch",
@@ -112,6 +119,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-13",
     slug: "clipr-calisthenics-talking-head",
     title: "Clipr Calisthenics Talking Head Clip Example",
+    displayTitle: "Calisthenics Talking Head",
     description:
       "A Clipr example clip with a creator speaking directly to camera about calisthenics from a home workout setting.",
     kind: "Clipr clip",
@@ -127,6 +135,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-14",
     slug: "clipr-home-gym-talking-head",
     title: "Clipr Home Gym Talking Head Clip Example",
+    displayTitle: "Home Gym Talking Head",
     description:
       "A Clipr generated talking-head example filmed in a home gym setting for use as reusable source footage.",
     kind: "Clipr clip",
@@ -142,6 +151,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-20",
     slug: "stitchr-before-after-calisthenics",
     title: "Stitchr Before And After Calisthenics Ad Example",
+    displayTitle: "Before and After",
     description:
       "A Stitchr fitness example that cuts from before-and-after calisthenics footage into an app-style progress moment.",
     kind: "Stitchr stitch",
@@ -157,6 +167,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-17",
     slug: "swapr-maribel-fitness-hook",
     title: "Swapr Fitness Hook Swap Example",
+    displayTitle: "Fitness Hook Swap",
     description:
       "A Swapr-style creator variation showing an indoor fitness hook that can be saved back into the UGC library.",
     kind: "Swapr swap",
@@ -172,6 +183,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-16",
     slug: "swapr-surprised-closeup-reaction",
     title: "Swapr Surprised Close-Up Reaction Example",
+    displayTitle: "Surprised Close-Up",
     description:
       "A short Swapr-style reaction variation with a close-up surprised expression for use as UGC-style source footage.",
     kind: "Swapr swap",
@@ -187,6 +199,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-08",
     slug: "stitchr-partner-training-demo",
     title: "Stitchr Partner Training Fitness Demo Example",
+    displayTitle: "Partner Training",
     description:
       "A Stitchr example that pairs a partner-training hook with a fitness-app progress demo for short-form ad output.",
     kind: "Stitchr stitch",
@@ -202,6 +215,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-04",
     slug: "stitchr-waste-money-demo",
     title: "Stitchr Waste Of Money Fitness Demo Example",
+    displayTitle: "Waste of Money",
     description:
       "A Stitchr ad example using a money-objection creator hook before moving into a fitness-app result screen.",
     kind: "Stitchr stitch",
@@ -217,6 +231,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-19",
     slug: "stitchr-calisthenics-before-hook",
     title: "Stitchr Calisthenics Before Hook Ad Example",
+    displayTitle: "Calisthenics Before",
     description:
       "A compact Stitchr sample where a calisthenics before-state hook leads into a fitness-app demo moment.",
     kind: "Stitchr stitch",
@@ -232,6 +247,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-18",
     slug: "clipr-indoor-talking-head",
     title: "Clipr Indoor Talking Head Clip Example",
+    displayTitle: "Indoor Talking Head",
     description:
       "A Clipr example clip with a creator speaking indoors, ready to use as source footage in Stitchr.",
     kind: "Clipr clip",
@@ -247,6 +263,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-09",
     slug: "stitchr-doing-it-wrong-demo",
     title: "Stitchr Doing It Wrong Fitness Demo Example",
+    displayTitle: "Doing It Wrong",
     description:
       "A Stitchr sample that uses a corrective creator hook before showing a fitness-app progress demo.",
     kind: "Stitchr stitch",
@@ -262,6 +279,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-21",
     slug: "clipr-solo-quest-xp-hook",
     title: "Clipr Solo Quest XP Hook Clip Example",
+    displayTitle: "Solo Quest XP",
     description:
       "A longer Clipr talking-head example built around a solo quest and XP-style hook for reusable source footage.",
     kind: "Clipr clip",
@@ -277,6 +295,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-05",
     slug: "stitchr-gym-routine-demo",
     title: "Stitchr Gym Routine Fitness Demo Example",
+    displayTitle: "Gym Routine",
     description:
       "A Stitchr ad example where a gym-routine hook transitions into a dark fitness-app analysis screen.",
     kind: "Stitchr stitch",
@@ -292,6 +311,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-01",
     slug: "stitchr-fitness-score-reaction",
     title: "Stitchr Fitness Score Reaction Ad Example",
+    displayTitle: "Fitness Score Reaction",
     description:
       "A Stitchr output that combines a creator reaction hook with a fitness-app percentage score demo.",
     kind: "Stitchr stitch",
@@ -307,6 +327,7 @@ export const publicVideoExamples: PublicVideoExample[] = [
     id: "clipstitchr-example-12",
     slug: "swapr-surprised-reaction-clip",
     title: "Swapr Surprised Reaction Swap Example",
+    displayTitle: "Surprised Reaction",
     description:
       "A short Swapr-style surprised reaction variation that can work as a UGC hook or reaction insert.",
     kind: "Swapr swap",

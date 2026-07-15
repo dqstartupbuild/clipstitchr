@@ -12,16 +12,11 @@ export default function TermsPage() {
   const lastUpdated = "July 15, 2026";
 
   return (
-    <article className="marketing-grid-bg px-6 py-20 md:py-28">
-      <div className="marketing-card mx-auto max-w-3xl p-6 md:p-10">
-        <header className="mb-12">
-          <p className="marketing-eyebrow mb-5">Legal</p>
-          <h1 className="marketing-heading mb-4 text-5xl text-text-primary md:text-7xl">
-            Terms of Use
-          </h1>
-          <p className="text-sm text-text-tertiary">
-            Last updated: {lastUpdated}
-          </p>
+    <article className="legal-page">
+      <div className="legal-document">
+        <header className="legal-header">
+          <p>Legal / Last updated {lastUpdated}</p>
+          <h1 className="marketing-heading">Terms of Use</h1>
         </header>
 
         <div className="prose-legal">
@@ -84,17 +79,16 @@ export default function TermsPage() {
               You can unsubscribe from marketing emails at any time.
             </p>
             <p>
-              Some optional tool extras unlock in that browser after an
-              accepted name-and-email form. This browser access is not a
-              product account or paid entitlement. A new or previously
-              opted-out address must confirm before marketing emails begin,
-              and each email course or workshop requires its own clear
-              enrollment request and email confirmation. A regular tool signup
-              never unlocks a course. Confirmed courses may save checklist
-              progress and notes across devices without creating a product
-              account. Unsubscribing stops future course emails and later
-              releases but does not remove browser value or course work already
-              released.
+              Some optional tool extras unlock in that browser after an accepted
+              name-and-email form. This browser access is not a product account
+              or paid entitlement. A new or previously opted-out address must
+              confirm before marketing emails begin, and each email course or
+              workshop requires its own clear enrollment request and email
+              confirmation. A regular tool signup never unlocks a course.
+              Confirmed courses may save checklist progress and notes across
+              devices without creating a product account. Unsubscribing stops
+              future course emails and later releases but does not remove
+              browser value or course work already released.
             </p>
           </section>
 

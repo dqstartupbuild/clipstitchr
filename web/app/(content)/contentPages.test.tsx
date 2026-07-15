@@ -81,9 +81,7 @@ describe("content pages", () => {
         description: firstPost.description,
       }),
     );
-    expect(indexMarkup).toContain(
-      "Notes on doing content when you would rather not",
-    );
+    expect(indexMarkup).toContain("Useful notes. No theater");
     expect(indexMarkup).toContain(firstPost.title);
     expect(articleMarkup).toContain(firstPost.title);
     expect(articleMarkup).toContain("Back to the blog");
@@ -178,7 +176,7 @@ describe("content pages", () => {
         title: expect.stringContaining(firstDoc.title),
       }),
     );
-    expect(indexMarkup).toContain("Start with the annoying part you want gone");
+    expect(indexMarkup).toContain("Find your next step");
     expect(indexMarkup).toContain("What helps the next ad");
     expect(indexMarkup).toContain(firstDoc.title);
     expect(indexMarkup).toContain("ClipStitchr CLI");
@@ -306,9 +304,7 @@ describe("content pages", () => {
     expect(layoutMarkup).toContain("Case studies");
     expect(layoutMarkup).toContain("Tools");
     expect(layoutMarkup).toContain("Pricing");
-    expect(pricingMarkup).toContain(
-      "Simple pricing for content that stops eating your week",
-    );
+    expect(pricingMarkup).toContain("Pick your pace");
     expect(pricingMarkup).toContain("Stitchr ads from saved clips");
     expect(pricingMarkup).toContain("Clip scores and video reads");
     expect(pricingMarkup).toContain("$99");

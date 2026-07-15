@@ -30,7 +30,10 @@ matches its `FAQPage` structured data; and `WebApplication` structured data.
 One typed catalog owns the fifty stable tool keys, portfolio numbers, formats,
 categories, paths, index summaries, keywords, related tools, sitemap values,
 icons, and fixed TikTok identities.
-The hub renders every catalog entry. Each tool page links back to the hub and
+The hub renders every catalog entry as a numbered workbench row with a working
+text search and category filter. It uses the shared warm campaign palette,
+tonal surfaces, bare icons, compact type hierarchy, and square geometry rather
+than a generic marketing card grid. Each tool page links back to the hub and
 to two related tools through `ToolDiscoveryLinks`. The public header and footer
 also link to `/tools`, and all fifty-one routes are present in the sitemap and the
 LLM-facing public-page list.
@@ -229,6 +232,13 @@ web/
 The shared discovery surface also updates `web/app/site-header.tsx`,
 `web/app/site-footer.tsx`, `web/lib/site.ts`, `web/lib/llms.ts`, the sitemap,
 and the fixed PostHog and TikTok page classifiers.
+
+Shared resource pages use `ResourceHero`, `ResourceGuide`, `ResourceFaq`, and
+`ResourcePricingCta` for a consistent field-guide structure. Calculator and
+checker routes keep their focused working controls while the public shell
+normalizes legacy purple accents, pill metadata, large rounded corners, and
+decorative shadows into the same copper-and-graphite system. Progress tracks
+and direct-manipulation handles keep the geometry required by their function.
 
 ## Use Cases
 

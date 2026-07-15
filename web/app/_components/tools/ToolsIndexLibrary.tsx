@@ -47,12 +47,12 @@ export function ToolsIndexLibrary() {
   }, [category, query]);
 
   return (
-    <section className="mt-12" aria-label="App marketing tools">
-      <div className="marketing-card grid gap-4 p-5 md:grid-cols-2 md:p-6">
+    <section className="tools-index-library" aria-label="App marketing tools">
+      <div className="tools-index-controls">
         <label className="grid gap-2 text-sm font-semibold text-text-primary">
           Search all 50 resources
           <input
-            className="h-11 rounded-lg border border-border bg-white px-3 text-sm outline-none focus:border-accent"
+            className="h-11 border border-border bg-white px-3 text-sm outline-none focus:border-accent"
             onChange={(event) => setQuery(event.currentTarget.value)}
             placeholder="Try hooks, UGC, video, budget, or calendar"
             type="search"
@@ -62,7 +62,7 @@ export function ToolsIndexLibrary() {
         <label className="grid gap-2 text-sm font-semibold text-text-primary">
           Category
           <select
-            className="h-11 rounded-lg border border-border bg-white px-3 text-sm outline-none focus:border-accent"
+            className="h-11 border border-border bg-white px-3 text-sm outline-none focus:border-accent"
             onChange={(event) =>
               setCategory(
                 event.currentTarget.value as keyof typeof categoryLabels,
@@ -85,13 +85,14 @@ export function ToolsIndexLibrary() {
         Showing {visibleTools.length} of {publicToolKeys.length}
       </p>
       {visibleTools.length ? (
-        <div className="mt-5 grid gap-6 md:grid-cols-2">
-          {visibleTools.map((tool) => (
+        <div className="tools-index-list">
+          {visibleTools.map((tool, index) => (
             <ToolIndexCard
               description={tool.description}
               eyebrow={`${tool.eyebrow} · ${tool.format}`}
               href={tool.pathname}
               icon={<PublicToolIcon iconKey={tool.iconKey} />}
+              index={index}
               key={tool.key}
               title={tool.name}
             />

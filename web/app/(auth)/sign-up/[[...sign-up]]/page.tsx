@@ -14,7 +14,7 @@ export default function SignUpPage() {
   return (
     <AuthPageShell
       eyebrow="Private beta"
-      title="Turn raw footage into finished ads while access is still private."
+      title="Private access. Finished ads."
       description="Join if you are trying to grow a mobile app on TikTok and Reels without rebuilding the same editing workflow every week."
     >
       <WaitlistForm />

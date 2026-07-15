@@ -50,7 +50,7 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
   ].filter(Boolean);
 
   return (
-    <div className="marketing-grid-bg px-6 py-20 md:py-28">
+    <div className="case-study-detail-page">
       {structuredData.map((data, index) => (
         <script
           key={index}
@@ -59,22 +59,18 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
         />
       ))}
 
-      <div className="mx-auto max-w-6xl">
-        <Link
-          href="/case-studies"
-          className="text-sm font-semibold text-text-tertiary hover:text-accent-dark"
-        >
+      <div className="case-study-detail-inner">
+        <Link href="/case-studies" className="public-back-link">
           Back to case studies
         </Link>
 
-        <header className="mt-8 space-y-8">
-          <div className="max-w-4xl">
-            <p className="marketing-eyebrow">
-              {caseStudy.companyName} case study
-            </p>
-            <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
-              {caseStudy.title}
+        <header className="case-study-detail-header">
+          <div>
+            <p>{caseStudy.companyName} case study</p>
+            <h1 className="marketing-heading">
+              {caseStudy.displayTitle ?? caseStudy.title}
             </h1>
+            <p className="case-study-detail-deck">{caseStudy.title}</p>
           </div>
 
           <CaseStudyFeatureImage
@@ -93,9 +89,7 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
 
           <aside className="lg:pt-4">
             <div className="marketing-card sticky top-8 p-5">
-              <p className="text-sm font-bold text-text-primary">
-                Tools used
-              </p>
+              <p className="text-sm font-bold text-text-primary">Tools used</p>
               <ul className="mt-4 space-y-2 text-sm text-text-secondary">
                 {caseStudy.tools.map((tool) => (
                   <CaseStudyToolListItem key={tool.label} tool={tool} />

@@ -17,11 +17,11 @@ export function HeaderAuthActions({
   const { isLoaded, isSignedIn } = useUser();
   const isMobile = variant === "mobile";
   const secondaryButtonClassName = isMobile
-    ? "inline-flex h-9 items-center rounded-md px-2 text-xs font-semibold text-text-secondary"
-    : "inline-flex h-10 items-center rounded-md px-3 text-sm font-semibold text-text-secondary transition-colors hover:text-text-primary";
+    ? "header-auth-secondary inline-flex h-9 items-center px-2 text-xs font-semibold text-text-secondary"
+    : "header-auth-secondary inline-flex h-10 items-center px-3 text-sm font-semibold text-text-secondary transition-colors hover:text-text-primary";
   const primaryButtonClassName = isMobile
-    ? "inline-flex h-9 items-center rounded-md bg-accent px-3 text-xs font-semibold text-white"
-    : "inline-flex h-10 items-center gap-2 rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-light";
+    ? "header-auth-primary inline-flex h-9 items-center bg-accent px-3 text-xs font-semibold text-text-inverse"
+    : "header-auth-primary inline-flex h-10 items-center gap-2 bg-accent px-4 text-sm font-semibold text-text-inverse transition-colors hover:bg-accent-light";
 
   if (!isLoaded) {
     return <div aria-hidden className={isMobile ? "h-9 w-28" : "h-10 w-40"} />;

@@ -24,6 +24,7 @@ const faqEntrySchema = z.object({
 
 export const baseContentDocumentSchema = z.object({
   title: z.string().trim().min(1),
+  displayTitle: z.string().trim().min(1).max(55).optional(),
   seoTitle: z.string().trim().min(50).max(70),
   slug: slugSchema,
   description: z.string().trim().min(110).max(170),

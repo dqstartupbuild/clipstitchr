@@ -9,7 +9,7 @@ describe("ToolsIndexPage", () => {
   it("links founders to all fifty public tools and paid plans", () => {
     const markup = renderToStaticMarkup(<ToolsIndexPage />);
 
-    expect(markup).toContain("Make the plan before you make the ad.");
+    expect(markup).toContain("Plan. Make. Publish.");
     for (const key of publicToolKeys) {
       const tool = publicToolCatalog[key];
 

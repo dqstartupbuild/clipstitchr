@@ -1,6 +1,7 @@
 type ArticleHeaderProps = {
   category: string;
   title: string;
+  displayTitle?: string;
   description: string;
   author: string;
   date: string;
@@ -11,6 +12,7 @@ type ArticleHeaderProps = {
 export function ArticleHeader({
   category,
   title,
+  displayTitle,
   description,
   author,
   date,
@@ -18,27 +20,22 @@ export function ArticleHeader({
   tags,
 }: ArticleHeaderProps) {
   return (
-    <header className="mt-8">
-      <p className="marketing-eyebrow">{category}</p>
-      <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
-        {title}
-      </h1>
-      <p className="mt-6 text-lg leading-8 text-text-secondary">
-        {description}
-      </p>
-      <div className="mt-6 flex flex-wrap gap-4 text-sm text-text-tertiary">
-        <span>{author}</span>
-        <span>.</span>
-        <span>{date}</span>
-        <span>.</span>
+    <header className="article-header">
+      <div className="article-header-meta">
+        <span>{category}</span>
         <span>{readingTimeMinutes} min read</span>
       </div>
-      <div className="mt-6 flex flex-wrap gap-3">
-        {tags.map((tag) => (
-          <span
-            key={tag}
-            className="rounded-md border border-border bg-surface px-3 py-1 text-xs text-text-tertiary"
-          >
+      <h1 className="marketing-heading">{displayTitle ?? title}</h1>
+      <p className="article-header-description">{description}</p>
+      <div className="article-byline">
+        <span>{author}</span>
+        <span>/</span>
+        <span>{date}</span>
+      </div>
+      <div className="article-tags">
+        {tags.map((tag, index) => (
+          <span key={tag}>
+            {index > 0 ? " / " : ""}
             {tag}
           </span>
         ))}

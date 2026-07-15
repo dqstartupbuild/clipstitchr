@@ -4,15 +4,16 @@ import type { PublicVideoExample } from "@/lib/clipstitchr/types/PublicVideoExam
 
 type ExampleOutputCardProps = {
   example: PublicVideoExample;
+  index: number;
 };
 
-export function ExampleOutputCard({ example }: ExampleOutputCardProps) {
+export function ExampleOutputCard({ example, index }: ExampleOutputCardProps) {
   return (
     <Link
       href={createPublicVideoExamplePath(example)}
-      className="group overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_20px_55px_rgba(0,0,0,0.22)] transition-colors hover:border-accent"
+      className="example-output-card"
     >
-      <div className="aspect-[9/16] bg-surface-elevated">
+      <div className="example-output-frame">
         <video
           aria-label={example.title}
           className="h-full w-full object-cover"
@@ -23,16 +24,11 @@ export function ExampleOutputCard({ example }: ExampleOutputCardProps) {
           src={example.videoSrc}
         />
       </div>
-      <div className="p-5">
-        <p className="text-xs font-bold uppercase tracking-normal text-accent-dark">
-          {example.kind}
-        </p>
-        <h2 className="marketing-subheading mt-2 text-xl text-text-primary group-hover:text-accent-dark">
-          {example.title}
-        </h2>
-        <p className="mt-3 text-sm leading-6 text-text-secondary">
-          {example.description}
-        </p>
+      <div className="example-output-caption">
+        <span>{String(index + 1).padStart(2, "0")}</span>
+        <p>{example.kind}</p>
+        <h2>{example.displayTitle}</h2>
+        <p>{example.description}</p>
       </div>
     </Link>
   );

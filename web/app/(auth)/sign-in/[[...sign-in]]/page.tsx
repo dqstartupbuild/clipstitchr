@@ -24,20 +24,33 @@ export default function SignInPage() {
         fallbackRedirectUrl="/dashboard"
         appearance={{
           variables: {
-            colorPrimary: "#6c47ff",
-            colorText: "#111827",
-            colorTextSecondary: "#64748b",
-            borderRadius: "0.5rem",
-            fontFamily: "var(--font-plus-jakarta-sans)",
+            colorPrimary: "#ad7659",
+            colorText: "#201510",
+            colorTextSecondary: "#725f53",
+            borderRadius: "0.2rem",
+            fontFamily: "Arial, Helvetica, sans-serif",
           },
           elements: {
-            rootBox: "w-full max-w-md",
-            cardBox: "w-full shadow-sm border border-border",
-            card: "w-full",
-            headerTitle: "text-text-primary",
-            headerSubtitle: "text-text-secondary",
-            formButtonPrimary: "bg-accent hover:bg-accent-dark",
-            footerActionLink: "text-accent-dark",
+            rootBox: { width: "100%", maxWidth: "28rem" },
+            cardBox: {
+              width: "100%",
+              border: 0,
+              borderRadius: "0.2rem",
+              boxShadow: "none",
+            },
+            card: {
+              width: "100%",
+              borderRadius: "0.2rem",
+              boxShadow: "none",
+            },
+            headerTitle: { color: "#f5f0e9" },
+            headerSubtitle: { color: "#a7998e" },
+            formButtonPrimary: {
+              backgroundColor: "#ad7659",
+              borderRadius: "0.2rem",
+              boxShadow: "none",
+            },
+            footerActionLink: { color: "#ddb498" },
           },
         }}
       />

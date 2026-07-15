@@ -94,7 +94,7 @@ describe("WaitlistForm", () => {
     const markup = renderToStaticMarkup(<WaitlistForm />);
 
     expect(markup).toContain("Invite-only beta");
-    expect(markup).toContain("Join the ClipStitchr waitlist");
+    expect(markup).toContain("Join the waitlist");
     expect(markup).toContain('autoComplete="name"');
     expect(markup).toContain('type="email"');
     expect(markup).toContain("Join waitlist");
@@ -107,9 +107,11 @@ describe("WaitlistForm", () => {
     const [form] = findElements(tree, (element) => element.type === "form");
     const preventDefault = vi.fn();
 
-    await (form.props.onSubmit as (event: {
-      preventDefault: () => void;
-    }) => Promise<void>)({ preventDefault });
+    await (
+      form.props.onSubmit as (event: {
+        preventDefault: () => void;
+      }) => Promise<void>
+    )({ preventDefault });
 
     expect(preventDefault).toHaveBeenCalledOnce();
     expect(mocks.submitWaitlistEntry).toHaveBeenCalledWith({
@@ -148,9 +150,11 @@ describe("WaitlistForm", () => {
     const tree = WaitlistForm();
     const [form] = findElements(tree, (element) => element.type === "form");
 
-    await (form.props.onSubmit as (event: {
-      preventDefault: () => void;
-    }) => Promise<void>)({ preventDefault: vi.fn() });
+    await (
+      form.props.onSubmit as (event: {
+        preventDefault: () => void;
+      }) => Promise<void>
+    )({ preventDefault: vi.fn() });
 
     expect(mocks.setStateCalls[2]).toHaveBeenCalledWith(
       "Too many waitlist submissions. Try again later.",
@@ -195,13 +199,13 @@ describe("WaitlistForm", () => {
       const tree = WaitlistForm();
       const [form] = findElements(tree, (element) => element.type === "form");
 
-      await (form.props.onSubmit as (event: {
-        preventDefault: () => void;
-      }) => Promise<void>)({ preventDefault: vi.fn() });
+      await (
+        form.props.onSubmit as (event: {
+          preventDefault: () => void;
+        }) => Promise<void>
+      )({ preventDefault: vi.fn() });
 
-      expect(mocks.setStateCalls[2]).toHaveBeenCalledWith(
-        testCase.userMessage,
-      );
+      expect(mocks.setStateCalls[2]).toHaveBeenCalledWith(testCase.userMessage);
       expect(mocks.trackPostHogEvent).toHaveBeenCalledWith(
         "waitlist_join_failed",
         {
@@ -226,15 +230,17 @@ describe("WaitlistForm", () => {
     const inputs = findElements(tree, (element) => element.type === "input");
     const [form] = findElements(tree, (element) => element.type === "form");
 
-    (inputs[0].props.onChange as (event: { target: { value: string } }) => void)(
-      { target: { value: "Grace Hopper" } },
-    );
-    (inputs[1].props.onChange as (event: { target: { value: string } }) => void)(
-      { target: { value: "grace@example.com" } },
-    );
-    await (form.props.onSubmit as (event: {
-      preventDefault: () => void;
-    }) => Promise<void>)({ preventDefault: vi.fn() });
+    (
+      inputs[0].props.onChange as (event: { target: { value: string } }) => void
+    )({ target: { value: "Grace Hopper" } });
+    (
+      inputs[1].props.onChange as (event: { target: { value: string } }) => void
+    )({ target: { value: "grace@example.com" } });
+    await (
+      form.props.onSubmit as (event: {
+        preventDefault: () => void;
+      }) => Promise<void>
+    )({ preventDefault: vi.fn() });
 
     expect(markup).toContain("Existing error");
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith("Grace Hopper");

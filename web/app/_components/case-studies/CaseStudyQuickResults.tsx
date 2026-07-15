@@ -7,13 +7,11 @@ type CaseStudyQuickResultsProps = {
   }>;
 };
 
-export function CaseStudyQuickResults({
-  metrics,
-}: CaseStudyQuickResultsProps) {
+export function CaseStudyQuickResults({ metrics }: CaseStudyQuickResultsProps) {
   return (
-    <section className="marketing-card p-5 md:p-6">
-      <p className="text-sm font-bold text-text-primary">Quick results</p>
-      <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-5">
+    <section className="case-study-quick-results">
+      <p>Quick results</p>
+      <div>
         {metrics.map((metric) => (
           <CaseStudyHeroMetric
             key={metric.label}
