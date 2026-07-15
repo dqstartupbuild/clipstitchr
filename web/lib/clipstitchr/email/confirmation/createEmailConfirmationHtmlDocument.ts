@@ -24,6 +24,8 @@ export function createEmailConfirmationHtmlDocument({
       p { margin: 16px 0 0; color: #55514a; font-size: 1rem; line-height: 1.7; }
       button { margin-top: 24px; min-height: 46px; border: 0; border-radius: 10px; padding: 0 20px; background: #ec6a3a; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
       button:focus-visible { outline: 3px solid #191919; outline-offset: 3px; }
+      a { display: inline-flex; min-height: 46px; align-items: center; margin-top: 24px; border-radius: 10px; padding: 0 20px; background: #ec6a3a; color: #fff; font-weight: 700; text-decoration: none; }
+      a:focus-visible { outline: 3px solid #191919; outline-offset: 3px; }
     </style>
   </head>
   <body>

@@ -153,6 +153,21 @@ describe("PublicToolGateCapture", () => {
     );
   });
 
+  it("keeps confirmed course access visible when delivery is unavailable", () => {
+    const markup = renderToStaticMarkup(
+      <PublicToolGateCapture
+        hasCourseAccess
+        hasFunctionalUnlock
+        isEmailProviderReady={false}
+        toolKey="five-day-app-content-sprint"
+        variant="control"
+      />,
+    );
+
+    expect(markup).toBe("");
+    expect(mocks.toolLeadCaptureForm).not.toHaveBeenCalled();
+  });
+
   it.each([
     "five-day-app-content-sprint",
     "ugc-to-app-ad-mini-course",

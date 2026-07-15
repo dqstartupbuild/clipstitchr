@@ -93,6 +93,9 @@ import { publicToolGateModeValidator } from "./validators/publicToolGateMode";
 import { publicToolGateVariantValidator } from "./validators/publicToolGateVariant";
 import { toolLeadInteractionTypeValidator } from "./validators/toolLeadInteractionType";
 import { toolLeadSourceValidator } from "./validators/toolLeadSource";
+import { courseEntitlementStatusValidator } from "./validators/courseEntitlementStatus";
+import { courseKeyValidator } from "./validators/courseKey";
+import { courseVersionValidator } from "./validators/courseVersion";
 
 export default defineSchema({
   waitlist: defineTable({
@@ -186,8 +189,44 @@ export default defineSchema({
   })
     .index("by_token_hash", ["tokenHash"])
     .index("by_contact_issued", ["contactId", "issuedAt"]),
+  courseEntitlements: defineTable({
+    contactId: v.id("marketingContacts"),
+    courseKey: courseKeyValidator,
+    courseVersion: courseVersionValidator,
+    status: courseEntitlementStatusValidator,
+    requestedAt: v.number(),
+    activatedAt: v.optional(v.number()),
+    releaseStoppedAt: v.optional(v.number()),
+    updatedAt: v.number(),
+  })
+    .index("by_contact_course_version", [
+      "contactId",
+      "courseKey",
+      "courseVersion",
+    ])
+    .index("by_contact_status", ["contactId", "status"]),
+  courseAccessSessions: defineTable({
+    contactId: v.id("marketingContacts"),
+    tokenHash: v.string(),
+    issuedAt: v.number(),
+    expiresAt: v.number(),
+    lastUsedAt: v.number(),
+    revokedAt: v.optional(v.number()),
+  })
+    .index("by_token_hash", ["tokenHash"])
+    .index("by_contact_issued", ["contactId", "issuedAt"]),
+  courseProgressItems: defineTable({
+    entitlementId: v.id("courseEntitlements"),
+    itemId: v.string(),
+    completed: v.boolean(),
+    note: v.string(),
+    updatedAt: v.number(),
+  })
+    .index("by_entitlement_item", ["entitlementId", "itemId"])
+    .index("by_entitlement_updated", ["entitlementId", "updatedAt"]),
   emailConfirmationTokens: defineTable({
     contactId: v.id("marketingContacts"),
+    courseKey: v.optional(courseKeyValidator),
     tokenRecordId: v.string(),
     tokenDigest: v.string(),
     generation: v.number(),

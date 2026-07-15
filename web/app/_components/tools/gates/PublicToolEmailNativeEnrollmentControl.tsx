@@ -17,15 +17,15 @@ export function PublicToolEmailNativeEnrollmentControl({
   return (
     <section className="marketing-card mb-6 p-6 md:p-8">
       <p className="text-sm font-bold text-accent-dark">
-        Already used another free tool here?
+        Email already confirmed on this device?
       </p>
       <h2 className="marketing-subheading mt-3 text-3xl text-text-primary">
-        Request this email series with one click.
+        Open this course with one click.
       </h2>
       <p className="mt-3 leading-7 text-text-secondary">
-        We can use the email securely linked to this browser. The series starts
-        only when that address is confirmed and eligible for marketing. You can
-        also use the form below to confirm or update your details.
+        We can use the confirmed email securely linked to this device. This
+        opens only this course and starts its lesson emails. The regular public
+        tools stay unlocked too.
       </p>
       {status === "accepted" ? (
         <div
@@ -37,9 +37,7 @@ export function PublicToolEmailNativeEnrollmentControl({
             className="mt-0.5 h-5 w-5 shrink-0 text-accent-dark"
           />
           <p className="text-sm leading-6 text-text-secondary">
-            Request received. If the linked email is ready for marketing, the
-            series can start. The form below stays available if confirmation or
-            updated details are needed.
+            Course request received. Refresh this page to open the workspace.
           </p>
         </div>
       ) : (
@@ -52,7 +50,7 @@ export function PublicToolEmailNativeEnrollmentControl({
           >
             {status === "submitting"
               ? "Requesting..."
-              : "Request email enrollment"}
+              : "Open this course"}
             <ArrowRight aria-hidden className="h-4 w-4" />
           </button>
           {status === "error" ? (

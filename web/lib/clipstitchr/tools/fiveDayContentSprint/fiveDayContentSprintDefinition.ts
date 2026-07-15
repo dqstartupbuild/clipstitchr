@@ -7,7 +7,7 @@ export const fiveDayContentSprintDefinition: GuidedResourceDefinition = {
     {
       question: "Will the five days be emailed to me?",
       answer:
-        "If you explicitly request the email series, it can begin after your email is confirmed. Your browser workspace unlocks right away, keeps your notes here, and can download the whole sprint as Markdown.",
+        "Yes. After you confirm your email, Day 1 opens right away and each next day opens 24 hours later. Your work is saved so you can continue on another device.",
     },
     {
       question: "Will I finish with five edited ads?",
@@ -17,11 +17,10 @@ export const fiveDayContentSprintDefinition: GuidedResourceDefinition = {
   ],
   guideParagraphs: [
     "Block about thirty focused minutes per day. The work builds in order, so resist writing concepts before you know which footage and proof are actually available.",
-    "Use the note fields as your working document. Progress is stored only in this browser, and the download gives you a portable copy whenever you want one.",
+    "Use the note fields as your working document. Your confirmed course access keeps progress across devices, and the download gives you a portable copy whenever you want one.",
     "A complete sprint ends with five source-aware concepts and a learning board. It does not hide missing footage behind polished copy.",
   ],
   guideTitle: "Move from scattered clips to a shoot-ready week.",
-  progressStorageKey: "clipstitchr-five-day-content-sprint-v1",
   resourceKey: "five-day-app-content-sprint",
   sections: [
     {

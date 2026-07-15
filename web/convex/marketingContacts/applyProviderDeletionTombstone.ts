@@ -1,5 +1,6 @@
 import type { MutationCtx } from "../_generated/server";
 import { cancelEmailProviderOperationsForContact } from "../email/cancelEmailProviderOperationsForContact";
+import { stopCourseReleasesForContact } from "../courseAccess/stopCourseReleasesForContact";
 
 export async function applyProviderDeletionTombstone(
   ctx: MutationCtx,
@@ -58,6 +59,7 @@ export async function applyProviderDeletionTombstone(
     providerContactId: args.providerContactId ?? contact.providerContactId,
     updatedAt: args.appliedAt,
   });
+  await stopCourseReleasesForContact(ctx, contact._id, args.eventAt);
   await cancelEmailProviderOperationsForContact(
     ctx,
     contact._id,

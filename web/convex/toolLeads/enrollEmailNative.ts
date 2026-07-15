@@ -10,6 +10,9 @@ import { marketingWorkflowVersionValidator } from "../validators/marketingWorkfl
 import { publicToolGateVariantValidator } from "../validators/publicToolGateVariant";
 import { toolLeadSourceValidator } from "../validators/toolLeadSource";
 import { getEmailNativeWorkflowKeyForSource } from "./getEmailNativeWorkflowKeyForSource";
+import { activateCourseEntitlement } from "../courseAccess/activateCourseEntitlement";
+import { getValidCourseAccessSession } from "../courseAccess/getValidCourseAccessSession";
+import { isCourseKey } from "../../lib/clipstitchr/tools/courses/isCourseKey";
 
 const digestPattern = /^[a-f0-9]{64}$/;
 
@@ -18,7 +21,7 @@ export const enrollEmailNative = mutation({
     clientKey: v.string(),
     enrolledAt: v.number(),
     gateVariant: publicToolGateVariantValidator,
-    recognitionTokenHash: v.string(),
+    courseSessionTokenHash: v.string(),
     secret: v.string(),
     source: toolLeadSourceValidator,
     workflowKey: marketingWorkflowKeyValidator,
@@ -30,9 +33,10 @@ export const enrollEmailNative = mutation({
 
     if (
       !digestPattern.test(args.clientKey) ||
-      !digestPattern.test(args.recognitionTokenHash) ||
+      !digestPattern.test(args.courseSessionTokenHash) ||
       !Number.isFinite(args.enrolledAt) ||
       !expectedWorkflowKey ||
+      !isCourseKey(args.source) ||
       expectedWorkflowKey !== args.workflowKey ||
       args.workflowVersion !== "v1"
     ) {
@@ -47,22 +51,11 @@ export const enrollEmailNative = mutation({
       throws: true,
     });
 
-    const token = await ctx.db
-      .query("browserRecognitionTokens")
-      .withIndex("by_token_hash", (query) =>
-        query.eq("tokenHash", args.recognitionTokenHash),
-      )
-      .unique();
-
-    if (
-      !token ||
-      token.revokedAt !== undefined ||
-      token.expiresAt <= args.enrolledAt
-    ) {
-      return { accepted: true as const };
-    }
-
-    const contact = await ctx.db.get(token.contactId);
+    const access = await getValidCourseAccessSession(ctx, {
+      accessedAt: args.enrolledAt,
+      tokenHash: args.courseSessionTokenHash,
+    });
+    const contact = access?.contact ?? null;
 
     if (
       !contact ||
@@ -112,6 +105,15 @@ export const enrollEmailNative = mutation({
       if (!workflowContactLimit.ok || !workflowGlobalLimit.ok) {
         return { accepted: true as const };
       }
+    }
+
+    if (marketingEligible) {
+      await activateCourseEntitlement(ctx, {
+        activatedAt: args.enrolledAt,
+        contactId: contact._id,
+        courseKey: args.source,
+        courseVersion: args.workflowVersion,
+      });
     }
 
     const enrollment = await getOrCreateMarketingWorkflowEnrollment(ctx, {

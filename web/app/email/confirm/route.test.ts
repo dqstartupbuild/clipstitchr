@@ -159,6 +159,8 @@ describe("email confirmation route", () => {
     expect(mocks.confirmEmailConsentWithConvex).toHaveBeenCalledWith({
       clientKey: expect.stringMatching(/^[a-f0-9]{64}$/),
       confirmedAt: now,
+      courseSessionExpiresAt: now + 180 * 24 * 60 * 60 * 1_000,
+      courseSessionTokenHash: expect.stringMatching(/^[a-f0-9]{64}$/),
       reference,
     });
     expect(response.headers.get("set-cookie")).toContain("Max-Age=0");
@@ -222,5 +224,23 @@ describe("email confirmation route", () => {
     expect(response.status).toBe(200);
     expect(html).toContain("Link unavailable");
     expect(html).not.toContain("Email confirmed");
+  });
+
+  it("sets a separate HttpOnly session only for a confirmed course", async () => {
+    mocks.confirmEmailConsentWithConvex.mockResolvedValueOnce({
+      courseKey: "five-day-app-content-sprint",
+      status: "confirmed",
+    });
+
+    const response = await POST(createConfirmationPost());
+    const html = await response.text();
+    const setCookie = response.headers.get("set-cookie") ?? "";
+
+    expect(setCookie).toContain("clipstitchr_course_access_session=");
+    expect(setCookie).toContain("HttpOnly");
+    expect(setCookie).toContain("SameSite=Strict");
+    expect(html).toContain(
+      'href="/tools/five-day-app-content-sprint"',
+    );
   });
 });

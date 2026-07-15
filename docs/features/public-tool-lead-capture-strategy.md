@@ -81,7 +81,7 @@ full-page interruption.
 | Open core result | 16 | Complete answer, verdict, estimate, or recommendation | Optional companion resource, saved report, or relevant mailing-list path |
 | Useful preview | 13 | A complete and independently useful portion of the personalized result | Remaining depth, variations, or implementation detail |
 | Open resource with gated portability | 18 | The complete resource remains usable or browsable on the page | Downloadable, copyable, saved, or editable version |
-| Email-native experience | 3 | Curriculum, outcomes, examples, and a sample lesson or day | Guided course, sprint, or workshop delivery after that delivery system exists |
+| Email-native experience | 3 | Curriculum, outcomes, examples, and locked lesson titles | Access to the selected course, sprint, or workshop after explicit confirmation |
 
 The four groups cover all fifty portfolio numbers exactly once.
 
@@ -171,27 +171,25 @@ copy, or organized collection.
 
 The typed catalog, shared resource boundaries, and server-derived enrollment
 endpoint recognize these three email-native experiences. Their routes evaluate
-the full Loops readiness contract and remain in complete browser-local control
-when any required setting is absent. When both readiness and the approved
-rollout select `hybrid-v1`, the public sample stays open and the explicit form
-remains visible. A recognized browser may also request the catalog-defined
-sequence with one click; the client cannot choose a Workflow key, token, or
-contact.
+the full Loops readiness contract. Course lesson bodies stay server-side until
+the visitor explicitly confirms that exact course. When readiness and the
+approved rollout select `hybrid-v1`, the explicit form is visible. A verified
+app-owned course session may also request another catalog-defined course with
+one click; the client cannot choose a Workflow key, token, or contact.
 
 | # | Catalog capability | Catalog key | Public landing-page value | Future delivered experience |
 | ---: | --- | --- | --- | --- |
-| 42 | Five-Day App Content Sprint | `five-day-app-content-sprint` | Curriculum, outcomes, and a complete sample day | Five-message guided sequence |
-| 43 | UGC-to-App-Ad Mini-Course | `ugc-to-app-ad-mini-course` | Curriculum and a complete sample lesson | Five-lesson sequence and browser worksheets |
-| 44 | Build Your First Creative Testing System Workshop | `app-creative-testing-system-workshop` | Agenda, outcomes, and a useful preview | Enrollment email, self-guided workshop access, and Markdown workbook |
+| 42 | Five-Day App Content Sprint | `five-day-app-content-sprint` | Curriculum, outcomes, and locked day titles | Five-message guided sequence and app-owned progress |
+| 43 | UGC-to-App-Ad Mini-Course | `ugc-to-app-ad-mini-course` | Curriculum and locked lesson titles | Five-lesson sequence and app-owned progress |
+| 44 | Build Your First Creative Testing System Workshop | `app-creative-testing-system-workshop` | Agenda, outcomes, and locked section titles | Full self-guided workshop and Markdown workbook |
 
 Activating these entry gates still requires verified Loops readiness, consent
 and unsubscribe handling, delivery retries, rate limits before each provider
 operation, bounce handling, failure monitoring, and a functional enrollment
-control. A generic browser-local unlock may reveal the self-guided browser
-content, but it never enrolls the sequence and never removes the explicit
-enrollment form. Development and production provider assets now exist in
-separate Loops environments, but production enrollment and delivery remain
-disabled until the separately approved rollout reaches these tools.
+control. A generic browser-local unlock never reveals course content, enrolls a
+sequence, or removes the explicit enrollment form. Development and production
+provider assets remain separate, and the approved production rollout uses the
+same exact-course entitlement checks.
 Loops dashboard double opt-in is disabled and, in any case, does not cover
 API-created contacts; it does not replace ClipStitchr's app-owned confirmation.
 
@@ -221,14 +219,15 @@ follows one consistent sequence:
 9. A relevant paid ClipStitchr CTA appears after the visitor receives that
    value.
 
-Email-native experiences are the deliberate exception. Their public page and
-sample remain open, but starting the delivered sequence becomes the requested
-value exchange once delivery is verified and explicitly enabled. The routes
-fail closed to provider-disabled control, so they do not hide lessons or
-promise an inbox sequence when readiness is incomplete. A visitor with a valid
-server-side browser-recognition cookie can request enrollment without
-re-entering name and email, while the regular form remains available for an
-unrecognized browser, confirmation, or updated details.
+Email-native experiences are the deliberate exception. Their public pages
+explain the curriculum and show locked titles, but no lesson body is sent to
+the browser before explicit confirmation. When provider readiness is
+incomplete, the lessons stay locked and the page does not promise an inbox
+sequence. A browser-recognition cookie never unlocks a course. The explicit
+course confirmation creates a separate app-owned HttpOnly course session; that
+verified session can request another course without re-entering name and
+email, while the regular form remains available on a new device or for updated
+details.
 
 Buttons use the promised outcome, such as “Unlock my complete plan,” “Unlock all
 8 hooks,” or “Unlock the download.” Generic “Submit” copy is not used.
@@ -246,7 +245,15 @@ from tool behavior rather than a longer form.
 One accepted signup unlocks all browser-local companion, preview, and
 portability value on that browser. It does not silently enroll the contact in
 the three email-native sequences; each sequence still requires an explicit
-one-click enrollment action.
+enrollment action.
+
+This portfolio unlock is directional. A regular tool signup never creates a
+course entitlement. A signup for one course also unlocks regular browser-local
+tool value, but confirmation activates only that course. It does not unlock the
+other course or workshop. The sprint and mini-course release one section every
+24 hours from activation; the workshop opens in full. Course progress is saved
+per item in Convex for cross-device continuation and is not part of the Loops
+contact projection.
 
 Page-readable browser storage contains only a non-identifying local unlock
 marker, never the submitted name, email, or recognition token. The server sets
@@ -453,7 +460,8 @@ limits submissions. Any implementation change must preserve its same-origin,
 body-size, per-client, per-email, and global protection.
 
 Token issuance, token-recognized interactions, confirmation sends,
-confirmation-token redemption, and email-native enrollment are new
+confirmation-token redemption, email-native enrollment, course workspace
+reads, and course progress writes are new
 user-triggered backend operations. They require server-side validation,
 per-token or per-contact limits, per-client limits, and an appropriate global
 limit before a contact record, analytics record, or provider call is created.
@@ -582,7 +590,7 @@ arbitrary Workflow event or transactional template ID.
 | Optimize first for organic search and trust, then qualified email growth. | Gate every result to maximize immediate submissions. | Search visitors need a real win before the mailing-list exchange feels credible. |
 | Use a 16 open / 13 preview / 18 portability / 3 email-native split. | Keep all fifty open or apply one gate to every tool. | Search intent and the divisibility of each result differ across the portfolio. |
 | Require both name and email. | Require email only or add a longer qualification form. | A name supports human communication while tool behavior supplies stronger qualification than extra form questions. |
-| Unlock all browser-local gated value after one accepted signup while requiring explicit email-native enrollment. | Require a form for every tool, silently enroll every sequence, or build paid-style entitlements. | Repeated forms damage trust, while explicit enrollment prevents unwanted course or workshop messages. |
+| Unlock regular browser-local gated value after one accepted signup while keeping course entitlements directional. | Require a form for every regular tool, silently enroll every sequence, or let the portfolio marker unlock courses. | Repeated regular-tool forms damage trust, while per-course confirmation prevents unwanted course access and messages. |
 | Unlock browser-local value before promising email delivery. | Claim that a provider-disabled flow sends files, reports, or courses. | The browser value is immediate, while readiness checks keep inbox promises and live sends disabled until Loops is configured and verified. |
 | Use an opaque unlock token and record accepted captures plus bounded later interactions separately from the canonical contact. | Store only the first waitlist source, use a boolean that cannot support attribution, or keep contact details in the browser. | Multi-tool behavior is necessary for qualification and first/latest-source attribution without placing name or email on the device. |
 | Expire server-linked recognition after 180 days while preserving a local unlock marker. | Keep a permanent contact-linked browser token or revoke already-earned value on unsubscribe. | Finite recognition reduces the privacy lifetime; unsubscribe and deletion stop linked behavior without turning a free resource into DRM. |

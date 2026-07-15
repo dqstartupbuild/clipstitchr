@@ -114,7 +114,7 @@ describe("PublicToolGateContentBoundary", () => {
     expect(markup).toContain("Unlocked value");
   });
 
-  it("reveals email-native content after an accepted browser unlock", () => {
+  it("requires course enrollment even after a portfolio browser unlock", () => {
     mocks.isBrowserUnlocked = true;
     const unlockedMarkup = renderBoundary({
       emailNativeEnrollmentControl: <p>Enroll now</p>,
@@ -129,7 +129,7 @@ describe("PublicToolGateContentBoundary", () => {
     });
 
     expect(unlockedMarkup).toContain("Public value");
-    expect(unlockedMarkup).toContain("Unlocked value");
+    expect(unlockedMarkup).not.toContain("Unlocked value");
     expect(unlockedMarkup).toContain("Enroll now");
     expect(enrolledMarkup).toContain("Unlocked value");
     expect(enrolledMarkup).not.toContain("Enroll now");

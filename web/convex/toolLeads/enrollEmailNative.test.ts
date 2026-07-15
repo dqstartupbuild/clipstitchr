@@ -6,12 +6,17 @@ type ConvexFunction<Args, Result> = {
 };
 
 const mocks = vi.hoisted(() => ({
+  activateCourseEntitlement: vi.fn(),
   getOrCreateMarketingWorkflowEnrollment: vi.fn(),
+  getValidCourseAccessSession: vi.fn(),
   rateLimiter: {
     limit: vi.fn(
-      async (_ctx: unknown, _bucket: string, _options: unknown) => ({
-        ok: true,
-      }),
+      async (ctx: unknown, bucket: string, options: unknown) => {
+        void ctx;
+        void bucket;
+        void options;
+        return { ok: true };
+      },
     ),
   },
 }));
@@ -19,6 +24,12 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../_generated/server", () => ({ mutation: vi.fn((value) => value) }));
 vi.mock("../auth/assertRateLimitApiSecret", () => ({
   assertRateLimitApiSecret: vi.fn(),
+}));
+vi.mock("../courseAccess/activateCourseEntitlement", () => ({
+  activateCourseEntitlement: mocks.activateCourseEntitlement,
+}));
+vi.mock("../courseAccess/getValidCourseAccessSession", () => ({
+  getValidCourseAccessSession: mocks.getValidCourseAccessSession,
 }));
 vi.mock("../email/getOrCreateMarketingWorkflowEnrollment", () => ({
   getOrCreateMarketingWorkflowEnrollment:
@@ -34,7 +45,7 @@ const args = {
   clientKey: "a".repeat(64),
   enrolledAt: 100,
   gateVariant: "hybrid-v1" as const,
-  recognitionTokenHash: "b".repeat(64),
+  courseSessionTokenHash: "b".repeat(64),
   secret: "secret",
   source: "five-day-app-content-sprint" as const,
   workflowKey: "five_day_content_sprint_enrolled" as const,
@@ -42,10 +53,6 @@ const args = {
 };
 
 function createContext(existingEnrollment: unknown = null) {
-  const token = {
-    contactId: "contact_1",
-    expiresAt: 1_000,
-  };
   const contact = {
     _id: "contact_1",
     consentStatus: "confirmed",
@@ -63,9 +70,9 @@ function createContext(existingEnrollment: unknown = null) {
     query: vi.fn((table) => {
       const chain = {
         unique: vi.fn(async () =>
-          table === "browserRecognitionTokens"
-            ? token
-            : existingEnrollment,
+          table === "marketingWorkflowEnrollments"
+            ? existingEnrollment
+            : null,
         ),
         withIndex: vi.fn((_name, callback) => {
           callback(indexQuery);
@@ -83,6 +90,19 @@ describe("explicit email-native enrollment", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.rateLimiter.limit.mockResolvedValue({ ok: true });
+    mocks.getValidCourseAccessSession.mockResolvedValue({
+      contact: {
+        _id: "contact_1",
+        consentStatus: "confirmed",
+        deletionStatus: "active",
+        leadSegment: "hooks-and-messaging",
+        marketingEligible: true,
+        subscriptionStatus: "subscribed",
+        suppressionStatus: "none",
+        verificationStatus: "verified",
+      },
+      session: { _id: "session_1" },
+    });
   });
 
   it("returns an idempotent accepted result before consuming contact quota", async () => {
@@ -103,9 +123,11 @@ describe("explicit email-native enrollment", () => {
   it("silently suppresses exhausted contact quota without revealing the token", async () => {
     const ctx = createContext();
     mocks.rateLimiter.limit.mockImplementation(
-      async (_ctx: unknown, bucket: string, _options: unknown) => ({
-        ok: bucket !== "emailNativeEnrollmentByContact",
-      }),
+      async (context: unknown, bucket: string, options: unknown) => {
+        void context;
+        void options;
+        return { ok: bucket !== "emailNativeEnrollmentByContact" };
+      },
     );
 
     await expect(getHandler(enrollEmailNative)(ctx, args)).resolves.toEqual({

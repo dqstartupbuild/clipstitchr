@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   rateLimit: vi.fn(),
   resumeHeldContactDeleteOperationsForContact: vi.fn(),
   revokeBrowserRecognitionTokensForContact: vi.fn(),
+  deleteCourseAccessForContact: vi.fn(),
 }));
 
 vi.mock("../_generated/server", () => ({
@@ -23,6 +24,9 @@ vi.mock(
       mocks.revokeBrowserRecognitionTokensForContact,
   }),
 );
+vi.mock("../courseAccess/deleteCourseAccessForContact", () => ({
+  deleteCourseAccessForContact: mocks.deleteCourseAccessForContact,
+}));
 vi.mock("../email/cancelEmailProviderOperationsForContact", () => ({
   cancelEmailProviderOperationsForContact:
     mocks.cancelEmailProviderOperationsForContact,
@@ -102,6 +106,10 @@ describe("marketing contact privacy deletion", () => {
       { throws: true },
     );
     expect(mocks.revokeBrowserRecognitionTokensForContact).toHaveBeenCalledWith(
+      ctx,
+      "contact_1",
+    );
+    expect(mocks.deleteCourseAccessForContact).toHaveBeenCalledWith(
       ctx,
       "contact_1",
     );

@@ -1,4 +1,5 @@
 import { createEmailConfirmationHtmlDocument } from "@/lib/clipstitchr/email/confirmation/createEmailConfirmationHtmlDocument";
+import type { CourseKey } from "@/lib/clipstitchr/tools/courses/CourseKey";
 
 const statusCopy = {
   confirmed: {
@@ -25,11 +26,16 @@ const statusCopy = {
 
 export function renderEmailConfirmationStatusHtml(
   status: keyof typeof statusCopy,
+  courseKey?: CourseKey,
 ) {
   const copy = statusCopy[status];
+  const courseLink =
+    status === "confirmed" && courseKey
+      ? `<a href="/tools/${courseKey}">Open your course</a>`
+      : "";
 
   return createEmailConfirmationHtmlDocument({
-    bodyHtml: `<h1>${copy.title}</h1><p>${copy.description}</p>`,
+    bodyHtml: `<h1>${copy.title}</h1><p>${copy.description}</p>${courseLink}`,
     title: copy.title,
   });
 }

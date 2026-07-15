@@ -1,4 +1,4 @@
-import type { Id } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { supersedeEmailConfirmationOperations } from "./supersedeEmailConfirmationOperations";
 
@@ -6,6 +6,7 @@ export async function createEmailConfirmationToken(
   ctx: MutationCtx,
   args: {
     contactId: Id<"marketingContacts">;
+    courseKey?: Doc<"courseEntitlements">["courseKey"];
     createdAt: number;
     expiresAt: number;
     tokenDigest: string;
@@ -47,6 +48,7 @@ export async function createEmailConfirmationToken(
 
   return await ctx.db.insert("emailConfirmationTokens", {
     contactId: args.contactId,
+    ...(args.courseKey ? { courseKey: args.courseKey } : {}),
     tokenRecordId: args.tokenRecordId,
     tokenDigest: args.tokenDigest,
     generation,

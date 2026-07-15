@@ -27,8 +27,8 @@ describe("PublicToolEmailNativeEnrollmentControl", () => {
       <PublicToolEmailNativeEnrollmentControl toolKey="five-day-app-content-sprint" />,
     );
 
-    expect(markup).toContain("Request email enrollment");
-    expect(markup).toContain("confirmed and eligible for marketing");
+    expect(markup).toContain("Open this course");
+    expect(markup).toContain("confirmed email securely linked");
     expect(markup).not.toMatch(/@|recognition token|workflow key/i);
   });
 
@@ -39,8 +39,8 @@ describe("PublicToolEmailNativeEnrollmentControl", () => {
       <PublicToolEmailNativeEnrollmentControl toolKey="five-day-app-content-sprint" />,
     );
 
-    expect(markup).toContain("Request received.");
-    expect(markup).toContain("If the linked email is ready for marketing");
+    expect(markup).toContain("Course request received.");
+    expect(markup).toContain("Refresh this page");
     expect(markup).not.toMatch(
       /enrollment started|series has started|sent|delivered|check your inbox/i,
     );

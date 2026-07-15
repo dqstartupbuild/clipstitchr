@@ -9,7 +9,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function TermsPage() {
-  const lastUpdated = "July 13, 2026";
+  const lastUpdated = "July 15, 2026";
 
   return (
     <article className="marketing-grid-bg px-6 py-20 md:py-28">
@@ -89,8 +89,12 @@ export default function TermsPage() {
               product account or paid entitlement. A new or previously
               opted-out address must confirm before marketing emails begin,
               and each email course or workshop requires its own clear
-              enrollment request. Unsubscribing does not remove browser value
-              you already unlocked.
+              enrollment request and email confirmation. A regular tool signup
+              never unlocks a course. Confirmed courses may save checklist
+              progress and notes across devices without creating a product
+              account. Unsubscribing stops future course emails and later
+              releases but does not remove browser value or course work already
+              released.
             </p>
           </section>
 

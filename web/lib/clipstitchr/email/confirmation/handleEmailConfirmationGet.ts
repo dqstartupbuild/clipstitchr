@@ -41,10 +41,9 @@ export async function handleEmailConfirmationGet(request: Request) {
     return createEmailConfirmationHtmlResponse(
       renderEmailConfirmationFormHtml({ csrfToken, fields }),
       {
-        setCookie: createEmailConfirmationCsrfCookie(
-          csrfToken,
-          request.url,
-        ),
+        setCookies: [
+          createEmailConfirmationCsrfCookie(csrfToken, request.url),
+        ],
       },
     );
   } catch {

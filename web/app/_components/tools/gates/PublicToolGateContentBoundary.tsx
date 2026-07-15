@@ -42,7 +42,9 @@ export function PublicToolGateContentBoundary({
   const isGateActive = isEmailGateActive || isBrowserGateActive;
   const isUnlocked =
     isGateActive &&
-    (isEmailNativeEnrolled || isBrowserUnlocked);
+    (metadata.mode === "email-native"
+      ? isEmailNativeEnrolled
+      : isBrowserUnlocked);
 
   usePublicToolGateAnalytics({
     isEnabled: true,
@@ -75,7 +77,7 @@ export function PublicToolGateContentBoundary({
     return (
       <>
         {publicContent}
-        {isEmailNativeEnrolled || isBrowserUnlocked ? unlockedContent : null}
+        {isEmailNativeEnrolled ? unlockedContent : null}
         {isEmailNativeEnrolled ? null : emailNativeEnrollmentControl}
       </>
     );

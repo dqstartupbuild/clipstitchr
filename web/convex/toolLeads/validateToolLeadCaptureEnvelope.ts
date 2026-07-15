@@ -10,6 +10,7 @@ export function validateToolLeadCaptureEnvelope(args: {
   clientKey: string;
   confirmationExpiresAt: number;
   consentCopyVersion: string;
+  courseSessionTokenHash?: string;
   previousRecognitionTokenHash?: string;
   providerContactKey: string;
   recognitionExpiresAt: number;
@@ -23,6 +24,8 @@ export function validateToolLeadCaptureEnvelope(args: {
   }
   if (
     !digestPattern.test(args.recognitionTokenHash) ||
+    (args.courseSessionTokenHash !== undefined &&
+      !digestPattern.test(args.courseSessionTokenHash)) ||
     (args.previousRecognitionTokenHash !== undefined &&
       !digestPattern.test(args.previousRecognitionTokenHash))
   ) {

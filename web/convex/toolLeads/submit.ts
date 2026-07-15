@@ -18,6 +18,10 @@ import { normalizeToolLeadName } from "../../lib/clipstitchr/tools/toolLeads/nor
 import { validateToolLeadCaptureEnvelope } from "./validateToolLeadCaptureEnvelope";
 import { getToolLeadGateModeIsValid } from "./getToolLeadGateModeIsValid";
 import { getEmailNativeWorkflowKeyForSource } from "./getEmailNativeWorkflowKeyForSource";
+import { activateCourseEntitlement } from "../courseAccess/activateCourseEntitlement";
+import { getOrCreateCourseEntitlement } from "../courseAccess/getOrCreateCourseEntitlement";
+import { getValidCourseAccessSession } from "../courseAccess/getValidCourseAccessSession";
+import { isCourseKey } from "../../lib/clipstitchr/tools/courses/isCourseKey";
 
 export const submit = mutation({
   args: {
@@ -25,6 +29,7 @@ export const submit = mutation({
     clientKey: v.string(),
     confirmationExpiresAt: v.number(),
     consentCopyVersion: v.string(),
+    courseSessionTokenHash: v.optional(v.string()),
     email: v.string(),
     gateMode: publicToolGateModeValidator,
     gateVariant: publicToolGateVariantValidator,
@@ -75,6 +80,10 @@ export const submit = mutation({
       providerContactKey: args.providerContactKey,
       source: args.source,
     });
+    const courseKey =
+      args.gateMode === "email-native" && isCourseKey(args.source)
+        ? args.source
+        : null;
     const emailNativeWorkflowKey =
       args.gateMode === "email-native"
         ? getEmailNativeWorkflowKeyForSource(args.source)
@@ -84,11 +93,9 @@ export const submit = mutation({
       throw new Error("Invalid email enrollment.");
     }
 
-    let emailNativeEnrollment:
-      | Awaited<ReturnType<typeof getOrCreateMarketingWorkflowEnrollment>>
-      | null = null;
+    let hasVerifiedCourseSession = false;
 
-    if (emailNativeWorkflowKey) {
+    if (emailNativeWorkflowKey && courseKey) {
       await rateLimiter.limit(ctx, "emailNativeEnrollmentByClient", {
         key: args.clientKey,
         throws: true,
@@ -100,20 +107,30 @@ export const submit = mutation({
       await rateLimiter.limit(ctx, "emailNativeEnrollmentGlobal", {
         throws: true,
       });
-      emailNativeEnrollment = await getOrCreateMarketingWorkflowEnrollment(
-        ctx,
-        {
-          contactId: contact.contactId,
-          createdAt: args.capturedAt,
-          workflowKey: emailNativeWorkflowKey,
-          workflowVersion: "v1",
-        },
-      );
+      await getOrCreateCourseEntitlement(ctx, {
+        contactId: contact.contactId,
+        courseKey,
+        courseVersion: "v1",
+        requestedAt: args.capturedAt,
+      });
+
+      if (args.courseSessionTokenHash) {
+        hasVerifiedCourseSession = Boolean(
+          await getValidCourseAccessSession(ctx, {
+            accessedAt: args.capturedAt,
+            expectedContactId: contact.contactId,
+            tokenHash: args.courseSessionTokenHash,
+          }),
+        );
+      }
     }
 
     let confirmationDispatchAllowed = true;
+    const needsConfirmation =
+      !contact.wasMarketingEligible ||
+      Boolean(courseKey && !hasVerifiedCourseSession);
 
-    if (!contact.wasMarketingEligible) {
+    if (needsConfirmation) {
       const emailLimit = await rateLimiter.limit(
         ctx,
         "emailConfirmationSendByEmail",
@@ -181,13 +198,14 @@ export const submit = mutation({
       tokenHash: args.recognitionTokenHash,
     });
 
-    if (!contact.wasMarketingEligible && !confirmationDispatchAllowed) {
+    if (needsConfirmation && !confirmationDispatchAllowed) {
       return { accepted: true as const };
     }
 
-    if (!contact.wasMarketingEligible) {
+    if (needsConfirmation) {
       const confirmationTokenId = await createEmailConfirmationToken(ctx, {
         contactId: contact.contactId,
+        ...(courseKey ? { courseKey } : {}),
         createdAt: args.capturedAt,
         expiresAt: args.confirmationExpiresAt,
         tokenDigest: args.tokenDigest,
@@ -203,6 +221,28 @@ export const submit = mutation({
       });
 
       return { accepted: true as const };
+    }
+
+    let emailNativeEnrollment:
+      | Awaited<ReturnType<typeof getOrCreateMarketingWorkflowEnrollment>>
+      | null = null;
+
+    if (courseKey && emailNativeWorkflowKey) {
+      await activateCourseEntitlement(ctx, {
+        activatedAt: args.capturedAt,
+        contactId: contact.contactId,
+        courseKey,
+        courseVersion: "v1",
+      });
+      emailNativeEnrollment = await getOrCreateMarketingWorkflowEnrollment(
+        ctx,
+        {
+          contactId: contact.contactId,
+          createdAt: args.capturedAt,
+          workflowKey: emailNativeWorkflowKey,
+          workflowVersion: "v1",
+        },
+      );
     }
 
     const enrollment = await getOrCreateMarketingWorkflowEnrollment(ctx, {

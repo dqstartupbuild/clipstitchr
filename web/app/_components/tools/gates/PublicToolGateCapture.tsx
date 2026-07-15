@@ -12,7 +12,8 @@ import { publicToolPortfolioUnlockCopy } from "@/lib/clipstitchr/tools/publicToo
 
 type PublicToolGateCaptureProps = {
   hasFunctionalUnlock: boolean;
-  hasBrowserRecognition?: boolean;
+  hasCourseAccess?: boolean;
+  hasCourseSession?: boolean;
   isEmailProviderReady?: boolean;
   isResultDisplayed?: boolean;
   trackLifecycle?: boolean;
@@ -22,7 +23,8 @@ type PublicToolGateCaptureProps = {
 
 export function PublicToolGateCapture({
   hasFunctionalUnlock,
-  hasBrowserRecognition = false,
+  hasCourseAccess = false,
+  hasCourseSession = false,
   isEmailProviderReady,
   isResultDisplayed = false,
   trackLifecycle = true,
@@ -47,17 +49,24 @@ export function PublicToolGateCapture({
 
   usePublicToolGateAnalytics({
     isEnabled: trackLifecycle,
-    isGateDisplayed: isGateActive && !isBrowserUnlocked,
-    isResourceUnlocked: isGateActive && isBrowserUnlocked,
+    isGateDisplayed:
+      isGateActive &&
+      (metadata.mode === "email-native"
+        ? !hasCourseAccess
+        : !isBrowserUnlocked),
+    isResourceUnlocked:
+      isGateActive &&
+      (metadata.mode === "email-native"
+        ? hasCourseAccess
+        : isBrowserUnlocked),
     isResultDisplayed,
     toolKey,
     variant,
   });
 
   if (
-    metadata.mode !== "email-native" &&
-    isGateActive &&
-    isBrowserUnlocked
+    (metadata.mode === "email-native" && hasCourseAccess) ||
+    (isGateActive && metadata.mode !== "email-native" && isBrowserUnlocked)
   ) {
     return null;
   }
@@ -69,8 +78,8 @@ export function PublicToolGateCapture({
   return (
     <>
       {metadata.mode === "email-native" &&
-      isBrowserUnlocked &&
-      hasBrowserRecognition ? (
+      hasCourseSession &&
+      !hasCourseAccess ? (
         <PublicToolEmailNativeEnrollmentControl toolKey={toolKey} />
       ) : null}
       <ToolLeadCaptureForm

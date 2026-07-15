@@ -4,11 +4,11 @@ export function createEmailConfirmationHtmlResponse(
   html: string,
   {
     retryAfter,
-    setCookie,
+    setCookies,
     status = 200,
   }: {
     retryAfter?: string;
-    setCookie?: string;
+    setCookies?: readonly string[];
     status?: number;
   } = {},
 ) {
@@ -18,8 +18,8 @@ export function createEmailConfirmationHtmlResponse(
     headers.set("Retry-After", retryAfter);
   }
 
-  if (setCookie) {
-    headers.set("Set-Cookie", setCookie);
+  for (const cookie of setCookies ?? []) {
+    headers.append("Set-Cookie", cookie);
   }
 
   return new Response(html, { headers, status });

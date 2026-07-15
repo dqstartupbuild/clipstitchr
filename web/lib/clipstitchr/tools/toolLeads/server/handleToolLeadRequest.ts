@@ -21,6 +21,8 @@ import { createToolLeadRateLimitResponse } from "@/lib/clipstitchr/tools/toolLea
 import { getToolLeadRequestIsSameOrigin } from "@/lib/clipstitchr/tools/toolLeads/server/getToolLeadRequestIsSameOrigin";
 import { readToolLeadRequest } from "@/lib/clipstitchr/tools/toolLeads/server/readToolLeadRequest";
 import { toolLeadConsentCopyVersion } from "@/lib/clipstitchr/tools/toolLeads/toolLeadConsentCopyVersion";
+import { hashCourseAccessSessionToken } from "@/lib/clipstitchr/tools/courses/session/hashCourseAccessSessionToken";
+import { readCourseAccessSessionToken } from "@/lib/clipstitchr/tools/courses/session/readCourseAccessSessionToken";
 
 export async function handleToolLeadRequest({
   request,
@@ -77,6 +79,7 @@ export async function handleToolLeadRequest({
     const capturedAt = Date.now();
     const recognitionToken = createBrowserRecognitionToken();
     const previousRecognitionToken = readBrowserRecognitionToken(request);
+    const courseSessionToken = readCourseAccessSessionToken(request);
     const confirmation = await createEmailConfirmationToken(
       resolveSiteUrl(),
       getEmailConfirmationTokenSecret(),
@@ -89,6 +92,12 @@ export async function handleToolLeadRequest({
       clientKey,
       confirmationExpiresAt: confirmation.expiresAt,
       consentCopyVersion: toolLeadConsentCopyVersion,
+      ...(courseSessionToken
+        ? {
+            courseSessionTokenHash:
+              await hashCourseAccessSessionToken(courseSessionToken),
+          }
+        : {}),
       gateMode: getPublicToolGateMetadata(source).mode,
       gateVariant: variant,
       ...(previousRecognitionToken

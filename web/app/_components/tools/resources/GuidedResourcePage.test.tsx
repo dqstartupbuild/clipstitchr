@@ -80,7 +80,8 @@ describe("GuidedResourcePage gate presentation", () => {
     expect(markup).not.toContain("Download Markdown");
   });
 
-  it("keeps email-native resources in control while the provider is unavailable", () => {
+  it("keeps course lessons private while the provider is unavailable", () => {
+    const firstSection = fiveDayContentSprintDefinition.sections[0]!;
     const lastSection = fiveDayContentSprintDefinition.sections.at(-1)!;
     const markup = renderToStaticMarkup(
       <GuidedResourcePage
@@ -91,14 +92,30 @@ describe("GuidedResourcePage gate presentation", () => {
     );
 
     expect(markup).toContain(lastSection.title);
-    expect(markup).toContain("Download Markdown");
+    expect(markup).not.toContain(firstSection.items[0]!.body);
+    expect(markup).not.toContain("Download Markdown");
     expect(markup).toContain(
       'id="five-day-app-content-sprint-lead-heading"',
     );
     expect(markup).not.toContain("Start my five-day sprint");
   });
 
-  it("shows one complete sample and the native enrollment when ready", () => {
+  it("keeps course lessons private outside the email rollout", () => {
+    const firstSection = fiveDayContentSprintDefinition.sections[0]!;
+    const markup = renderToStaticMarkup(
+      <GuidedResourcePage
+        definition={fiveDayContentSprintDefinition}
+        isEmailProviderReady={false}
+        variant="control"
+      />,
+    );
+
+    expect(markup).toContain(firstSection.title);
+    expect(markup).not.toContain(firstSection.items[0]!.body);
+    expect(markup).not.toContain("Download Markdown");
+  });
+
+  it("shows locked lesson titles and the native enrollment when ready", () => {
     const firstSection = fiveDayContentSprintDefinition.sections[0];
     const lastSection = fiveDayContentSprintDefinition.sections.at(-1)!;
     const markup = renderToStaticMarkup(
@@ -110,14 +127,17 @@ describe("GuidedResourcePage gate presentation", () => {
     );
 
     expect(markup).toContain(firstSection.title);
-    expect(markup).not.toContain(lastSection.title);
+    expect(markup).toContain(lastSection.title);
+    expect(markup).not.toContain(firstSection.items[0]!.body);
+    expect(markup).not.toContain(lastSection.items[0]!.body);
     expect(markup).not.toContain("Download Markdown");
     expect(markup).toContain("Start my five-day sprint");
     expect(markup).not.toMatch(/sent|delivered|check your inbox/i);
   });
 
-  it("shows the complete email-native experience after browser acceptance", () => {
+  it("does not unlock a course from the portfolio-wide browser marker", () => {
     mocks.isBrowserUnlocked = true;
+    const firstSection = fiveDayContentSprintDefinition.sections[0]!;
     const lastSection = fiveDayContentSprintDefinition.sections.at(-1)!;
     const markup = renderToStaticMarkup(
       <GuidedResourcePage
@@ -128,17 +148,22 @@ describe("GuidedResourcePage gate presentation", () => {
     );
 
     expect(markup).toContain(lastSection.title);
-    expect(markup).toContain("Download Markdown");
+    expect(markup).not.toContain(firstSection.items[0]!.body);
+    expect(markup).not.toContain(lastSection.items[0]!.body);
+    expect(markup).not.toContain("Download Markdown");
     expect(markup).toContain("Start my five-day sprint");
   });
 
-  it("offers an opaque one-click request only to recognized unlocked browsers", () => {
-    mocks.isBrowserUnlocked = true;
-
-    const recognizedMarkup = renderToStaticMarkup(
+  it("offers one-click enrollment only with a verified course session", () => {
+    const sessionMarkup = renderToStaticMarkup(
       <GuidedResourcePage
+        courseWorkspaceState={{
+          availableSectionCount: 0,
+          hasAccess: false,
+          hasSession: true,
+          progressItems: [],
+        }}
         definition={fiveDayContentSprintDefinition}
-        hasBrowserRecognition
         isEmailProviderReady
         variant="hybrid-v1"
       />,
@@ -151,13 +176,34 @@ describe("GuidedResourcePage gate presentation", () => {
       />,
     );
 
-    expect(recognizedMarkup).toContain(
-      "Request this email series with one click.",
-    );
-    expect(recognizedMarkup).toContain("Start my five-day sprint");
-    expect(unrecognizedMarkup).not.toContain(
-      "Request this email series with one click.",
-    );
+    expect(sessionMarkup).toContain("Open this course with one click.");
+    expect(sessionMarkup).toContain("Start my five-day sprint");
+    expect(unrecognizedMarkup).not.toContain("Open this course with one click.");
     expect(unrecognizedMarkup).toContain("Start my five-day sprint");
+  });
+
+  it("shows only released sections from the app-owned entitlement", () => {
+    const secondSection = fiveDayContentSprintDefinition.sections[1]!;
+    const thirdSection = fiveDayContentSprintDefinition.sections[2]!;
+    const markup = renderToStaticMarkup(
+      <GuidedResourcePage
+        courseWorkspaceState={{
+          activatedAt: 1_000,
+          availableSectionCount: 2,
+          hasAccess: true,
+          hasSession: true,
+          progressItems: [],
+        }}
+        definition={fiveDayContentSprintDefinition}
+        isEmailProviderReady
+        variant="hybrid-v1"
+      />,
+    );
+
+    expect(markup).toContain(secondSection.items[0]!.body);
+    expect(markup).toContain(thirdSection.title);
+    expect(markup).not.toContain(thirdSection.items[0]!.body);
+    expect(markup).toContain("Download Markdown");
+    expect(markup).not.toContain("Start my five-day sprint");
   });
 });

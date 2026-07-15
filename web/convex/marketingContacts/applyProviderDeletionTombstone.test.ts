@@ -4,11 +4,15 @@ import { applyProviderDeletionTombstone } from "./applyProviderDeletionTombstone
 
 const mocks = vi.hoisted(() => ({
   cancelEmailProviderOperationsForContact: vi.fn(),
+  stopCourseReleasesForContact: vi.fn(),
 }));
 
 vi.mock("../email/cancelEmailProviderOperationsForContact", () => ({
   cancelEmailProviderOperationsForContact:
     mocks.cancelEmailProviderOperationsForContact,
+}));
+vi.mock("../courseAccess/stopCourseReleasesForContact", () => ({
+  stopCourseReleasesForContact: mocks.stopCourseReleasesForContact,
 }));
 
 function createContext(contact: Record<string, unknown>) {
@@ -54,6 +58,11 @@ describe("provider deletion tombstone precedence", () => {
       "contact_1",
       300,
       { providerDeletionFence: true },
+    );
+    expect(mocks.stopCourseReleasesForContact).toHaveBeenCalledWith(
+      ctx,
+      "contact_1",
+      200,
     );
   });
 

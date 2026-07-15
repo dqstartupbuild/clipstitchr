@@ -6,35 +6,61 @@ type ConvexFunction<Args, Result> = {
 };
 
 const mocks = vi.hoisted(() => ({
+  activateCourseEntitlement: vi.fn(),
   assertRateLimitApiSecret: vi.fn(),
   createEmailConfirmationToken: vi.fn(
-    async (_ctx: unknown, _args: Record<string, unknown>) => "confirmation_1",
+    async (ctx: unknown, args: Record<string, unknown>) => {
+      void ctx;
+      void args;
+      return "confirmation_1";
+    },
   ),
   createMarketingConsentForCapture: vi.fn(
-    async (_ctx: unknown, _args: Record<string, unknown>) => "consent_1",
+    async (ctx: unknown, args: Record<string, unknown>) => {
+      void ctx;
+      void args;
+      return "consent_1";
+    },
   ),
   enqueueEmailProviderOperation: vi.fn(
-    async (_ctx: unknown, _args: Record<string, unknown>) => "operation_1",
+    async (ctx: unknown, args: Record<string, unknown>) => {
+      void ctx;
+      void args;
+      return "operation_1";
+    },
   ),
   getOrCreateMarketingWorkflowEnrollment: vi.fn(
-    async (_ctx: unknown, _args: Record<string, unknown>) => ({
-      created: true,
-      enrollmentId: "enrollment_1",
-    }),
+    async (ctx: unknown, args: Record<string, unknown>) => {
+      void ctx;
+      void args;
+      return {
+        created: true,
+        enrollmentId: "enrollment_1",
+      };
+    },
   ),
+  getOrCreateCourseEntitlement: vi.fn(),
+  getValidCourseAccessSession: vi.fn(),
   rateLimiter: {
     limit: vi.fn(
-      async (_ctx: unknown, _bucket: string, _options: unknown) => ({
-        ok: true,
-      }),
+      async (ctx: unknown, bucket: string, options: unknown) => {
+        void ctx;
+        void bucket;
+        void options;
+        return { ok: true };
+      },
     ),
   },
   rotateBrowserRecognitionToken: vi.fn(async () => "recognition_1"),
   upsertMarketingContactForCapture: vi.fn(
-    async (_ctx: unknown, _args: Record<string, unknown>) => ({
-      contactId: "contact_1",
-      wasMarketingEligible: false,
-    }),
+    async (ctx: unknown, args: Record<string, unknown>) => {
+      void ctx;
+      void args;
+      return {
+        contactId: "contact_1",
+        wasMarketingEligible: false,
+      };
+    },
   ),
 }));
 
@@ -44,6 +70,15 @@ vi.mock("../auth/assertRateLimitApiSecret", () => ({
 }));
 vi.mock("../browserRecognition/rotateBrowserRecognitionToken", () => ({
   rotateBrowserRecognitionToken: mocks.rotateBrowserRecognitionToken,
+}));
+vi.mock("../courseAccess/activateCourseEntitlement", () => ({
+  activateCourseEntitlement: mocks.activateCourseEntitlement,
+}));
+vi.mock("../courseAccess/getOrCreateCourseEntitlement", () => ({
+  getOrCreateCourseEntitlement: mocks.getOrCreateCourseEntitlement,
+}));
+vi.mock("../courseAccess/getValidCourseAccessSession", () => ({
+  getValidCourseAccessSession: mocks.getValidCourseAccessSession,
 }));
 vi.mock("../email/createEmailConfirmationToken", () => ({
   createEmailConfirmationToken: mocks.createEmailConfirmationToken,
@@ -114,6 +149,7 @@ describe("canonical tool lead capture", () => {
       created: true,
       enrollmentId: "enrollment_1",
     });
+    mocks.getValidCourseAccessSession.mockResolvedValue(null);
   });
 
   it("consumes capture and confirmation quotas before creating outbox work", async () => {
@@ -149,9 +185,11 @@ describe("canonical tool lead capture", () => {
   it("accepts and unlocks without revealing an exhausted confirmation quota", async () => {
     const ctx = createContext();
     mocks.rateLimiter.limit.mockImplementation(
-      async (_ctx, bucket: string, _options: unknown) => ({
-        ok: bucket !== "emailConfirmationSendByEmail",
-      }),
+      async (context: unknown, bucket: string, options: unknown) => {
+        void context;
+        void options;
+        return { ok: bucket !== "emailConfirmationSendByEmail" };
+      },
     );
 
     await expect(getHandler(submit)(ctx, validArgs)).resolves.toEqual({
@@ -176,7 +214,7 @@ describe("canonical tool lead capture", () => {
     ).toBe(true);
   });
 
-  it("creates only the catalog-approved email-native enrollment", async () => {
+  it("creates only a pending entitlement before course confirmation", async () => {
     const ctx = createContext();
 
     await getHandler(submit)(ctx, {
@@ -185,19 +223,18 @@ describe("canonical tool lead capture", () => {
       source: "five-day-app-content-sprint",
     });
 
-    expect(mocks.getOrCreateMarketingWorkflowEnrollment).toHaveBeenCalledTimes(1);
-    expect(mocks.getOrCreateMarketingWorkflowEnrollment).toHaveBeenCalledWith(
+    expect(mocks.getOrCreateCourseEntitlement).toHaveBeenCalledWith(
       ctx,
       expect.objectContaining({
-        workflowKey: "five_day_content_sprint_enrolled",
-        workflowVersion: "v1",
+        courseKey: "five-day-app-content-sprint",
+        courseVersion: "v1",
       }),
     );
-    expect(
-      mocks.getOrCreateMarketingWorkflowEnrollment.mock.calls.flatMap(
-        (call) => Object.values(call[1]),
-      ),
-    ).not.toContain("ugc_app_ad_course_enrolled");
+    expect(mocks.getOrCreateMarketingWorkflowEnrollment).not.toHaveBeenCalled();
+    expect(mocks.createEmailConfirmationToken).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({ courseKey: "five-day-app-content-sprint" }),
+    );
     expect(mocks.rateLimiter.limit.mock.calls.map((call) => call[1])).toEqual([
       "toolLeadSubmitByClient",
       "toolLeadSubmitByEmail",
@@ -225,17 +262,25 @@ describe("canonical tool lead capture", () => {
       wasMarketingEligible: true,
     });
     mocks.getOrCreateMarketingWorkflowEnrollment.mockImplementation(
-      async (_ctx, args: Record<string, unknown>) => ({
-        created: true,
-        enrollmentId:
-          args.workflowKey === "tool_lead_captured"
-            ? "general_enrollment"
-            : "native_enrollment",
-      }),
+      async (context: unknown, args: Record<string, unknown>) => {
+        void context;
+        return {
+          created: true,
+          enrollmentId:
+            args.workflowKey === "tool_lead_captured"
+              ? "general_enrollment"
+              : "native_enrollment",
+        };
+      },
     );
+    mocks.getValidCourseAccessSession.mockResolvedValue({
+      contact: { _id: "contact_1" },
+      session: { _id: "session_1" },
+    });
 
     await getHandler(submit)(ctx, {
       ...validArgs,
+      courseSessionTokenHash: "d".repeat(64),
       gateMode: "email-native",
       source: "five-day-app-content-sprint",
     });

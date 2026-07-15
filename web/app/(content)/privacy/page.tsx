@@ -10,7 +10,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function PrivacyPage() {
-  const lastUpdated = "July 13, 2026";
+  const lastUpdated = "July 15, 2026";
 
   return (
     <article className="marketing-grid-bg px-6 py-20 md:py-28">
@@ -88,6 +88,7 @@ export default function PrivacyPage() {
             <ul>
               <li>Your name and email address</li>
               <li>Feedback, questions, or other messages</li>
+              <li>Course checklist progress and notes you choose to save</li>
               <li>
                 App details and audience context you submit to the App Hook
                 Generator
@@ -97,7 +98,7 @@ export default function PrivacyPage() {
             <h3>Public Tools and Mailing List</h3>
             <p>
               The Ad Variant Calculator and the other public calculators,
-              graders, brief builders, planners, checklists, courses, kits,
+              graders, brief builders, planners, checklists, kits,
               trackers, and worksheets work in your browser. We do not send
               their writing, notes, planning numbers, campaign metrics, quotes,
               costs, or results to our servers just to show your result.
@@ -111,10 +112,12 @@ export default function PrivacyPage() {
               saved to your account.
             </p>
             <p>
-              Guided resources may save versioned checklist progress and notes
-              in local browser storage. CSV and Markdown files are built and
-              downloaded on your device. Those local drafts and files are not
-              synchronized to a ClipStitchr account.
+              Most guided resources save versioned checklist progress and notes
+              in local browser storage. The three email courses are different:
+              after you confirm access, we save their checklist progress and
+              notes in Convex so you can continue on another device without a
+              ClipStitchr product account. CSV and Markdown files are still
+              built and downloaded on your device.
             </p>
             <p>
               The App Hook Generator sends the app details and audience context
@@ -128,6 +131,13 @@ export default function PrivacyPage() {
               name, email address, consent record, and the tool you joined from
               in Convex. We do not attach your tool answers, notes, uploads, or
               generated results to that mailing-list profile.
+            </p>
+            <p>
+              A course request creates access only for the course you chose.
+              Regular public-tool signups do not unlock courses. We store a
+              course entitlement, per-item completion and notes, and only a
+              one-way copy of a random course-session token. Course answers and
+              notes are not sent to Loops, PostHog, TikTok, or general logs.
             </p>
             <p>
               An accepted form can unlock approved extras in that browser right
@@ -144,7 +154,10 @@ export default function PrivacyPage() {
               works once. Opening it only shows a ClipStitchr page; it does not
               confirm consent. You must press the confirmation button, and that
               page loads no analytics or outside resources. Browser access does
-              not wait for email confirmation.
+              not wait for email confirmation. Courses are the exception: the
+              regular public tools unlock right away, but course access and
+              cross-device progress begin only after the confirmation button is
+              pressed.
             </p>
             <p>
               When email delivery is enabled, Loops delivers the confirmation
@@ -256,6 +269,13 @@ export default function PrivacyPage() {
               to TikTok or PostHog.
             </p>
             <p>
+              Confirming a course also sets a separate random HttpOnly course
+              session for up to 180 days. Page scripts cannot read it. The raw
+              value stays in the cookie and Convex stores only its one-way hash.
+              It is used only to load that contact&apos;s explicit course
+              entitlements and save course progress.
+            </p>
+            <p>
               If you allow optional cookies, we use them to understand visits,
               remember where visitors came from, measure sign-ups or future
               purchases, and see which dashboard features people use most. If
@@ -286,6 +306,12 @@ export default function PrivacyPage() {
               non-identifying browser unlock marker stays on that device until
               you clear its site data, so a privacy request does not take away
               browser value you already received.
+            </p>
+            <p>
+              Unsubscribing also stops future course emails and later lesson
+              releases, while leaving already released work and progress
+              available. A privacy deletion removes course sessions,
+              entitlements, saved checklist progress, and course notes.
             </p>
           </section>
 

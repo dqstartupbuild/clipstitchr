@@ -2,8 +2,8 @@ import { GuidedResourcePage } from "@/app/_components/tools/resources/GuidedReso
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
 import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import { getLoopsReadiness } from "@/lib/clipstitchr/email/loops/getLoopsReadiness";
-import { getBrowserRecognitionCookieIsPresentForRequest } from "@/lib/clipstitchr/tools/browserRecognition/getBrowserRecognitionCookieIsPresentForRequest";
 import { ugcMiniCourseDefinition } from "@/lib/clipstitchr/tools/ugcMiniCourse/ugcMiniCourseDefinition";
+import { getCourseWorkspaceStateForRequest } from "@/lib/clipstitchr/tools/courses/server/getCourseWorkspaceStateForRequest";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -18,17 +18,18 @@ export const metadata = createPageMetadata({
 
 export default async function UgcMiniCourseRoutePage() {
   const isEmailProviderReady = getLoopsReadiness(process.env).emailNativeReady;
-  const hasBrowserRecognition =
-    await getBrowserRecognitionCookieIsPresentForRequest();
   const variant = await resolvePublicToolGateVariantForRequest(
     ugcMiniCourseDefinition.resourceKey,
     isEmailProviderReady,
   );
+  const courseWorkspaceState = await getCourseWorkspaceStateForRequest(
+    "ugc-to-app-ad-mini-course",
+  );
 
   return (
     <GuidedResourcePage
+      courseWorkspaceState={courseWorkspaceState}
       definition={ugcMiniCourseDefinition}
-      hasBrowserRecognition={hasBrowserRecognition}
       isEmailProviderReady={isEmailProviderReady}
       variant={variant}
     />

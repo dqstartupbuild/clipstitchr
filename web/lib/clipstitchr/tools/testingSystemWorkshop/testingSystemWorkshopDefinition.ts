@@ -21,7 +21,6 @@ export const testingSystemWorkshopDefinition: GuidedResourceDefinition = {
     "Review the downloaded charter with everyone who briefs, produces, launches, or evaluates creative before calling the system ready.",
   ],
   guideTitle: "Create the rules that make each campaign easier to learn from.",
-  progressStorageKey: "clipstitchr-testing-system-workshop-v1",
   resourceKey: "app-creative-testing-system-workshop",
   sections: [
     {

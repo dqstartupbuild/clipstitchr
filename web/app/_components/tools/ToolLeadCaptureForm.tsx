@@ -8,6 +8,8 @@ import { toolLeadFieldLimits } from "@/lib/clipstitchr/tools/toolLeads/toolLeadF
 import { useToolLeadCapture } from "@/lib/clipstitchr/tools/toolLeads/useToolLeadCapture";
 import { usePublicToolConfirmationReadiness } from "@/lib/clipstitchr/tools/publicToolGates/usePublicToolConfirmationReadiness";
 import type { ToolLeadSource } from "@/lib/clipstitchr/types/ToolLeadSource";
+import { isCourseKey } from "@/lib/clipstitchr/tools/courses/isCourseKey";
+import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
 
 type ToolLeadCaptureFormProps = {
   gateMode?: PublicToolGateMode;
@@ -30,6 +32,9 @@ export function ToolLeadCaptureForm({
   const canSendConfirmation =
     isEmailProviderReady ?? isConfirmationReady;
   const isHybrid = variant === "hybrid-v1";
+  const isCourseEnrollment =
+    isHybrid && gateMode === "email-native" && isCourseKey(source);
+  const courseName = isCourseEnrollment ? publicToolCatalog[source].name : null;
   const {
     email,
     errorMessage,
@@ -54,18 +59,24 @@ export function ToolLeadCaptureForm({
         className="marketing-subheading mt-3 text-3xl text-text-primary"
       >
         {isHybrid
-          ? `Unlock ${unlockOutcome}.`
+          ? isCourseEnrollment
+            ? `Start ${courseName}.`
+            : `Unlock ${unlockOutcome}.`
           : "Get the next app-marketing tool."}
       </h2>
       <p className="mt-3 leading-7 text-text-secondary">
         {isHybrid
-          ? "Add your name and email to unlock this value here and ask to join the ClipStitchr app-marketing mailing list."
+          ? isCourseEnrollment
+            ? "Add your name and email to unlock every regular public tool in this browser. Confirm your email to open this course, keep progress across devices, and receive its lessons."
+            : "Add your name and email to unlock this value here and ask to join the ClipStitchr app-marketing mailing list."
           : "Join the ClipStitchr mailing list for practical tools, creative ideas, and product updates made for app founders."}
       </p>
       {isHybrid ? (
         <p className="mt-3 text-sm leading-6 text-text-secondary">
           {canSendConfirmation
-            ? "Your browser unlocks right away. If your email needs confirming, we will ask before any marketing emails start."
+            ? isCourseEnrollment
+              ? "Regular tools unlock right away. The course opens only after email confirmation."
+              : "Your browser unlocks right away. If your email needs confirming, we will ask before any marketing emails start."
             : "Your browser unlocks right away. Email follow-up is not available yet."}
         </p>
       ) : null}
@@ -83,13 +94,17 @@ export function ToolLeadCaptureForm({
             <div>
               <p className="text-sm font-bold text-text-primary">
                 {isHybrid
-                  ? "Unlocked in this browser."
+                  ? isCourseEnrollment
+                    ? "Regular tools unlocked."
+                    : "Unlocked in this browser."
                   : "Your details are saved."}
               </p>
               <p className="mt-1 text-sm leading-6 text-text-secondary">
                 {isHybrid
                   ? canSendConfirmation
-                    ? "Your access is ready here. If this email needs confirming, we will send one short confirmation before marketing emails start."
+                    ? isCourseEnrollment
+                      ? "Check your inbox if confirmation is needed. The course stays locked until that step is complete."
+                      : "Your access is ready here. If this email needs confirming, we will send one short confirmation before marketing emails start."
                     : "Your access is ready here. Email follow-up is not available yet."
                   : "Thanks — your request is saved. Email updates will start only when delivery is available."}
               </p>
@@ -143,7 +158,9 @@ export function ToolLeadCaptureForm({
           ) : null}
           {isHybrid ? (
             <p className="text-xs leading-5 text-text-tertiary">
-              By continuing, you will unlock {unlockOutcome} in this browser
+              By continuing, you will unlock {isCourseEnrollment
+                ? "the regular public-tool portfolio"
+                : unlockOutcome} in this browser{" "}
               and ask to join the ClipStitchr app-marketing mailing list. New
               or previously opted-out email addresses need a quick confirmation
               before marketing emails start. This does not create a

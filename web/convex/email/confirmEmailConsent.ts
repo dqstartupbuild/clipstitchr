@@ -8,11 +8,17 @@ import { getOrCreateMarketingWorkflowEnrollment } from "./getOrCreateMarketingWo
 import { enqueueEmailProviderOperation } from "./enqueueEmailProviderOperation";
 import { rateLimiter } from "../rateLimiter";
 import { validateEmailConfirmationReference } from "./validateEmailConfirmationReference";
+import { activateCourseEntitlement } from "../courseAccess/activateCourseEntitlement";
+import { createCourseAccessSession } from "../courseAccess/createCourseAccessSession";
+import { getEmailNativeWorkflowKeyForSource } from "../toolLeads/getEmailNativeWorkflowKeyForSource";
+import { courseAccessSessionTtlSeconds } from "../../lib/clipstitchr/tools/courses/session/courseAccessSessionTtlSeconds";
 
 export const confirmEmailConsent = mutation({
   args: {
     clientKey: v.string(),
     confirmedAt: v.number(),
+    courseSessionExpiresAt: v.optional(v.number()),
+    courseSessionTokenHash: v.optional(v.string()),
     expiresAt: v.number(),
     secret: v.string(),
     tokenDigest: v.string(),
@@ -84,6 +90,21 @@ export const confirmEmailConsent = mutation({
 
     if (!latestCapture) return { status: "unavailable" as const };
 
+    const courseKey = token.courseKey;
+    const courseWorkflowKey = courseKey
+      ? getEmailNativeWorkflowKeyForSource(courseKey)
+      : null;
+
+    if (
+      courseKey &&
+      (!courseWorkflowKey ||
+        !args.courseSessionTokenHash ||
+        args.courseSessionExpiresAt !==
+          args.confirmedAt + courseAccessSessionTtlSeconds * 1_000)
+    ) {
+      return { status: "unavailable" as const };
+    }
+
     const generalEnrollment = await getOrCreateMarketingWorkflowEnrollment(
       ctx,
       {
@@ -93,6 +114,26 @@ export const confirmEmailConsent = mutation({
         workflowVersion: "v1",
       },
     );
+
+    if (courseKey && courseWorkflowKey) {
+      await activateCourseEntitlement(ctx, {
+        activatedAt: args.confirmedAt,
+        contactId: contact._id,
+        courseKey,
+        courseVersion: "v1",
+      });
+      await getOrCreateMarketingWorkflowEnrollment(ctx, {
+        contactId: contact._id,
+        createdAt: args.confirmedAt,
+        workflowKey: courseWorkflowKey,
+        workflowVersion: "v1",
+      });
+    }
+
+    const allowedWorkflowKeys = new Set([
+      "tool_lead_captured",
+      ...(courseWorkflowKey ? [courseWorkflowKey] : []),
+    ]);
     const enrollments = await ctx.db
       .query("marketingWorkflowEnrollments")
       .withIndex("by_contact_status", (query) =>
@@ -107,6 +148,8 @@ export const confirmEmailConsent = mutation({
     }> = [];
 
     for (const enrollment of enrollments) {
+      if (!allowedWorkflowKeys.has(enrollment.workflowKey)) continue;
+
       if (enrollment.operationId === undefined) {
         dispatchableEnrollments.push({ enrollment });
         continue;
@@ -172,6 +215,19 @@ export const confirmEmailConsent = mutation({
       }
     }
 
+    if (
+      courseKey &&
+      args.courseSessionTokenHash &&
+      args.courseSessionExpiresAt !== undefined
+    ) {
+      await createCourseAccessSession(ctx, {
+        contactId: contact._id,
+        expiresAt: args.courseSessionExpiresAt,
+        issuedAt: args.confirmedAt,
+        tokenHash: args.courseSessionTokenHash,
+      });
+    }
+
     const contactSyncOperationId = await enqueueEmailProviderOperation(ctx, {
       contactId: contact._id,
       kind:
@@ -230,6 +286,9 @@ export const confirmEmailConsent = mutation({
     }
 
     void generalEnrollment;
-    return { status: "confirmed" as const };
+    return {
+      status: "confirmed" as const,
+      ...(courseKey ? { courseKey } : {}),
+    };
   },
 });

@@ -2,8 +2,6 @@ import { api } from "@/convex/_generated/api";
 import { getLoopsReadiness } from "@/lib/clipstitchr/email/loops/getLoopsReadiness";
 import { createConvexHttpClient } from "@/lib/clipstitchr/server/convex/createConvexHttpClient";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
-import { hashBrowserRecognitionToken } from "@/lib/clipstitchr/tools/browserRecognition/hashBrowserRecognitionToken";
-import { readBrowserRecognitionToken } from "@/lib/clipstitchr/tools/browserRecognition/readBrowserRecognitionToken";
 import { getPublicToolGateMetadata } from "@/lib/clipstitchr/tools/catalog/getPublicToolGateMetadata";
 import { resolvePublicToolGateVariantForRequest } from "@/lib/clipstitchr/tools/catalog/rollout/resolvePublicToolGateVariantForRequest";
 import type { PublicToolKey } from "@/lib/clipstitchr/tools/catalog/PublicToolKey";
@@ -11,6 +9,8 @@ import { createToolLeadClientKey } from "@/lib/clipstitchr/tools/toolLeads/serve
 import { createEmailNativeEnrollmentRateLimitResponse } from "@/lib/clipstitchr/tools/toolLeads/server/createEmailNativeEnrollmentRateLimitResponse";
 import { createEmailNativeEnrollmentAcceptedResponse } from "@/lib/clipstitchr/tools/toolLeads/server/createEmailNativeEnrollmentAcceptedResponse";
 import { getToolLeadRequestIsSameOrigin } from "@/lib/clipstitchr/tools/toolLeads/server/getToolLeadRequestIsSameOrigin";
+import { hashCourseAccessSessionToken } from "@/lib/clipstitchr/tools/courses/session/hashCourseAccessSessionToken";
+import { readCourseAccessSessionToken } from "@/lib/clipstitchr/tools/courses/session/readCourseAccessSessionToken";
 
 export async function handleEmailNativeEnrollmentRequest({
   request,
@@ -52,9 +52,9 @@ export async function handleEmailNativeEnrollmentRequest({
       source,
       readiness.emailNativeReady,
     );
-    const recognitionToken = readBrowserRecognitionToken(request);
+    const courseSessionToken = readCourseAccessSessionToken(request);
 
-    if (variant !== "hybrid-v1" || !recognitionToken) {
+    if (variant !== "hybrid-v1" || !courseSessionToken) {
       return createEmailNativeEnrollmentAcceptedResponse();
     }
 
@@ -67,8 +67,8 @@ export async function handleEmailNativeEnrollmentRequest({
         clientKey,
         enrolledAt: Date.now(),
         gateVariant: variant,
-        recognitionTokenHash:
-          await hashBrowserRecognitionToken(recognitionToken),
+        courseSessionTokenHash:
+          await hashCourseAccessSessionToken(courseSessionToken),
         secret,
         source,
         workflowKey: metadata.workflowKey,

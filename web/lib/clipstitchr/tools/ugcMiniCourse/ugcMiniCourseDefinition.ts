@@ -7,7 +7,7 @@ export const ugcMiniCourseDefinition: GuidedResourceDefinition = {
     {
       question: "Is this course sent by email?",
       answer:
-        "All five lessons and exercises are available here immediately. When the email version is available, you can also choose to receive the five-day lesson sequence after confirming your email.",
+        "Yes. After you confirm your email, Lesson 1 opens right away and each next lesson opens 24 hours later. Your progress stays with you across devices.",
     },
     {
       question: "Does the course create the finished ad?",
@@ -21,7 +21,6 @@ export const ugcMiniCourseDefinition: GuidedResourceDefinition = {
     "Use the answer rationale to check your work, then rewrite your own answer in language that is true for your product and audience.",
   ],
   guideTitle: "Learn the handoff from raw UGC to a testable app ad.",
-  progressStorageKey: "clipstitchr-ugc-mini-course-v1",
   resourceKey: "ugc-to-app-ad-mini-course",
   sections: [
     {

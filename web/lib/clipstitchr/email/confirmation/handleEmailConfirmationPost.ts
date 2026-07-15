@@ -13,6 +13,10 @@ import { readEmailConfirmationPostFields } from "@/lib/clipstitchr/email/confirm
 import { renderEmailConfirmationStatusHtml } from "@/lib/clipstitchr/email/confirmation/renderEmailConfirmationStatusHtml";
 import { verifyEmailConfirmationUrl } from "@/lib/clipstitchr/email/confirmation/verifyEmailConfirmationUrl";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
+import { courseAccessSessionTtlSeconds } from "@/lib/clipstitchr/tools/courses/session/courseAccessSessionTtlSeconds";
+import { createCourseAccessSessionCookieHeader } from "@/lib/clipstitchr/tools/courses/session/createCourseAccessSessionCookieHeader";
+import { createCourseAccessSessionToken } from "@/lib/clipstitchr/tools/courses/session/createCourseAccessSessionToken";
+import { hashCourseAccessSessionToken } from "@/lib/clipstitchr/tools/courses/session/hashCourseAccessSessionToken";
 
 export async function handleEmailConfirmationPost(request: Request) {
   if (!getEmailConfirmationRequestIsSameOrigin(request)) {
@@ -53,25 +57,43 @@ export async function handleEmailConfirmationPost(request: Request) {
     }
 
     const secret = getRateLimitApiSecret();
+    const confirmedAt = Date.now();
+    const courseSessionToken = createCourseAccessSessionToken();
+    const courseSessionTokenHash = await hashCourseAccessSessionToken(
+      courseSessionToken,
+    );
+    const courseSessionExpiresAt =
+      confirmedAt + courseAccessSessionTtlSeconds * 1_000;
     const confirmation = await confirmEmailConsentWithConvex({
       clientKey: createEmailConfirmationClientKey(request, secret),
-      confirmedAt: Date.now(),
+      confirmedAt,
+      courseSessionExpiresAt,
+      courseSessionTokenHash,
       reference,
     });
-    const setCookie = createExpiredEmailConfirmationCsrfCookie(request.url);
+    const setCookies = [createExpiredEmailConfirmationCsrfCookie(request.url)];
 
     if (confirmation.status !== "confirmed") {
       logEmailConfirmationDevelopmentStage("provider-unavailable");
       return createEmailConfirmationHtmlResponse(
         renderEmailConfirmationStatusHtml("unavailable"),
-        { setCookie },
+        { setCookies },
+      );
+    }
+
+    if (confirmation.courseKey) {
+      setCookies.push(
+        createCourseAccessSessionCookieHeader(
+          courseSessionToken,
+          new URL(request.url).protocol === "https:",
+        ),
       );
     }
 
     logEmailConfirmationDevelopmentStage("confirmed");
     return createEmailConfirmationHtmlResponse(
-      renderEmailConfirmationStatusHtml("confirmed"),
-      { setCookie },
+      renderEmailConfirmationStatusHtml("confirmed", confirmation.courseKey),
+      { setCookies },
     );
   } catch (error) {
     const rateLimitResponse = createEmailConfirmationRateLimitResponse(error);

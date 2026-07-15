@@ -281,7 +281,8 @@ Do not fire purchase events before payment is confirmed.
   storage, not TikTok identifiers. Never copy either value into Pixel advanced
   matching or an Events API payload.
 - Public-tool gate events never include name, email, tool input, result,
-  recognition token, confirmation token, or browser marker.
+  recognition token, course-session token, confirmation token, course progress,
+  or browser marker.
 - Purchase payloads should include only plan metadata, currency, and purchase
   value unless a later privacy review explicitly approves additional fields.
 - Keep `web/app/(content)/privacy/page.tsx` aligned with the cookie categories

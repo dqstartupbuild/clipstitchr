@@ -11,8 +11,12 @@ import { hasPublicToolPortabilityArtifactFormat } from "@/lib/clipstitchr/tools/
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
 import type { PublicToolGateVariant } from "@/lib/clipstitchr/tools/catalog/PublicToolGateVariant";
 import type { GuidedResourceDefinition } from "@/lib/clipstitchr/tools/resources/GuidedResourceDefinition";
+import type { CourseWorkspaceState } from "@/lib/clipstitchr/tools/courses/CourseWorkspaceState";
+import { getCourseSectionReleaseAt } from "@/lib/clipstitchr/tools/courses/getCourseSectionReleaseAt";
+import { isCourseKey } from "@/lib/clipstitchr/tools/courses/isCourseKey";
 
 type GuidedResourcePageProps = {
+  courseWorkspaceState?: CourseWorkspaceState;
   definition: GuidedResourceDefinition;
   hasBrowserRecognition?: boolean;
   isEmailNativeEnrolled?: boolean;
@@ -21,8 +25,8 @@ type GuidedResourcePageProps = {
 };
 
 export function GuidedResourcePage({
+  courseWorkspaceState,
   definition,
-  hasBrowserRecognition = false,
   isEmailNativeEnrolled = false,
   isEmailProviderReady,
   variant = "control",
@@ -35,10 +39,42 @@ export function GuidedResourcePage({
       "markdown",
     ) ||
     hasPublicToolPortabilityArtifactFormat(definition.resourceKey, "print");
+  const courseKey = isCourseKey(definition.resourceKey)
+    ? definition.resourceKey
+    : null;
   const isEmailNativeGateActive =
-    gateMetadata.mode === "email-native" &&
-    variant === "hybrid-v1" &&
-    isEmailProviderReady === true;
+    gateMetadata.mode === "email-native" && courseKey !== null;
+  const availableSectionCount =
+    isEmailNativeGateActive && courseKey
+      ? courseWorkspaceState?.hasAccess
+        ? courseWorkspaceState.availableSectionCount
+        : 0
+      : definition.sections.length;
+  const workspaceDefinition = {
+    ...definition,
+    sections: definition.sections.slice(0, availableSectionCount),
+  };
+  const lockedSections = definition.sections
+    .slice(availableSectionCount)
+    .map((section, offset) => ({
+      id: section.id,
+      ...(courseKey &&
+      courseWorkspaceState?.hasAccess &&
+      courseWorkspaceState.activatedAt !== undefined
+        ? {
+            releaseAt: getCourseSectionReleaseAt(
+              courseKey,
+              courseWorkspaceState.activatedAt,
+              availableSectionCount + offset,
+            ),
+          }
+        : {}),
+      title: section.title,
+    }));
+  const totalItemCount = definition.sections.reduce(
+    (total, section) => total + section.items.length,
+    0,
+  );
 
   return (
     <>
@@ -53,9 +89,12 @@ export function GuidedResourcePage({
         resourceKey={definition.resourceKey}
       />
       <GuidedResourceWorkspace
-        definition={definition}
+        courseWorkspaceState={courseWorkspaceState}
+        definition={workspaceDefinition}
         isEmailNativeEnrolled={isEmailNativeEnrolled}
         isEmailNativeGateActive={isEmailNativeGateActive}
+        lockedSections={lockedSections}
+        totalItemCount={totalItemCount}
         variant={variant}
       />
       <div className="px-6 pb-20">
@@ -64,7 +103,8 @@ export function GuidedResourcePage({
             hasFunctionalUnlock={
               isEmailNativeGateActive || hasFunctionalPortabilityUnlock
             }
-            hasBrowserRecognition={hasBrowserRecognition}
+            hasCourseAccess={courseWorkspaceState?.hasAccess}
+            hasCourseSession={courseWorkspaceState?.hasSession}
             isEmailProviderReady={isEmailProviderReady}
             isResultDisplayed
             toolKey={definition.resourceKey}

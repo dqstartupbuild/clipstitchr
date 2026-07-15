@@ -6,6 +6,7 @@ import { cancelEmailProviderOperationsForContact } from "../email/cancelEmailPro
 import { enqueueInitialContactDeleteOperation } from "../email/enqueueInitialContactDeleteOperation";
 import { resumeHeldContactDeleteOperationsForContact } from "../email/resumeHeldContactDeleteOperationsForContact";
 import { rateLimiter } from "../rateLimiter";
+import { deleteCourseAccessForContact } from "../courseAccess/deleteCourseAccessForContact";
 
 export const deleteMarketingContactForPrivacy = internalMutation({
   args: {
@@ -51,6 +52,7 @@ export const deleteMarketingContactForPrivacy = internalMutation({
       }
     }
 
+    await deleteCourseAccessForContact(ctx, contactId);
     await ctx.db.patch(contactId, {
       normalizedEmail: `deleted-${contactId}`,
       contactName: "Deleted contact",

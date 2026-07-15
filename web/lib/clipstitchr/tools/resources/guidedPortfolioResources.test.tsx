@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { GuidedResourcePage } from "@/app/_components/tools/resources/GuidedResourcePage";
 import { campaignRetrospectiveDefinition } from "@/lib/clipstitchr/tools/campaignRetrospective/campaignRetrospectiveDefinition";
+import { isCourseKey } from "@/lib/clipstitchr/tools/courses/isCourseKey";
 import { fiveDayContentSprintDefinition } from "@/lib/clipstitchr/tools/fiveDayContentSprint/fiveDayContentSprintDefinition";
 import type { GuidedResourceDefinition } from "@/lib/clipstitchr/tools/resources/GuidedResourceDefinition";
 import { testingSystemWorkshopDefinition } from "@/lib/clipstitchr/tools/testingSystemWorkshop/testingSystemWorkshopDefinition";
@@ -31,7 +32,7 @@ describe("guided portfolio resources", () => {
   );
 
   it.each(definitions)(
-    "renders $resourceKey with immediate work, the exact lead source, and paid plans",
+    "renders $resourceKey with its exact access boundary, lead source, and paid plans",
     (definition) => {
       const markup = renderToStaticMarkup(
         <GuidedResourcePage definition={definition} />,
@@ -40,14 +41,20 @@ describe("guided portfolio resources", () => {
       expect(markup).toContain(definition.completionLabel);
       expect(markup).toContain(`id="${definition.resourceKey}-lead-heading"`);
       expect(markup).toContain('href="/pricing"');
-      expect(markup).toContain("Download Markdown");
+      if (isCourseKey(definition.resourceKey)) {
+        expect(markup).toContain(definition.sections[0]!.title);
+        expect(markup).not.toContain(definition.sections[0]!.items[0]!.body);
+        expect(markup).not.toContain("Download Markdown");
+      } else {
+        expect(markup).toContain("Download Markdown");
+      }
     },
   );
 
-  it("persists the sprint, course, and workshop only in versioned browser keys", () => {
-    expect(fiveDayContentSprintDefinition.progressStorageKey).toMatch(/-v1$/);
-    expect(ugcMiniCourseDefinition.progressStorageKey).toMatch(/-v1$/);
-    expect(testingSystemWorkshopDefinition.progressStorageKey).toMatch(/-v1$/);
+  it("does not store course work in browser-local progress keys", () => {
+    expect(fiveDayContentSprintDefinition.progressStorageKey).toBeUndefined();
+    expect(ugcMiniCourseDefinition.progressStorageKey).toBeUndefined();
+    expect(testingSystemWorkshopDefinition.progressStorageKey).toBeUndefined();
     expect(whyDidThisAdWorkDefinition.progressStorageKey).toBeUndefined();
     expect(campaignRetrospectiveDefinition.progressStorageKey).toBeUndefined();
   });

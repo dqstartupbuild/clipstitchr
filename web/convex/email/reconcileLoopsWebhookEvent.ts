@@ -12,6 +12,7 @@ import { getMarketingMailingListEventIsStale } from "./getMarketingMailingListEv
 import { getMarketingSuppressionEventIsStale } from "./getMarketingSuppressionEventIsStale";
 import { getOrBindConfirmationEmailOperation } from "./getOrBindConfirmationEmailOperation";
 import { getMarketingSubscriptionEventIsStale } from "./getMarketingSubscriptionEventIsStale";
+import { stopCourseReleasesForContact } from "../courseAccess/stopCourseReleasesForContact";
 
 const nullableString = v.union(v.null(), v.string());
 
@@ -271,6 +272,7 @@ export const reconcileLoopsWebhookEvent = internalMutation({
             });
           }
         }
+        await stopCourseReleasesForContact(ctx, contact._id, eventAt);
         await cancelEmailProviderOperationsForContact(
           ctx,
           contact._id,
@@ -318,6 +320,7 @@ export const reconcileLoopsWebhookEvent = internalMutation({
           marketingEligible: false,
           updatedAt: args.receivedAt,
         });
+        await stopCourseReleasesForContact(ctx, contact._id, eventAt);
         await cancelEmailProviderOperationsForContact(
           ctx,
           contact._id,

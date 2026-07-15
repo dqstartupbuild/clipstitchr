@@ -134,8 +134,8 @@ video dimensions, codec details, sampled media signals, or generated results. Th
 public-tool event boundary accepts only `event_type`, `experiment_variant`,
 `gate_mode`, and `tool_key`. It must not include created/duplicate status,
 request failures, the local unlock marker, the HttpOnly recognition token, a
-confirmation token, or any other property that could identify or enumerate an
-email address.
+course-session token, confirmation token, course entitlement, or any other
+property that could identify or enumerate an email address.
 
 `/email/confirm` is a standalone HTML route rather than a React page. It loads
 no PostHog script, emits no analytics event, uses no third-party resource, and

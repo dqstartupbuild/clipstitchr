@@ -6,10 +6,14 @@ import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRa
 export async function confirmEmailConsentWithConvex({
   clientKey,
   confirmedAt,
+  courseSessionExpiresAt,
+  courseSessionTokenHash,
   reference,
 }: {
   clientKey: string;
   confirmedAt: number;
+  courseSessionExpiresAt: number;
+  courseSessionTokenHash: string;
   reference: VerifiedEmailConfirmationReference;
 }) {
   return createConvexHttpClient().mutation(
@@ -18,6 +22,8 @@ export async function confirmEmailConsentWithConvex({
       ...reference,
       clientKey,
       confirmedAt,
+      courseSessionExpiresAt,
+      courseSessionTokenHash,
       secret: getRateLimitApiSecret(),
     },
   );

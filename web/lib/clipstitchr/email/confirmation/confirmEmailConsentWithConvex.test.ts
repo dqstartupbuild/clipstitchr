@@ -22,7 +22,7 @@ describe("confirmEmailConsentWithConvex", () => {
     mocks.mutation.mockReset();
   });
 
-  it("sends only the verified reference, bounded client key, time, and secret", async () => {
+  it("sends the verified reference and one hashed course-session candidate", async () => {
     mocks.mutation.mockResolvedValue({ status: "confirmed" });
     const reference = {
       expiresAt: 1_783_958_400_000,
@@ -34,6 +34,8 @@ describe("confirmEmailConsentWithConvex", () => {
       confirmEmailConsentWithConvex({
         clientKey: "c".repeat(64),
         confirmedAt: 1_783_900_000_000,
+        courseSessionExpiresAt: 1_799_452_000_000,
+        courseSessionTokenHash: "e".repeat(64),
         reference,
       }),
     ).resolves.toEqual({ status: "confirmed" });
@@ -41,6 +43,8 @@ describe("confirmEmailConsentWithConvex", () => {
       ...reference,
       clientKey: "c".repeat(64),
       confirmedAt: 1_783_900_000_000,
+      courseSessionExpiresAt: 1_799_452_000_000,
+      courseSessionTokenHash: "e".repeat(64),
       secret: "rate-limit-secret",
     });
   });

@@ -6,14 +6,19 @@ type ConvexFunction<Args, Result> = {
 };
 
 const mocks = vi.hoisted(() => ({
+  activateCourseEntitlement: vi.fn(),
+  createCourseAccessSession: vi.fn(),
   enqueueEmailProviderOperation: vi.fn(),
   getEmailConfirmationTokenIsAvailable: vi.fn(() => true),
   getOrCreateMarketingWorkflowEnrollment: vi.fn(),
   rateLimiter: {
     limit: vi.fn(
-      async (_ctx: unknown, _bucket: string, _options: unknown) => ({
-        ok: true,
-      }),
+      async (ctx: unknown, bucket: string, options: unknown) => {
+        void ctx;
+        void bucket;
+        void options;
+        return { ok: true };
+      },
     ),
   },
   validateEmailConfirmationReference: vi.fn(() => true),
@@ -22,6 +27,12 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../_generated/server", () => ({ mutation: vi.fn((value) => value) }));
 vi.mock("../auth/assertRateLimitApiSecret", () => ({
   assertRateLimitApiSecret: vi.fn(),
+}));
+vi.mock("../courseAccess/activateCourseEntitlement", () => ({
+  activateCourseEntitlement: mocks.activateCourseEntitlement,
+}));
+vi.mock("../courseAccess/createCourseAccessSession", () => ({
+  createCourseAccessSession: mocks.createCourseAccessSession,
 }));
 vi.mock("./enqueueEmailProviderOperation", () => ({
   enqueueEmailProviderOperation: mocks.enqueueEmailProviderOperation,
@@ -44,8 +55,11 @@ function getHandler<Args, Result>(convexFunction: unknown) {
   return (convexFunction as ConvexFunction<Args, Result>).handler;
 }
 
-function createContext(resumable = false) {
-  const token = { _id: "token_1", contactId: "contact_1" };
+function createContext(
+  resumable = false,
+  courseKey?: "five-day-app-content-sprint",
+) {
+  const token = { _id: "token_1", contactId: "contact_1", courseKey };
   const contact = {
     _id: "contact_1",
     currentConsentId: "consent_1",
@@ -118,6 +132,7 @@ describe("email consent confirmation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.enqueueEmailProviderOperation
+      .mockReset()
       .mockResolvedValueOnce("contact_sync_1")
       .mockResolvedValueOnce("workflow_1")
       .mockResolvedValueOnce("workflow_2")
@@ -129,7 +144,7 @@ describe("email consent confirmation", () => {
     });
   });
 
-  it("queues the bounded maximum of four pending workflows atomically", async () => {
+  it("confirms a regular tool without activating pending course workflows", async () => {
     const ctx = createContext();
 
     await expect(
@@ -142,17 +157,19 @@ describe("email consent confirmation", () => {
         tokenRecordId: "c".repeat(32),
       }),
     ).resolves.toEqual({ status: "confirmed" });
-    expect(mocks.enqueueEmailProviderOperation).toHaveBeenCalledTimes(5);
+    expect(mocks.enqueueEmailProviderOperation).toHaveBeenCalledTimes(2);
     expect(
       mocks.rateLimiter.limit.mock.calls.filter(
         (call) => call[1] === "emailWorkflowEventByContact",
       ),
-    ).toHaveLength(4);
+    ).toHaveLength(1);
     expect(
       ctx.db.patch.mock.calls.filter(([id]) =>
         String(id).startsWith("enrollment_"),
       ),
-    ).toHaveLength(4);
+    ).toHaveLength(1);
+    expect(mocks.activateCourseEntitlement).not.toHaveBeenCalled();
+    expect(mocks.createCourseAccessSession).not.toHaveBeenCalled();
   });
 
   it("resumes the same known-unsent canceled workflow after re-consent", async () => {
@@ -181,5 +198,41 @@ describe("email consent confirmation", () => {
       expect.anything(),
       { operationId: "canceled_operation_1" },
     );
+  });
+
+  it("activates only the course named by the single-use token", async () => {
+    const ctx = createContext(false, "five-day-app-content-sprint");
+
+    await expect(
+      getHandler(confirmEmailConsent)(ctx, {
+        clientKey: "a".repeat(64),
+        confirmedAt: 1_000,
+        courseSessionExpiresAt:
+          1_000 + 180 * 24 * 60 * 60 * 1_000,
+        courseSessionTokenHash: "d".repeat(64),
+        expiresAt: 2_000,
+        secret: "secret",
+        tokenDigest: "b".repeat(64),
+        tokenRecordId: "c".repeat(32),
+      }),
+    ).resolves.toEqual({
+      courseKey: "five-day-app-content-sprint",
+      status: "confirmed",
+    });
+    expect(mocks.activateCourseEntitlement).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({
+        courseKey: "five-day-app-content-sprint",
+      }),
+    );
+    expect(mocks.createCourseAccessSession).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({ tokenHash: "d".repeat(64) }),
+    );
+    expect(
+      ctx.db.patch.mock.calls
+        .filter(([id]) => String(id).startsWith("enrollment_"))
+        .map(([id]) => id),
+    ).toEqual(["enrollment_1", "enrollment_2"]);
   });
 });

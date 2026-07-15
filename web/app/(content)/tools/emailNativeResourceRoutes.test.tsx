@@ -7,15 +7,20 @@ import UgcMiniCourseRoutePage from "@/app/(content)/tools/ugc-to-app-ad-mini-cou
 
 const mocks = vi.hoisted(() => ({
   emailNativeReady: false,
-  hasBrowserRecognition: false,
+  courseWorkspaceState: {
+    availableSectionCount: 0,
+    hasAccess: false,
+    hasSession: true,
+    progressItems: [],
+  },
   resolvePublicToolGateVariantForRequest: vi.fn(async () => "control"),
 }));
 
 vi.mock(
-  "@/lib/clipstitchr/tools/browserRecognition/getBrowserRecognitionCookieIsPresentForRequest",
+  "@/lib/clipstitchr/tools/courses/server/getCourseWorkspaceStateForRequest",
   () => ({
-    getBrowserRecognitionCookieIsPresentForRequest: vi.fn(
-      async () => mocks.hasBrowserRecognition,
+    getCourseWorkspaceStateForRequest: vi.fn(
+      async () => mocks.courseWorkspaceState,
     ),
   }),
 );
@@ -35,18 +40,18 @@ vi.mock(
 vi.mock("@/app/_components/tools/resources/GuidedResourcePage", () => ({
   GuidedResourcePage: ({
     definition,
-    hasBrowserRecognition,
+    courseWorkspaceState,
     isEmailProviderReady,
     variant,
   }: {
     definition: { resourceKey: string };
-    hasBrowserRecognition: boolean;
+    courseWorkspaceState?: { hasSession: boolean };
     isEmailProviderReady: boolean;
     variant: string;
   }) => (
     <p>
       {definition.resourceKey}|{String(isEmailProviderReady)}|{variant}|
-      {String(hasBrowserRecognition)}
+      {String(courseWorkspaceState?.hasSession ?? false)}
     </p>
   ),
 }));
@@ -64,11 +69,10 @@ describe("email-native resource routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.emailNativeReady = false;
-    mocks.hasBrowserRecognition = false;
     mocks.resolvePublicToolGateVariantForRequest.mockResolvedValue("control");
   });
 
-  it.each(routes)("keeps %s in control when Loops is not fully ready", async (
+  it.each(routes)("keeps %s delivery in control while retaining course sessions", async (
     toolKey,
     renderPage,
   ) => {
@@ -77,7 +81,7 @@ describe("email-native resource routes", () => {
     expect(
       mocks.resolvePublicToolGateVariantForRequest,
     ).toHaveBeenCalledWith(toolKey, false);
-    expect(markup).toContain(`${toolKey}|false|control|false`);
+    expect(markup).toContain(`${toolKey}|false|control|true`);
   });
 
   it.each(routes)("activates ready rollout selection for %s", async (
@@ -85,7 +89,6 @@ describe("email-native resource routes", () => {
     renderPage,
   ) => {
     mocks.emailNativeReady = true;
-    mocks.hasBrowserRecognition = true;
     mocks.resolvePublicToolGateVariantForRequest.mockResolvedValue(
       "hybrid-v1",
     );

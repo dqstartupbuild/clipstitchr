@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => {
     convex,
     createConvexHttpClient: vi.fn(() => convex),
     emailNativeReady: true,
-    readBrowserRecognitionToken: vi.fn<() => string | null>(() =>
+    readCourseAccessSessionToken: vi.fn<() => string | null>(() =>
       "r".repeat(43),
     ),
     resolvePublicToolGateVariantForRequest: vi.fn(async () => "hybrid-v1"),
@@ -41,16 +41,16 @@ vi.mock("@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret", () => ({
 }));
 
 vi.mock(
-  "@/lib/clipstitchr/tools/browserRecognition/readBrowserRecognitionToken",
+  "@/lib/clipstitchr/tools/courses/session/readCourseAccessSessionToken",
   () => ({
-    readBrowserRecognitionToken: mocks.readBrowserRecognitionToken,
+    readCourseAccessSessionToken: mocks.readCourseAccessSessionToken,
   }),
 );
 
 vi.mock(
-  "@/lib/clipstitchr/tools/browserRecognition/hashBrowserRecognitionToken",
+  "@/lib/clipstitchr/tools/courses/session/hashCourseAccessSessionToken",
   () => ({
-    hashBrowserRecognitionToken: vi.fn(async () => "b".repeat(64)),
+    hashCourseAccessSessionToken: vi.fn(async () => "b".repeat(64)),
   }),
 );
 
@@ -74,7 +74,7 @@ function createRequest(origin = "https://clipstitchr.test") {
     "https://clipstitchr.test/api/tools/five-day-app-content-sprint/email-native-enrollment",
     {
       headers: {
-        cookie: `clipstitchr_tool_recognition=${"r".repeat(43)}`,
+        cookie: `clipstitchr_course_access=${"r".repeat(43)}`,
         origin,
         "sec-fetch-site": origin.includes("clipstitchr.test")
           ? "same-origin"
@@ -90,7 +90,7 @@ describe("handleEmailNativeEnrollmentRequest", () => {
     vi.clearAllMocks();
     mocks.emailNativeReady = true;
     mocks.convex.mutation.mockResolvedValue({ accepted: true });
-    mocks.readBrowserRecognitionToken.mockReturnValue("r".repeat(43));
+    mocks.readCourseAccessSessionToken.mockReturnValue("r".repeat(43));
     mocks.resolvePublicToolGateVariantForRequest.mockResolvedValue(
       "hybrid-v1",
     );
@@ -118,7 +118,7 @@ describe("handleEmailNativeEnrollmentRequest", () => {
         clientKey: "a".repeat(64),
         enrolledAt,
         gateVariant: "hybrid-v1",
-        recognitionTokenHash: "b".repeat(64),
+        courseSessionTokenHash: "b".repeat(64),
         secret: "rate-limit-secret",
         source: "five-day-app-content-sprint",
         workflowKey: "five_day_content_sprint_enrolled",
@@ -130,8 +130,8 @@ describe("handleEmailNativeEnrollmentRequest", () => {
     );
   });
 
-  it("returns the same opaque acceptance when recognition is unavailable", async () => {
-    mocks.readBrowserRecognitionToken.mockReturnValue(null);
+  it("returns the same opaque acceptance when the course session is unavailable", async () => {
+    mocks.readCourseAccessSessionToken.mockReturnValue(null);
 
     const response = await handleEmailNativeEnrollmentRequest({
       request: createRequest(),

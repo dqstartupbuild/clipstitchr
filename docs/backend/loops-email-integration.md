@@ -361,6 +361,14 @@ answer or user-authored tool data. An explicit email-native enrollment creates
 its own record and event; a general tool capture does not silently enroll all
 three sequences.
 
+Course access is app-owned and directional. A regular public-tool capture can
+set the portfolio browser marker but never creates a course entitlement. A
+course capture creates one pending entitlement for that course. Only its
+single-use confirmation POST activates that entitlement and creates the
+contact-wide HttpOnly course session. An explicit later request may add another
+course, but no course or browser marker silently unlocks another sequence.
+Course progress and notes remain in Convex and are never projected to Loops.
+
 Workflow idempotency is logical as well as operational. Convex stores one
 enrollment record per contact, Workflow key, and Workflow version. A later tool
 capture updates latest-tool and qualification properties without restarting the
@@ -430,6 +438,9 @@ limits:
 | Confirmation send | 3/day/email with burst 1; 5/hour/client with burst 2; 300/hour globally with burst 50 across 5 shards |
 | Confirmation redeem | 10/hour/token with burst 5; 20/hour/client with burst 5; 2,000/hour globally with burst 200 across 5 shards |
 | Email-native enrollment | 3/day/contact with burst 1; 10/hour/client with burst 3; 500/hour globally with burst 100 across 5 shards |
+| Course workspace read | 120/hour/course session with burst 30; 5,000/hour globally with burst 1,000 across 5 shards |
+| Course progress write | 240/hour/course session with burst 60; 360/hour/client with burst 90; 10,000/hour globally with burst 2,000 across 5 shards |
+| Course progress reset | 10/hour/course session with burst 3; 1,000/hour globally with burst 100 across 5 shards |
 | Workflow event | 10/day/contact with burst 4; 2,000/hour globally with burst 400 across 5 shards |
 | Transactional send | 10/day/contact with burst 3; 1,000/hour globally with burst 200 across 5 shards |
 | Loops API pacing | 8 requests/second with initial capacity 2, below the provider's 10 requests/second/team ceiling |
@@ -536,7 +547,8 @@ fails closed. Convex must receive the explicit deployment value separately;
 it does not inherit the Vercel runtime environment.
 
 Privacy deletion is a separate operator path and remains available while email
-dispatch is paused. It atomically removes local identity and recognition links,
+dispatch is paused. It atomically removes local identity, recognition links,
+course sessions, entitlements, checklist progress, and course notes,
 then creates a durable Loops contact-deletion operation using only the opaque
 `userId`. Delete operations use the normal provider pacing, lease, retry, and
 dead-letter machinery but do not depend on `LOOPS_EMAIL_ENABLED`. See
@@ -620,6 +632,7 @@ transactional email rather than duplicated per feature.
 The code, data model, provider setup, and production activation are complete:
 
 1. The canonical contact, consent, capture, interaction, recognition-token,
+   course-entitlement, course-session, course-progress,
    provider-operation, Workflow-enrollment, confirmation-token,
    webhook-deduplication, and deletion-tombstone records are present.
 2. The production waitlist migration preserved the original source and

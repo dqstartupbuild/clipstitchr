@@ -473,8 +473,8 @@ export const publicToolGateCatalog = {
     mode: "email-native",
     outcomeCta: "Start my five-day sprint",
     value: {
-      publicValue: "Curriculum, outcomes, and a complete sample day",
-      unlockedValue: "Five-message guided sequence",
+      publicValue: "Curriculum, outcomes, and locked day titles",
+      unlockedValue: "Five-message guided sequence with saved progress",
     },
     workflowKey: "five_day_content_sprint_enrolled",
   },
@@ -482,8 +482,8 @@ export const publicToolGateCatalog = {
     mode: "email-native",
     outcomeCta: "Start my mini-course",
     value: {
-      publicValue: "Curriculum and a complete sample lesson",
-      unlockedValue: "Five-lesson sequence and browser worksheets",
+      publicValue: "Curriculum and locked lesson titles",
+      unlockedValue: "Five-lesson sequence with saved progress",
     },
     workflowKey: "ugc_app_ad_course_enrolled",
   },
@@ -491,9 +491,9 @@ export const publicToolGateCatalog = {
     mode: "email-native",
     outcomeCta: "Enroll me in the workshop",
     value: {
-      publicValue: "Agenda, outcomes, and a useful preview",
+      publicValue: "Agenda, outcomes, and locked section titles",
       unlockedValue:
-        "Enrollment email, self-guided workshop access, and Markdown workbook",
+        "Full workshop access, saved progress, and Markdown workbook",
     },
     workflowKey: "creative_testing_workshop_enrolled",
   },
