@@ -8,8 +8,8 @@ The app-owned Loops adapter, canonical Convex records, durable provider outbox,
 signed webhook route, app-owned confirmation route, browser-recognition token,
 and strict fifty-tool gate rollout control are implemented. The official
 `loops` JavaScript SDK is installed at the `^7.0.0` package range. All provider
-dispatch and public gate changes remain fail-closed behind explicit environment
-configuration.
+dispatch and public gate changes fail closed when their exact environment
+configuration is absent or invalid.
 
 FollowUs AI is the isolated development Loops team and ClipStitchr is the
 isolated production Loops team. Each contains the six bounded contact
@@ -22,16 +22,24 @@ same-origin `POST`, and single-use replay checks. A separately approved
 production migration processed both legacy waitlist rows without inferring
 consent or creating provider activity.
 A separately approved controlled contact projection then verified the exact
-provider fields through the application-owned helper without resuming the held
-outbox operations. The four namespaced production Workflows were then reviewed
-and activated under a separate approval, with zero sends and no event dispatch;
-the unrelated fifth Workflow remains Draft. No production marketing email,
-Workflow event, or public rollout has been performed. Keep
-`LOOPS_EMAIL_ENABLED=false`, `LOOPS_WEBHOOKS_READY=false`,
-`LOOPS_CONTACT_PROPERTIES_READY=false`,
-`LOOPS_WORKFLOWS_READY=false`, `LOOPS_EMAIL_NATIVE_ENABLED=false`, and
-`PUBLIC_TOOL_GATE_ROLLOUT` unset until the operator checklist in
-`docs/backend/public-tool-email-rollout-runbook.md` is complete.
+provider fields through the application-owned helper. The four namespaced
+production Workflows were reviewed and activated under a separate approval;
+the unrelated fifth Workflow remains Draft. A controlled
+`tool_lead_captured` smoke then resumed exactly one contact-sync operation and
+one Workflow-event operation. Both were accepted on their first attempt, the
+enrollment became accepted, and the controlled contact entered the general
+nurture Workflow's seven-day timer without an immediate marketing email.
+
+On July 15, 2026, the operator explicitly approved a direct full release
+instead of a gradual percentage rollout. All five production sending and
+readiness flags are now exactly `true` in Convex and Vercel. The strict
+`PUBLIC_TOOL_GATE_ROLLOUT` configuration contains all 50 unique fixed tool keys,
+uses `hybrid-v1`, and allocates 100%, including the three email-native tools.
+Vercel production deployment `dpl_2mEbfiVggjYyyPCj2jWutnJtQxGG` is Ready and
+owns the `clipstitchr.com` aliases. A live request audit found `hybrid-v1` on
+all 50 tool routes with zero failures. The two migrated legacy contacts remain
+consent-unknown, unverified, unsubscribed, and marketing-ineligible, with no
+provider operation, token, capture, or Workflow enrollment.
 
 ## Decision
 
@@ -609,7 +617,7 @@ transactional email rather than duplicated per feature.
 
 ## Migration And Rollout
 
-The code and data-model foundation is complete, but activation remains staged:
+The code, data model, provider setup, and production activation are complete:
 
 1. The canonical contact, consent, capture, interaction, recognition-token,
    provider-operation, Workflow-enrollment, confirmation-token,
@@ -625,12 +633,12 @@ The code and data-model foundation is complete, but activation remains staged:
 4. All tools remain `control` unless `PUBLIC_TOOL_GATE_ROLLOUT` parses as the
    exact JSON contract below. An invalid value always fails to control.
 5. Development contact sync, confirmation, Workflow, unsubscribe, duplicate,
-   and retry smokes must pass against the FollowUs AI development team before
-   any production allocation is nonzero.
-6. Production starts with a named subset of the fixed fifty-tool catalog and a
-   low allocation. Expand tools or percentage only after metrics and operational
-   health are reviewed. The three email-native experiences remain control until
-   `emailNativeReady` passes in addition to rollout assignment.
+   and retry smokes passed against the FollowUs AI development team before the
+   production allocation was enabled.
+6. The production operator explicitly replaced the recommended staged rollout
+   with a direct 100% release. The deployed configuration contains all 50 fixed
+   tool keys. The three email-native experiences can render `hybrid-v1` because
+   the complete `emailNativeReady` chain is also true.
 
 `PUBLIC_TOOL_GATE_ROLLOUT` accepts exactly this shape and no additional keys:
 
@@ -650,6 +658,10 @@ The code and data-model foundation is complete, but activation remains staged:
 - Lead capture itself also fails back to control without
   `EMAIL_CONFIRMATION_TOKEN_SECRET`. Email-native tools additionally require
   the full Loops `emailNativeReady` chain.
+
+The production value uses the same strict shape with all 50 unique catalog
+keys and `"allocationPercent":100`. The one-tool value above remains a compact
+example of the configuration contract, not the current production allocation.
 
 The app-owned forty-eight-hour confirmation remains required even though Loops
 dashboard double opt-in is disabled. Loops' API contact operations bypass the

@@ -4,11 +4,11 @@ Reviewed: 2026-07-15
 
 ## Current Status
 
-The staged public-tool gate, canonical Convex contact model, browser unlock,
+The public-tool gate, canonical Convex contact model, browser unlock,
 app-owned email confirmation, durable provider outbox, official Loops SDK
 adapter, and signed webhook handler are implemented. Provider dispatch and all
-fifty gate variants default to a fail-closed state and must remain there until
-an operator completes this runbook.
+50 gate variants fail closed when their required configuration is missing or
+invalid.
 
 The FollowUs AI team is the isolated development environment and the
 ClipStitchr team is the isolated production environment. Both have the approved
@@ -21,13 +21,26 @@ single-use replay checks. A separately approved migration preserved both legacy
 waitlist rows as consent-unknown, unverified, unsubscribed, and ineligible, with
 no provider operation or Workflow enrollment. A controlled production contact
 projection also passed through the application-owned Loops helper with the
-exact approved fields. Its durable contact-sync and Workflow-event records
-remain held at zero
-attempts, and no provider event or marketing email was sent. After a separate
-approval, the four namespaced production Workflows were reviewed and activated
-with zero sends. The unrelated fifth Workflow remains Draft. Workflow-event
-dispatch, all production readiness flags, email dispatch, and public rollout
-remain disabled.
+exact approved fields. After separate approval, the four namespaced production
+Workflows were reviewed and activated. The unrelated fifth Workflow remains
+Draft.
+
+The controlled `tool_lead_captured` smoke resumed exactly two zero-attempt
+operations once: one contact sync and one Workflow event. Both were accepted on
+their first attempt, the enrollment became accepted, and the general nurture
+Workflow began its seven-day timer without sending an immediate marketing
+email. On July 15, 2026, the operator explicitly chose a direct full release
+instead of this runbook's recommended gradual percentages. Convex and Vercel
+now have all five production sending/readiness flags set to exactly `true`.
+Production deployment `dpl_2mEbfiVggjYyyPCj2jWutnJtQxGG` is Ready, and its
+strict rollout contains all 50 unique tool keys at 100%, including the three
+email-native tools. A live route audit returned `hybrid-v1` for all 50 tools
+with zero failures. The two legacy contacts remain marketing-ineligible and
+have no provider operations, tokens, captures, or Workflow enrollments.
+
+The staged instructions below remain the recommended procedure for future
+rollout changes. The production launch record above documents the operator's
+explicitly approved exception.
 
 FollowUs AI development asset inventory:
 
