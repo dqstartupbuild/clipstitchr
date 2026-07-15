@@ -138,6 +138,7 @@ import type * as email_reconcileLoopsWebhookEvent from "../email/reconcileLoopsW
 import type * as email_recordEmailProviderOperationAccepted from "../email/recordEmailProviderOperationAccepted.js";
 import type * as email_recordEmailProviderOperationFailure from "../email/recordEmailProviderOperationFailure.js";
 import type * as email_recoverEmailProviderOperations from "../email/recoverEmailProviderOperations.js";
+import type * as email_requeueZeroAttemptConfigurationFailure from "../email/requeueZeroAttemptConfigurationFailure.js";
 import type * as email_resumeHeldContactDeleteOperationsForContact from "../email/resumeHeldContactDeleteOperationsForContact.js";
 import type * as email_resumeHeldEmailProviderOperations from "../email/resumeHeldEmailProviderOperations.js";
 import type * as email_startEmailProviderAttempt from "../email/startEmailProviderAttempt.js";
@@ -569,6 +570,7 @@ declare const fullApi: ApiFromModules<{
   "email/recordEmailProviderOperationAccepted": typeof email_recordEmailProviderOperationAccepted;
   "email/recordEmailProviderOperationFailure": typeof email_recordEmailProviderOperationFailure;
   "email/recoverEmailProviderOperations": typeof email_recoverEmailProviderOperations;
+  "email/requeueZeroAttemptConfigurationFailure": typeof email_requeueZeroAttemptConfigurationFailure;
   "email/resumeHeldContactDeleteOperationsForContact": typeof email_resumeHeldContactDeleteOperationsForContact;
   "email/resumeHeldEmailProviderOperations": typeof email_resumeHeldEmailProviderOperations;
   "email/startEmailProviderAttempt": typeof email_startEmailProviderAttempt;

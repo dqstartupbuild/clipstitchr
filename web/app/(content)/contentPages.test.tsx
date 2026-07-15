@@ -332,7 +332,9 @@ describe("content pages", () => {
     expect(privacyMarkup).toContain("180-day recognition cookie");
     expect(privacyMarkup).toContain("Opening it only shows a ClipStitchr page");
     expect(privacyMarkup).toContain("loads no analytics or outside resources");
-    expect(privacyMarkup).toContain("No live Loops email was sent");
+    expect(privacyMarkup).toContain(
+      "We send only the messages you explicitly request",
+    );
     expect(privacyMarkup).toContain("does not take away browser value");
     expect(termsMarkup).toContain("Terms of Use");
     expect(termsMarkup).toContain("Browser Processing Limits");

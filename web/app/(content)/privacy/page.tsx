@@ -150,8 +150,8 @@ export default function PrivacyPage() {
               When email delivery is enabled, Loops delivers the confirmation
               and marketing emails you request. ClipStitchr still requires its
               own 48-hour confirmation before a new or previously opted-out
-              address can receive marketing emails. No live Loops email was
-              sent while this setup was added. You can unsubscribe at any time.
+              address can receive marketing emails. We send only the messages
+              you explicitly request, and you can unsubscribe at any time.
             </p>
 
             <h3>Information Collected Automatically</h3>

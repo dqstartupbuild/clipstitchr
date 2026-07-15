@@ -189,8 +189,9 @@ and unsubscribe handling, delivery retries, rate limits before each provider
 operation, bounce handling, failure monitoring, and a functional enrollment
 control. A generic browser-local unlock may reveal the self-guided browser
 content, but it never enrolls the sequence and never removes the explicit
-enrollment form. No live Loops configuration or delivery was exercised in this
-change.
+enrollment form. Development and production provider assets now exist in
+separate Loops environments, but production enrollment and delivery remain
+disabled until the separately approved rollout reaches these tools.
 Loops dashboard double opt-in is disabled and, in any case, does not cover
 API-created contacts; it does not replace ClipStitchr's app-owned confirmation.
 
@@ -322,7 +323,9 @@ readiness settings. When enabled, an accepted capture commits its canonical
 records and durable provider work before returning the browser unlock. The
 browser does not wait for Loops, so a provider outage cannot hide
 already-earned local value. No live Loops operation was enabled or sent while
-implementing this path.
+implementing the original path. It has since been validated in the isolated
+development environment and deployed to production with dispatch and rollout
+still disabled.
 
 Signed Loops webhooks reconcile audience unsubscribe, list membership,
 deletion, hard bounce, and complaint or suppression state into Convex. Normal

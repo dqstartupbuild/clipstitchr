@@ -1,6 +1,6 @@
 # Loops Email Integration
 
-Reviewed: 2026-07-13
+Reviewed: 2026-07-15
 
 ## Status
 
@@ -11,13 +11,24 @@ and strict fifty-tool gate rollout control are implemented. The official
 dispatch and public gate changes remain fail-closed behind explicit environment
 configuration.
 
-The temporary FollowUs AI team now contains the six bounded contact properties,
-one confirmation-only transactional template, and four ClipStitchr marketing
-Workflows. The Workflows remain drafts. The shared sender domain is not fully
-verified, no webhook is configured, and distinct ClipStitchr development and
-production teams do not exist yet. No deployment, Workflow activation, test or
-live email send, migration, or public rollout was performed. Keep
+FollowUs AI is the isolated development Loops team and ClipStitchr is the
+isolated production Loops team. Each contains the six bounded contact
+properties, one confirmation-only transactional template, four namespaced
+marketing Workflows, a verified sender domain, and its own signed webhook. The
+development confirmation and provider smoke checks passed. The production
+provider assets, Convex functions, and Vercel application are deployed, and one
+approved production confirmation completed its no-side-effect `GET`, explicit
+same-origin `POST`, and single-use replay checks. A separately approved
+production migration processed both legacy waitlist rows without inferring
+consent or creating provider activity.
+A separately approved controlled contact projection then verified the exact
+provider fields through the application-owned helper without resuming the held
+outbox operations. The four namespaced production Workflows were then reviewed
+and activated under a separate approval, with zero sends and no event dispatch;
+the unrelated fifth Workflow remains Draft. No production marketing email,
+Workflow event, or public rollout has been performed. Keep
 `LOOPS_EMAIL_ENABLED=false`, `LOOPS_WEBHOOKS_READY=false`,
+`LOOPS_CONTACT_PROPERTIES_READY=false`,
 `LOOPS_WORKFLOWS_READY=false`, `LOOPS_EMAIL_NATIVE_ENABLED=false`, and
 `PUBLIC_TOOL_GATE_ROLLOUT` unset until the operator checklist in
 `docs/backend/public-tool-email-rollout-runbook.md` is complete.
@@ -277,12 +288,25 @@ in a referrer, analytics event, or log. The no-side-effect `GET` prevents common
 email security scanners from granting marketing consent merely by following a
 link.
 
+Next.js incoming-request logging explicitly ignores `/email/confirm`, including
+its query string, so local development request logs cannot copy the signed
+confirmation reference. This suppression is limited to the confirmation route;
+normal request logging remains enabled elsewhere. Hosting and edge access logs
+must also omit or redact query strings for this route before production
+enablement.
+
 The direct `GET` and `POST` route is intentionally excluded from the shared
 Clerk proxy and app layout. It emits no scripts and sets `noindex`, `nosniff`,
 frame denial, a restrictive content security policy, and private no-store
 headers. The short-lived CSRF cookie lasts ten minutes. The `POST` requires the
 same origin, caps the form body at 4 KiB, re-verifies the signed reference, and
 consumes token, client, and global redemption quota before changing consent.
+The origin guard accepts an exact `Origin` match or an explicit
+`Sec-Fetch-Site: same-origin` signal. Some browsers omit both headers on a
+same-origin HTML form submission; in that case the matching hidden CSRF token
+and short-lived `SameSite=Strict` cookie provide the same-origin proof. A
+cross-site fetch signal or mismatched supplied origin is rejected before token
+verification.
 
 Immediately before sending a confirmation, dispatch rechecks that the token
 record is still the contact's current generation and that the operation was not
@@ -433,6 +457,15 @@ dead-letter immediately. An acceptance-unknown operation cannot be
 automatically replayed once its twenty-four-hour Loops idempotency window
 expires.
 
+An internal-only recovery mutation exists for one narrower case:
+`email/requeueZeroAttemptConfigurationFailure`. It can requeue only a
+confirmation operation that dead-lettered for configuration before any provider
+attempt, has no provider message or acceptance evidence, and still owns a live,
+unused confirmation token. It refuses attempted, ambiguous, expired,
+superseded, used, accepted, or delivered operations. The recovery schedules the
+same operation ID, so it does not mint a second contact, token, provider
+idempotency key, or email.
+
 ## Failure Behavior
 
 - A Loops outage does not remove a public result or browser unlock after the
@@ -508,10 +541,11 @@ properties, the confirmation transactional template, and the four named
 Workflows before a matching readiness flag is set. These provider assets are
 operator prerequisites; this repository change does not create or prove them.
 
-Use distinct development and production Loops accounts or teams so tests
-cannot send to production subscribers. Loops permits one webhook endpoint per
-account, so separate API keys inside one account are not sufficient isolation
-unless an explicitly approved webhook router is introduced.
+Use FollowUs AI for development and the separate ClipStitchr account for
+production so tests cannot send to production subscribers. Loops permits one
+webhook endpoint per account, so separate API keys inside one account are not
+sufficient isolation unless an explicitly approved webhook router is
+introduced.
 
 Secrets stay in deployment configuration and are never committed. Template IDs
 may be server-side environment values or focused server constants, but they are
@@ -580,17 +614,18 @@ The code and data-model foundation is complete, but activation remains staged:
 1. The canonical contact, consent, capture, interaction, recognition-token,
    provider-operation, Workflow-enrollment, confirmation-token,
    webhook-deduplication, and deletion-tombstone records are present.
-2. The waitlist migration preserves the original source and timestamp and marks
-   rows without new consent evidence as `consentUnknown` and
-   `marketingEligible: false`. Running the migration is an explicit operator
-   step; the implementation does not manufacture consent or enroll those rows.
+2. The production waitlist migration preserved the original source and
+   timestamp for both legacy rows and marked them `consentUnknown`, unverified,
+   unsubscribed, and `marketingEligible: false`. The separately approved run
+   created no provider operations, tokens, mailing-list memberships, or
+   Workflow enrollments; the implementation did not manufacture consent.
 3. The official SDK adapter, shared provider pacing, bounded retry state
    machine, development recipient allowlist, signed webhook reconciliation,
    and app-owned confirmation path are present and covered by local tests.
 4. All tools remain `control` unless `PUBLIC_TOOL_GATE_ROLLOUT` parses as the
    exact JSON contract below. An invalid value always fails to control.
 5. Development contact sync, confirmation, Workflow, unsubscribe, duplicate,
-   and retry smokes must pass against a separate development Loops team before
+   and retry smokes must pass against the FollowUs AI development team before
    any production allocation is nonzero.
 6. Production starts with a named subset of the fixed fifty-tool catalog and a
    low allocation. Expand tools or percentage only after metrics and operational
@@ -661,7 +696,8 @@ outstanding:
   non-enumerating, scheduled arguments contain no bearer token, retries
   reproduce the same signed URL, a `GET` has no side effect, only a protected
   user `POST` confirms, the page leaks no referrer or analytics data, superseded
-  operations cannot send old links, and confirmation sends are independently
+  operations cannot send old links, the confirmation request is excluded from
+  Next.js incoming-request logs, and confirmation sends are independently
   rate-limited.
 - Marketing-versus-transactional tests prove nurture and educational sequences
   cannot use a transactional template.

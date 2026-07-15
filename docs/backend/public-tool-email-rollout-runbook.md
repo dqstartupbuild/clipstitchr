@@ -1,6 +1,6 @@
 # Public Tool Email Rollout Runbook
 
-Reviewed: 2026-07-13
+Reviewed: 2026-07-15
 
 ## Current Status
 
@@ -10,34 +10,43 @@ adapter, and signed webhook handler are implemented. Provider dispatch and all
 fifty gate variants default to a fail-closed state and must remain there until
 an operator completes this runbook.
 
-The signed-in Loops workspace is temporarily the FollowUs AI team. ClipStitchr
-assets there are namespaced and must not alter the team's existing FollowUs
-assets. The six contact properties, confirmation template, and four marketing
-Workflows listed below exist, but every Workflow remains a draft. The shared
-sending domain is still processing part of its DNS verification, and no webhook
-endpoint or dashboard-issued signing secret exists. Distinct ClipStitchr
-development and production teams, deployment, migration, provider smoke test,
-Workflow activation, and live email sending remain incomplete.
+The FollowUs AI team is the isolated development environment and the
+ClipStitchr team is the isolated production environment. Both have the approved
+contact fields, confirmation template, marketing Workflow structures, verified
+sender domain, API key, and signed webhook. Development confirmation and
+provider smoke checks passed. Production provider assets, Convex functions,
+and the Vercel application are deployed. One separately approved production
+confirmation completed the signed-link `GET`, explicit same-origin `POST`, and
+single-use replay checks. A separately approved migration preserved both legacy
+waitlist rows as consent-unknown, unverified, unsubscribed, and ineligible, with
+no provider operation or Workflow enrollment. A controlled production contact
+projection also passed through the application-owned Loops helper with the
+exact approved fields. Its durable contact-sync and Workflow-event records
+remain held at zero
+attempts, and no provider event or marketing email was sent. After a separate
+approval, the four namespaced production Workflows were reviewed and activated
+with zero sends. The unrelated fifth Workflow remains Draft. Workflow-event
+dispatch, all production readiness flags, email dispatch, and public rollout
+remain disabled.
 
-Temporary FollowUs AI asset inventory:
+FollowUs AI development asset inventory:
 
 | Asset | Provider ID or state |
 | --- | --- |
 | ClipStitchr transactional group | `cmrk2s70j0csq0jxxwng33rqn` |
 | `email-confirmation` transactional template | `cmrk2s9a001bh0j2xe7ykklh4` |
 | Published confirmation message | `cmrk4b58l0fr60jzqnyjxgnot` |
-| `tool_lead_captured` Workflow | `cmrk3btgq0dec0iyeq1sp5hxl` (draft) |
-| `five_day_content_sprint_enrolled` Workflow | `cmrk3edej0dwe0j36wgugcd8o` (draft) |
-| `ugc_app_ad_course_enrolled` Workflow | `cmrk3g0cf0dwv0jxz6lq99gmn` (draft) |
-| `creative_testing_workshop_enrolled` Workflow | `cmrk3hfml0drr0jxxluu90yr1` (draft) |
-| Shared sender domain | `mail.followusai.com`; DKIM and Loops verification present, MX and SPF/DMARC still processing |
-| Loops webhook | Not configured |
-| Expected current development webhook | `https://neighborly-beagle-365.convex.site/webhooks/loops` after the Convex functions are deployed |
-| Current production webhook candidate | `https://whimsical-ptarmigan-764.convex.site/webhooks/loops`; confirm the production Convex deployment before configuring it |
+| `tool_lead_captured` Workflow | `cmrk3btgq0dec0iyeq1sp5hxl` (configured) |
+| `five_day_content_sprint_enrolled` Workflow | `cmrk3edej0dwe0j36wgugcd8o` (configured) |
+| `ugc_app_ad_course_enrolled` Workflow | `cmrk3g0cf0dwv0jxz6lq99gmn` (configured) |
+| `creative_testing_workshop_enrolled` Workflow | `cmrk3hfml0drr0jxxluu90yr1` (configured) |
+| Shared sender domain | `mail.followusai.com`; verified |
+| Development webhook | `https://neighborly-beagle-365.convex.site/webhooks/loops`; configured and smoke-tested |
+| Production webhook | `https://whimsical-ptarmigan-764.convex.site/webhooks/loops`; configured and smoke-tested |
 
-These temporary IDs are an operator record, not permission to use FollowUs AI
-as production. Replace them with IDs from the matching dedicated ClipStitchr
-team before enabling that environment.
+These development IDs are an operator record, not permission to use FollowUs AI
+as production. The ClipStitchr account uses independently recreated production
+assets and production-only IDs.
 
 Loops dashboard double opt-in is disabled. That setting does not replace or
 remove ClipStitchr's forty-eight-hour, single-use app confirmation. Loops API
@@ -68,12 +77,12 @@ before a new or returning opted-out address can enter marketing Workflows.
   A rollout can select only fixed catalog keys; unknown tools never enter the
   experiment.
 
-## Create Separate Loops Teams
+## Use Separate Development And Production Accounts
 
-Create distinct Loops development and production accounts or teams. Do not use
-two API keys in one team as the isolation boundary. Loops supports one webhook
-endpoint per account, and development testing must not share a subscriber
-audience or webhook state with production.
+Use FollowUs AI for development and the separate ClipStitchr account for
+production. Do not use two API keys in one team as the isolation boundary.
+Loops supports one webhook endpoint per account, and development testing must
+not share a subscriber audience or webhook state with production.
 
 In each team, create and verify these six contact properties before setting
 `LOOPS_CONTACT_PROPERTIES_READY=true`:
@@ -163,6 +172,13 @@ at least `confirmationReady`, `contactSyncReady`, and `workflowReady` in the
 selected team first so accepted requests do not create provider work that is
 immediately dead-lettered for incomplete configuration.
 
+If a confirmation operation dead-letters for configuration with zero provider
+attempts, fix the missing configuration first. An administrator may then invoke
+the internal `email/requeueZeroAttemptConfigurationFailure` mutation for that
+specific operation. It refuses any operation with an attempted, ambiguous,
+accepted, delivered, expired, used, or superseded outcome. Never use it to
+replay an uncertain provider result.
+
 ## Strict Fifty-Tool Rollout
 
 The rollout parser accepts one exact JSON object:
@@ -218,6 +234,18 @@ migration.
   enroll a migrated address. It must complete the new app confirmation before
   becoming eligible for marketing.
 
+Production execution evidence from July 14, 2026:
+
+- Snapshot export `1784082310409867503` completed before migration and the
+  downloaded archive passed an integrity check.
+- One mutation page processed 2 rows, created 2 contacts and 2 consent records,
+  and returned `isDone: true`.
+- A read-only audit verified one-to-one mappings, preserved waitlist rows, safe
+  ineligible states, and zero migration-created tokens, captures, memberships,
+  provider operations, or Workflow enrollments.
+- Convex and Vercel send/readiness gates remained `false`, and the public
+  rollout remained unset.
+
 ## Automated Checks Before Provider Setup
 
 Run from `web/` with no live Loops credentials:
@@ -259,7 +287,9 @@ Use only controlled addresses listed in `LOOPS_DEVELOPMENT_RECIPIENTS`.
    operation ID as `Idempotency-Key`.
 7. Fetch the link with `GET` and confirm consent stays pending. Press the form
    button and confirm only the same-origin CSRF-checked `POST` verifies consent,
-   upserts the contact, and starts `tool_lead_captured` once.
+   upserts the contact, and starts `tool_lead_captured` once. Confirm the local,
+   hosting, and edge request logs do not contain the confirmation query string
+   or signed reference.
 8. Repeat the capture and retry the same provider operation. Confirm no Workflow
    restart and no duplicate email. Confirm Loops `409` for the same idempotency
    key is treated as accepted, not sent again.
@@ -327,6 +357,7 @@ body, confirmation URL, or raw bearer token into the record.
 
 ## Related Documentation
 
+- `docs/backend/clipstitchr-loops-go-live-walkthrough.md`
 - `docs/backend/loops-email-integration.md`
 - `docs/backend/rate-limits.md`
 - `docs/features/public-tool-lead-capture-strategy.md`
