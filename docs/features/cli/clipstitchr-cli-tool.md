@@ -82,10 +82,9 @@ creation, bounded library reads for queue selection, and queueing ready content.
 The CLI is now part of the public product offer, not only a terminal tool for
 existing users.
 
-- The main landing page includes `LandingCliSection`, which explains the CLI as
-  the repo-side way to record demos, start new work, and queue finished work.
-- The toolkit grid includes a "CLI for repo-side work" feature card that points
-  to the same guide.
+- The main landing page includes the CLI in `LandingOfferStackSection`, which
+  presents it as the repo-side way to carry finished campaign work forward and
+  points to the setup guide.
 - `/docs/clipstitchr-cli` is backed by `clipstitchrCliDoc` in the customer docs
   collection, so the guide gets static metadata, sitemap coverage, and the
   normal docs sidebar. Command blocks use `CustomerDocCommandBlock` and include
@@ -463,7 +462,7 @@ web/app/_components/docs/
   CustomerDocCommandBlock.tsx
 
 web/app/_components/landing/
-  LandingCliSection.tsx
+  LandingOfferStackSection.tsx
 
 web/app/_components/settings/
   SettingsClipstitchrCliPanel.tsx

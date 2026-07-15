@@ -1,33 +1,42 @@
+import Link from "next/link";
 import { LandingExampleOutputVideoCard } from "@/app/_components/landing/LandingExampleOutputVideoCard";
 import { getPublicVideoExamples } from "@/lib/clipstitchr/example-outputs/getPublicVideoExamples";
 
-const marqueeRows = [0, 1];
-
 export function LandingExampleOutputSection() {
-  const examples = getPublicVideoExamples();
+  const examples = getPublicVideoExamples().slice(3, 10);
 
   return (
     <section
-      aria-label="Example ClipStitchr outputs"
-      className="overflow-hidden border-y border-border bg-surface-muted/45 px-0 py-10 md:py-12"
+      aria-labelledby="landing-output-heading"
+      className="landing-output-section"
       id="example-output-reel"
     >
-      <div className="landing-example-output-marquee flex w-max">
-        {marqueeRows.map((rowIndex) => (
-          <div
-            aria-hidden={rowIndex === 1}
-            className="flex shrink-0 gap-4 pr-4"
-            key={rowIndex}
-          >
-            {examples.map((example, index) => (
-              <LandingExampleOutputVideoCard
-                example={example}
-                index={index}
-                key={`${rowIndex}-${example.id}`}
-              />
-            ))}
-          </div>
-        ))}
+      <div className="landing-output-heading-row">
+        <h2 className="landing-display" id="landing-output-heading">
+          Built from real clips. Shown without a mockup.
+        </h2>
+        <Link className="landing-text-link" href="/examples">
+          Open the full reel
+        </Link>
+      </div>
+      <div className="landing-reel-viewport">
+        <div className="landing-example-output-marquee">
+          {[0, 1].map((rowIndex) => (
+            <div
+              aria-hidden={rowIndex === 1}
+              className="landing-reel-row"
+              key={rowIndex}
+            >
+              {examples.map((example, index) => (
+                <LandingExampleOutputVideoCard
+                  example={example}
+                  key={`${rowIndex}-${example.id}`}
+                  shouldLoad={rowIndex === 0 && index < 3}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

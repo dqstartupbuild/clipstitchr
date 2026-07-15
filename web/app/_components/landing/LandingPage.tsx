@@ -1,37 +1,23 @@
-import { SiteFooter } from "@/app/site-footer";
 import { SiteHeader } from "@/app/site-header";
-import { LandingAutomationSection } from "@/app/_components/landing/LandingAutomationSection";
 import { LandingBottomBand } from "@/app/_components/landing/LandingBottomBand";
-import { LandingCliSection } from "@/app/_components/landing/LandingCliSection";
 import { LandingHero } from "@/app/_components/landing/LandingHero";
-import { LandingHookLabSection } from "@/app/_components/landing/LandingHookLabSection";
+import { LandingFooter } from "@/app/_components/landing/LandingFooter";
 import { LandingOfferStackSection } from "@/app/_components/landing/LandingOfferStackSection";
-import { LandingPreview } from "@/app/_components/landing/LandingPreview";
-import { LandingScoreSection } from "@/app/_components/landing/LandingScoreSection";
 import { LandingExampleOutputSection } from "@/app/_components/landing/LandingExampleOutputSection";
-import { LandingStudioSection } from "@/app/_components/landing/LandingStudioSection";
-import { LandingSwiprSection } from "@/app/_components/landing/LandingSwiprSection";
-import { LandingIdeaSection } from "@/app/_components/landing/LandingIdeaSection";
+import { LandingProofSection } from "@/app/_components/landing/LandingProofSection";
 import { LandingWorkflow } from "@/app/_components/landing/LandingWorkflow";
 
 export function LandingPage() {
   return (
-    <div className="marketing-shell min-h-full bg-background text-foreground">
+    <div className="marketing-shell landing-shell min-h-full bg-background text-foreground">
       <SiteHeader variant="landing" />
       <LandingHero />
       <LandingExampleOutputSection />
       <LandingWorkflow />
       <LandingOfferStackSection />
-      <LandingCliSection />
-      <LandingHookLabSection />
-      <LandingPreview />
-      <LandingScoreSection />
-      <LandingIdeaSection />
-      <LandingStudioSection />
-      <LandingSwiprSection />
-      <LandingAutomationSection />
+      <LandingProofSection />
       <LandingBottomBand />
-      <SiteFooter />
+      <LandingFooter />
     </div>
   );
 }

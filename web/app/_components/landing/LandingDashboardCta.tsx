@@ -2,7 +2,6 @@
 
 import { useEffect, type ReactNode } from "react";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { trackTikTokButtonClick } from "@/lib/clipstitchr/analytics/trackTikTokButtonClick";
@@ -68,7 +67,6 @@ export function LandingDashboardCta({
     return (
       <Link href="/dashboard" className={className} onClick={trackClick}>
         Dashboard
-        <ArrowRight aria-hidden className="h-4 w-4" />
       </Link>
     );
   }
@@ -81,7 +79,6 @@ export function LandingDashboardCta({
       onClick={handleSignedOutClick}
     >
       {signedOutLabel}
-      <ArrowRight aria-hidden className="h-4 w-4" />
     </button>
   );
 }

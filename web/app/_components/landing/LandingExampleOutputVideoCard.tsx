@@ -2,27 +2,30 @@ import type { PublicVideoExample } from "@/lib/clipstitchr/types/PublicVideoExam
 
 type LandingExampleOutputVideoCardProps = {
   example: PublicVideoExample;
-  index: number;
+  shouldLoad: boolean;
 };
 
 export function LandingExampleOutputVideoCard({
   example,
-  index,
+  shouldLoad,
 }: LandingExampleOutputVideoCardProps) {
   return (
-    <article className="w-40 shrink-0 overflow-hidden rounded-[1.5rem] bg-surface shadow-[0_20px_50px_rgba(0,0,0,0.28)] ring-1 ring-white/10 sm:w-44 md:w-48">
-      <div className="aspect-[9/16] bg-surface-elevated">
-        <video
-          aria-label={example.title}
-          autoPlay
-          className="h-full w-full object-cover"
-          loop
-          muted
-          playsInline
-          poster={example.thumbnailSrc}
-          preload={index < 5 ? "auto" : "metadata"}
-          src={example.videoSrc}
-        />
+    <article className="landing-reel-frame">
+      <video
+        aria-label={example.title}
+        autoPlay={shouldLoad}
+        loop
+        muted
+        playsInline
+        poster={example.thumbnailSrc}
+        preload={shouldLoad ? "metadata" : "none"}
+      >
+        <source src={example.videoSrc} type="video/webm" />
+        Your browser does not support embedded video.
+      </video>
+      <div className="landing-reel-caption">
+        <span>{example.kind}</span>
+        <span>{example.durationSeconds}s</span>
       </div>
     </article>
   );

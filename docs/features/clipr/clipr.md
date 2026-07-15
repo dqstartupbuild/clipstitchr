@@ -948,11 +948,10 @@ Landing page touchpoints:
   - Keep the hero centered on making more ad variants from saved clips.
   - Do not mention Clipr in the hero unless the core batch promise is already
     clear.
-- `web/app/_components/landing/LandingStudioSection.tsx`
-  - Present Clipr with Swapr and avatar photos under the "Need more clips?"
-    objection.
-- `web/app/_components/landing/LandingOfferStackSection.tsx`
-  - Include Clipr inside the offer stack as extra UGC generation.
+- `web/app/_components/landing/LandingOfferStackSection.tsx` presents Clipr as
+  one way to fill a real source-footage gap inside the consolidated campaign
+  workflow.
+  - Present Clipr with Hook Lab and Swapr after the core batch promise is clear.
 - `web/app/_components/landing/LandingWorkflow.tsx`
   - Keep the workflow focused on upload clips, pick the product demo, and create
     the batch.

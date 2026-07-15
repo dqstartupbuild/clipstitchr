@@ -21,7 +21,7 @@ export function SiteHeader({
       id="navbar"
       className={`z-50 flex items-center justify-between px-6 py-3 ${
         isLanding
-          ? "site-header-translucent fixed left-0 right-0 top-0 border-b border-border backdrop-blur-xl"
+          ? "absolute left-0 right-0 top-0"
           : "border-b border-border bg-surface/95 backdrop-blur-xl"
       }`}
     >
@@ -30,12 +30,6 @@ export function SiteHeader({
       <div className="hidden items-center gap-6 text-sm text-text-secondary lg:flex">
         {isLanding ? (
           <>
-            <a
-              href="#features"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Features
-            </a>
             <a
               href="#workflow"
               className="font-semibold transition-colors hover:text-text-primary"
@@ -47,18 +41,6 @@ export function SiteHeader({
               className="font-semibold transition-colors hover:text-text-primary"
             >
               Examples
-            </Link>
-            <Link
-              href="/docs"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Docs
-            </Link>
-            <Link
-              href="/tools"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Tools
             </Link>
             <Link
               href="/pricing"

@@ -211,7 +211,8 @@ UI:
 - `web/app/_components/dashboard/VideoClipPreviewCard.tsx`
 - `web/app/_components/dashboard/VideoClipDetailsDialog.tsx`
 - `web/app/_components/dashboard/VideoClipCard.tsx`
-- `web/app/_components/landing/LandingScoreSection.tsx`
+- `web/app/_components/landing/LandingOfferStackSection.tsx` includes Clip and
+  Stitch scores in the consolidated cut-and-review chapter.
 - `web/app/_components/landing/LandingHero.tsx`
 - `web/app/_components/landing/LandingOfferStackSection.tsx`
 - `web/app/site-header.tsx`
