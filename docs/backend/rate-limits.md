@@ -484,7 +484,6 @@ preference mutation. CTA choices are restricted to the shared enum. These
 inputs change prompt direction only, so the existing writing and automation
 limits remain the correct cost controls.
 
-
 Product creates and edits call Replicate GPT-4.1 through
 `POST /api/settings/products` and `PATCH /api/settings/products/{id}` to infer
 hidden product strategy metadata before saving the product to Convex. The route
