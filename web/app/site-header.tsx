@@ -7,8 +7,8 @@ import { PublicMobileNavigation } from "@/app/_components/navigation/PublicMobil
  * Shared site header used across the landing page and content pages.
  *
  * @param variant
- *   - `"landing"` – fixed, transparent backdrop with section anchor links
- *   - `"content"` – static, solid background with page navigation links
+ *   - `"landing"` – transparent hero navigation with section anchor links
+ *   - `"content"` – transparent public-page navigation with route links
  */
 export function SiteHeader({
   variant = "content",

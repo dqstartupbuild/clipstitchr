@@ -3,10 +3,11 @@
 ## Summary
 
 - Added branded first-party `/sign-in` and `/sign-up` routes so authentication appears inside the ClipStitchr application shell instead of a blank Clerk default page.
-- Redesigned both routes around the public campaign-production system: a warm
-  split surface, short account-specific copy, and a real populated ClipStitchr
-  dashboard capture with a numbered product capability register. The product
-  image is hidden on small screens so the account action remains immediate.
+- Redesigned both routes around the public campaign-production system: the same
+  warm graphite and copper split used by the marketing close, short
+  account-specific copy, and a real populated ClipStitchr dashboard capture
+  with a numbered product capability register. The product image is hidden on
+  small screens so the account action remains immediate.
 - Updated Clerk configuration in the root layout and middleware proxy so sign-in redirects, protected dashboard redirects, and sign-up links resolve to the new app routes.
 - Replaced the public sign-up experience with an invite-only waitlist CTA because account creation is currently disabled.
 - Added a Convex `waitlist` table and public `waitlist.submit` mutation that stores name, email, normalized email, source, and timestamps.

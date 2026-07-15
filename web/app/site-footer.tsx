@@ -1,45 +1,43 @@
+import Image from "next/image";
 import Link from "next/link";
-import { BrandMark } from "@/app/_components/BrandMark";
 import { site } from "@/lib/site";
 
 const footerLinks = [
-  { href: "/examples", label: "Watch the work" },
-  { href: "/case-studies", label: "See the proof" },
-  { href: "/tools", label: "Plan the campaign" },
-  { href: "/docs", label: "Read the field manual" },
-  { href: "/blog", label: "Read the notes" },
-  { href: "/pricing", label: "Choose a plan" },
+  { href: "/examples", label: "Examples" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/docs", label: "Docs" },
+  { href: "/case-studies", label: "Case studies" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
 ] as const;
 
 /** Shared site footer used across all pages. */
 export function SiteFooter() {
   return (
-    <footer className="public-site-footer">
-      <div className="public-site-footer-grid">
-        <div className="public-site-footer-brand">
-          <BrandMark />
-          <p>Raw clips in. A campaign you can actually publish out.</p>
-        </div>
-        <nav
-          className="public-site-footer-index"
-          aria-label="Footer navigation"
-        >
-          {footerLinks.map((link, index) => (
+    <footer className="landing-footer">
+      <div className="landing-footer-top">
+        <Link className="landing-footer-brand" href="/">
+          <Image
+            alt={site.name}
+            className="landing-footer-logo"
+            height={550}
+            src="/brand/logo-dark.png"
+            width={2048}
+          />
+        </Link>
+        <nav aria-label="Footer navigation" className="landing-footer-links">
+          {footerLinks.map((link) => (
             <Link href={link.href} key={link.href}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
               {link.label}
             </Link>
           ))}
         </nav>
       </div>
-      <div className="public-site-footer-meta">
+      <div className="landing-footer-meta">
         <p>
-          © {new Date().getFullYear()} {site.name}. All rights reserved.
+          © {new Date().getFullYear()} {site.name}
         </p>
-        <div>
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/terms">Terms</Link>
-        </div>
+        <p>Built for people shipping the product and the campaign.</p>
       </div>
     </footer>
   );

@@ -18,18 +18,23 @@ with one product demo, review the separate outputs, and keep building.
 
 ## How It Works
 
-Public pages use the scoped `marketing-shell` and `public-site-shell` classes so
-the campaign palette never changes dashboard surfaces. The public shell defines
-the warm color tokens, a neutral system body face, heavy display typography,
-subtle surface grain, tonal edges, deliberate focus states, and square or
-custom-cut geometry. The homepage keeps its more elaborate `landing-shell`
-composition while sharing the same visual language.
+Public pages use the scoped `marketing-shell`, `public-site-shell`, and
+`landing-shell` classes so the campaign palette never changes dashboard
+surfaces. The shared frame defines the warm color tokens, a neutral system body
+face, heavy display typography, subtle surface grain, tonal edges, deliberate
+focus states, and square or custom-cut geometry. The homepage is the source of
+truth for the frame rather than a separate visual variant.
 
 The shared layout covers `/pricing`, `/examples`, `/docs`, `/blog`,
 `/case-studies`, all `/tools` routes, `/privacy`, and `/terms`. Sign-in and
 sign-up use a related auth shell with a real ClipStitchr product capture.
 
-The page families do not reuse one landing-page skeleton:
+Every public page starts inside the homepage composition: the navigation sits
+inside the atmospheric opening instead of on a separate header bar, the first
+screen uses the same dark grain and copper cut shape, and the oversized
+ClipStitchr footer closes every route. Index and tool openings also inherit the
+homepage's full-screen scale, two-line display type, and lower-right supporting
+copy. Their content below the fold remains specific to the job:
 
 - Pricing is a rate ledger with aligned plan rows, an inclusion register,
   credit table, top-up inventory, and a flat-color challenge close.
@@ -39,15 +44,16 @@ The page families do not reuse one landing-page skeleton:
   calculator pages inherit the same warm surfaces and direct back-to-library
   navigation.
 - Examples uses a staggered film strip built from real output videos.
-- Case studies leads with a copper evidence field and image-led campaign
-  records instead of testimonial cards.
+- Case studies uses an image-led campaign record and evidence register instead
+  of testimonial cards.
 - Blog is an editorial note index with one lead story and a numbered archive.
 - Privacy and Terms are calm reading pages without a marketing card wrapper.
 
-The desktop header uses a compact navigation index. On small screens,
+The desktop header uses the homepage navigation treatment. On small screens,
 `PublicMobileNavigation` exposes the same routes through a native,
-keyboard-accessible disclosure. The footer is a numbered route index rather
-than the usual multi-column SaaS footer.
+keyboard-accessible disclosure. `SiteFooter` is shared by the homepage and all
+content routes so logo scale, link rhythm, metadata, and spacing never switch
+systems between pages.
 
 The homepage has five product chapters: the real-output hero, the output reel,
 the batch workflow and populated workspace, three consolidated campaign jobs,
@@ -69,8 +75,9 @@ retention, or source handling changes.
 - `web/app/(content)/layout.tsx` applies the public content shell.
 - `web/app/site-header.tsx` and
   `web/app/_components/navigation/PublicMobileNavigation.tsx` provide shared
-  public navigation. The homepage uses `LandingFooter`; other public routes use
-  `web/app/site-footer.tsx`.
+  public navigation.
+- `web/app/site-footer.tsx` provides the one footer used by the homepage and
+  every public content route.
 - `web/app/_components/landing/*` contains the homepage sections.
 - `web/app/_components/pricing/*` contains the pricing page sections.
 - `web/app/_components/tools/*` and its resource components contain the public
@@ -94,7 +101,6 @@ web/app/site-header.tsx
 web/app/site-footer.tsx
 web/app/_components/navigation/PublicMobileNavigation.tsx
 web/app/_components/landing/
-web/app/_components/landing/LandingFooter.tsx
 web/app/_components/pricing/
 web/app/_components/examples/
 web/app/_components/case-studies/
