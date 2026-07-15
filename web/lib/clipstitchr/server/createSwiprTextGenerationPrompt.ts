@@ -6,6 +6,7 @@ import type { SwiprSelectedSlideTextContext } from "@/lib/clipstitchr/types/Swip
 import { getSwiprCallToActionPromptRule } from "@/lib/clipstitchr/server/getSwiprCallToActionPromptRule";
 import { getSwiprProductPlacementPromptRules } from "@/lib/clipstitchr/server/getSwiprProductPlacementPromptRules";
 import { getSwiprFinalProductMentionPromptRule } from "@/lib/clipstitchr/server/getSwiprFinalProductMentionPromptRule";
+import { getGeneratedWritingAntiSlopPromptRules } from "@/lib/clipstitchr/server/getGeneratedWritingAntiSlopPromptRules";
 
 type CreateSwiprTextGenerationPromptOptions = {
   candidates: CliprHookTemplate[];
@@ -50,7 +51,8 @@ export function createSwiprTextGenerationPrompt({
     `- Niche / problem: ${product.inferredProblem || "(unspecified)"}`,
     "",
     "What's working for this account. Respect this closely:",
-    getSwiprStyleMemory(product) || "(none yet - use proven short-form patterns)",
+    getSwiprStyleMemory(product) ||
+      "(none yet - stay specific to the supplied audience and product context)",
     "",
     swiprCreativeContext
       ? [
@@ -76,7 +78,7 @@ export function createSwiprTextGenerationPrompt({
       : "- Include one natural, non-final product mention after the hook has earned attention.",
     "- Avoid generic creator advice like work smarter, unlock growth, level up, or game changer.",
     "Respond with a JSON object of this exact shape:",
-    '{ "templateId": "swipr-freeform", "filledHook": "the first slide - a scroll-stopping viewer-first line, max ~8 words", "slides": ["the hook again as slide 1", "slide 2", "...same count requested, each max ~8 words, last follows the requested CTA style"], "caption": "the post caption with 1-2 emoji", "description": "a 1000-4000 character TikTok post description that expands the carousel idea in plain language", "hashtags": ["three", "relevant", "hashtags"], "rationale": "one sentence on why this should perform, tied to the style memory", "overlayText": "same as filledHook", "script": "", "scenePlan": [], "variablesUsed": {} }',
+    '{ "templateId": "swipr-freeform", "filledHook": "the first slide - a specific viewer-first line, max ~8 words", "slides": ["the hook again as slide 1", "slide 2", "...same count requested, each max ~8 words, last follows the requested CTA style"], "caption": "a short plain caption; no emoji by default and at most one when it adds meaning", "description": "a useful 1000-2000 character post description that adds new context without repeating the slides", "hashtags": ["zero to three specific hashtags; use an empty array when none add value"], "rationale": "one sentence on why this fits the supplied context", "overlayText": "same as filledHook", "script": "", "scenePlan": [], "variablesUsed": {} }',
     "",
     "Rules:",
     "- Keep the slideshow on-brand, varied, and genuinely good.",
@@ -85,8 +87,13 @@ export function createSwiprTextGenerationPrompt({
     "- Middle slides must pay off the hook with a coherent mini-story or useful framework.",
     "- Each slide must be short enough for a vertical carousel image.",
     "- Use simple human language. Avoid technical or robotic copy.",
-    "- description must be 1000-4000 characters, easy to skim, and useful even after someone reads the carousel.",
-    "- description should expand the carousel idea with relatable context, practical detail, and a simple takeaway. Do not keyword-stuff.",
+    "- Aim for a substantial 1000-2000 character description because the long-form post text is part of the carousel strategy.",
+    "- Every paragraph must add something new: a concrete audience situation, why the pattern happens, a consequence, a context-supported example, or a practical next step.",
+    "- Do not restate every slide, repeat the hook in different words, pad with a generic introduction or conclusion, or keyword-stuff.",
+    "- Use only details supported by the supplied context. If the context cannot support 1000 useful characters without repetition or invention, return a shorter truthful description.",
+    "- Do not add an emoji by default. Use at most one only when it changes the meaning or tone.",
+    "- Return zero to three specific hashtags. Use an empty array when no hashtag adds useful context.",
+    ...getGeneratedWritingAntiSlopPromptRules(),
     "- Do not invent fake stats, fake studies, fake quotes, or fake testimonials.",
     "- Product details are context, not a sales script.",
     !isSelectedSlideGeneration

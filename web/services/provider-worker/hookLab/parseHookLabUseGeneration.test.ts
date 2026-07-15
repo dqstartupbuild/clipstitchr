@@ -26,4 +26,17 @@ describe("parseHookLabUseGeneration", () => {
     );
     expect(result.adaptedHook).toBe("A fresh way to see this product");
   });
+
+  it("does not pass canned AI hooks or captions through", () => {
+    const result = parseHookLabUseGeneration(
+      JSON.stringify({
+        adaptedHook: "Unlock your potential with this game changer",
+        caption: "In today's fast-paced world, this changes everything",
+        exactReuseGates: {},
+      }),
+    );
+
+    expect(result.adaptedHook).toBe("");
+    expect(result.caption).toBe("");
+  });
 });

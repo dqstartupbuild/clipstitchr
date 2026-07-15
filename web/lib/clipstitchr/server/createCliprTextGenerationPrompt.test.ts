@@ -50,6 +50,7 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("Audience and problem are the primary source");
     expect(prompt).toContain("Product proof bank, not the script spine");
     expect(prompt).toContain("Script length: Write as much spoken script");
+    expect(prompt).toContain("Never use an em dash");
     expect(prompt).not.toContain("Target duration: 30 seconds");
   });
 
@@ -166,7 +167,12 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("hook, why it happens, what it costs");
     expect(prompt).toContain("the hook again as slide 1");
     expect(prompt).toContain("last follows the requested CTA style");
-    expect(prompt).toContain("description must be 1000-4000 characters");
+    expect(prompt).toContain("1000-2000 character description");
+    expect(prompt).toContain("Every paragraph must add something new");
+    expect(prompt).toContain("return a shorter truthful description");
+    expect(prompt).toContain("Do not add an emoji by default");
+    expect(prompt).toContain("zero to three specific hashtags");
+    expect(prompt).not.toContain("1000-4000");
     expect(prompt).toContain("Focus on launch-day anxiety for solo founders.");
     expect(prompt).toContain(
       "Exactly one non-final slide must mention LaunchKit by name",

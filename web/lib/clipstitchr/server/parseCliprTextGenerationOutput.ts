@@ -13,6 +13,8 @@ import { getCliprTextHasForbiddenCta } from "@/lib/clipstitchr/utils/getCliprTex
 import { normalizeSwiprPostDescription } from "@/lib/clipstitchr/utils/normalizeSwiprPostDescription";
 import { sanitizeCliprGeneratedText } from "@/lib/clipstitchr/utils/sanitizeCliprGeneratedText";
 import { getCliprJsonText } from "@/lib/clipstitchr/server/getCliprJsonText";
+import { sanitizeGeneratedLongFormText } from "@/lib/clipstitchr/utils/sanitizeGeneratedLongFormText";
+import { sanitizeGeneratedShortFormText } from "@/lib/clipstitchr/utils/sanitizeGeneratedShortFormText";
 
 type ParsedCliprScene = {
   estimatedDurationSeconds?: unknown;
@@ -35,9 +37,11 @@ function normalizeString(value: unknown, fallback: string) {
 }
 
 function normalizeSwiprSlideString(value: unknown) {
-  return typeof value === "string"
-    ? value.trim().replace(/\s+/g, " ").slice(0, 120)
-    : "";
+  return sanitizeGeneratedShortFormText({
+    fallback: "",
+    maxLength: 120,
+    text: typeof value === "string" ? value : "",
+  });
 }
 
 function getGeneratedHookIsReadable(
@@ -89,15 +93,17 @@ function getProductProblemPhrase(product: ProductProfile) {
 }
 
 function createFallbackHook(product: ProductProfile, purpose: CliprTextPurpose) {
+  const problem = getProductProblemPhrase(product);
+
   if (purpose === "clipr") {
-    return "The small workflow mistake most people miss";
+    return `The overlooked detail: ${problem}`.slice(0, 120);
   }
 
   if (purpose === "swipr") {
-    return "This is why it feels harder than it should";
+    return `Start here: ${problem}`.slice(0, 120);
   }
 
-  return "I was not expecting that";
+  return `The visible change: ${problem}`.slice(0, 120);
 }
 
 function normalizeHashtag(value: unknown) {
@@ -117,8 +123,18 @@ function createProductHashtag(product: ProductProfile) {
   return normalizeHashtag(product.name) || "#productdemo";
 }
 
-function normalizeHashtags(value: unknown, product: ProductProfile) {
+function normalizeHashtags(
+  value: unknown,
+  product: ProductProfile,
+  purpose: CliprTextPurpose,
+) {
   const rawHashtags = Array.isArray(value) ? value : [];
+  const generatedHashtags = rawHashtags.map(normalizeHashtag).filter(Boolean);
+
+  if (purpose === "swipr") {
+    return [...new Set(generatedHashtags)].slice(0, 3);
+  }
+
   const fallbackHashtags = [
     createProductHashtag(product),
     "#ugc",
@@ -127,7 +143,7 @@ function normalizeHashtags(value: unknown, product: ProductProfile) {
     "#creatorsoftiktok",
   ];
   const hashtags = [
-    ...rawHashtags.map(normalizeHashtag),
+    ...generatedHashtags,
     ...fallbackHashtags,
   ].filter(Boolean);
 
@@ -135,7 +151,11 @@ function normalizeHashtags(value: unknown, product: ProductProfile) {
 }
 
 function normalizeScriptString(value: unknown, fallback: string) {
-  const text = typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
+  const text = sanitizeGeneratedLongFormText({
+    fallback,
+    maxLength: 4000,
+    text: typeof value === "string" ? value : "",
+  }).replace(/\s+/g, " ");
 
   if (!text || getCliprTextHasForbiddenCta(text)) {
     return fallback;
@@ -359,7 +379,7 @@ export function parseCliprTextGenerationOutput({
       : "";
   const hashtags =
     purpose === "stitchr" || purpose === "swipr"
-      ? normalizeHashtags(parsed.hashtags, product)
+      ? normalizeHashtags(parsed.hashtags, product, purpose)
       : [];
   const script =
     purpose === "stitchr" ? "" : normalizeScriptString(parsed.script, "");

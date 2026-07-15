@@ -3,6 +3,7 @@ import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallTo
 import { getSwiprCallToActionPromptRule } from "@/lib/clipstitchr/server/getSwiprCallToActionPromptRule";
 import { getSwiprProductPlacementPromptRules } from "@/lib/clipstitchr/server/getSwiprProductPlacementPromptRules";
 import { getSwiprFinalProductMentionPromptRule } from "@/lib/clipstitchr/server/getSwiprFinalProductMentionPromptRule";
+import { getGeneratedWritingAntiSlopPromptRules } from "@/lib/clipstitchr/server/getGeneratedWritingAntiSlopPromptRules";
 
 export function createSwiprBatchTextGenerationPrompt({
   callToActionStyle = "any",
@@ -26,9 +27,9 @@ export function createSwiprBatchTextGenerationPrompt({
     `- Niche / problem: ${product.inferredProblem || "(unspecified)"}`,
     "",
     "What's working for this account (style memory - respect this closely):",
-    product.emotionalNarrative ||
+      product.emotionalNarrative ||
       product.inferredProblem ||
-      "(none yet - use proven short-form patterns)",
+      "(none yet - stay specific to the supplied audience and product context)",
     "",
     creativeContext
       ? [
@@ -43,12 +44,12 @@ export function createSwiprBatchTextGenerationPrompt({
     "{",
     '  "slideshows": [',
     "    {",
-    '      "hook": "the first slide - a scroll-stopping line, max ~8 words",',
+    '      "hook": "the first slide - a specific viewer-first line, max ~8 words",',
     `      "slides": ["the hook again as slide 1", "slide 2", "...exactly ${slideCount} slides total, each max ~8 words, last follows the requested CTA style"],`,
-    '      "caption": "the post caption with 1-2 emoji",',
-    '      "description": "a 1000-4000 character TikTok post description that expands the carousel idea in plain language",',
-    '      "hashtags": ["three", "relevant", "hashtags"],',
-    '      "rationale": "one sentence on why this should perform, tied to the style memory"',
+    '      "caption": "a short plain caption; no emoji by default and at most one when it adds meaning",',
+    '      "description": "a useful 1000-2000 character post description that adds new context without repeating the slides",',
+    '      "hashtags": ["zero to three specific hashtags; use an empty array when none add value"],',
+    '      "rationale": "one sentence on why this fits the supplied context"',
     "    }",
     "  ]",
     "}",
@@ -63,7 +64,13 @@ export function createSwiprBatchTextGenerationPrompt({
       : "",
     `- ${getSwiprFinalProductMentionPromptRule(callToActionStyle)}`,
     "",
-    "Each description must be 1000-4000 characters, easy to skim, useful after someone reads the carousel, and free of keyword stuffing.",
+    "Aim for a substantial 1000-2000 character description because the long-form post text is part of the carousel strategy.",
+    "Every paragraph must add something new: a concrete audience situation, why the pattern happens, a consequence, a context-supported example, or a practical next step.",
+    "Do not restate every slide, repeat the hook in different words, pad with a generic introduction or conclusion, or keyword-stuff.",
+    "Use only details supported by the supplied context. If the context cannot support 1000 useful characters without repetition or invention, return a shorter truthful description.",
+    "Do not add an emoji by default. Use at most one only when it changes the meaning or tone.",
+    "Return zero to three specific hashtags. Use an empty array when no hashtag adds useful context.",
+    ...getGeneratedWritingAntiSlopPromptRules(),
     "Keep them on-brand, varied, simple, and genuinely good. Do not write generic filler. Do not invent fake stats, studies, quotes, or testimonials. Return ONLY the JSON object.",
   ]
     .filter(Boolean)

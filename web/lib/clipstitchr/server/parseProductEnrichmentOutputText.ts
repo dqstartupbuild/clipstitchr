@@ -1,6 +1,7 @@
 import type { ProductEnrichment } from "@/lib/clipstitchr/types/ProductEnrichment";
 import { cliprHookStyles } from "@/lib/clipstitchr/resources/clipr/cliprHookStyles";
 import { cliprHookTemplates } from "@/lib/clipstitchr/resources/clipr/cliprHookTemplates";
+import { sanitizeGeneratedLongFormText } from "@/lib/clipstitchr/utils/sanitizeGeneratedLongFormText";
 
 function getJsonText(outputText: string) {
   const trimmedText = outputText.trim();
@@ -14,7 +15,11 @@ function getJsonText(outputText: string) {
 }
 
 function normalizeString(value: unknown, maxLength: number) {
-  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+  return sanitizeGeneratedLongFormText({
+    fallback: "",
+    maxLength,
+    text: typeof value === "string" ? value : "",
+  });
 }
 
 function normalizeStringArray(

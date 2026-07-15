@@ -8,6 +8,7 @@ import type { SwiprSelectedSlideTextContext } from "@/lib/clipstitchr/types/Swip
 import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
 import { createStitchrHookGenerationPrompt } from "@/lib/clipstitchr/server/createStitchrHookGenerationPrompt";
 import { createSwiprTextGenerationPrompt } from "@/lib/clipstitchr/server/createSwiprTextGenerationPrompt";
+import { getGeneratedWritingAntiSlopPromptRules } from "@/lib/clipstitchr/server/getGeneratedWritingAntiSlopPromptRules";
 
 type CreateCliprTextGenerationPromptOptions = {
   candidates: CliprHookTemplate[];
@@ -136,6 +137,7 @@ export function createCliprTextGenerationPrompt({
     "- At most one product proof point may appear in the supporting content, and only when the purpose rules allow it.",
     "- Avoid ad-like language such as game changer, unlock, transform, powerful, seamless, revolutionary, and built for, unless the user provided that wording.",
     "- Avoid generic AI cadence. Use concrete, human phrasing with a point of view.",
+    ...getGeneratedWritingAntiSlopPromptRules(),
     "- Except for the final Swipr CTA slide, do not ask viewers to try, download, save, comment, follow, buy, book, subscribe, or sign up.",
     "- Except for the final Swipr CTA slide, do not write product-feature or product-benefit copy.",
     "- Do not invent fake stats, fake studies, fake quotes, or fake testimonials.",

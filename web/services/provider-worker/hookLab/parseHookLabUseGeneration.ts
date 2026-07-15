@@ -4,6 +4,7 @@ import type { HookLabExactReuseEvidence } from "@/lib/clipstitchr/types/HookLabE
 import { getHookLabParsedObject } from "./getHookLabParsedObject";
 import { getHookLabParsedString } from "./getHookLabParsedString";
 import { HOOK_LAB_EXACT_REUSE_GATE_NAMES } from "./hookLabExactReuseGateNames";
+import { sanitizeCliprGeneratedText } from "@/lib/clipstitchr/utils/sanitizeCliprGeneratedText";
 
 export function parseHookLabUseGeneration(outputText: string) {
   const parsed = getHookLabParsedObject(
@@ -24,10 +25,17 @@ export function parseHookLabUseGeneration(outputText: string) {
       return [name, gate.passes === true && Boolean(exactReuseEvidence[name])];
     }),
   ) as HookLabExactReuseGates;
+  const adaptedHook = sanitizeCliprGeneratedText(
+    getHookLabParsedString(parsed.adaptedHook, "", 240),
+    "",
+  );
 
   return {
-    adaptedHook: getHookLabParsedString(parsed.adaptedHook, "", 240),
-    caption: getHookLabParsedString(parsed.caption, "", 2_000),
+    adaptedHook,
+    caption: sanitizeCliprGeneratedText(
+      getHookLabParsedString(parsed.caption, "", 240),
+      adaptedHook,
+    ),
     exactReuseGates,
     exactReuseEvidence,
     visualPrompt: getHookLabParsedString(parsed.visualPrompt, "", 2_000),

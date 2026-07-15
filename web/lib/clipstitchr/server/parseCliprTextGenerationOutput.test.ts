@@ -87,7 +87,7 @@ describe("parseCliprTextGenerationOutput", () => {
     });
 
     expect(generation.filledHook).toBe(
-      "The small workflow mistake most people miss",
+      "The overlooked detail: launch content gets scattered",
     );
     expect(generation.slides[0]).toBe(generation.filledHook);
   });
@@ -156,7 +156,9 @@ describe("parseCliprTextGenerationOutput", () => {
       slideCount: 2,
     });
 
-    expect(generation.filledHook).toBe("I was not expecting that");
+    expect(generation.filledHook).toBe(
+      "The visible change: launch content gets scattered",
+    );
     expect(generation.overlayText).toBe(generation.filledHook);
     expect(generation.script).toBe("");
     expect(generation.scenePlan).toEqual([]);
@@ -281,7 +283,7 @@ describe("parseCliprTextGenerationOutput", () => {
     ]);
   });
 
-  it("falls back to the generic Swipr hook when generated hooks are unreadable", () => {
+  it("falls back to product context when generated Swipr hooks are unreadable", () => {
     const generation = parseCliprTextGenerationOutput({
       candidates,
       durationSeconds: 30,
@@ -295,10 +297,10 @@ describe("parseCliprTextGenerationOutput", () => {
     });
 
     expect(generation.filledHook).toBe(
-      "This is why it feels harder than it should",
+      "Start here: launch content gets scattered",
     );
     expect(generation.slides).toEqual([
-      "This is why it feels harder than it should",
+      "Start here: launch content gets scattered",
     ]);
   });
 });

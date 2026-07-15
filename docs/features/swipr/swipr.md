@@ -43,8 +43,12 @@ version at any time.
    generation accepts the same optional topic/direction and final-slide CTA
    choice as Batch mode.
 9. Swipr auto-text and batch-generated Swipes also generate one editable post
-   text block containing the caption, a 1000-4000 character description, and
-   hashtags. Manual saves keep this single field editable and copyable.
+   text block containing a short caption, a substantial long-form description,
+   and up to three useful hashtags. The description aims for 1000-2000
+   characters because long post copy is part of the TikTok and Instagram
+   carousel strategy. Emojis and hashtags are optional instead of being added
+   to fill a template. Manual saves keep this single field editable and
+   copyable.
 10. The user saves the editable Swipe.
 11. The saved Swipe appears in the Library under the Swipes tab.
 12. From the library, the user can open the Swipe detail view, swipe through its
@@ -73,6 +77,15 @@ styles keep the product mention to its single non-final placement.
 The optional topic/direction field is a creative brief, not a source of verified
 facts. It can steer topic, point of view, audience situation, and examples, but
 cannot override output, safety, product-placement, or CTA rules.
+
+Generated descriptions are deliberately substantial without being padded. Each
+paragraph must contribute a new audience situation, explanation, consequence,
+supported example, or practical step. The description must not restate every
+slide or repeat the hook in different words. When the available context cannot
+support 1000 useful characters without repetition or invention, the generator
+may return shorter truthful copy. When generation omits a usable description,
+the fallback is assembled once from the caption, audience, problem, and slide
+text. The fallback is not padded with generic advice.
 
 ## Saved Swipe Model
 

@@ -1,6 +1,7 @@
 import { cliprHookStyles } from "@/lib/clipstitchr/resources/clipr/cliprHookStyles";
 import { cliprHookTemplates } from "@/lib/clipstitchr/resources/clipr/cliprHookTemplates";
 import type { ProductEnrichmentInput } from "@/lib/clipstitchr/types/ProductEnrichmentInput";
+import { getGeneratedWritingAntiSlopPromptRules } from "@/lib/clipstitchr/server/getGeneratedWritingAntiSlopPromptRules";
 
 const MIN_FILLERS_PER_KEY = 6;
 const MAX_FILLERS_PER_KEY = 16;
@@ -52,6 +53,7 @@ export function createProductEnrichmentPrompt({
     "Write in plain speech. Keep it human, specific, and easy to say out loud.",
     "Avoid robotic strategy words like leverage, optimize, streamline, ecosystem, synergy, robust, cutting-edge, unlock, and empower unless the product input uses them.",
     "Use everyday phrases a real person would recognize. Prefer simple nouns and verbs over technical wording.",
+    ...getGeneratedWritingAntiSlopPromptRules(),
     "Return only compact JSON with this exact shape:",
     '{"productDetails":"prefill candidate only when product details are blank","audienceDetails":"prefill candidate only when audience details are blank","inferredProblem":"plain one-sentence audience problem","inferredPainPoints":["plain pain point"],"emotionalNarrative":"editable emotional story for Stitchr hooks","eligibleCliprHookStyleKeys":["style_key"],"eligibleCliprHookTemplateIds":["TEMPLATE-001"],"cliprPlaceholderFillers":{"placeholder_key":["natural filler"]}}',
     "Use 8 to 14 concise pain points. Keep every string under 120 characters. Do not invent regulated claims, pricing, guarantees, or unsupported facts.",

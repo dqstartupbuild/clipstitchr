@@ -5,6 +5,7 @@ import { getHookEdgeLevelLabel } from "@/lib/clipstitchr/utils/getHookEdgeLevelL
 import { getHookGenerationGoalLabel } from "@/lib/clipstitchr/utils/getHookGenerationGoalLabel";
 import { formatStitchrTextGenerationClipContext } from "@/lib/clipstitchr/server/formatStitchrTextGenerationClipContext";
 import { formatHookLabPromptMemory } from "@/lib/clipstitchr/server/formatHookLabPromptMemory";
+import { getGeneratedWritingAntiSlopPromptRules } from "@/lib/clipstitchr/server/getGeneratedWritingAntiSlopPromptRules";
 
 type CreateStitchrHookGenerationPromptOptions = {
   fillers: CliprPlaceholderFillers;
@@ -37,7 +38,7 @@ export function createStitchrHookGenerationPrompt({
     "What's working for this account. Respect this closely:",
     product.emotionalNarrative ||
       product.inferredProblem ||
-      "(none yet - use proven short-form patterns)",
+      "(none yet - stay specific to the supplied audience, product, and clip context)",
     "",
     "Hook Lab memory:",
     `- Goal: ${getHookGenerationGoalLabel(product.hookGenerationGoal)}`,
@@ -67,8 +68,9 @@ export function createStitchrHookGenerationPrompt({
     "- Do not open with the product name unless the source context makes that feel natural.",
     "- Use product facts only as quiet background proof. Do not explain features or write a product pitch.",
     "- The caption should be a second simple hook for the feed caption, not a repeat of the overlay.",
-    "- Keep the caption natural and short. It can include 1-2 emoji when it fits.",
+    "- Keep the caption natural and short. Do not add an emoji by default; use at most one when it adds meaning.",
     "- Avoid generic creator advice like work smarter, unlock growth, level up, or game changer.",
+    ...getGeneratedWritingAntiSlopPromptRules(),
     "Rules:",
     "- Keep the hook and caption on-brand, simple, and genuinely good.",
     "- Do not write generic filler or vague hype.",

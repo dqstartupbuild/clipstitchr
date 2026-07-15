@@ -79,6 +79,27 @@ Product enrichment should produce audience-first fillers:
   language.
 - Product names should mainly live in `product_name` and final-CTA contexts.
 
+## Generated Writing Quality Gate
+
+All user-facing generated hooks, captions, scripts, descriptions, and product
+enrichment strings pass through a shared writing-quality gate before they are
+saved or returned. Prompts tell the model to rephrase sentences that would use
+an em dash. If one still appears, the gate chooses punctuation from the sentence
+structure: commas for dependent turns, colons for explanations, periods for
+separate thoughts, and commas around parenthetical phrases. The gate also
+rejects known canned AI phrases, including generic hype, stock contrast lines,
+and template introductions. A rejected short field uses supplied product or
+clip context when a safe fallback exists. A rejected batch hook without
+trustworthy context is dropped instead of being replaced with a generic
+reaction line.
+
+Prompt builders use the same anti-slop rules. They tell the model to avoid
+padding and generic conclusions and remove any line that could belong to an
+unrelated product. Swipr still aims for 1000-2000 characters of long-form post
+copy, but every paragraph must add a distinct supported idea. When the context
+cannot support that length honestly, shorter copy is allowed. Emojis and
+hashtags are optional.
+
 ## Future Additions
 
 When adding new templates or generation surfaces, keep product proof isolated

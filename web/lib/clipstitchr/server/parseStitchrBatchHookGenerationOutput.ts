@@ -114,7 +114,7 @@ export function parseStitchrBatchHookGenerationOutput({
         typeof plan.taskId === "string" ? plan.taskId.trim() : "";
       const selectedHook = normalizeString(
         plan.overlayText || plan.filledHook,
-        "I was not expecting that",
+        "",
       );
       const caption = normalizeString(plan.caption, selectedHook);
       const hashtags = normalizeHashtags(plan.hashtags);

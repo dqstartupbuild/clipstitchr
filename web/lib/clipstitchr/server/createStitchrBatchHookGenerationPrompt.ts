@@ -3,6 +3,7 @@ import { formatStitchrTextGenerationClipContext } from "@/lib/clipstitchr/server
 import { getHookEdgeLevelLabel } from "@/lib/clipstitchr/utils/getHookEdgeLevelLabel";
 import { getHookGenerationGoalLabel } from "@/lib/clipstitchr/utils/getHookGenerationGoalLabel";
 import { formatHookLabPromptMemory } from "@/lib/clipstitchr/server/formatHookLabPromptMemory";
+import { getGeneratedWritingAntiSlopPromptRules } from "@/lib/clipstitchr/server/getGeneratedWritingAntiSlopPromptRules";
 
 function formatHookExamples(label: string, examples?: string[]) {
   return [
@@ -24,7 +25,7 @@ function formatPlanningInput(input: StitchrBatchHookPlanningInput, index: number
     "style memory:",
     input.product.emotionalNarrative ||
       input.product.inferredProblem ||
-      "(none yet - use proven short-form patterns)",
+      "(none yet - stay specific to the supplied audience, product, and clip context)",
     "saved Idea patterns:",
     formatHookLabPromptMemory(input.product.hookLabTextBlueprints),
     formatHookExamples("hooks to avoid", input.product.rejectedHookExamples),
@@ -75,6 +76,7 @@ export function createStitchrBatchHookGenerationPrompt({
     "- Keep captions natural, short, and easy to post.",
     "- Hashtags must contain 3-5 lowercase hashtags, each starting with #.",
     "- Avoid generic phrases like game changer, level up, unlock growth, or work smarter.",
+    ...getGeneratedWritingAntiSlopPromptRules(),
     "- Return only the JSON object.",
     "",
     "Batch plans:",

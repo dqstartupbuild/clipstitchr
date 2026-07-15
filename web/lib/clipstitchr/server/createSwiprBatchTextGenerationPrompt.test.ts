@@ -36,8 +36,13 @@ describe("createSwiprBatchTextGenerationPrompt", () => {
       "Write 4 distinct slideshows. Each slideshow must have exactly 8 slides.",
     );
     expect(prompt).toContain("...exactly 8 slides total");
-    expect(prompt).toContain("1000-4000 character TikTok post description");
-    expect(prompt).toContain("Each description must be 1000-4000 characters");
+    expect(prompt).toContain("1000-2000 character description");
+    expect(prompt).toContain("Every paragraph must add something new");
+    expect(prompt).toContain("return a shorter truthful description");
+    expect(prompt).toContain("Do not add an emoji by default");
+    expect(prompt).toContain("zero to three specific hashtags");
+    expect(prompt).toContain("Never use an em dash");
+    expect(prompt).not.toContain("1000-4000");
     expect(prompt).toContain("Return ONLY the JSON object.");
     expect(prompt).toContain("User creative context:");
     expect(prompt).toContain("Focus on launch-day anxiety for solo founders.");

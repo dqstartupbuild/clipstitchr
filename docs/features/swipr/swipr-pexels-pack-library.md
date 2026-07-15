@@ -165,9 +165,10 @@ automatic Swipe.
   selected photo repeats.
 - Generates multiple slideshow text drafts through the existing text-writing
   provider.
-- Saves each draft through `swipes.save`, including the generated caption,
-  1000-4000 character description, hashtags, combined social copy, and
-  performance note.
+- Saves each draft through `swipes.save`, including the generated caption, a
+  useful 1000-2000 character description, optional hashtags, combined social
+  copy, and performance note. The description may be shorter when the supplied
+  context cannot support the target length without repetition or invention.
 
 The Swipr Batch tab also sends a slide count of 8 for clarity, but the backend
 is the source of truth.

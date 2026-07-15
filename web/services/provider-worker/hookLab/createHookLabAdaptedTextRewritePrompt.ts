@@ -1,5 +1,6 @@
 import type { HookLabTextBlueprint } from "@/lib/clipstitchr/types/HookLabTextBlueprint";
 import type { HookLabVariationDirection } from "@/lib/clipstitchr/types/HookLabVariationDirection";
+import { getGeneratedWritingAntiSlopPromptRules } from "@/lib/clipstitchr/server/getGeneratedWritingAntiSlopPromptRules";
 
 export function createHookLabAdaptedTextRewritePrompt({
   candidateText,
@@ -27,6 +28,7 @@ export function createHookLabAdaptedTextRewritePrompt({
     "Keep only the abstract pattern and emotional job. Change the wording, syntax, and product-specific framing materially.",
     "Do not quote, lightly paraphrase, preserve a distinctive source phrase, or overlap the other batch hooks.",
     "Keep it short and natural for an on-screen hook.",
+    ...getGeneratedWritingAntiSlopPromptRules(),
     "Return JSON only: {\"adaptedHook\":\"...\"}.",
   ].join("\n");
 }

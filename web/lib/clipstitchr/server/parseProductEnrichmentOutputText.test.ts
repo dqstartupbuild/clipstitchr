@@ -2,6 +2,27 @@ import { describe, expect, it } from "vitest";
 import { parseProductEnrichmentOutputText } from "@/lib/clipstitchr/server/parseProductEnrichmentOutputText";
 
 describe("parseProductEnrichmentOutputText", () => {
+  it("drops canned AI phrases from generated profile fields", () => {
+    const result = parseProductEnrichmentOutputText(
+      JSON.stringify({
+        audienceDetails: "Founders handling launch clips alone",
+        emotionalNarrative: "Unlock your potential with a game changer",
+        inferredPainPoints: [
+          "Launch clips stay unfinished",
+          "In today's fast-paced world, editing is hard",
+        ],
+        inferredProblem: "Launch work is scattered",
+        productDetails: "A revolutionary workflow for every founder",
+      }),
+    );
+
+    expect(result.audienceDetails).toBe("Founders handling launch clips alone");
+    expect(result.emotionalNarrative).toBeUndefined();
+    expect(result.inferredPainPoints).toEqual(["Launch clips stay unfinished"]);
+    expect(result.inferredProblem).toBe("Launch work is scattered");
+    expect(result.productDetails).toBeUndefined();
+  });
+
   it("parses compact JSON output", () => {
     expect(
       parseProductEnrichmentOutputText(

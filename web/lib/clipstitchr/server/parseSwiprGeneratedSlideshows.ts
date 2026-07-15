@@ -5,11 +5,14 @@ import { createSwiprPostDescriptionFallback } from "@/lib/clipstitchr/utils/crea
 import { createSwiprSocialCaption } from "@/lib/clipstitchr/utils/createSwiprSocialCaption";
 import { normalizeSwiprPostDescription } from "@/lib/clipstitchr/utils/normalizeSwiprPostDescription";
 import { sanitizeCliprGeneratedText } from "@/lib/clipstitchr/utils/sanitizeCliprGeneratedText";
+import { sanitizeGeneratedShortFormText } from "@/lib/clipstitchr/utils/sanitizeGeneratedShortFormText";
 
 function normalizeSlide(value: unknown) {
-  return typeof value === "string"
-    ? value.trim().replace(/\s+/g, " ").slice(0, 120)
-    : "";
+  return sanitizeGeneratedShortFormText({
+    fallback: "",
+    maxLength: 120,
+    text: typeof value === "string" ? value : "",
+  });
 }
 
 function normalizeHashtag(value: unknown) {
@@ -27,7 +30,7 @@ function normalizeHashtag(value: unknown) {
 
 function normalizeHashtags(value: unknown) {
   return Array.isArray(value)
-    ? value.map(normalizeHashtag).filter(Boolean).slice(0, 5)
+    ? value.map(normalizeHashtag).filter(Boolean).slice(0, 3)
     : [];
 }
 
