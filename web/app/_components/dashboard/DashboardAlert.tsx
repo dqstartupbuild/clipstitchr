@@ -33,7 +33,7 @@ export function DashboardAlert({
   return (
     <div
       className={[
-        "rounded-lg border p-4 text-sm shadow-[0_14px_42px_rgba(0,0,0,0.12)]",
+        "dashboard-alert rounded-lg border p-4 text-sm shadow-[0_14px_42px_rgba(0,0,0,0.12)]",
         variantClasses[variant],
       ].join(" ")}
     >

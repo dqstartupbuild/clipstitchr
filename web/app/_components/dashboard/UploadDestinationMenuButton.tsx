@@ -103,7 +103,7 @@ export function UploadDestinationMenuButton() {
           <div
             role="dialog"
             aria-label="Choose upload type"
-            className="absolute right-0 top-12 z-50 w-[min(21rem,calc(100vw-2rem))] rounded-lg border border-border bg-surface p-2 shadow-2xl shadow-black/30"
+            className="dashboard-upload-menu absolute right-0 top-12 z-50 w-[min(21rem,calc(100vw-2rem))] rounded-lg border border-border bg-surface p-2 shadow-2xl shadow-black/30"
           >
             <p className="px-2 py-2 text-xs font-bold uppercase text-text-tertiary">
               Upload
@@ -116,7 +116,7 @@ export function UploadDestinationMenuButton() {
                   <button
                     key={destination.href}
                     type="button"
-                    className="flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left transition-colors hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    className="dashboard-upload-option flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left transition-colors hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     onClick={() => {
                       trackPostHogEvent("upload_destination_selected", {
                         asset_type: destination.assetType,
@@ -131,7 +131,7 @@ export function UploadDestinationMenuButton() {
                       }
                     }}
                   >
-                    <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-surface-muted text-accent-dark">
+                    <span className="dashboard-upload-option-icon mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-surface-muted text-accent-dark">
                       <Icon aria-hidden className="h-4 w-4" />
                     </span>
                     <span className="min-w-0">

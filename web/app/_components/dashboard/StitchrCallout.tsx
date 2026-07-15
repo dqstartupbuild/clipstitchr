@@ -3,7 +3,7 @@ import { PrimaryButtonLink } from "@/app/_components/PrimaryButtonLink";
 
 export function StitchrCallout() {
   return (
-    <section className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-5 shadow-[0_18px_60px_rgba(0,0,0,0.16)] md:flex-row md:items-center md:justify-between">
+    <section className="dashboard-stitchr-callout flex flex-col gap-4 rounded-lg border border-border bg-surface p-5 shadow-[0_18px_60px_rgba(0,0,0,0.16)] md:flex-row md:items-center md:justify-between">
       <div className="flex gap-4">
         <div>
           <h2 className="text-lg font-bold text-text-primary">

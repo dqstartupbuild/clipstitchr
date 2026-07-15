@@ -24,14 +24,14 @@ export function UploadAssetTabs({
     : tabs;
 
   return (
-    <div className="inline-flex rounded-lg border border-border bg-surface-muted p-1">
+    <div className="upload-asset-tabs inline-flex rounded-lg border border-border bg-surface-muted p-1">
       {visibleTabs.map((tab) => (
         <button
           key={tab.value}
           type="button"
           onClick={() => onChange(tab.value)}
           className={[
-            "h-8 rounded-md px-3 text-sm font-semibold transition-colors",
+            "upload-asset-tab h-8 rounded-md px-3 text-sm font-semibold transition-colors",
             value === tab.value
               ? "bg-surface text-accent-dark shadow-sm"
               : "text-text-secondary hover:text-text-primary",

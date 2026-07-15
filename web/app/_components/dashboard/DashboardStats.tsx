@@ -13,7 +13,7 @@ export function DashboardStats({
   stitchesCount,
 }: DashboardStatsProps) {
   return (
-    <section className="grid gap-4 md:grid-cols-3">
+    <section className="dashboard-stats grid gap-4 md:grid-cols-3">
       <DashboardStatCard
         icon={<Film aria-hidden className="h-5 w-5" />}
         label="Hook/UGC clips"

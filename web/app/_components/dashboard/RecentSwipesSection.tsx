@@ -32,7 +32,7 @@ export function RecentSwipesSection({
     backgrounds.map((background) => [background.id, background]),
   );
   return (
-    <section id="recent-swipes">
+    <section id="recent-swipes" className="dashboard-content-section">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold text-text-primary">
           Carousel drafts

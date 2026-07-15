@@ -29,7 +29,7 @@ export function SearchInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-10 w-full rounded-lg border border-border bg-surface pl-9 pr-10 text-sm font-semibold text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent focus:ring-2 focus:ring-accent/15"
+        className="ui-search-input h-10 w-full rounded-lg border border-border bg-surface pl-9 pr-10 text-sm font-semibold text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent focus:ring-2 focus:ring-accent/15"
       />
       {value ? (
         <button
@@ -37,7 +37,7 @@ export function SearchInput({
           aria-label="Clear search"
           title="Clear search"
           onClick={() => onChange("")}
-          className="absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-slate-100 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="ui-search-clear absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-slate-100 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           <X aria-hidden className="h-4 w-4" />
         </button>

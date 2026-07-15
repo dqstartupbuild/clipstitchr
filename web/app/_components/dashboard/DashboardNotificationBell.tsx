@@ -38,7 +38,7 @@ export function DashboardNotificationBell() {
         aria-label="Notifications"
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-white text-text-primary transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="dashboard-notification-button relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-white text-text-primary transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         onClick={() => setIsOpen((currentValue) => !currentValue)}
       >
         <Bell aria-hidden className="h-5 w-5" />

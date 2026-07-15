@@ -50,10 +50,10 @@ export function AutomationStitchrColorChoicePicker({
               aria-label={`Use ${label.toLowerCase()} ${color}`}
               aria-pressed={isSelected}
               className={[
-                "h-8 w-8 rounded-full border transition-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60",
+                "h-8 w-8 rounded-full border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60",
                 isSelected
-                  ? "scale-105 border-accent ring-2 ring-accent/30"
-                  : "border-border hover:scale-105",
+                  ? "border-accent ring-2 ring-accent/30"
+                  : "border-border hover:border-border-hover",
               ].join(" ")}
               disabled={disabled}
               style={{ backgroundColor: color }}

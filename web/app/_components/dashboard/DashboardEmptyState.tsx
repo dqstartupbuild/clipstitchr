@@ -14,7 +14,7 @@ export function DashboardEmptyState({
   title,
 }: DashboardEmptyStateProps) {
   return (
-    <div className="rounded-lg border border-dashed border-border bg-surface-muted p-8 text-center">
+    <div className="dashboard-empty-state rounded-lg border border-dashed border-border bg-surface-muted p-8 text-center">
       <p className="text-base font-bold text-text-primary">{title}</p>
       <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-text-secondary">
         {description}

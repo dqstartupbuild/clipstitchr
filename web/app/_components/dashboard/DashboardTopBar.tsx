@@ -2,7 +2,7 @@ import { DashboardNotificationBell } from "@/app/_components/dashboard/Dashboard
 
 export function DashboardTopBar() {
   return (
-    <div className="mb-5 hidden items-center justify-end lg:flex">
+    <div className="dashboard-top-bar mb-5 hidden items-center justify-end lg:flex">
       <DashboardNotificationBell />
     </div>
   );

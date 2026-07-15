@@ -18,7 +18,7 @@ export function WorkflowLayout({
   return (
     <div
       className={[
-        "grid gap-5 xl:items-start",
+        "workflow-layout grid gap-5 xl:items-start",
         columnClassName,
         className,
       ]

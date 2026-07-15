@@ -12,7 +12,7 @@ export function StickyPreviewColumn({
   return (
     <div
       className={[
-        "min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:justify-self-end",
+        "sticky-preview-column min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:justify-self-end",
         className,
       ]
         .filter(Boolean)

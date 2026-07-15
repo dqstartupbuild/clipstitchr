@@ -293,7 +293,7 @@ export function SettingsAutomationPanel({
       <div className="flex flex-col gap-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-accent">
+            <span className="settings-panel-icon inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-accent">
               <Bot aria-hidden className="h-5 w-5" />
             </span>
             <div>

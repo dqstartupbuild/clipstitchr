@@ -1,6 +1,5 @@
 "use client";
 
-import { UserButton } from "@clerk/nextjs";
 import {
   CalendarClock,
   FlaskConical,
@@ -19,6 +18,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { BrandMark } from "@/app/_components/BrandMark";
+import { DashboardAccountButton } from "@/app/_components/dashboard/DashboardAccountButton";
 import { DashboardNotificationBell } from "@/app/_components/dashboard/DashboardNotificationBell";
 import { DashboardProductSwitcher } from "@/app/_components/dashboard/DashboardProductSwitcher";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
@@ -59,15 +59,17 @@ export function DashboardSidebar() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="dashboard-mobile-header sticky top-0 z-30 flex items-center justify-between border-b border-border bg-surface/95 px-4 py-3 lg:hidden">
         <BrandMark />
         <div className="flex items-center gap-2">
           <DashboardNotificationBell />
-          <UserButton />
+          <span className="dashboard-account-button inline-flex h-8 w-8 shrink-0 items-center justify-center">
+            <DashboardAccountButton />
+          </span>
           <button
             type="button"
             aria-label="Open navigation"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface-muted text-text-primary transition-colors hover:border-border-hover hover:text-accent-dark"
+            className="dashboard-sidebar-control inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface-muted text-text-primary transition-colors hover:border-border-hover hover:text-accent-dark"
             onClick={() => setIsOpen(true)}
           >
             <Menu aria-hidden className="h-5 w-5" />
@@ -86,7 +88,7 @@ export function DashboardSidebar() {
 
       <aside
         className={[
-          "fixed inset-y-0 left-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col border-r border-border bg-surface/95 px-4 py-4 shadow-2xl shadow-black/35 backdrop-blur-xl transition-transform duration-200 lg:sticky lg:inset-auto lg:top-0 lg:z-auto lg:h-screen lg:w-auto lg:max-w-none lg:translate-x-0 lg:shadow-none",
+          "dashboard-sidebar fixed inset-y-0 left-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col border-r border-border bg-surface/95 px-4 py-4 shadow-2xl shadow-black/35 transition-transform duration-200 lg:sticky lg:inset-auto lg:top-0 lg:z-auto lg:h-screen lg:w-auto lg:max-w-none lg:translate-x-0 lg:shadow-none",
           isOpen ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
@@ -95,7 +97,7 @@ export function DashboardSidebar() {
           <button
             type="button"
             aria-label="Close navigation"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface-muted text-text-primary transition-colors hover:border-border-hover hover:text-accent-dark lg:hidden"
+            className="dashboard-sidebar-control inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface-muted text-text-primary transition-colors hover:border-border-hover hover:text-accent-dark lg:hidden"
             onClick={() => setIsOpen(false)}
           >
             <X aria-hidden className="h-5 w-5" />
@@ -106,14 +108,14 @@ export function DashboardSidebar() {
             <DashboardProductSwitcher />
           </div>
         )}
-        <nav className="mt-6 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
+        <nav className="dashboard-sidebar-nav mt-6 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
           {requiresOnboarding ? (
             <p className="rounded-lg border border-border bg-surface-muted px-3 py-3 text-sm font-semibold leading-6 text-text-secondary">
               Finish your first set of ads to open the rest of ClipStitchr.
             </p>
           ) : navigationSections.map((section) => (
-            <div key={section.label} className="grid gap-1">
-              <p className="px-3 pt-3 text-[11px] font-bold uppercase text-text-tertiary">
+            <div key={section.label} className="dashboard-sidebar-section grid gap-1">
+              <p className="dashboard-sidebar-label px-3 pt-3 text-[11px] font-bold uppercase text-text-tertiary">
                 {section.label}
               </p>
               {section.links.map((item) => {
@@ -129,9 +131,9 @@ export function DashboardSidebar() {
                     href={item.href}
                     aria-current={isActive ? "page" : undefined}
                     className={[
-                      "inline-flex items-center gap-3 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors",
+                      "dashboard-sidebar-link inline-flex items-center gap-3 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors",
                       isActive
-                        ? "border-border-hover bg-surface-muted text-accent-dark"
+                        ? "dashboard-sidebar-link-active border-border-hover bg-surface-muted text-accent-dark"
                         : "border-transparent text-text-secondary hover:border-border hover:bg-surface-muted hover:text-accent-dark",
                     ].join(" ")}
                     onClick={() => {
@@ -150,8 +152,10 @@ export function DashboardSidebar() {
             </div>
           ))}
         </nav>
-        <div className="mt-4 flex items-center gap-3 rounded-lg border border-border bg-surface-muted px-3 py-3 text-sm font-semibold text-text-secondary">
-          <UserButton />
+        <div className="dashboard-sidebar-account mt-4 flex items-center gap-3 rounded-lg border border-border bg-surface-muted px-3 py-3 text-sm font-semibold text-text-secondary">
+          <span className="dashboard-account-button inline-flex h-8 w-8 shrink-0 items-center justify-center">
+            <DashboardAccountButton />
+          </span>
           Account
         </div>
       </aside>

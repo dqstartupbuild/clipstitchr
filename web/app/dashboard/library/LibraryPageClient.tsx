@@ -409,7 +409,7 @@ export function LibraryPageClient() {
             onUploaded={library.refresh}
           />
         ) : null}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div className="library-toolbar flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <LibraryTabs value={selectedTab} onChange={handleTabChange} />
           <div
             className={[

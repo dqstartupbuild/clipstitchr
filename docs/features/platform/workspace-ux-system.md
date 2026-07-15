@@ -7,9 +7,10 @@ Library, Stitchr, Clipr, Swapr, Swipr, Hook Lab, onboarding, and asset cards.
 
 It adds:
 
-- A scoped `dashboard-shell` visual system that aligns the authenticated app
-  with the Figma-style public pages without making the product UI feel like a
-  landing page.
+- A scoped `dashboard-shell` visual system that carries the landing page's warm
+  graphite, copper, grain, typography, and cut-corner geometry into the
+  authenticated app without making dense product screens feel like marketing
+  pages.
 - Grouped Library navigation for Videos, Finished, and Assets.
 - Shared segmented controls for tabs, filters, and mode toggles.
 - Shared dashboard alerts for error, info, success, and warning messages.
@@ -30,6 +31,7 @@ web/app/_components/ui/PanelHeader.tsx
 web/app/_components/ui/Panel.tsx
 web/app/_components/dashboard/DashboardShell.tsx
 web/app/_components/dashboard/DashboardSidebar.tsx
+web/app/_components/dashboard/DashboardAccountButton.tsx
 web/app/_components/dashboard/DashboardPageHeader.tsx
 web/app/_components/dashboard/DashboardAlert.tsx
 web/app/_components/dashboard/BlockedActionMessage.tsx
@@ -58,10 +60,25 @@ Stitchr mode, and Clipr mode use `SegmentedControl`.
 Clipr, Swapr, Stitchr, and Swipr use `WorkflowLayout` so users see a predictable
 main work area plus the output, preview, or progress panel.
 
-The authenticated app uses darker Figma-aligned tokens, compact Barlow
-Condensed page titles, DM Sans body copy, restrained purple accents, and
-surface-based cards. The sidebar groups the product into Home base, Make, and
-Ship so users can quickly get back to the job they were doing.
+The authenticated app uses the same warm graphite and tonal copper palette as
+the landing page. Arial Black carries the large page names and Arial keeps
+controls and supporting copy direct. A quiet grain textures the page substrate,
+while one angular background silhouette gives the top of each route a shared
+signature without sitting over live content.
+
+The old purple graph grid, pill eyebrows, condensed all-caps page names, icon
+tiles, glowing shadows, and rounded-everything treatment are intentionally gone.
+Primary actions and the active navigation item use a clipped upper-right corner.
+Panels use tonal elevation and a restrained inner top highlight instead of a
+floating shadow. Icons stay bare and functional. Segmented controls use compact
+tonal states rather than pill chips. Page context and actions sit opposite the
+large page name instead of recreating the usual eyebrow-heading-button stack.
+
+The sidebar still groups the product into Home base, Make, and Ship so users can
+quickly get back to the job they were doing. On smaller screens it becomes a
+drawer. The Clerk account button is client-mounted through
+`DashboardAccountButton`, which keeps the signed-in header structure stable
+during hydration.
 
 The product and public app shell are dark-only. There is no theme selector,
 system preference switch, or light-mode token branch; shared UI should be
@@ -79,8 +96,15 @@ Media cards use `MediaPrimaryAction` for the clearest next action:
 
 Prefer these shared components before adding a new dashboard-specific variant.
 If a new creation tool needs a preview or status column, use `WorkflowLayout`
-and `StickyPreviewColumn`. If a new filter looks like a pill tab bar, use
-`SegmentedControl` or `StatusFilterTabs`.
+and `StickyPreviewColumn`. If a new filter needs a compact set of choices, use
+`SegmentedControl` or `StatusFilterTabs`; do not reintroduce pill-shaped tab
+bars.
+
+New dashboard surfaces should inherit the scoped variables in `app/globals.css`
+instead of introducing page-local purples, cool slate backgrounds, graph-paper
+grids, or broad all-around shadows. Keep controls compact, keep icons out of
+decorative boxes, and reserve rounded full shapes for controls where the circle
+has a real function, such as a media play button or color swatch.
 
 Dashboard copy should use the same human voice as the public pages, but with
 product-screen clarity. Page H1s should be stable names such as `Dashboard`,
@@ -94,3 +118,20 @@ documented.
 Keep user-facing blockers direct. Say what to do next, such as "Create or choose
 a product before generating text," instead of referring to where the setting
 lives in the UI.
+
+## Verification
+
+Check the system at desktop and phone widths on these representative routes:
+
+```text
+/dashboard
+/dashboard/library
+/dashboard/stitchr
+/dashboard/settings
+```
+
+Then perform a read-only route sweep across Clipr, Swipr, Swapr, Hook Lab,
+Schedule, and Analytics. Confirm every route has one visible H1, no hidden
+content waiting on an entrance animation, no horizontal page overflow, and no
+signed-in hydration warning. Test the mobile navigation drawer with real open
+and close clicks.

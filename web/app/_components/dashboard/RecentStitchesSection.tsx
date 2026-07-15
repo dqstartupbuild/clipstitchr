@@ -82,7 +82,7 @@ export function RecentStitchesSection({
   ugcClips,
 }: RecentStitchesSectionProps) {
   return (
-    <section id="recent-stitches">
+    <section id="recent-stitches" className="dashboard-content-section">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold text-text-primary">
           Ads ready to review

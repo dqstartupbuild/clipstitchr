@@ -15,9 +15,8 @@ export function DashboardPageHeader({
   actions = <DashboardHeaderActions />,
 }: DashboardPageHeaderProps) {
   return (
-    <header className="flex flex-col gap-5 border-b border-border pb-6 md:flex-row md:items-center md:justify-between">
-      <div className="min-w-0">
-        <p className="dashboard-eyebrow">{eyebrow}</p>
+    <header className="dashboard-page-header flex flex-col gap-5 border-b border-border pb-6 md:flex-row md:items-center md:justify-between">
+      <div className="dashboard-page-header-copy min-w-0">
         <h1 className="dashboard-heading mt-3 max-w-4xl break-words text-4xl text-text-primary sm:text-5xl">
           {title}
         </h1>
@@ -25,7 +24,10 @@ export function DashboardPageHeader({
           {description}
         </p>
       </div>
-      {actions ? <div className="shrink-0">{actions}</div> : null}
+      <div className="dashboard-page-header-meta shrink-0">
+        <p className="dashboard-eyebrow">{eyebrow}</p>
+        {actions}
+      </div>
     </header>
   );
 }

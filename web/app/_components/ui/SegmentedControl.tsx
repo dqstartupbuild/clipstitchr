@@ -26,7 +26,7 @@ export function SegmentedControl<Value extends string>({
     <div
       aria-label={ariaLabel}
       className={[
-        "inline-flex flex-wrap gap-1 rounded-lg border border-border bg-surface-muted p-1",
+        "segmented-control inline-flex flex-wrap gap-1 rounded-lg border border-border bg-surface-muted p-1",
         className,
       ]
         .filter(Boolean)
@@ -41,7 +41,7 @@ export function SegmentedControl<Value extends string>({
           disabled={option.disabled}
           onClick={() => onChange(option.value)}
           className={[
-            "h-8 rounded-md px-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+            "segmented-control-option h-8 rounded-md px-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50",
             value === option.value
               ? "bg-surface text-accent-dark shadow-sm"
               : "text-text-secondary hover:text-text-primary",

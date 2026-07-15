@@ -38,10 +38,10 @@ const tabGroups: {
 
 export function LibraryTabs({ value, onChange }: LibraryTabsProps) {
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="library-tabs flex flex-wrap gap-3">
       {tabGroups.map((group) => (
         <div key={group.label} className="min-w-0">
-          <p className="mb-1 px-1 text-[11px] font-bold uppercase text-text-tertiary">
+          <p className="library-tab-group-label mb-1 px-1 text-[11px] font-bold uppercase text-text-tertiary">
             {group.label}
           </p>
           <SegmentedControl

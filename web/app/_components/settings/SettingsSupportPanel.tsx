@@ -6,7 +6,7 @@ export function SettingsSupportPanel() {
   return (
     <Panel className="p-5">
       <div className="flex items-start gap-3">
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-accent">
+        <span className="settings-panel-icon inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-accent">
           <LifeBuoy aria-hidden className="h-5 w-5" />
         </span>
         <div>

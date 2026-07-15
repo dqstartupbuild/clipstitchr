@@ -59,7 +59,7 @@ export function RecentUploadsSection({
   onUpdatePostedStatus,
 }: RecentUploadsSectionProps) {
   return (
-    <section id="recent-uploads">
+    <section id="recent-uploads" className="dashboard-content-section">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold text-text-primary">Fresh footage</h2>
         <SecondaryButtonLink
