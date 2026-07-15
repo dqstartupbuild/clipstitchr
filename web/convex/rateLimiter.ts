@@ -664,14 +664,13 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     kind: "token bucket",
     rate: 500,
     period: HOUR,
-    capacity: 100,
+    capacity: 500,
   },
   indexNowSubmitUrlsGlobal: {
     kind: "token bucket",
     rate: 5000,
     period: HOUR,
     capacity: 500,
-    shards: 5,
   },
   blogPublishWebhookByClient: {
     kind: "token bucket",

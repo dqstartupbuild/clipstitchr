@@ -142,6 +142,8 @@ their existing content/doc registries when they are part of the sitemap.
 `500 Server Error`
 
 - Usually means the Convex rate-limit call failed.
+- Confirm the sitemap URL count does not exceed the configured per-client or
+  global burst capacity. A sitemap-wide submission consumes one token per URL.
 - Confirm `RATE_LIMIT_API_SECRET` exists in both Vercel and Convex with the same
   value.
 - Confirm `NEXT_PUBLIC_CONVEX_URL` points to the intended Convex deployment.
