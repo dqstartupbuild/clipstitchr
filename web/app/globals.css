@@ -3441,7 +3441,7 @@
 
 .landing-footer-brand {
   display: block;
-  width: min(100%, 43rem);
+  width: clamp(12rem, 26vw, 21rem);
 }
 
 .landing-footer-logo {

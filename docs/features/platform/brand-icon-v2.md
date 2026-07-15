@@ -44,6 +44,8 @@ The active assets are used by:
 
 Next.js special files in `web/app/` and direct public favicon paths are also generated for crawlers and clients that do not honor the full metadata graph.
 
+The footer lockup is responsively bounded between 12 and 21 rem so it remains a supporting signature instead of overpowering the footer navigation.
+
 ## Rebuilding the assets
 
 Run this from `web/` after replacing `public/brand/v2/source.png`:
