@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { type Blog, type CaseStudy } from "content-collections";
+import { brandAssets } from "@/lib/brandAssets";
 import { createPageMetadata } from "@/lib/metadata";
 import { createCanonicalUrl, site } from "@/lib/site";
 import type { RssPost } from "./RssPost";
@@ -68,6 +69,10 @@ export function createArticleJsonLd(post: ContentArticle) {
       "@type": "Organization",
       name: site.publisherName,
       url: site.url,
+      logo: {
+        "@type": "ImageObject",
+        url: createCanonicalUrl(brandAssets.icon512),
+      },
     },
     image: [toAbsoluteImageUrl(post.image)],
     mainEntityOfPage: post.canonical,

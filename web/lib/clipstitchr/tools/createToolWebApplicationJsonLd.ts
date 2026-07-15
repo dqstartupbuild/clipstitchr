@@ -1,3 +1,4 @@
+import { brandAssets } from "@/lib/brandAssets";
 import { createCanonicalUrl, site } from "@/lib/site";
 
 type CreateToolWebApplicationJsonLdOptions = {
@@ -27,6 +28,10 @@ export function createToolWebApplicationJsonLd({
       "@type": "Organization",
       name: site.publisherName,
       url: site.url,
+      logo: {
+        "@type": "ImageObject",
+        url: createCanonicalUrl(brandAssets.icon512),
+      },
     },
     url: createCanonicalUrl(pathname),
   };

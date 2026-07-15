@@ -215,7 +215,7 @@
 }
 
 .public-site-header img {
-  filter: grayscale(1) contrast(1.22) brightness(1.14);
+  filter: none;
 }
 
 .public-site-navigation {
@@ -1492,7 +1492,7 @@
 }
 
 .auth-page-story > a:first-child img {
-  filter: grayscale(1) contrast(1.22) brightness(1.14);
+  filter: none;
 }
 
 .auth-page-copy {
@@ -2835,7 +2835,7 @@
 
 .landing-shell #navbar img,
 .landing-footer-logo {
-  filter: grayscale(1) contrast(1.2);
+  filter: none;
 }
 
 .landing-display {
@@ -3997,7 +3997,7 @@
 }
 
 .dashboard-shell .brand-mark img {
-  filter: grayscale(1) sepia(0.12) contrast(1.2) brightness(1.14);
+  filter: none;
 }
 
 .dashboard-mobile-header,

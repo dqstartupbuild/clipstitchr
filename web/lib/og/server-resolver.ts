@@ -14,5 +14,5 @@ export function resolveOgImage(pathname: string) {
     return createCanonicalUrl(assetPath);
   }
 
-  return createCanonicalUrl("/og/default.png");
+  return createCanonicalUrl("/og/v2/default.png");
 }

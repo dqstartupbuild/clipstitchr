@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { brandAssets } from "@/lib/brandAssets";
 import { site } from "@/lib/site";
 
 const footerLinks = [
@@ -21,8 +22,8 @@ export function SiteFooter() {
             alt={site.name}
             className="landing-footer-logo"
             height={550}
-            src="/brand/logo-dark.png"
-            width={2048}
+            src={brandAssets.logoOnDark}
+            width={2545}
           />
         </Link>
         <nav aria-label="Footer navigation" className="landing-footer-links">

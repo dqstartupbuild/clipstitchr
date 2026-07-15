@@ -12,7 +12,7 @@ Authored MDX lives in `content/blog/` and `content/case-studies/`.
 - `author`
 - `category`
 - `tags`
-- `image`: relative asset path such as `/og/default.png`
+- `image`: relative asset path such as `/og/v2/default.png`
 - `targetKeyword`
 - `intent`
 - `ctaVariant`

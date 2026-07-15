@@ -185,7 +185,7 @@ author: "Your Name"
 category: "guides"
 tags:
   - "your-tag"
-image: "/og/default.png"
+image: "/og/v2/default.png"
 targetKeyword: "your keyword"
 intent: "informational"
 ctaVariant: "primary"

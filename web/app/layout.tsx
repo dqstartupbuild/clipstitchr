@@ -9,6 +9,7 @@ import {
 import { Analytics } from "@vercel/analytics/next";
 import { CookieConsentManager } from "@/app/_components/analytics/CookieConsentManager";
 import { ConvexClientProvider } from "@/app/ConvexClientProvider";
+import { brandAssets } from "@/lib/brandAssets";
 import { createPageMetadata } from "@/lib/metadata";
 import {
   createOrganizationJsonLd,
@@ -50,12 +51,41 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/brand/icon-dark.png",
-        sizes: "548x550",
+        url: brandAssets.icon16,
+        sizes: "16x16",
+        type: "image/png",
+      },
+      {
+        url: brandAssets.icon32,
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: brandAssets.icon48,
+        sizes: "48x48",
+        type: "image/png",
+      },
+      {
+        url: brandAssets.icon192,
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: brandAssets.icon512,
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+    shortcut: [{ url: brandAssets.favicon }],
+    apple: [
+      {
+        url: brandAssets.appleTouchIcon,
+        sizes: "180x180",
         type: "image/png",
       },
     ],
   },
+  manifest: `/manifest.webmanifest?v=${brandAssets.cacheVersion}`,
 };
 
 export default function RootLayout({

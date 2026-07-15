@@ -13,7 +13,7 @@ const validDocument = {
   author: "Editorial Team",
   category: "guides",
   tags: ["getting-started"],
-  image: "/og/default.png",
+  image: "/og/v2/default.png",
   canonical: "http://localhost:3000/blog/getting-started",
   targetKeyword: "getting started",
   intent: "informational",

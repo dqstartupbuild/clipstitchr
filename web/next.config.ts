@@ -24,6 +24,17 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    localPatterns: [
+      {
+        pathname: "/brand/**",
+      },
+      {
+        pathname: "/**",
+        search: "",
+      },
+    ],
+  },
   logging: {
     incomingRequests: {
       ignore: [emailConfirmationRequestLogIgnorePattern],

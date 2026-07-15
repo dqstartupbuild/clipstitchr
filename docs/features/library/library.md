@@ -1,5 +1,7 @@
 # Library
 
+The server passes the requested `tab` query value into the first Library render. This keeps the server and browser on the same selected tab during hydration, including direct links such as `/dashboard/library?tab=demo`, while the existing client-side URL synchronization continues to handle later tab changes and browser navigation.
+
 ## What It Does
 
 The authenticated Library lives at `/dashboard/library`. It is the single place

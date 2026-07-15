@@ -42,6 +42,10 @@ import { getUploadAssetTypeFromLibraryTab } from "@/lib/clipstitchr/utils/getUpl
 
 type VideoLibraryTab = "ugc" | "demo" | "swaps";
 
+type LibraryPageClientProps = {
+  initialTab?: LibraryTab;
+};
+
 const sortOptions = [
   { label: "Most recent", value: "newest" },
   { label: "Oldest", value: "oldest" },
@@ -90,7 +94,9 @@ const videoLibraryContent: Record<
   },
 };
 
-export function LibraryPageClient() {
+export function LibraryPageClient({
+  initialTab = "ugc",
+}: LibraryPageClientProps = {}) {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const products = useDashboardProduct();
@@ -102,9 +108,7 @@ export function LibraryPageClient() {
     saveGeneratedPhotos: photoLibrary.saveGeneratedPhotos,
   });
   const hookLabIdeaCreator = useCreateHookLabIdeaFromStitch();
-  const [selectedTab, setSelectedTab] = useState<LibraryTab>(
-    getInitialLibraryTab,
-  );
+  const [selectedTab, setSelectedTab] = useState<LibraryTab>(initialTab);
   const stitchTemplates = useStitchTemplates(
     selectedTab === "stitches" || selectedTab === "templates",
   );

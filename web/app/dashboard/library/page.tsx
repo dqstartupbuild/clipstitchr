@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LibraryPageClient } from "@/app/dashboard/library/LibraryPageClient";
+import { getLibraryTabFromSearchParams } from "@/lib/clipstitchr/utils/getLibraryTabFromSearchParams";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -25,5 +26,9 @@ export default async function LibraryPage({
     redirect("/dashboard/hooks?view=ideas");
   }
 
-  return <LibraryPageClient />;
+  const initialTab = getLibraryTabFromSearchParams(
+    new URLSearchParams(typeof tab === "string" ? { tab } : undefined),
+  );
+
+  return <LibraryPageClient initialTab={initialTab} />;
 }

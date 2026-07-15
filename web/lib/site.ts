@@ -1,4 +1,5 @@
 import { resolveSiteUrl } from "./resolveSiteUrl";
+import { brandAssets } from "@/lib/brandAssets";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
 import { publicToolKeys } from "@/lib/clipstitchr/tools/catalog/publicToolKeys";
 
@@ -113,7 +114,7 @@ export function createCanonicalUrl(pathname = "/") {
 
 export function createOgAssetPath(pathname = "/") {
   const normalized = normalizePathname(pathname);
-  return normalized === "/" ? "/og/default.png" : `/og${normalized}.png`;
+  return normalized === "/" ? "/og/v2/default.png" : `/og${normalized}.png`;
 }
 
 export function createWebsiteJsonLd() {
@@ -133,5 +134,9 @@ export function createOrganizationJsonLd() {
     name: site.publisherName,
     url: site.url,
     description: site.defaultDescription,
+    logo: {
+      "@type": "ImageObject",
+      url: createCanonicalUrl(brandAssets.icon512),
+    },
   };
 }

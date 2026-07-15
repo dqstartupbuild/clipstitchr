@@ -5,6 +5,7 @@ import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
 import type { UploadAssetType } from "@/lib/clipstitchr/types/UploadAssetType";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import { getLibraryTabFromSearchParams } from "@/lib/clipstitchr/utils/getLibraryTabFromSearchParams";
 
 type ElementLike = {
   props?: Record<string, unknown>;
@@ -296,9 +297,12 @@ function renderLibraryPage({
 } = {}) {
   const testWindow = createWindow(search);
   mocks.stateValues = [...stateValues];
+  const initialTab = getLibraryTabFromSearchParams(
+    new URLSearchParams(search),
+  );
 
   return {
-    elements: collectElements(LibraryPageClient()),
+    elements: collectElements(LibraryPageClient({ initialTab })),
     testWindow,
   };
 }
