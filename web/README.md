@@ -78,15 +78,16 @@ The app processes media in the browser and stores durable data in Convex and Clo
 
 ## Product Docs
 
-- `../docs/product/positioning.md` defines the customer pain, product promise,
+- `../docs/product/strategy/positioning.md` defines the customer pain, product promise,
   audience, feature hierarchy, and AI positioning.
-- `../docs/product/copywriting-guide.md` defines reusable marketing and UI copy
+- `../docs/product/guidance/copywriting.md` defines reusable marketing and UI copy
   guidance.
-- `../docs/features/stitchr.md` defines the primary Stitchr workflow and
+- `../docs/features/stitchr/stitchr.md` defines the primary Stitchr workflow and
   product principles.
-- `../docs/architecture/models.md` lists supported Replicate model IDs and their model-specific
+- `../docs/architecture/data/models.md` lists supported Replicate model IDs and their model-specific
   request workflows.
-- `../monetization.md` defines hypothetical pricing, margin, rate-limit, and
+- `../docs/product/strategy/monetization-and-usage-budget.md` defines
+  hypothetical pricing, margin, rate-limit, and
   plan-positioning assumptions.
 
 ## Project Structure

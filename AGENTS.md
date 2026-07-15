@@ -6,8 +6,8 @@ ClipStitchr is a browser-local Next.js MVP app under `web/`. The repository root
 
 - `project-scope.md` defines the MVP, target architecture, routes, data model, and video-processing decisions.
 - `coding-guidelines.md` defines the required Atomic Code Splitting approach.
-- `docs/media-bunny/media-bunny-llms.md` contains the full Media Bunny guide content. Read this first for Media Bunny workflows, recommended patterns, and conceptual guidance.
-- `docs/media-bunny/media-bunny-api.md` contains the Media Bunny TypeScript API declarations. Use this as the source of truth for exact class names, option shapes, method signatures, and return types.
+- `docs/references/media-bunny/guides.md` contains the full Media Bunny guide content. Read this first for Media Bunny workflows, recommended patterns, and conceptual guidance.
+- `docs/references/media-bunny/api.md` contains the Media Bunny TypeScript API declarations. Use this as the source of truth for exact class names, option shapes, method signatures, and return types.
 
 The app uses the planned Next.js shape from `project-scope.md`: app routes such as `/`, `/dashboard`, `/dashboard/library`, `/dashboard/hooks`, `/dashboard/stitchr`, `/dashboard/swapr`, `/dashboard/clipr`, and `/dashboard/swipr`; `/dashboard/library` is the authenticated Library with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Pexels tabs. Hook Lab at `/dashboard/hooks` has Ideas and Review views, and `/dashboard/templates` plus the legacy Library Templates query redirect to Hook Lab Ideas. `/dashboard/uploads`, `/dashboard/avatars`, and `/dashboard/stitches` still redirect to the relevant Library tab for compatibility. Durable metadata and media are backed by Convex and Cloudflare R2, browser video processing uses Media Bunny, uploads normalize to TikTok 9:16, poster images are generated for video preview default states, and Stitchr uses UGC-then-Demo sequencing for preview, stitching, and download. Stitchr supports selecting up to 20 UGC clips with one selected Demo clip; one shared text overlay is applied across the batch, and each selected UGC produces its own finished stitch.
 
@@ -16,8 +16,8 @@ The app uses the planned Next.js shape from `project-scope.md`: app routes such 
 For any Media Bunny-related change, read the relevant parts of these files before editing code:
 
 - Start with `project-scope.md` to confirm product behavior, especially 9:16 normalization, UGC-then-Demo sequencing, and MVP exclusions.
-- Read `docs/media-bunny/media-bunny-llms.md` for implementation patterns from the official guides, such as reading files, conversions, media sinks, media sources, output formats, and codec support checks.
-- Use `docs/media-bunny/media-bunny-api.md` to verify exact imports, constructor options, method signatures, and types before writing TypeScript.
+- Read `docs/references/media-bunny/guides.md` for implementation patterns from the official guides, such as reading files, conversions, media sinks, media sources, output formats, and codec support checks.
+- Use `docs/references/media-bunny/api.md` to verify exact imports, constructor options, method signatures, and types before writing TypeScript.
 
 Use Media Bunny's `Conversion` API for single-upload normalization from one input file to one normalized 9:16 output. Do not use `Conversion` for UGC + Demo stitching; create a fresh `Output`, read both normalized clips with sinks, re-timestamp samples, and write them with media sources as described in `project-scope.md`.
 
@@ -196,6 +196,6 @@ Required workflow:
 - Enforce per-user limits for fairness and global limits for shared provider or spend protection when a shared resource is involved.
 - Preserve authorization and ownership checks separately from rate limits; rate limits do not replace access control.
 - Return a clear `429` response with retry timing for HTTP routes where a rate limit is exceeded.
-- Update `docs/backend/rate-limits.md` whenever limits, enforcement points, environment variables, or verification steps change.
-- If a backend operation is intentionally not rate-limited, document the reason in `docs/backend/rate-limits.md`.
+- Update `docs/operations/security/rate-limits.md` whenever limits, enforcement points, environment variables, or verification steps change.
+- If a backend operation is intentionally not rate-limited, document the reason in `docs/operations/security/rate-limits.md`.
 - Kill the dev server after you finish all testing, never leave dev servers running unless explicitly requested.

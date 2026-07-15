@@ -38,8 +38,8 @@ becoming content people. Every uploaded clip has a job, every demo can be useful
 more than once, and the content library is no longer a dead-end folder on their
 computer.
 
-See `docs/product/positioning.md`, `docs/product/copywriting-guide.md`, and
-`docs/features/stitchr.md` for reusable product, marketing, and copy guidance.
+See `docs/product/strategy/positioning.md`, `docs/product/guidance/copywriting.md`, and
+`docs/features/stitchr/stitchr.md` for reusable product, marketing, and copy guidance.
 
 ---
 
@@ -365,7 +365,10 @@ selected slides.
 
 **Decision:** Media Bunny is the chosen video processing engine for ClipStitchr.
 
-**Implementation reference:** use the local Media Bunny docs in `docs/media-bunny/`, especially `docs/media-bunny/media-bunny-llms.md` and `docs/media-bunny/media-bunny-api.md`.
+**Implementation reference:** use the local Media Bunny docs in
+`docs/references/media-bunny/`, especially
+`docs/references/media-bunny/guides.md` and
+`docs/references/media-bunny/api.md`.
 
 ### Why Media Bunny
 
@@ -409,7 +412,7 @@ selected slides.
 
 ### Media Bunny API Map (MVP)
 
-Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs/media-bunny/media-bunny-api.md` as the API reference.
+Use `docs/references/media-bunny/guides.md` as the implementation guide and `docs/references/media-bunny/api.md` as the API reference.
 
 #### Upload Read / Validation
 

@@ -2,7 +2,7 @@
 # PostHog post-wizard report
 
 Follow-up consent wiring has been added after the wizard run. The durable
-tracking plan and consent rules now live in `../docs/analytics/posthog.md`.
+tracking plan and consent rules now live in `../docs/integrations/analytics/posthog.md`.
 PostHog is gated by the `analytics` cookie category on both browser and server
 captures.
 

@@ -6,7 +6,7 @@ import { publicToolKeys } from "@/lib/clipstitchr/tools/catalog/publicToolKeys";
 
 const qualityRegisterPath = fileURLToPath(
   new URL(
-    "../../../../../docs/features/public-tool-quality-register.md",
+    "../../../../../docs/features/public-tools/portfolio/public-tool-quality-register.md",
     import.meta.url,
   ),
 );

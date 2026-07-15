@@ -193,9 +193,9 @@ Worker code lives in:
 Deployment details live in:
 
 - `AGENTS.md`
-- `docs/backend/media-worker-deployment.md`
-- `docs/backend/provider-automation-workflows.md`
-- `docs/backend/durable-workflows.md`
+- `docs/operations/deployment/media-worker.md`
+- `docs/operations/automation/provider-workflows.md`
+- `docs/operations/reliability/durable-workflows.md`
 
 ### Scheduling And Analytics
 
@@ -205,8 +205,8 @@ configuration, stored post state, media upload behavior, and analytics sync.
 
 Relevant docs:
 
-- `docs/features/post-bridge-scheduling.md`
-- `docs/features/post-bridge-analytics.md`
+- `docs/features/post-bridge/post-bridge-scheduling.md`
+- `docs/features/post-bridge/post-bridge-analytics.md`
 
 ### Content, SEO, And Marketing Pages
 
@@ -299,8 +299,8 @@ Important media rules:
 For Media Bunny work, read:
 
 - `project-scope.md`
-- `docs/media-bunny/media-bunny-llms.md`
-- `docs/media-bunny/media-bunny-api.md`
+- `docs/references/media-bunny/guides.md`
+- `docs/references/media-bunny/api.md`
 
 ## Data Storage
 
@@ -386,11 +386,16 @@ Dashboard routes:
 |-- project-scope.md
 |-- coding-guidelines.md
 |-- docs/
+|   |-- README.md
 |   |-- architecture/
-|   |-- backend/
+|   |-- content/
 |   |-- features/
-|   |-- media-bunny/
-|   `-- product/
+|   |-- guides/
+|   |-- integrations/
+|   |-- operations/
+|   |-- planning/
+|   |-- product/
+|   `-- references/
 |-- resources/
 |   `-- clipr/
 |-- assets/
@@ -423,8 +428,12 @@ Dashboard routes:
 | `web/services/media-worker/` | Media worker job runner |
 | `web/content/` | MDX content collections |
 | `resources/clipr/` | Internal hook and template resources |
-| `docs/features/` | Feature-specific implementation docs |
-| `docs/backend/` | Backend, rate limit, worker, storage, and workflow docs |
+| `docs/README.md` | Documentation map and filing rules |
+| `docs/features/` | Feature docs grouped by product area |
+| `docs/operations/` | Deployment, email, data, security, reliability, and runbooks |
+| `docs/planning/` | Implementation plans, investigations, roadmaps, and maintenance notes |
+| `docs/integrations/` | Analytics and external-service setup |
+| `docs/references/` | Mirrored or external technical references |
 
 ## Local Development
 
@@ -510,7 +519,7 @@ ownership check.
 
 Rate-limit documentation lives in:
 
-- `docs/backend/rate-limits.md`
+- `docs/operations/security/rate-limits.md`
 
 ## Coding Standards
 
@@ -536,24 +545,24 @@ Start here:
 
 - `project-scope.md` for the full product scope and architecture decisions
 - `web/README.md` for app-level setup notes
-- `docs/product/positioning.md` for product positioning
-- `docs/product/copywriting-guide.md` for user-facing language
-- `docs/features/public-marketing-pages.md` for public landing-page UI and copy
-- `docs/features/stitchr.md` for the primary workflow
-- `docs/features/library.md` for the unified Library
-- `docs/features/clipr.md` for Clipr generation rules
-- `docs/features/swipr.md` for carousel generation
-- `docs/features/swapr_scope.md` for Swapr scope
-- `docs/features/quick-edit.md` for non-destructive source edits
-- `docs/features/stitchr-batch.md` for automated draft creation
-- `docs/features/stitchr-templates.md` for reusable Stitchr setups
-- `docs/features/post-bridge-scheduling.md` for scheduling
-- `docs/features/post-bridge-analytics.md` for analytics
-- `docs/backend/rate-limits.md` for backend cost protection
-- `docs/backend/durable-workflows.md` for provider workflow recovery
-- `docs/backend/media-worker-deployment.md` for worker deployment
-- `docs/media-bunny/media-bunny-llms.md` for Media Bunny implementation
-- `docs/media-bunny/media-bunny-api.md` for exact Media Bunny TypeScript APIs
+- `docs/product/strategy/positioning.md` for product positioning
+- `docs/product/guidance/copywriting.md` for user-facing language
+- `docs/features/marketing/public-marketing-pages.md` for public landing-page UI and copy
+- `docs/features/stitchr/stitchr.md` for the primary workflow
+- `docs/features/library/library.md` for the unified Library
+- `docs/features/clipr/clipr.md` for Clipr generation rules
+- `docs/features/swipr/swipr.md` for carousel generation
+- `docs/features/swapr/swapr-scope.md` for Swapr scope
+- `docs/features/editor/quick-edit.md` for non-destructive source edits
+- `docs/features/stitchr/stitchr-batch.md` for automated draft creation
+- `docs/features/stitchr/stitchr-templates.md` for reusable Stitchr setups
+- `docs/features/post-bridge/post-bridge-scheduling.md` for scheduling
+- `docs/features/post-bridge/post-bridge-analytics.md` for analytics
+- `docs/operations/security/rate-limits.md` for backend cost protection
+- `docs/operations/reliability/durable-workflows.md` for provider workflow recovery
+- `docs/operations/deployment/media-worker.md` for worker deployment
+- `docs/references/media-bunny/guides.md` for Media Bunny implementation
+- `docs/references/media-bunny/api.md` for exact Media Bunny TypeScript APIs
 
 ## Testing Expectations
 
