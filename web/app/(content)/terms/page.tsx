@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
+import { supportEmail } from "@/lib/supportEmail";
 
 export const metadata: Metadata = createPageMetadata({
   title: `Terms of Use | ${site.name}`,
@@ -154,12 +155,13 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2>Plan, Credit, and Promotional Terms</h2>
+            <h2>Plan and Usage Terms</h2>
             <p>
               The plan limits and prices shown when you subscribe are part of
-              your paid plan. Product limits, monthly creation credits, Clipr
-              and Swapr video allowances, and daily-draft access vary by plan.
-              Storage is not sold as a separate plan allowance.
+              your paid plan. Prices are in U.S. dollars. Product limits,
+              monthly creation credits, Clipr and Swapr video allowances, and
+              daily-draft access vary by plan. Storage is not sold as a
+              separate plan allowance.
             </p>
             <p>
               Starter and Pro use 10 creation credits for each stitch that is
@@ -176,12 +178,95 @@ export default function TermsPage() {
               process does not use standalone photo credits. Credits or video
               allowances reserved for a failed generation are returned.
             </p>
+          </section>
+
+          <section>
+            <h2>Billing and Automatic Renewal</h2>
             <p>
-              Monthly credits are used before refill credits. Refill credits
-              remain available for 12 months while the paid subscription stays
-              active. Credit refills do not add Clipr or Swapr videos.
+              Paid subscriptions are billed monthly in U.S. dollars and renew
+              automatically each month until canceled. At each renewal, you
+              authorize us and Stripe to charge your saved payment method for
+              the plan&apos;s then-current monthly price plus any applicable
+              taxes shown at checkout or on the invoice.
             </p>
-            <h3>10k Organic Views Challenge</h3>
+            <p>
+              We will send at least 30 days&apos; notice to your account email
+              before a price increase applies to a future renewal. You can
+              cancel before that renewal if you do not agree to the new price.
+            </p>
+          </section>
+
+          <section>
+            <h2>Plan Changes and Cancellation</h2>
+            <p>
+              You can cancel from <strong>Settings</strong> under
+              <strong> Billing &amp; invoices</strong>. There is no cancellation
+              fee. A cancellation takes effect at the end of the current paid
+              billing period, and plan access continues through that date.
+            </p>
+            <p>
+              A paid upgrade takes effect immediately after Stripe successfully
+              collects the prorated amount shown when you confirm the change. A
+              downgrade takes effect at the next monthly renewal, so the
+              current plan and limits stay in place until then.
+            </p>
+          </section>
+
+          <section>
+            <h2>Failed Payments and Renewal Grace</h2>
+            <p>
+              If the first subscription payment fails, paid plan access does
+              not begin. If a renewal payment fails after a successful paid
+              period, the account receives a 72-hour payment grace period. The
+              first failed renewal starts that deadline, and payment retries do
+              not extend it. Access may continue during the grace period and
+              will stop if payment is not recovered before it ends. A
+              successful recovery restores paid access.
+            </p>
+          </section>
+
+          <section>
+            <h2>Monthly Credits and Credit Refills</h2>
+            <p>
+              Monthly creation credits expire at the end of each monthly
+              billing period and do not roll over. Monthly credits are used
+              before refill credits.
+            </p>
+            <p>
+              A one-time $29 credit refill adds 2,000 creation credits. You
+              must have a paid ClipStitchr subscription when you buy a refill.
+              Refill credits are usable only while the subscription that bought
+              them remains active or in its valid renewal-payment grace period.
+              Cancellation, expiration, or replacement of that subscription
+              ends access to its unused refill balance, even if you later start
+              another subscription. Otherwise, refill credits expire 12 months
+              after payment. They do not add any Clipr or Swapr videos, are
+              nontransferable, cannot be resold, and have no cash value.
+            </p>
+          </section>
+
+          <section>
+            <h2>Refunds</h2>
+            <p>
+              Payments are generally final. You may ask us to consider an
+              exception by emailing{" "}
+              <a href={`mailto:${supportEmail}`}>{supportEmail}</a> within 14
+              days after the charge. A request does not guarantee a refund. We
+              do not ordinarily provide prorated refunds or credits for a
+              cancellation, downgrade, unused time, or unused capacity. The
+              immediate paid-upgrade calculation described above is separate
+              from this refund policy.
+            </p>
+            <p>
+              An approved refund removes the unused credits or other unused
+              plan capacity granted by the refunded payment. Nothing in this
+              section limits refund or cancellation rights that applicable law
+              requires.
+            </p>
+          </section>
+
+          <section>
+            <h2>10k Organic Views Challenge</h2>
             <p>
               The 10k Organic Views Challenge is an optional promotional account
               credit, not a promise that your posts will receive a particular
@@ -198,6 +283,23 @@ export default function TermsPage() {
               The account must remain in good standing. The free month applies
               to the next renewal and is not a cash refund of an earlier charge.
               The challenge may be claimed once per customer.
+            </p>
+          </section>
+
+          <section>
+            <h2>Support and Account Messages</h2>
+            <p>
+              Support is available by email at{" "}
+              <a href={`mailto:${supportEmail}`}>{supportEmail}</a>. We do not
+              publish or promise a specific support response time or service
+              level.
+            </p>
+            <p>
+              We may send receipts, billing notices, security alerts, and other
+              service messages to the email address on your account. Keep that
+              address current so you receive messages about your subscription
+              and account. These required account messages are separate from
+              marketing emails.
             </p>
           </section>
 
@@ -268,9 +370,7 @@ export default function TermsPage() {
             <h2>Contact</h2>
             <p>
               If you have questions about these Terms of Use, email us at{" "}
-              <a href="mailto:support@clipstitchr.com">
-                support@clipstitchr.com
-              </a>
+              <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
               .
             </p>
           </section>

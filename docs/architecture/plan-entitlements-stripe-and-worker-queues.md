@@ -221,8 +221,8 @@ type EntitlementState = "active" | "grace" | "inactive";
 - Grace expired, unpaid, incomplete-expired, or ended subscription: `inactive`.
 - Support override: explicit app-owned state with actor, reason, and expiry.
 
-Confirm the 72-hour grace decision before launch. Keep it in one policy constant
-instead of scattering it through webhook handlers.
+The approved grace period is 72 hours. Keep it in one policy constant instead
+of scattering it through webhook handlers.
 
 Do not silently delete an entitlement. Preserve the last Stripe subscription,
 plan, period, source event, and change history for support and audit.
@@ -868,21 +868,24 @@ Do not enable live paid checkout until all of these are true:
 - **Client plan spoofing:** Derive every policy from server-owned entitlement.
 - **Stuck usage:** Reconcile reservation, job, lock, and generation-slot expiry.
 
-## Decisions to Confirm Before Live Billing
+## Remaining Operational Decisions
 
-The architecture is implementation-ready, but these business decisions require
-explicit approval before production:
+The commercial billing policy is approved. The remaining production decisions
+are operational and must still be recorded before changing their related
+controls:
 
-- the general refund policy outside the 10k Organic Views Challenge;
 - supported tax jurisdictions and whether Stripe Tax is enabled;
 - final global provider/model concurrency ceilings after quota review;
 - whether an Agency support override can temporarily exceed 4 active
   generations.
 
-The implemented billing decisions are a 72-hour payment-failure grace period,
-immediate paid upgrades with a positive prorated allowance delta, and
-downgrades at the next renewal. Changing any of these requires a coordinated
-policy, portal, webhook, copy, and test update.
+The approved customer terms are monthly automatic renewal in U.S. dollars,
+period-end cancellation without a fee, immediate prorated paid upgrades,
+period-end downgrades, a fixed 72-hour renewal grace period, expiring monthly
+credits without rollover, the documented $29 refill restrictions, the
+documented 14-day refund-exception request window, 30-day price-increase notice,
+and email support without a public response-time service level. Changing any of
+these requires a coordinated policy, portal, webhook, copy, and test update.
 
 Any changed decision should update this document, the offer and monetization
 documents, Terms, tests, and server policy in the same implementation.

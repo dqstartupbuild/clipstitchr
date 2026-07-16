@@ -8,6 +8,7 @@ import { getOnboardingBillingView } from "@/lib/clipstitchr/billing/getOnboardin
 import type { PlanKey } from "@/lib/clipstitchr/billing/types/PlanKey";
 import type { SubscriptionCheckoutReturnStatus } from "@/lib/clipstitchr/billing/types/SubscriptionCheckoutReturnStatus";
 import { useBillingWorkspace } from "@/lib/clipstitchr/hooks/useBillingWorkspace";
+import { supportEmail } from "@/lib/supportEmail";
 
 type OnboardingBillingGateProps = {
   billingReturn?: SubscriptionCheckoutReturnStatus;
@@ -68,9 +69,9 @@ export function OnboardingBillingGate({
             email{" "}
             <a
               className="font-bold text-text-primary"
-              href="mailto:support@clipstitchr.com"
+              href={`mailto:${supportEmail}`}
             >
-              support@clipstitchr.com
+              {supportEmail}
             </a>
             .
           </p>
@@ -85,9 +86,9 @@ export function OnboardingBillingGate({
             New setup is paused while we confirm the payment state. Email{" "}
             <a
               className="font-bold text-text-primary"
-              href="mailto:support@clipstitchr.com"
+              href={`mailto:${supportEmail}`}
             >
-              support@clipstitchr.com
+              {supportEmail}
             </a>{" "}
             and we will help get it cleared.
           </p>

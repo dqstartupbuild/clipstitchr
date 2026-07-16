@@ -85,9 +85,9 @@ Monthly credits are consumed first. When more than one refill grant is
 available, consume the refill with the earliest expiration first.
 
 If a subscription becomes inactive, refill credits become unavailable. Keep
-their immutable grant and ledger history. If the product later decides that a
-reactivated subscriber may recover an unexpired refill, that must be approved
-and documented before implementation. Do not infer that behavior from Stripe.
+their immutable grant and ledger history. A later replacement subscription
+does not reactivate the balance because each refill remains bound to the Stripe
+subscription that purchased it.
 
 During the configured payment-failure grace period, already-granted monthly and
 refill credits remain spendable, but the user cannot buy another refill and no
@@ -1047,12 +1047,11 @@ Do not enable credit enforcement until:
 - **Projection drift:** Recalculate from immutable records and alert.
 - **Late browser save:** Reacquire atomically or reject and clean orphaned media.
 
-## Decision Still Requiring Approval
+## Approved Refill Reactivation Policy
 
 The paid-upgrade policy is finalized: a positive mid-period proration grants
-the corresponding incremental credits after confirmed payment. One edge policy
-still requires live-billing approval: whether an unexpired refill becomes
-available again after a canceled account later starts a new paid subscription.
-
-Keep that behavior behind a focused policy function. Do not let webhook
-handlers or UI code choose it implicitly.
+the corresponding incremental credits after confirmed payment. An unexpired
+refill does not become available again after the purchasing subscription ends
+and the owner later starts a replacement subscription. Keep that behavior in
+the focused grant-eligibility function rather than choosing it in webhook
+handlers or UI code.

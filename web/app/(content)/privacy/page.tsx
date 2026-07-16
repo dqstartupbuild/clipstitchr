@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CookiePreferencesButton } from "@/app/_components/privacy/CookiePreferencesButton";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
+import { supportEmail } from "@/lib/supportEmail";
 
 export const metadata: Metadata = createPageMetadata({
   title: `Privacy Policy | ${site.name}`,
@@ -353,9 +354,7 @@ export default function PrivacyPage() {
             <h2>Contact</h2>
             <p>
               If you have questions about this Privacy Policy, email us at{" "}
-              <a href="mailto:support@clipstitchr.com">
-                support@clipstitchr.com
-              </a>
+              <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
               .
             </p>
           </section>

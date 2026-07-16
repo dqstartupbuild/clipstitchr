@@ -28,13 +28,13 @@ full public rollout are complete.
 | Confirmation emails | Published, confirmation-only, and limited to `confirmationUrl` |
 | Production marketing Workflows | Four exact ClipStitchr Workflows Active with zero sends; the unused duplicate signup Workflow was deleted |
 | Production blog digest | One campaign remains Draft and unsent; follow the [Loops campaign walkthrough](./campaigns.md) before publishing it |
-| Sending domains | `mail.followusai.com` and `mail.clipstitchr.com` verified |
+| Sending domains | Historical sending subdomains remain verified; the approved `clipstitchr@followusai.com` sender must be verified before another production send |
 | Production webhook | Configured at the production Convex site and signed smoke-tested |
 | Production application | Convex and Vercel deployed; `clipstitchr.com` is live |
 | Controlled production confirmation | Passed once; sender, content, production origin, 48-hour lifetime, explicit POST, and single use verified |
 | Legacy production waitlist | Two records migrated as consent-unknown, unverified, unsubscribed, and marketing-ineligible; no send or enrollment created |
 | Controlled production contact projection | Passed once with the exact approved fields; no mailing list, Workflow event, or forbidden lead data created |
-| Production sending and readiness | All five gates are exactly `true` in Convex and Vercel |
+| Production sending and readiness | Must remain paused until every live message uses `clipstitchr@followusai.com` with reply-to `support@followusai.com` |
 | Public gate rollout | All 50 fixed tools use `hybrid-v1` at 100%, including three email-native tools |
 | Production deployment | `dpl_2mEbfiVggjYyyPCj2jWutnJtQxGG` is Ready and owns the production aliases |
 | Provider queue | No held, pending, processing, or dead-letter operations |
@@ -514,6 +514,9 @@ audience, or Workflow IDs.
 
 - [x] Add and fully verify `mail.clipstitchr.com` or another approved production
   sending subdomain.
+- [ ] Verify the approved root-domain sender
+  `ClipStitchr <clipstitchr@followusai.com>` and migrate every production
+  message before enabling another send.
 - [x] Generate a production-only API key.
 - [x] Store it with `loops auth login prod`, select it with
   `loops auth use prod`, and verify that the reported team is `ClipStitchr`
@@ -559,8 +562,12 @@ Production setup evidence from July 14, 2026:
   its replay, `401` for invalid and stale signatures, `400` for unsupported
   data, and `413` for a body larger than 64 KiB.
 - All 15 marketing messages match their verified development source content,
-  use `ClipStitchr <clipstitchr@mail.clipstitchr.com>`, reply to
-  `support@clipstitchr.com`, and link only to `https://clipstitchr.com` pages.
+  use `ClipStitchr <clipstitchr@mail.clipstitchr.com>`, and link only to
+  `https://clipstitchr.com` pages. The July 14 evidence used the legacy support
+  reply-to. As of July 16, 2026, the approved reply-to for future sends is
+  `support@followusai.com`. This is historical evidence only: the July 16
+  root-domain policy supersedes that From address, so no future send may use
+  it.
 - At production setup time, the four Workflow structures were present and in
   Draft. Their names, one-time triggers, timer sequences, and message content
   were verified after the final dashboard rename.
@@ -569,6 +576,13 @@ Production setup evidence from July 14, 2026:
   and preview, confirmation-only copy, a `https://clipstitchr.com` link, a
   stated 48-hour lifetime, no attachment, and no tracking wrapper around the
   confirmation button.
+
+Before the next production email, keep all application sending gates disabled,
+verify `clipstitchr@followusai.com` in Loops, update the confirmation template,
+all Workflow messages, and every Draft campaign to that From address, retain
+`support@followusai.com` as reply-to, and repeat the controlled inbox smoke.
+The historical `mail.clipstitchr.com` and `mail.followusai.com` domains are not
+approved substitutes for the root `followusai.com` correspondence address.
 - The signed `GET` showed the confirmation form without changing consent. The
   explicit same-origin, CSRF-checked `POST` confirmed consent once, and a replay
   showed the non-enumerating unavailable page. The token is used and the
@@ -743,6 +757,25 @@ Full-release evidence from July 15, 2026:
 - The controlled contact is confirmed, verified, subscribed, and eligible.
   The two legacy contacts remain consent-unknown, unverified, unsubscribed, and
   ineligible, with no token, capture, provider operation, or enrollment.
+
+### July 16 sender-domain pause
+
+The approved correspondence policy now requires the exact root-domain From
+address `clipstitchr@followusai.com` and reply-to
+`support@followusai.com`. Existing Loops messages still use the historical
+`@mail.clipstitchr.com` sender, so new application dispatch was paused before
+the billing launch:
+
+- `LOOPS_EMAIL_ENABLED=false` in production Convex and Vercel;
+- `LOOPS_EMAIL_NATIVE_ENABLED=false` in production Convex and Vercel;
+- contact-property, webhook, and Workflow readiness remain available so
+  inbound provider events can still reconcile; and
+- the existing `PUBLIC_TOOL_GATE_ROLLOUT` stays configured, but the two sending
+  gates prevent new Loops delivery.
+
+Do not re-enable either sending gate until `followusai.com` is verified for the
+new From address, every production message is migrated, and a controlled inbox
+smoke confirms the exact From and reply-to values.
 
 ## Emergency Stop
 

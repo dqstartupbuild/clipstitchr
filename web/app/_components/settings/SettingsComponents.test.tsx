@@ -237,6 +237,7 @@ describe("settings components", () => {
     expect(emptyMarkup).toContain('href="/docs/clipstitchr-cli"');
     expect(emptyMarkup).toContain('target="_blank"');
     expect(emptyMarkup).toContain("Contact support");
+    expect(emptyMarkup).toContain('href="mailto:support@followusai.com"');
     expect(emptyMarkup).toContain("Plan and usage");
     expect(emptyMarkup).toContain("Choose Starter");
     expect(emptyMarkup).toContain("$39");

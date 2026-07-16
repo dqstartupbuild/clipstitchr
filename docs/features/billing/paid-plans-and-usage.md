@@ -2,8 +2,11 @@
 
 ## Status
 
-Implemented in Stripe test mode and the development Convex deployment on
-July 16, 2026. Live-mode promotion is intentionally not part of this change.
+Implemented and verified in Stripe test mode and the development Convex
+deployment on July 16, 2026. Production promotion was authorized on the same
+date and follows the controlled live checklist in the billing operations
+runbook. Live identifiers and secrets remain deployment configuration rather
+than source-controlled values.
 
 ## What Customers Get
 
@@ -30,6 +33,41 @@ temporary support override cannot qualify an otherwise inactive subscription.
 The refill expires 12 months after payment and never adds videos. Monthly
 credits are spent first. Refill grants are then spent in expiry order, with the
 earliest expiry first.
+
+## Commercial Billing Policy
+
+The approved customer policy is part of the production billing contract:
+
+- Starter, Pro, and Agency are monthly U.S.-dollar subscriptions that renew
+  automatically. Stripe charges the saved payment method for the current plan
+  price plus any applicable taxes shown at checkout or on the invoice.
+- Customers can cancel in **Settings -> Billing & invoices** without a
+  cancellation fee. Access continues through the current paid period, and the
+  cancellation takes effect at period end.
+- A paid upgrade takes effect after Stripe collects its immediate prorated
+  charge. A downgrade takes effect at the next monthly renewal.
+- A failed initial payment never opens paid access. A failed renewal after a
+  confirmed paid period starts the fixed 72-hour grace window.
+- Monthly credits expire at the end of their billing period and do not roll
+  over.
+- The $29 refill adds 2,000 credits, requires a paid subscription at purchase,
+  expires 12 months after payment, does not add videos, is nontransferable, and
+  has no cash value. Refill credits are usable only while the purchasing
+  subscription is active or in valid grace; a replacement subscription does
+  not reactivate the unused balance.
+- Payments are generally final. A customer may email
+  `support@followusai.com` within 14 days after a charge to request an
+  exception. This is not a refund guarantee, and ordinary cancellations,
+  downgrades, unused time, and unused capacity do not receive prorated refunds
+  or credits. Stripe's immediate paid-upgrade calculation is separate. An
+  approved refund removes unused capacity granted by the refunded payment.
+  Rights required by applicable law remain available.
+- Customers receive at least 30 days' notice at their account email before a
+  price increase applies to a future renewal.
+- Support is available by email at `support@followusai.com`. ClipStitchr does
+  not publish a response-time service level. Receipts, billing notices,
+  security alerts, and service messages go to the account email independently
+  of marketing consent.
 
 ## Customer Experience
 

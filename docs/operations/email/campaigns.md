@@ -107,11 +107,13 @@ for organization. It is not an audience or subscription preference.
 Use the approved production sender settings:
 
 - Sender name: `ClipStitchr`
-- From address: the verified ClipStitchr sending address shown in Loops
-- Reply-to: `support@clipstitchr.com`
+- From address: `ClipStitchr <clipstitchr@followusai.com>`
+- Reply-to: `support@followusai.com`
 
-Stop if the sender belongs to FollowUs AI, the domain is unverified, or the
-reply-to address is incorrect.
+Stop if the sender identity is not ClipStitchr, `followusai.com` is not verified
+for this sender, or the From or reply-to address is incorrect. A previously
+verified `@mail.clipstitchr.com` or `@mail.followusai.com` address does not
+satisfy the approved root-domain correspondence policy.
 
 ### 5. Write the subject and preview
 
@@ -189,7 +191,7 @@ Open the actual message and verify:
 - Text remains readable in light and dark email themes.
 - There is no course content, confirmation request, attachment, or unrelated promotion.
 - The company and unsubscribe footer is present.
-- The reply-to address is `support@clipstitchr.com`.
+- The reply-to address is `support@followusai.com`.
 
 Fix the draft and send another preview if any check fails.
 

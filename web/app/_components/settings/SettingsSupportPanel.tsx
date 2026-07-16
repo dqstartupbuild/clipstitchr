@@ -1,6 +1,7 @@
 import { LifeBuoy } from "lucide-react";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import { Panel } from "@/app/_components/ui/Panel";
+import { supportEmail } from "@/lib/supportEmail";
 
 export function SettingsSupportPanel() {
   return (
@@ -15,7 +16,7 @@ export function SettingsSupportPanel() {
             Get help
           </h2>
           <SecondaryButtonLink
-            href="mailto:support@clipstitchr.com"
+            href={`mailto:${supportEmail}`}
             className="mt-4"
           >
             Contact support
