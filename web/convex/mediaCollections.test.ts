@@ -49,6 +49,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./_generated/server", () => ({
+  internalMutation: mocks.mutation,
   mutation: mocks.mutation,
   query: mocks.query,
 }));
@@ -84,20 +85,23 @@ function createQueryChain(result: QueryResult = {}) {
     collect: vi.fn(async () => result.collect ?? []),
     first: vi.fn(async () => result.unique ?? result.collect?.[0] ?? null),
     order: vi.fn(() => chain),
-    paginate: vi.fn(async () =>
-      result.paginate ?? {
-        continueCursor: null,
-        isDone: true,
-        page: [],
-      },
+    paginate: vi.fn(
+      async () =>
+        result.paginate ?? {
+          continueCursor: null,
+          isDone: true,
+          page: [],
+        },
     ),
     take: vi.fn(async () => result.take ?? result.collect ?? []),
     unique: vi.fn(async () => result.unique ?? null),
-    withIndex: vi.fn((_index: string, callback: (q: typeof indexQuery) => void) => {
-      callback(indexQuery);
+    withIndex: vi.fn(
+      (_index: string, callback: (q: typeof indexQuery) => void) => {
+        callback(indexQuery);
 
-      return chain;
-    }),
+        return chain;
+      },
+    ),
   };
 
   return chain;
@@ -296,24 +300,23 @@ describe("convex media collections", () => {
       ],
     });
 
-    await getHandler<Record<string, unknown>, void>(videoClips.updateCliprMusic)(
-      musicCtx,
-      {
-        id: "clip_1",
-        music: {
-          audioObject: r2Video,
-          createdAt: now,
-          durationSeconds: 15,
-          enabled: true,
-          prompt: "Beat",
-          providerModel: "new-model",
-          providerPredictionId: "prediction_1",
-          updatedAt: now,
-          volume: 0.5,
-        },
+    await getHandler<Record<string, unknown>, void>(
+      videoClips.updateCliprMusic,
+    )(musicCtx, {
+      id: "clip_1",
+      music: {
+        audioObject: r2Video,
+        createdAt: now,
+        durationSeconds: 15,
+        enabled: true,
+        prompt: "Beat",
+        providerModel: "new-model",
+        providerPredictionId: "prediction_1",
         updatedAt: now,
+        volume: 0.5,
       },
-    );
+      updatedAt: now,
+    });
     expect(musicCtx.db.patch).toHaveBeenCalledWith(
       "clip_doc",
       expect.objectContaining({
@@ -347,15 +350,14 @@ describe("convex media collections", () => {
       ],
     });
 
-    await getHandler<Record<string, unknown>, void>(stitches.updateRenderedVideo)(
-      updateCtx,
-      {
-        id: "stitch_1",
-        mimeType: "video/mp4",
-        size: 100,
-        stitchObject: r2Video,
-      },
-    );
+    await getHandler<Record<string, unknown>, void>(
+      stitches.updateRenderedVideo,
+    )(updateCtx, {
+      id: "stitch_1",
+      mimeType: "video/mp4",
+      size: 100,
+      stitchObject: r2Video,
+    });
     await getHandler<Record<string, unknown>, void>(stitches.updateTextOverlay)(
       updateCtx,
       {
@@ -402,10 +404,9 @@ describe("convex media collections", () => {
       ),
     ).resolves.toEqual([firstPhoto, secondPhoto]);
     await expect(
-      getHandler<Record<string, unknown>, unknown>(photoAssets.get)(
-        queryCtx,
-        { id: "photo_1" },
-      ),
+      getHandler<Record<string, unknown>, unknown>(photoAssets.get)(queryCtx, {
+        id: "photo_1",
+      }),
     ).resolves.toBe(firstPhoto);
     await expect(
       getHandler<Record<string, unknown>, unknown>(
@@ -707,7 +708,8 @@ describe("convex media collections", () => {
           hashtags: [" #launch ", " ", "#founders"],
           id: "swipe_social",
           rationale: "  The hook is specific.  ",
-          socialCaption: "  Real caption\n\nHelpful long description\n\n#launch #founders  ",
+          socialCaption:
+            "  Real caption\n\nHelpful long description\n\n#launch #founders  ",
         }),
       ),
     ).resolves.toBe("inserted_doc");
@@ -882,7 +884,10 @@ describe("convex media collections", () => {
     );
 
     const removeCtx = createCtx({
-      swipes: [{ unique: null }, { unique: { _id: "swipe_doc", id: "swipe_1" } }],
+      swipes: [
+        { unique: null },
+        { unique: { _id: "swipe_doc", id: "swipe_1" } },
+      ],
     });
 
     await expect(
@@ -902,17 +907,16 @@ describe("convex media collections", () => {
     const insertCtx = createCtx({ replicateJobs: [{ unique: null }] });
 
     await expect(
-      getHandler<Record<string, unknown>, unknown>(replicateJobs.recordSwaprJob)(
-        insertCtx,
-        {
-          createdAt: now,
-          modelId: "model_1",
-          predictionId: "prediction_1",
-          secret: "secret",
-          status: "starting",
-          updatedAt: now,
-        },
-      ),
+      getHandler<Record<string, unknown>, unknown>(
+        replicateJobs.recordSwaprJob,
+      )(insertCtx, {
+        createdAt: now,
+        modelId: "model_1",
+        predictionId: "prediction_1",
+        secret: "secret",
+        status: "starting",
+        updatedAt: now,
+      }),
     ).resolves.toBe("inserted_doc");
     expect(insertCtx.db.insert).toHaveBeenCalledWith(
       "replicateJobs",
@@ -927,17 +931,16 @@ describe("convex media collections", () => {
     });
 
     await expect(
-      getHandler<Record<string, unknown>, unknown>(replicateJobs.recordSwaprJob)(
-        existingSwaprCtx,
-        {
-          createdAt: now,
-          modelId: "model_1",
-          predictionId: "prediction_1",
-          secret: "secret",
-          status: "processing",
-          updatedAt: now,
-        },
-      ),
+      getHandler<Record<string, unknown>, unknown>(
+        replicateJobs.recordSwaprJob,
+      )(existingSwaprCtx, {
+        createdAt: now,
+        modelId: "model_1",
+        predictionId: "prediction_1",
+        secret: "secret",
+        status: "processing",
+        updatedAt: now,
+      }),
     ).resolves.toBe("swapr_job");
     expect(existingSwaprCtx.db.patch).toHaveBeenCalledWith(
       "swapr_job",

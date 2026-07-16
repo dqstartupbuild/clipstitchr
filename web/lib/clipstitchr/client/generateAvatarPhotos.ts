@@ -4,7 +4,6 @@ import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarP
 import type { AvatarIdentityMode } from "@/lib/clipstitchr/types/AvatarIdentityMode";
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
 import type { AvatarPhotoGenerationReference } from "@/lib/clipstitchr/types/AvatarPhotoGenerationReference";
-import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
 import type { AvatarWardrobeStyle } from "@/lib/clipstitchr/types/AvatarWardrobeStyle";
 
@@ -15,7 +14,6 @@ type GenerateAvatarPhotosOptions = {
   avatarDescription: string;
   context: string;
   count: AvatarPhotoGenerationCount;
-  generationSpeedTier?: GenerationSpeedTier;
   identityMode?: AvatarIdentityMode;
   lighting: AvatarLightingOption;
   location: string;
@@ -38,7 +36,6 @@ export async function generateAvatarPhotos({
   avatarDescription,
   context,
   count,
-  generationSpeedTier,
   identityMode = "same",
   lighting,
   location,
@@ -62,9 +59,6 @@ export async function generateAvatarPhotos({
   formData.set("identityMode", identityMode);
   if (avatar.productId) {
     formData.set("productId", avatar.productId);
-  }
-  if (generationSpeedTier) {
-    formData.set("generationSpeedTier", generationSpeedTier);
   }
   formData.set("lighting", lighting);
   formData.set("location", location);

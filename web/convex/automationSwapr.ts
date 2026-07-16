@@ -13,11 +13,11 @@ import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 import { listRecentAvatarPhotoAssets } from "./listRecentAvatarPhotoAssets";
 import { listRecentVideoClipCardsByLibraryKind } from "./listRecentVideoClipCardsByLibraryKind";
+import { tryReserveAiVideoForAutomation } from "./usage/tryReserveAiVideoForAutomation";
+import { getPlanGenerationProfile } from "../lib/clipstitchr/billing/getPlanGenerationProfile";
 
-const AUTOMATION_SWAPR_CHARACTER_ORIENTATION = "image";
 const AUTOMATION_SWAPR_PRODUCT_PHOTO_SCAN_LIMIT = 20;
 const AUTOMATION_SWAPR_KEEP_ORIGINAL_SOUND = false;
-const AUTOMATION_SWAPR_MODE = "std";
 const AUTOMATION_SWAPR_REFERENCE_CLIP_SCAN_LIMIT = 100;
 const AUTOMATION_SWAPR_PROMPT =
   "Keep the creator in a natural phone-camera UGC style with the same casual setting and lighting.";
@@ -126,6 +126,26 @@ export const planDaily = mutation({
       return { runId, status: "skipped", taskIds: [] };
     }
 
+    const taskId = `${runId}:1`;
+    const reservation = await tryReserveAiVideoForAutomation(ctx, {
+      domainId: taskId,
+      idempotencyKey: `swapr-video:${ownerId}:${taskId}`,
+      now,
+      operation: "swapr_video",
+      ownerId,
+    });
+
+    if (!reservation) {
+      await markAutomationRunSkipped(
+        ctx,
+        run._id,
+        "Swapr automation is paused until plan access or video allowance is available.",
+        now,
+      );
+      return { runId, status: "skipped", taskIds: [] };
+    }
+    const generationProfile = getPlanGenerationProfile(reservation.planKey);
+
     await consumeAutomationBudget(ctx, {
       ownerId,
       productId,
@@ -136,7 +156,7 @@ export const planDaily = mutation({
     const task = await createAutomationTask(ctx, {
       ownerId,
       productId,
-      id: `${runId}:1`,
+      id: taskId,
       runId,
       tool: "swapr",
       taskType: "swapr-video",
@@ -144,9 +164,9 @@ export const planDaily = mutation({
       idempotencyKey: `${ownerId}:${productScopeKey}:${automationDate}:swapr:1`,
       inputSnapshotJson: JSON.stringify({
         automationDate,
-        characterOrientation: AUTOMATION_SWAPR_CHARACTER_ORIENTATION,
+        characterOrientation: generationProfile.swaprCharacterOrientation,
         keepOriginalSound: AUTOMATION_SWAPR_KEEP_ORIGINAL_SOUND,
-        mode: AUTOMATION_SWAPR_MODE,
+        mode: generationProfile.swaprMode,
         productId,
         photoId: sourcePhoto.id,
         photoObject: sourcePhoto.photoObject,
@@ -158,6 +178,7 @@ export const planDaily = mutation({
         sourcePhotoName: sourcePhoto.name,
       }),
       createdAt: now,
+      usageReservationId: reservation.reservationId,
     });
     await markAutomationRunStatus(ctx, {
       runDocumentId: run._id,

@@ -169,6 +169,7 @@ describe("processHookLabIdeaUse", () => {
         ownerId: "owner-1",
       },
       providerWorkerSecret: "secret",
+      quality: "medium",
     });
 
     expect(mocks.reserveHook).toHaveBeenCalledWith(
@@ -215,6 +216,7 @@ describe("processHookLabIdeaUse", () => {
         ownerId: "owner-1",
       },
       providerWorkerSecret: "secret",
+      quality: "medium",
     });
 
     expect(mocks.createUseGeneration).not.toHaveBeenCalled();

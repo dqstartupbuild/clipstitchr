@@ -21,6 +21,7 @@ import { defaultCliprVisualDurationSeconds } from "../lib/clipstitchr/constants/
 import { getAutomationCliprGenerationMode } from "../lib/clipstitchr/utils/getAutomationCliprGenerationMode";
 import { getCliprResolvedGenerationMode } from "../lib/clipstitchr/utils/getCliprResolvedGenerationMode";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
+import { tryReserveAiVideoForAutomation } from "./usage/tryReserveAiVideoForAutomation";
 
 const AUTOMATION_CLIPR_ADD_MUSIC = false;
 const AUTOMATION_CLIPR_DURATION_SECONDS = defaultCliprDurationSeconds;
@@ -145,6 +146,23 @@ export const planDaily = mutation({
       generationMode === "script"
         ? "prunaai/p-video-avatar"
         : AUTOMATION_CLIPR_VISUAL_MODEL_ID;
+    const reservation = await tryReserveAiVideoForAutomation(ctx, {
+      domainId: taskId,
+      idempotencyKey: `clipr-video:${ownerId}:${taskId}`,
+      now,
+      operation: "clipr_video",
+      ownerId,
+    });
+
+    if (!reservation) {
+      await markAutomationRunSkipped(
+        ctx,
+        run._id,
+        "Clipr automation is paused until plan access or video allowance is available.",
+        now,
+      );
+      return { runId, status: "skipped", taskIds: [] };
+    }
 
     await consumeAutomationBudget(ctx, {
       ownerId,
@@ -191,6 +209,7 @@ export const planDaily = mutation({
         targetDurationSeconds,
       }),
       createdAt: now,
+      usageReservationId: reservation.reservationId,
     });
     await markAutomationRunStatus(ctx, {
       runDocumentId: run._id,

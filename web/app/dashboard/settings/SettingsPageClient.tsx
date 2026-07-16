@@ -33,19 +33,24 @@ export function SettingsPageClient() {
         <SettingsProductSection
           activeProductId={products.defaultProductId}
           activeProductName={products.activeProduct?.name}
+          archivedProducts={products.archivedProducts}
           automationError={automation.error}
           automationPreferences={automation.preferences}
           defaultingProductId={products.defaultingProductId}
           deletingProductId={products.deletingProductId}
-          isAutomationLoading={automation.isLoading || stitchTemplates.isLoading}
+          isAutomationLoading={
+            automation.isLoading || stitchTemplates.isLoading
+          }
           isAutomationSaving={automation.isSaving}
           isProductActionDisabled={products.isSaving}
           products={products.products}
+          restoringProductId={products.restoringProductId}
           savingProductId={products.savingProductId}
           stitchTemplates={stitchTemplates.templates}
           swiprPacks={swiprPacks}
           onDeleteProduct={products.deleteProduct}
           onSaveAutomation={automation.savePreferences}
+          onRestoreProduct={products.restoreProduct}
           onSetActiveProduct={products.setActiveProduct}
           onUpdateProduct={products.updateProduct}
         />

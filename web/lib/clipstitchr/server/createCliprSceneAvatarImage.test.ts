@@ -103,6 +103,7 @@ describe("createCliprSceneAvatarImage", () => {
         avatarDescription: "  ",
         referenceImageUrl: "https://cdn.test/reference.jpg",
         replicate: replicate as never,
+        quality: "medium",
         scene: { visual: "Host points at the product." } as never,
         sceneControls: {
           location: "gym mirror",
@@ -167,6 +168,7 @@ describe("createCliprSceneAvatarImage", () => {
         avatarDescription: "  Studio host  ",
         referenceImageUrl: "https://cdn.test/reference.jpg",
         replicate: createReplicate() as never,
+        quality: "medium",
         scene: { visual: "Close-up." } as never,
       }),
     ).resolves.toEqual(
@@ -187,6 +189,7 @@ describe("createCliprSceneAvatarImage", () => {
       createCliprSceneAvatarImage({
         referenceImageUrl: "https://cdn.test/reference.jpg",
         replicate: createReplicate("failed", "Provider failed") as never,
+        quality: "auto",
         scene: { visual: "Close-up." } as never,
       }),
     ).rejects.toThrow("Provider failed");
@@ -195,6 +198,7 @@ describe("createCliprSceneAvatarImage", () => {
       createCliprSceneAvatarImage({
         referenceImageUrl: "https://cdn.test/reference.jpg",
         replicate: createReplicate("canceled", { reason: "quota" }) as never,
+        quality: "auto",
         scene: { visual: "Close-up." } as never,
       }),
     ).rejects.toThrow(
@@ -207,6 +211,7 @@ describe("createCliprSceneAvatarImage", () => {
       createCliprSceneAvatarImage({
         referenceImageUrl: "https://cdn.test/reference.jpg",
         replicate: createReplicate() as never,
+        quality: "auto",
         scene: { visual: "Close-up." } as never,
       }),
     ).rejects.toThrow("Replicate did not return a Clipr avatar still.");

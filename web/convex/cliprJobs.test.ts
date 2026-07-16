@@ -13,9 +13,11 @@ type QueryResult = {
 const mocks = vi.hoisted(() => ({
   assertMediaWorkerSecret: vi.fn(),
   assertRateLimitApiSecret: vi.fn(),
+  commitUsageReservationForOwner: vi.fn(),
   getAuthenticatedOwnerId: vi.fn(),
   mutation: vi.fn((definition) => definition),
   query: vi.fn((definition) => definition),
+  reacquireUsageReservation: vi.fn(),
   rateLimiter: {
     limit: vi.fn(),
   },
@@ -32,6 +34,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./_generated/server", () => ({
+  internalMutation: mocks.mutation,
   mutation: mocks.mutation,
   query: mocks.query,
 }));
@@ -55,6 +58,14 @@ vi.mock("./rateLimiter", () => ({
 vi.mock("./aggregateCounts", () => ({
   videoClipCounts: mocks.videoClipCounts,
   videoClipProductCounts: mocks.videoClipProductCounts,
+}));
+
+vi.mock("./usage/commitUsageReservation", () => ({
+  commitUsageReservationForOwner: mocks.commitUsageReservationForOwner,
+}));
+
+vi.mock("./usage/reacquireUsageReservation", () => ({
+  reacquireUsageReservation: mocks.reacquireUsageReservation,
 }));
 
 function getHandler<Args, Result>(convexFunction: unknown) {
@@ -91,10 +102,12 @@ function createCtx(resultsByTable: Record<string, QueryResult[]> = {}) {
   const queryChains: ReturnType<typeof createQueryChain>[] = [];
   const ctx = {
     db: {
-      get: vi.fn(async (_id: string): Promise<unknown> => ({
-        _id,
-        id: "clip_1",
-      })),
+      get: vi.fn(
+        async (_id: string): Promise<unknown> => ({
+          _id,
+          id: "clip_1",
+        }),
+      ),
       insert: vi.fn(async () => "inserted_doc"),
       patch: vi.fn(async () => undefined),
       query: vi.fn((table: string) => {
@@ -163,6 +176,7 @@ function createJob(overrides: Record<string, unknown> = {}) {
     stage: "avatar-image",
     status: "generating-avatar-image",
     targetDurationSeconds: 30,
+    usageReservationId: "reservation_123",
     updatedAt: now,
     variablesUsed: { product: "Product" },
     voiceId: "Rachel",
@@ -195,6 +209,7 @@ describe("convex cliprJobs", () => {
     vi.clearAllMocks();
     mocks.getAuthenticatedOwnerId.mockResolvedValue("owner_123");
     mocks.rateLimiter.limit.mockResolvedValue(undefined);
+    mocks.reacquireUsageReservation.mockResolvedValue("reservation_123");
   });
 
   it("lists and gets only the authenticated owner's jobs", async () => {

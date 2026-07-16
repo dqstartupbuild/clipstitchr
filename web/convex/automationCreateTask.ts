@@ -1,6 +1,8 @@
 import type { MutationCtx } from "./_generated/server";
 import { getAutomationToolDisabledReason } from "./getAutomationToolDisabledReason";
 import { upsertAutomationTaskSummary } from "./upsertAutomationTaskSummary";
+import { enqueueWorkerQueueEntry } from "./workerQueue/enqueueWorkerQueueEntry";
+import { getGenerationRequiredForAutomationTask } from "./workerQueue/getGenerationRequiredForAutomationTask";
 
 type AutomationTaskType =
   | "avatar-photo"
@@ -25,6 +27,8 @@ export async function createAutomationTask(
     stage,
     taskType,
     tool,
+    usageReservationId,
+    usageReservationIds,
   }: {
     createdAt: string;
     id: string;
@@ -37,6 +41,8 @@ export async function createAutomationTask(
     stage: string;
     taskType: AutomationTaskType;
     tool: AutomationTool;
+    usageReservationId?: string;
+    usageReservationIds?: string[];
   },
 ) {
   const disabledReason = await getAutomationToolDisabledReason(
@@ -79,6 +85,8 @@ export async function createAutomationTask(
     providerJobIds: [],
     mediaJobIds: [],
     attempt: 0,
+    usageReservationId,
+    usageReservationIds,
     createdAt,
     updatedAt: createdAt,
   });
@@ -89,6 +97,19 @@ export async function createAutomationTask(
   }
 
   await upsertAutomationTaskSummary(ctx, inserted);
+  await enqueueWorkerQueueEntry(ctx, {
+    generationRequired: getGenerationRequiredForAutomationTask(
+      inserted.taskType,
+    ),
+    now: inserted.createdAt,
+    ownerId: inserted.ownerId,
+    sourceId: inserted.id,
+    sourceKind: "automation_task",
+    tool: inserted.tool,
+    usageReservationId: inserted.usageReservationId,
+    usageReservationIds: inserted.usageReservationIds,
+    worker: "provider",
+  });
 
   return inserted;
 }

@@ -50,6 +50,14 @@ vi.mock("@/convex/_generated/api", () => ({
     videoClips: {
       get: "videoClips.get",
     },
+    usage: {
+      cancelUsageReservation: {
+        cancelUsageReservation: "usage.cancelUsageReservation",
+      },
+      reserveAiVideo: {
+        reserveAiVideo: "usage.reserveAiVideo",
+      },
+    },
   },
 }));
 
@@ -60,7 +68,8 @@ vi.mock("@/lib/clipstitchr/server/analytics/capturePostHogServerEvent", () => ({
 vi.mock(
   "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient",
   () => ({
-    createAuthenticatedConvexHttpClient: mocks.createAuthenticatedConvexHttpClient,
+    createAuthenticatedConvexHttpClient:
+      mocks.createAuthenticatedConvexHttpClient,
   }),
 );
 
@@ -170,6 +179,13 @@ describe("POST /api/clipr/jobs", () => {
       return Promise.resolve(null);
     });
     mocks.convex.mutation.mockImplementation((mutationId: string) => {
+      if (mutationId === "usage.reserveAiVideo") {
+        return Promise.resolve({
+          planKey: "pro",
+          reservationId: "reservation_123",
+        });
+      }
+
       if (mutationId === "cliprJobs.createQueued") {
         return Promise.resolve({
           id: "job_1",

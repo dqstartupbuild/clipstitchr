@@ -5,7 +5,8 @@ import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 
 const mocks = vi.hoisted(() => ({
   createProductProfile: vi.fn(),
-  removeProductMutation: vi.fn(),
+  archiveProductMutation: vi.fn(),
+  restoreProductMutation: vi.fn(),
   setDefaultProductMutation: vi.fn(),
   stateSetter: vi.fn(),
   updateProductProfile: vi.fn(),
@@ -34,8 +35,12 @@ vi.mock("convex/react", () => ({
 vi.mock("@/convex/_generated/api", () => ({
   api: {
     products: {
+      archiveProduct: { archiveProduct: "products.archiveProduct" },
       list: "products.list",
-      remove: "products.remove",
+      listArchivedProducts: {
+        listArchivedProducts: "products.listArchivedProducts",
+      },
+      restoreProduct: { restoreProduct: "products.restoreProduct" },
     },
     productPreferences: {
       get: "productPreferences.get",
@@ -75,19 +80,28 @@ describe("useProducts", () => {
       isAuthenticated: true,
       isLoading: false,
     });
-    mocks.useMutation.mockImplementation((mutationId) =>
-      mutationId === api.productPreferences.setDefaultProduct
-        ? mocks.setDefaultProductMutation
-        : mocks.removeProductMutation,
-    );
-    mocks.useQuery.mockImplementation((queryId) =>
-      queryId === api.productPreferences.get
-        ? { defaultProductId: "product_1" }
-        : [createProductDocument()],
-    );
+    mocks.useMutation.mockImplementation((mutationId) => {
+      if (mutationId === api.productPreferences.setDefaultProduct) {
+        return mocks.setDefaultProductMutation;
+      }
+
+      return mutationId === api.products.restoreProduct.restoreProduct
+        ? mocks.restoreProductMutation
+        : mocks.archiveProductMutation;
+    });
+    mocks.useQuery.mockImplementation((queryId) => {
+      if (queryId === api.productPreferences.get) {
+        return { defaultProductId: "product_1" };
+      }
+
+      return queryId === api.products.listArchivedProducts.listArchivedProducts
+        ? []
+        : [createProductDocument()];
+    });
     mocks.createProductProfile.mockResolvedValue(createProductDocument());
     mocks.updateProductProfile.mockResolvedValue(createProductDocument());
-    mocks.removeProductMutation.mockResolvedValue(undefined);
+    mocks.archiveProductMutation.mockResolvedValue(undefined);
+    mocks.restoreProductMutation.mockResolvedValue(undefined);
     mocks.setDefaultProductMutation.mockResolvedValue(undefined);
   });
 
@@ -95,12 +109,14 @@ describe("useProducts", () => {
     mocks.useQuery.mockImplementation((queryId) =>
       queryId === api.productPreferences.get
         ? { defaultProductId: "product_1" }
-        : [
-            createProductDocument({
-              productDetails:
-                "AI launch planner\n\nWebsite-sourced details:\nOld page copy",
-            }),
-          ],
+        : queryId === api.products.listArchivedProducts.listArchivedProducts
+          ? []
+          : [
+              createProductDocument({
+                productDetails:
+                  "AI launch planner\n\nWebsite-sourced details:\nOld page copy",
+              }),
+            ],
     );
 
     const state = useProducts();
@@ -117,7 +133,9 @@ describe("useProducts", () => {
     expect(state.isLoading).toBe(false);
     expect(mocks.useQuery).toHaveBeenCalledWith(api.products.list, {});
     expect(mocks.useQuery).toHaveBeenCalledWith(api.productPreferences.get, {});
-    expect(mocks.useMutation).toHaveBeenCalledWith(api.products.remove);
+    expect(mocks.useMutation).toHaveBeenCalledWith(
+      api.products.archiveProduct.archiveProduct,
+    );
     expect(mocks.useMutation).toHaveBeenCalledWith(
       api.productPreferences.setDefaultProduct,
     );
@@ -135,6 +153,10 @@ describe("useProducts", () => {
     expect(state.products).toEqual([]);
     expect(state.isLoading).toBe(false);
     expect(mocks.useQuery).toHaveBeenCalledWith(api.products.list, "skip");
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      api.products.listArchivedProducts.listArchivedProducts,
+      "skip",
+    );
     expect(mocks.useQuery).toHaveBeenCalledWith(
       api.productPreferences.get,
       "skip",
@@ -156,17 +178,20 @@ describe("useProducts", () => {
       expect.objectContaining({ id: "product_1" }),
     );
     await expect(state.deleteProduct("product_1")).resolves.toBeUndefined();
+    await expect(state.restoreProduct("product_1")).resolves.toBeUndefined();
     await expect(
       state.setDefaultProduct(createProductDocument()),
     ).resolves.toBeUndefined();
 
     expect(mocks.createProductProfile).toHaveBeenCalledWith(input);
-    expect(mocks.updateProductProfile).toHaveBeenCalledWith(
-      "product_1",
-      input,
-    );
-    expect(mocks.removeProductMutation).toHaveBeenCalledWith({
+    expect(mocks.updateProductProfile).toHaveBeenCalledWith("product_1", input);
+    expect(mocks.archiveProductMutation).toHaveBeenCalledWith({
       id: "product_1",
+      now: expect.any(String),
+    });
+    expect(mocks.restoreProductMutation).toHaveBeenCalledWith({
+      id: "product_1",
+      now: expect.any(String),
     });
     expect(mocks.setDefaultProductMutation).toHaveBeenCalledWith({
       productId: "product_1",
@@ -181,8 +206,12 @@ describe("useProducts", () => {
     mocks.createProductProfile.mockRejectedValueOnce(
       new Error("create failed"),
     );
-    mocks.updateProductProfile.mockRejectedValueOnce(new Error("update failed"));
-    mocks.removeProductMutation.mockRejectedValueOnce(new Error("delete failed"));
+    mocks.updateProductProfile.mockRejectedValueOnce(
+      new Error("update failed"),
+    );
+    mocks.archiveProductMutation.mockRejectedValueOnce(
+      new Error("delete failed"),
+    );
     mocks.setDefaultProductMutation.mockRejectedValueOnce(
       new Error("default failed"),
     );
@@ -214,7 +243,9 @@ describe("useProducts", () => {
     mocks.useQuery.mockImplementation((queryId) =>
       queryId === api.productPreferences.get
         ? { defaultProductId: "missing_product" }
-        : [createProductDocument()],
+        : queryId === api.products.listArchivedProducts.listArchivedProducts
+          ? []
+          : [createProductDocument()],
     );
 
     const state = useProducts();

@@ -26,6 +26,14 @@ vi.mock("@/convex/_generated/api", () => ({
     rateLimits: {
       consumeAvatarPhotoGenerate: "rateLimits.consumeAvatarPhotoGenerate",
     },
+    usage: {
+      cancelUsageReservation: {
+        cancelUsageReservation: "usage.cancelUsageReservation",
+      },
+      reserveCreationCreditBatch: {
+        reserveCreationCreditBatch: "usage.reserveCreationCreditBatch",
+      },
+    },
   },
 }));
 
@@ -36,7 +44,8 @@ vi.mock("@/lib/clipstitchr/server/analytics/capturePostHogServerEvent", () => ({
 vi.mock(
   "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient",
   () => ({
-    createAuthenticatedConvexHttpClient: mocks.createAuthenticatedConvexHttpClient,
+    createAuthenticatedConvexHttpClient:
+      mocks.createAuthenticatedConvexHttpClient,
   }),
 );
 
@@ -70,9 +79,12 @@ function createFormRequest(overrides: Record<string, string | Blob> = {}) {
   formData.set("count", "5");
   formData.set("generationSpeedTier", "pro");
   formData.set("identityMode", "same");
-  formData.set("image", new File(["avatar"], "avatar.jpg", {
-    type: "image/jpeg",
-  }));
+  formData.set(
+    "image",
+    new File(["avatar"], "avatar.jpg", {
+      type: "image/jpeg",
+    }),
+  );
   formData.set("lighting", "studio");
   formData.set("location", "bright office");
   formData.set("outfit", "  navy workout set  ");
@@ -101,6 +113,13 @@ describe("POST /api/avatars/photos/generate", () => {
       size: 6,
     });
     mocks.convex.mutation.mockImplementation(async (mutationId: string) => {
+      if (mutationId === "usage.reserveCreationCreditBatch") {
+        return Array.from({ length: 5 }, (_, index) => ({
+          planKey: "pro",
+          reservationId: `reservation_${index + 1}`,
+        }));
+      }
+
       if (mutationId === "providerJobs.create") {
         return {
           id: "provider:avatar-photo:source_1",

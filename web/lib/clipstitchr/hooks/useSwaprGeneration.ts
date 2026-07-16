@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { createSwaprGeneration } from "@/lib/clipstitchr/client/createSwaprGeneration";
-import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprGenerationStatus } from "@/lib/clipstitchr/types/SwaprGenerationStatus";
@@ -19,7 +18,6 @@ type GenerateSwaprVideoOptions = {
   prompt: string;
   mode: SwaprMode;
   characterOrientation: SwaprCharacterOrientation;
-  generationSpeedTier?: GenerationSpeedTier;
   keepOriginalSound: boolean;
   productId?: string;
 };
@@ -39,7 +37,6 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
       prompt,
       mode,
       characterOrientation,
-      generationSpeedTier,
       keepOriginalSound,
       productId,
     }: GenerateSwaprVideoOptions) => {
@@ -66,7 +63,6 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
           characterOrientation,
           clipId,
           clipName: `Swapr - ${photo.name} in ${clip.name}`,
-          generationSpeedTier,
           keepOriginalSound,
           mode,
           photoId: photo.id,

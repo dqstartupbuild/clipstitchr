@@ -12,6 +12,8 @@ import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 import { listRecentAvatarPhotoAssets } from "./listRecentAvatarPhotoAssets";
+import { tryReserveCreationCreditsForAutomation } from "./usage/tryReserveCreationCreditsForAutomation";
+import { getPlanGenerationProfile } from "../lib/clipstitchr/billing/getPlanGenerationProfile";
 
 const AUTOMATION_AVATAR_PHOTO_PRODUCT_SOURCE_SCAN_LIMIT = 20;
 const AUTOMATION_AVATAR_PHOTO_SOURCE_SCAN_LIMIT = 50;
@@ -118,6 +120,27 @@ export const planDaily = mutation({
         continue;
       }
 
+      const taskId = `automation:avatar-photo:${ownerId}:${productScopeKey}:${automationDate}:${avatar.id}:1`;
+      const reservation = await tryReserveCreationCreditsForAutomation(ctx, {
+        domainId: taskId,
+        idempotencyKey: `avatar-photo:${ownerId}:${taskId}`,
+        now,
+        operation: "avatar_photo",
+        ownerId,
+      });
+
+      if (!reservation?.reservationId) {
+        await markAutomationRunSkipped(
+          ctx,
+          run._id,
+          "Avatar photo automation is paused until plan access or credits are available.",
+          now,
+        );
+        continue;
+      }
+
+      const generationProfile = getPlanGenerationProfile(reservation.planKey);
+
       await consumeAutomationBudget(ctx, {
         ownerId,
         productId,
@@ -129,7 +152,7 @@ export const planDaily = mutation({
       const task = await createAutomationTask(ctx, {
         ownerId,
         productId,
-        id: `automation:avatar-photo:${ownerId}:${productScopeKey}:${automationDate}:${avatar.id}:1`,
+        id: taskId,
         runId,
         tool: "avatar-photo",
         taskType: "avatar-photo",
@@ -140,12 +163,14 @@ export const planDaily = mutation({
           avatarId: avatar.id,
           avatarName: avatar.name,
           avatarDescription: avatar.description,
+          avatarImageQuality: generationProfile.avatarImageQuality,
           productId,
           wardrobeStyle: avatar.wardrobeStyle,
           sourcePhotoId: sourcePhoto.id,
           sourcePhotoObject: sourcePhoto.photoObject,
         }),
         createdAt: now,
+        usageReservationId: reservation.reservationId,
       });
       await markAutomationRunStatus(ctx, {
         runDocumentId: run._id,

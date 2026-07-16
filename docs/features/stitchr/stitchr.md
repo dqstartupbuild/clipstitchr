@@ -62,23 +62,25 @@ attention first, show the product immediately after.
    Stitchr. Hook/UGC and demo selection both use the active product, so clips
    from another product stay out of the picker. When upload analysis has scored
    a clip, show that score in the picker so the user can spot clips worth using
-   before building the batch.
+   before building the batch. The picker header, filters, and create action
+   stack within their own panel width, so a wide viewport with a narrow nested
+   panel cannot place a filter over the create button.
 8. Copy clip default trims and active source Quick Edit metadata into the
    Stitchr session.
 9. Tap or swipe through each exact Hook/UGC-then-demo preview.
 10. Optionally configure one text overlay and one caption/hashtag field per
-   output or copy one overlay across the batch.
+    output or copy one overlay across the batch.
 11. Optionally generate ranked overlay hook options, a caption hook, and 3-5
-   hashtags from saved product context, structured Hook Lab Idea patterns, and the selected
-   Hook/UGC/demo clip descriptions. Stitchr auto-text can draw from product/ad
-   hook-library templates, but source names and template IDs stay hidden. Hook
-   Lab handles generated text; if selected clips have already-applied Quick
-   Edit overlay metadata from older records, auto-text can treat that metadata
-   as soft direction. The top hook is applied automatically, alternate hooks
-   stay selectable, and the generated overlay and caption field stay editable. The backend
-   writing call uses `TEXT_WRITING_MODEL_ID`, which defaults to
-   `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
-   higher-cost writing tests.
+    hashtags from saved product context, structured Hook Lab Idea patterns, and the selected
+    Hook/UGC/demo clip descriptions. Stitchr auto-text can draw from product/ad
+    hook-library templates, but source names and template IDs stay hidden. Hook
+    Lab handles generated text; if selected clips have already-applied Quick
+    Edit overlay metadata from older records, auto-text can treat that metadata
+    as soft direction. The top hook is applied automatically, alternate hooks
+    stay selectable, and the generated overlay and caption field stay editable. The backend
+    writing call uses `TEXT_WRITING_MODEL_ID`, which defaults to
+    `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
+    higher-cost writing tests.
 12. Optionally attach a selected, uploaded, or TikTok-imported sound to each stitch.
 13. Create one stitched output per selected Hook/UGC clip.
 14. Render and save each finished Stitch video.

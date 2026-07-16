@@ -17,4 +17,11 @@ crons.interval(
   {},
 );
 
+crons.interval(
+  "reconcile paid usage and generation claims",
+  { minutes: 5 },
+  internal.usage.reconcileUsageState.reconcileUsageState,
+  {},
+);
+
 export default crons;

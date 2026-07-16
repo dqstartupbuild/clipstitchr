@@ -19,7 +19,9 @@ vi.mock("@/app/_components/settings/ProductSettingsEditDialog", () => ({
   ProductSettingsEditDialog: () => "ProductSettingsEditDialog",
 }));
 
-function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile {
+function createProduct(
+  overrides: Partial<ProductProfile> = {},
+): ProductProfile {
   return {
     audienceDetails: "Creators",
     createdAt: "2026-05-20T00:00:00.000Z",
@@ -68,7 +70,7 @@ describe("ProductSettingsCard", () => {
       .find((button) => button.label === "Make Launch Kit active")
       ?.onClick?.();
     await mocks.iconButtons
-      .find((button) => button.label === "Delete product")
+      .find((button) => button.label === "Archive product")
       ?.onClick?.();
 
     expect(onSetDefault).toHaveBeenCalledWith(
@@ -100,6 +102,6 @@ describe("ProductSettingsCard", () => {
     expect(markup).toContain("Saved product");
     expect(markup).toContain("Active product");
     expect(markup).toContain("Launch Kit is active");
-    expect(markup).toContain("Deleting product");
+    expect(markup).toContain("Archiving product");
   });
 });

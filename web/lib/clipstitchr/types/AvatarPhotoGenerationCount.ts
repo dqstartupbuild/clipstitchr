@@ -1,1 +1,1 @@
-export type AvatarPhotoGenerationCount = 1 | 3 | 5;
+export type AvatarPhotoGenerationCount = 1 | 2 | 3 | 4 | 5;

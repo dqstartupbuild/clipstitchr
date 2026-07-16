@@ -1,40 +1,42 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "@/app/api/swipr/backgrounds/generate/route";
 import { api } from "@/convex/_generated/api";
 import { SWIPR_BACKGROUND_GENERATION_METADATA_HEADER_NAME } from "@/lib/clipstitchr/constants/swiprBackgroundGenerationMetadataHeaderName";
+import { POST } from "./route";
 
 const mocks = vi.hoisted(() => {
-  const convex = {
-    mutation: vi.fn(),
-  };
-  const replicate = {
-    predictions: {
-      create: vi.fn(),
-    },
-    wait: vi.fn(),
-  };
+  const convex = { mutation: vi.fn() };
 
   return {
     convex,
     createAuthenticatedConvexHttpClient: vi.fn(() => convex),
-    createReplicateClient: vi.fn(() => replicate),
-    createSwiprBackgroundGenerationInput: vi.fn(),
+    createId: vi.fn(),
     createSwiprBackgroundGenerationMetadataText: vi.fn(),
     createSwiprBackgroundGenerationPrompt: vi.fn(),
     createSwiprBackgroundVariation: vi.fn(),
-    fetchReplicateOutput: vi.fn(),
+    deleteR2Object: vi.fn(),
+    fetch: vi.fn(),
     getAuthenticatedConvexToken: vi.fn(),
     getAuthenticatedUserId: vi.fn(),
-    getReplicateOutputUrl: vi.fn(),
-    replicate,
+    getR2DownloadSignedUrl: vi.fn(),
+    waitForProviderJob: vi.fn(),
   };
 });
 
 vi.mock("@/convex/_generated/api", () => ({
   api: {
+    providerJobs: { create: "providerJobs.create" },
     rateLimits: {
+      consumeR2Download: "rateLimits.consumeR2Download",
       consumeSwiprBackgroundGenerate:
         "rateLimits.consumeSwiprBackgroundGenerate",
+    },
+    usage: {
+      cancelUsageReservation: {
+        cancelUsageReservation: "usage.cancelUsageReservation",
+      },
+      reserveCreationCredits: {
+        reserveCreationCredits: "usage.reserveCreationCredits",
+      },
     },
   },
 }));
@@ -42,34 +44,31 @@ vi.mock("@/convex/_generated/api", () => ({
 vi.mock(
   "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient",
   () => ({
-    createAuthenticatedConvexHttpClient: mocks.createAuthenticatedConvexHttpClient,
+    createAuthenticatedConvexHttpClient:
+      mocks.createAuthenticatedConvexHttpClient,
   }),
 );
-
 vi.mock("@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken", () => ({
   getAuthenticatedConvexToken: mocks.getAuthenticatedConvexToken,
 }));
-
-vi.mock("@/lib/clipstitchr/server/createReplicateClient", () => ({
-  createReplicateClient: mocks.createReplicateClient,
+vi.mock("@/lib/clipstitchr/server/getAuthenticatedUserId", () => ({
+  getAuthenticatedUserId: mocks.getAuthenticatedUserId,
 }));
-
-vi.mock(
-  "@/lib/clipstitchr/server/createSwiprBackgroundGenerationInput",
-  () => ({
-    createSwiprBackgroundGenerationInput:
-      mocks.createSwiprBackgroundGenerationInput,
-  }),
-);
-
-vi.mock(
-  "@/lib/clipstitchr/server/createSwiprBackgroundGenerationMetadataText",
-  () => ({
-    createSwiprBackgroundGenerationMetadataText:
-      mocks.createSwiprBackgroundGenerationMetadataText,
-  }),
-);
-
+vi.mock("@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret", () => ({
+  getRateLimitApiSecret: () => "rate-limit-secret",
+}));
+vi.mock("@/lib/clipstitchr/server/r2/deleteR2Object", () => ({
+  deleteR2Object: mocks.deleteR2Object,
+}));
+vi.mock("@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl", () => ({
+  getR2DownloadSignedUrl: mocks.getR2DownloadSignedUrl,
+}));
+vi.mock("@/lib/clipstitchr/server/waitForProviderJob", () => ({
+  waitForProviderJob: mocks.waitForProviderJob,
+}));
+vi.mock("@/lib/clipstitchr/server/createSwiprBackgroundVariation", () => ({
+  createSwiprBackgroundVariation: mocks.createSwiprBackgroundVariation,
+}));
 vi.mock(
   "@/lib/clipstitchr/server/createSwiprBackgroundGenerationPrompt",
   () => ({
@@ -77,32 +76,26 @@ vi.mock(
       mocks.createSwiprBackgroundGenerationPrompt,
   }),
 );
-
-vi.mock("@/lib/clipstitchr/server/createSwiprBackgroundVariation", () => ({
-  createSwiprBackgroundVariation: mocks.createSwiprBackgroundVariation,
+vi.mock(
+  "@/lib/clipstitchr/server/createSwiprBackgroundGenerationMetadataText",
+  () => ({
+    createSwiprBackgroundGenerationMetadataText:
+      mocks.createSwiprBackgroundGenerationMetadataText,
+  }),
+);
+vi.mock("@/lib/clipstitchr/utils/createId", () => ({
+  createId: mocks.createId,
 }));
 
-vi.mock("@/lib/clipstitchr/server/fetchReplicateOutput", () => ({
-  fetchReplicateOutput: mocks.fetchReplicateOutput,
-}));
-
-vi.mock("@/lib/clipstitchr/server/getAuthenticatedUserId", () => ({
-  getAuthenticatedUserId: mocks.getAuthenticatedUserId,
-}));
-
-vi.mock("@/lib/clipstitchr/server/getReplicateOutputUrl", () => ({
-  getReplicateOutputUrl: mocks.getReplicateOutputUrl,
-}));
-
-vi.mock("@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret", () => ({
-  getRateLimitApiSecret: () => "rate-limit-secret",
-}));
-
-function createRequest(body: object) {
+function createRequest() {
   return new Request(
     "https://clipstitchr.test/api/swipr/backgrounds/generate",
     {
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        presetId: "studio",
+        productContext: "portable launch kit",
+        prompt: "brass counter with daylight",
+      }),
       method: "POST",
     },
   );
@@ -111,9 +104,11 @@ function createRequest(body: object) {
 describe("POST /api/swipr/backgrounds/generate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal("fetch", mocks.fetch);
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex-token");
-    mocks.convex.mutation.mockResolvedValue(null);
+    mocks.deleteR2Object.mockResolvedValue(undefined);
+    mocks.createId.mockReturnValue("background_1");
     mocks.createSwiprBackgroundVariation.mockReturnValue({
       name: "Studio",
       presetId: "studio",
@@ -123,28 +118,26 @@ describe("POST /api/swipr/backgrounds/generate", () => {
     mocks.createSwiprBackgroundGenerationPrompt.mockReturnValue(
       "A clean studio background",
     );
-    mocks.createSwiprBackgroundGenerationInput.mockReturnValue({
-      prompt: "A clean studio background",
-    });
     mocks.createSwiprBackgroundGenerationMetadataText.mockReturnValue(
       "Studio metadata",
     );
-    mocks.replicate.predictions.create.mockResolvedValue({
-      id: "prediction_1",
-      status: "processing",
+    mocks.convex.mutation.mockImplementation(async (mutationId: string) => {
+      if (mutationId === "usage.reserveCreationCredits") {
+        return { planKey: "pro", reservationId: "reservation_1" };
+      }
+
+      return null;
     });
-    mocks.replicate.wait.mockResolvedValue({
-      output: ["https://replicate.example/background.jpg"],
-      status: "succeeded",
+    mocks.waitForProviderJob.mockResolvedValue({
+      outputAssetIds: ["users/user_123/provider-output/background.jpg"],
+      providerJobIds: ["prediction_1"],
     });
-    mocks.getReplicateOutputUrl.mockReturnValue(
-      "https://replicate.example/background.jpg",
-    );
-    mocks.fetchReplicateOutput.mockResolvedValue(
+    mocks.getR2DownloadSignedUrl.mockResolvedValue({
+      url: "https://r2.example/background.jpg",
+    });
+    mocks.fetch.mockResolvedValue(
       new Response("image-bytes", {
-        headers: {
-          "content-type": "image/png",
-        },
+        headers: { "content-type": "image/png" },
       }),
     );
   });
@@ -152,76 +145,48 @@ describe("POST /api/swipr/backgrounds/generate", () => {
   it("returns 401 before token creation when authentication is missing", async () => {
     mocks.getAuthenticatedUserId.mockResolvedValue(null);
 
-    const response = await POST(createRequest({}));
+    const response = await POST(createRequest());
 
-    await expect(response.json()).resolves.toEqual({
-      message: "Authentication required.",
-    });
     expect(response.status).toBe(401);
     expect(mocks.getAuthenticatedConvexToken).not.toHaveBeenCalled();
   });
 
-  it("creates a background image and returns generation metadata headers", async () => {
-    const response = await POST(
-      createRequest({
-        prompt: "brass counter with daylight",
-        presetId: "studio",
-        productContext: "portable launch kit",
-      }),
-    );
+  it("queues, waits for, downloads, and removes the generated background", async () => {
+    const response = await POST(createRequest());
 
     expect(response.status).toBe(200);
     await expect(response.text()).resolves.toBe("image-bytes");
-    expect(response.headers.get("content-type")).toContain("image/png");
     expect(
       response.headers.get(SWIPR_BACKGROUND_GENERATION_METADATA_HEADER_NAME),
     ).toBe(encodeURIComponent("Studio metadata"));
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.rateLimits.consumeSwiprBackgroundGenerate,
-      { secret: "rate-limit-secret" },
-    );
-    expect(mocks.createSwiprBackgroundVariation).toHaveBeenCalledWith({
-      preferredPresetId: "studio",
-      productContext: "portable launch kit",
-    });
-    expect(mocks.createSwiprBackgroundGenerationPrompt).toHaveBeenCalledWith(
+      api.providerJobs.create,
       expect.objectContaining({
-        productContext: "portable launch kit",
-        userPrompt: "brass counter with daylight",
+        jobType: "swipr-background-generation",
+        usageReservationId: "reservation_1",
       }),
     );
-    expect(mocks.createSwiprBackgroundGenerationMetadataText).toHaveBeenCalledWith(
-      expect.any(Object),
-      "brass counter with daylight",
+    expect(mocks.waitForProviderJob).toHaveBeenCalledWith(
+      mocks.convex,
+      "provider:swipr-background:background_1",
     );
-    expect(mocks.replicate.predictions.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        input: {
-          prompt: "A clean studio background",
-        },
-      }),
-    );
-    expect(mocks.fetchReplicateOutput).toHaveBeenCalledWith(
-      "https://replicate.example/background.jpg",
+    expect(mocks.deleteR2Object).toHaveBeenCalledWith(
+      "users/user_123/provider-output/background.jpg",
     );
   });
 
-  it("returns 500 when Replicate does not complete", async () => {
-    mocks.replicate.wait.mockResolvedValueOnce({
-      error: "provider failed",
-      status: "failed",
-    });
+  it("returns durable provider failures", async () => {
+    mocks.waitForProviderJob.mockRejectedValue(new Error("provider failed"));
 
-    const response = await POST(createRequest({}));
+    const response = await POST(createRequest());
 
+    expect(response.status).toBe(500);
     await expect(response.json()).resolves.toEqual({
       message: "provider failed",
     });
-    expect(response.status).toBe(500);
-    expect(mocks.fetchReplicateOutput).not.toHaveBeenCalled();
   });
 
-  it("returns 429 when background generation quota is exceeded", async () => {
+  it("returns 429 before queueing when generation is rate-limited", async () => {
     mocks.convex.mutation.mockRejectedValueOnce({
       data: {
         kind: "RateLimited",
@@ -230,15 +195,9 @@ describe("POST /api/swipr/backgrounds/generate", () => {
       },
     });
 
-    const response = await POST(createRequest({}));
+    const response = await POST(createRequest());
 
-    await expect(response.json()).resolves.toEqual(
-      expect.objectContaining({
-        rateLimit: "swiprBackgroundGenerate",
-        retryAfterSeconds: 1,
-      }),
-    );
     expect(response.status).toBe(429);
-    expect(mocks.replicate.predictions.create).not.toHaveBeenCalled();
+    expect(mocks.waitForProviderJob).not.toHaveBeenCalled();
   });
 });

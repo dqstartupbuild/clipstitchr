@@ -3,6 +3,7 @@ import { assertProviderWorkerSecret } from "../auth/assertProviderWorkerSecret";
 import { mutation } from "../_generated/server";
 import { upsertWorkerJobSummary } from "../upsertWorkerJobSummary";
 import { requestWorkerLaunch } from "../workerLaunch";
+import { updateWorkerQueueEntryStatus } from "../workerQueue/updateWorkerQueueEntryStatus";
 
 const PROVIDER_JOB_MAX_ATTEMPTS = 3;
 
@@ -54,6 +55,14 @@ export const retryAfterFailure = mutation({
     }
 
     await upsertWorkerJobSummary(ctx, "provider", queuedJob);
+    await updateWorkerQueueEntryStatus(ctx, {
+      error: args.error.trim().slice(0, 500),
+      now: args.updatedAt,
+      releaseLock: true,
+      sourceId: job.id,
+      sourceKind: "provider_job",
+      status: "queued",
+    });
     await requestWorkerLaunch({
       ctx,
       now: args.updatedAt,

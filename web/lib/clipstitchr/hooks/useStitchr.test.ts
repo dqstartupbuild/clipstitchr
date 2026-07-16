@@ -13,6 +13,13 @@ const mocks = vi.hoisted(() => {
     useMutation: vi.fn((mutationId: string) => {
       const mutation = mutationFns.get(mutationId) ?? vi.fn();
 
+      if (mutationId === "usage.reserveCreationCredits") {
+        mutation.mockResolvedValue({
+          generationSlotId: "slot_123",
+          reservationId: "reservation_123",
+        });
+      }
+
       mutationFns.set(mutationId, mutation);
       return mutation;
     }),
@@ -40,6 +47,17 @@ vi.mock("@/convex/_generated/api", () => ({
       save: "stitches.save",
       updateRenderedVideo: "stitches.updateRenderedVideo",
       updateMusic: "stitches.updateMusic",
+    },
+    usage: {
+      cancelUsageReservation: {
+        cancelUsageReservation: "usage.cancelUsageReservation",
+      },
+      releaseBrowserGenerationSlot: {
+        releaseBrowserGenerationSlot: "usage.releaseBrowserGenerationSlot",
+      },
+      reserveCreationCredits: {
+        reserveCreationCredits: "usage.reserveCreationCredits",
+      },
     },
   },
 }));

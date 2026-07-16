@@ -1,5 +1,4 @@
 import type { Prediction } from "replicate";
-import { DEFAULT_GENERATION_SPEED_TIER } from "@/lib/clipstitchr/constants/defaultGenerationSpeedTier";
 import { createAvatarPhotoGenerationInput } from "@/lib/clipstitchr/server/createAvatarPhotoGenerationInput";
 import { createAvatarPhotoGenerationPrompt } from "@/lib/clipstitchr/server/createAvatarPhotoGenerationPrompt";
 import { createCliprAvatarStillVariant } from "@/lib/clipstitchr/server/createCliprAvatarStillVariant";
@@ -12,7 +11,7 @@ import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/g
 import type { AvatarSceneControls } from "@/lib/clipstitchr/types/AvatarSceneControls";
 import type { CliprResolvedGenerationMode } from "@/lib/clipstitchr/types/CliprResolvedGenerationMode";
 import type { CliprScenePlan } from "@/lib/clipstitchr/types/CliprScenePlan";
-import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
+import type { AvatarImageGenerationQuality } from "@/lib/clipstitchr/types/AvatarImageGenerationQuality";
 
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
@@ -23,6 +22,7 @@ type CreateCliprSceneAvatarImageOptions = {
   scene: CliprScenePlan;
   sceneControls?: AvatarSceneControls;
   generationMode?: CliprResolvedGenerationMode;
+  quality: AvatarImageGenerationQuality;
 };
 
 export async function createCliprSceneAvatarImage({
@@ -32,11 +32,9 @@ export async function createCliprSceneAvatarImage({
   scene,
   sceneControls,
   generationMode,
+  quality,
 }: CreateCliprSceneAvatarImageOptions) {
   const modelId = getCliprAvatarStillModelId();
-  const speedProfile = getGenerationSpeedTierProfile(
-    DEFAULT_GENERATION_SPEED_TIER,
-  );
   const prompt = createAvatarPhotoGenerationPrompt({
     avatarDescription:
       avatarDescription?.trim() ||
@@ -59,7 +57,7 @@ export async function createCliprSceneAvatarImage({
       image: referenceImage,
       modelId,
       prompt,
-      quality: speedProfile.avatarImageQuality,
+      quality,
     }),
   });
   const completedPrediction = await replicate.wait(prediction, {

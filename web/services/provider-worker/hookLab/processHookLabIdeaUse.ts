@@ -10,6 +10,7 @@ import type { HookLabStitchRecipe } from "@/lib/clipstitchr/types/HookLabStitchR
 import type { HookLabTextBlueprint } from "@/lib/clipstitchr/types/HookLabTextBlueprint";
 import type { HookLabTextDecision } from "@/lib/clipstitchr/types/HookLabTextDecision";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
+import type { AvatarImageGenerationQuality } from "@/lib/clipstitchr/types/AvatarImageGenerationQuality";
 import { getHookLabVariationDirection } from "@/lib/clipstitchr/utils/getHookLabVariationDirection";
 import { createHookLabTextOverlay } from "./createHookLabTextOverlay";
 import { createHookLabUseGeneration } from "./createHookLabUseGeneration";
@@ -25,6 +26,7 @@ type HookLabUseJob = {
   id: string;
   inputSnapshotJson: string;
   ownerId: string;
+  usageReservationId?: string;
 };
 
 type HookLabUseProviderInput = {
@@ -84,12 +86,14 @@ type ProcessHookLabIdeaUseOptions = {
   client: ConvexHttpClient;
   job: HookLabUseJob;
   providerWorkerSecret: string;
+  quality: AvatarImageGenerationQuality;
 };
 
 export async function processHookLabIdeaUse({
   client,
   job,
   providerWorkerSecret,
+  quality,
 }: ProcessHookLabIdeaUseOptions) {
   const { variantId } = parseHookLabIdeaUseJobInput(job.inputSnapshotJson);
   const input = (await client.query(
@@ -102,7 +106,9 @@ export async function processHookLabIdeaUse({
   )) as HookLabUseProviderInput | null;
 
   if (!input) {
-    throw new Error("Hook Lab could not find everything needed for this version.");
+    throw new Error(
+      "Hook Lab could not find everything needed for this version.",
+    );
   }
   if (!input.idea.textBlueprint || !input.idea.creativeBeat) {
     throw new Error("Hook Lab idea analysis is incomplete.");
@@ -202,10 +208,7 @@ export async function processHookLabIdeaUse({
 
   const sceneId = `hook-opening-${input.variant.variantIndex + 1}`;
   const providerPredictionIds = Array.from(
-    new Set([
-      ...input.variant.providerPredictionIds,
-      ...writing.predictionIds,
-    ]),
+    new Set([...input.variant.providerPredictionIds, ...writing.predictionIds]),
   );
   let generatedImageObject = input.variant.generatedImageObject;
 
@@ -231,6 +234,7 @@ export async function processHookLabIdeaUse({
         pose: input.avatarPhoto.poseDescription,
       },
       generationMode: "reaction",
+      quality,
     });
     generatedImageObject = await saveCliprSceneImageObject({
       body: generatedImage.body,
@@ -270,9 +274,7 @@ export async function processHookLabIdeaUse({
       userId: job.ownerId,
     });
     generatedVideoObject = generatedVideo.avatarVideoObject;
-    providerPredictionIds.push(
-      generatedVideo.avatarVideoProviderPredictionId,
-    );
+    providerPredictionIds.push(generatedVideo.avatarVideoProviderPredictionId);
     await client.mutation(
       api["hookLabIdeaVariants/recordGeneratedVideoFromProvider"]
         .recordGeneratedVideoFromProvider,
@@ -304,9 +306,11 @@ export async function processHookLabIdeaUse({
   const stitchId = `${input.variant.id}:stitch`;
   const mediaJobId = `media:hook-lab:${input.variant.id}`;
   const recipe = input.idea.stitchRecipe;
-  const demoTrimRange =
-    recipe?.demoTrimRange ??
-    input.demoClip.defaultTrimRange ?? { start: 0, end: input.demoClip.duration };
+  const demoTrimRange = recipe?.demoTrimRange ??
+    input.demoClip.defaultTrimRange ?? {
+      start: 0,
+      end: input.demoClip.duration,
+    };
   const textOverlay = createHookLabTextOverlay(
     writing.generatedHook,
     HOOK_LAB_OPENING_DURATION_SECONDS,
@@ -346,16 +350,14 @@ export async function processHookLabIdeaUse({
         stitchId,
         stitchName: `${input.idea.name} · Version ${input.variant.variantIndex + 1}`,
         textOverlay,
-        temporaryObjects: [
-          generatedImageObject,
-          generatedVideoObject,
-        ],
+        temporaryObjects: [generatedImageObject, generatedVideoObject],
         ugcDuration: HOOK_LAB_OPENING_DURATION_SECONDS,
         ugcPlaybackRate: recipe?.ugcPlaybackRate ?? 1,
         ugcQuickEdit: recipe?.ugcQuickEdit,
         ugcTrimRange: { start: 0, end: HOOK_LAB_OPENING_DURATION_SECONDS },
       }),
       createdAt: updatedAt,
+      usageReservationId: job.usageReservationId,
     },
   );
   await client.mutation(api.providerJobs.markProviderStatus, {

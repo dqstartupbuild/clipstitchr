@@ -3,6 +3,7 @@ import { v } from "convex/values";
 export const providerJobTypeValidator = v.union(
   v.literal("manual-swapr"),
   v.literal("manual-clipr"),
+  v.literal("manual-swipr-draft"),
   v.literal("avatar-photo-generation"),
   v.literal("upload-video-analysis"),
   v.literal("stitch-score-analysis"),

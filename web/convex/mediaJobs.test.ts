@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./_generated/server", () => ({
+  internalMutation: mocks.mutation,
   mutation: mocks.mutation,
   query: mocks.query,
 }));

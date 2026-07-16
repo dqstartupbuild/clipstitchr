@@ -21,6 +21,7 @@ export function createProductProfileFromConvexDocument(
     inferredProblem: product.inferredProblem,
     inferredPainPoints: product.inferredPainPoints,
     preferredCliprHookStyleKey: product.preferredCliprHookStyleKey,
+    postBridgeSocialAccountIds: product.postBridgeSocialAccountIds,
     rejectedHookExamples: product.rejectedHookExamples,
     winningHookExamples: product.winningHookExamples,
     createdAt: product.createdAt,

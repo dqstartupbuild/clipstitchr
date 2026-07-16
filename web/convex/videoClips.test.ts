@@ -36,6 +36,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./_generated/server", () => ({
+  internalMutation: mocks.mutation,
   mutation: mocks.mutation,
   query: mocks.query,
 }));
@@ -57,7 +58,10 @@ function getHandler<Args, Result>(convexFunction: unknown) {
   return (convexFunction as ConvexFunction<Args, Result>).handler;
 }
 
-function createQueryChain(uniqueValues: unknown[] = [], collect: unknown[] = []) {
+function createQueryChain(
+  uniqueValues: unknown[] = [],
+  collect: unknown[] = [],
+) {
   const indexQuery = {
     eq: vi.fn(() => indexQuery),
   };
@@ -374,10 +378,12 @@ describe("convex videoClips", () => {
       },
       updatedAt: "2026-05-20T00:00:00.000Z",
     });
-    await expect(getHandler(remove)(setup.ctx, { id: "clip_1" })).resolves.toEqual(
-      { _id: "doc_1", id: "clip_1" },
-    );
-    await expect(getHandler(remove)(setup.ctx, { id: "missing" })).resolves.toBeNull();
+    await expect(
+      getHandler(remove)(setup.ctx, { id: "clip_1" }),
+    ).resolves.toEqual({ _id: "doc_1", id: "clip_1" });
+    await expect(
+      getHandler(remove)(setup.ctx, { id: "missing" }),
+    ).resolves.toBeNull();
 
     expect(setup.ctx.db.patch).toHaveBeenCalledWith(
       "doc_1",

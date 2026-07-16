@@ -27,6 +27,9 @@ import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/ge
 import { resolveAutomationStitchrColor } from "../lib/clipstitchr/utils/resolveAutomationStitchrColor";
 import { resolveAutomationStitchrTextStyleId } from "../lib/clipstitchr/utils/resolveAutomationStitchrTextStyleId";
 import { automationStitchrTextStyleChoiceValidator } from "./validators/automationStitchrTextStyleChoice";
+import { tryReserveCreationCreditsForAutomation } from "./usage/tryReserveCreationCreditsForAutomation";
+import { enqueueWorkerQueueEntry } from "./workerQueue/enqueueWorkerQueueEntry";
+import { getGenerationRequiredForAutomationTask } from "./workerQueue/getGenerationRequiredForAutomationTask";
 
 const STITCHR_BATCH_EXISTING_TASK_SCAN_LIMIT = STITCHR_BATCH_DAILY_LIMIT + 20;
 const STITCHR_BATCH_HISTORY_SCAN_LIMIT = 1000;
@@ -201,29 +204,70 @@ export const plan = mutation({
         getStitchrBatchTaskNeedsMediaLaunch,
       );
 
-      await Promise.all(
-        existingTasks
-          .filter(
-            (task) =>
-              task.status === "completed" && task.outputAssetIds.length === 0,
-          )
-          .map(async (task) => {
+      for (const task of existingTasks.filter(
+        getStitchrBatchTaskNeedsProviderLaunch,
+      )) {
+        let usageReservationId = task.usageReservationId;
+
+        if (!usageReservationId && task.outputAssetIds.length === 0) {
+          const reservation = await tryReserveCreationCreditsForAutomation(
+            ctx,
+            {
+              batchId: runId,
+              domainId: `${task.id}:stitch`,
+              idempotencyKey: `stitch-batch:${ownerId}:${task.id}:stitch`,
+              now,
+              operation: "stitch",
+              ownerId,
+            },
+          );
+
+          if (!reservation) {
             await ctx.db.patch(task._id, {
-              status: "queued",
-              stage: "awaiting-text-provider",
-              lockedBy: undefined,
-              lockedUntil: undefined,
-              completedAt: undefined,
-              error: undefined,
+              error: "Plan access or creation credits are unavailable.",
+              stage: "usage-limit-reached",
+              status: "failed",
               updatedAt: now,
             });
-            const updatedTask = await ctx.db.get(task._id);
+            continue;
+          }
 
-            if (updatedTask) {
-              await upsertAutomationTaskSummary(ctx, updatedTask);
-            }
-          }),
-      );
+          usageReservationId = reservation.reservationId ?? undefined;
+        }
+
+        if (task.status === "completed" && task.outputAssetIds.length === 0) {
+          await ctx.db.patch(task._id, {
+            status: "queued",
+            stage: "awaiting-text-provider",
+            lockedBy: undefined,
+            lockedUntil: undefined,
+            completedAt: undefined,
+            error: undefined,
+            usageReservationId,
+            updatedAt: now,
+          });
+        } else if (usageReservationId !== task.usageReservationId) {
+          await ctx.db.patch(task._id, { usageReservationId, updatedAt: now });
+        }
+
+        const updatedTask = await ctx.db.get(task._id);
+
+        if (updatedTask) {
+          await upsertAutomationTaskSummary(ctx, updatedTask);
+          await enqueueWorkerQueueEntry(ctx, {
+            generationRequired: getGenerationRequiredForAutomationTask(
+              updatedTask.taskType,
+            ),
+            now,
+            ownerId: updatedTask.ownerId,
+            sourceId: updatedTask.id,
+            sourceKind: "automation_task",
+            tool: updatedTask.tool,
+            usageReservationId: updatedTask.usageReservationId,
+            worker: "provider",
+          });
+        }
+      }
 
       if (shouldLaunchProvider) {
         await requestWorkerLaunch({
@@ -423,6 +467,19 @@ export const plan = mutation({
         continue;
       }
 
+      const reservation = await tryReserveCreationCreditsForAutomation(ctx, {
+        batchId: runId,
+        domainId: `${taskId}:stitch`,
+        idempotencyKey: `stitch-batch:${ownerId}:${taskId}:stitch`,
+        now,
+        operation: "stitch",
+        ownerId,
+      });
+
+      if (!reservation) {
+        continue;
+      }
+
       const stitchrTextStyleId =
         templateTextOverlay?.styleId ??
         resolveAutomationStitchrTextStyleId(
@@ -553,6 +610,7 @@ export const plan = mutation({
         providerJobIds: [],
         mediaJobIds: [],
         attempt: 0,
+        usageReservationId: reservation.reservationId ?? undefined,
         createdAt: now,
         updatedAt: now,
       });
@@ -560,6 +618,18 @@ export const plan = mutation({
 
       if (insertedTask) {
         await upsertAutomationTaskSummary(ctx, insertedTask);
+        await enqueueWorkerQueueEntry(ctx, {
+          generationRequired: getGenerationRequiredForAutomationTask(
+            insertedTask.taskType,
+          ),
+          now,
+          ownerId: insertedTask.ownerId,
+          sourceId: insertedTask.id,
+          sourceKind: "automation_task",
+          tool: insertedTask.tool,
+          usageReservationId: insertedTask.usageReservationId,
+          worker: "provider",
+        });
       }
 
       taskIds.push(taskId);

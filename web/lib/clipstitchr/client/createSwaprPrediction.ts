@@ -1,4 +1,3 @@
-import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
 import type { SwaprReferenceVideoSegment } from "@/lib/clipstitchr/types/SwaprReferenceVideoSegment";
@@ -7,7 +6,6 @@ import { readSwaprPredictionResponse } from "@/lib/clipstitchr/utils/readSwaprPr
 type CreateSwaprPredictionOptions = {
   batchId: string;
   characterOrientation: SwaprCharacterOrientation;
-  generationSpeedTier?: GenerationSpeedTier;
   keepOriginalSound: boolean;
   mode: SwaprMode;
   photoId: string;
@@ -21,7 +19,6 @@ type CreateSwaprPredictionOptions = {
 export async function createSwaprPrediction({
   batchId,
   characterOrientation,
-  generationSpeedTier,
   keepOriginalSound,
   mode,
   photoId,
@@ -47,7 +44,6 @@ export async function createSwaprPrediction({
       prompt,
       mode,
       characterOrientation,
-      generationSpeedTier,
       keepOriginalSound,
     }),
   });

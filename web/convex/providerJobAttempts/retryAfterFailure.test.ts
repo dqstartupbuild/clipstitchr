@@ -12,7 +12,10 @@ const mocks = vi.hoisted(() => ({
   upsertWorkerJobSummary: vi.fn(),
 }));
 
-vi.mock("../_generated/server", () => ({ mutation: mocks.mutation }));
+vi.mock("../_generated/server", () => ({
+  internalMutation: mocks.mutation,
+  mutation: mocks.mutation,
+}));
 vi.mock("../auth/assertProviderWorkerSecret", () => ({
   assertProviderWorkerSecret: mocks.assertProviderWorkerSecret,
 }));

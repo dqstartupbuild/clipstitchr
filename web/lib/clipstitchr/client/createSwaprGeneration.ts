@@ -1,6 +1,5 @@
 "use client";
 
-import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
 import type { SwaprReferenceVideoSegment } from "@/lib/clipstitchr/types/SwaprReferenceVideoSegment";
@@ -10,7 +9,6 @@ type CreateSwaprGenerationOptions = {
   characterOrientation: SwaprCharacterOrientation;
   clipId: string;
   clipName: string;
-  generationSpeedTier?: GenerationSpeedTier;
   keepOriginalSound: boolean;
   mode: SwaprMode;
   photoId: string;
@@ -22,7 +20,9 @@ type CreateSwaprGenerationOptions = {
   totalEstimatedDurationSeconds: number;
 };
 
-export async function createSwaprGeneration(options: CreateSwaprGenerationOptions) {
+export async function createSwaprGeneration(
+  options: CreateSwaprGenerationOptions,
+) {
   const response = await fetch("/api/swapr/generations", {
     method: "POST",
     headers: {

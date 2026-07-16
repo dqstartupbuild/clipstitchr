@@ -9,6 +9,9 @@ import { providerJobTypeValidator } from "./validators/providerJobType";
 import { listActiveWorkerJobSummaries } from "./listActiveWorkerJobSummaries";
 import { upsertWorkerJobSummary } from "./upsertWorkerJobSummary";
 import { requestWorkerLaunch } from "./workerLaunch";
+import { enqueueWorkerQueueEntry } from "./workerQueue/enqueueWorkerQueueEntry";
+import { getGenerationRequiredForProviderJob } from "./workerQueue/getGenerationRequiredForProviderJob";
+import { updateWorkerQueueEntryStatus } from "./workerQueue/updateWorkerQueueEntryStatus";
 
 const PROVIDER_JOB_MAX_ATTEMPTS = 3;
 
@@ -76,6 +79,9 @@ export const create = mutation({
     stage: v.string(),
     idempotencyKey: v.string(),
     inputSnapshotJson: v.string(),
+    usageReservationId: v.optional(v.string()),
+    usageReservationIds: v.optional(v.array(v.string())),
+    generationSlotId: v.optional(v.string()),
     createdAt: v.string(),
   },
   handler: async (ctx, { secret, ...job }) => {
@@ -102,6 +108,9 @@ export const create = mutation({
       mediaJobIds: [],
       progress: 0,
       attempt: 0,
+      usageReservationId: job.usageReservationId,
+      usageReservationIds: job.usageReservationIds,
+      generationSlotId: job.generationSlotId,
       updatedAt: job.createdAt,
     });
     const created = await ctx.db.get(jobId);
@@ -111,6 +120,18 @@ export const create = mutation({
     }
 
     await upsertWorkerJobSummary(ctx, "provider", created);
+    await enqueueWorkerQueueEntry(ctx, {
+      generationRequired: getGenerationRequiredForProviderJob(created.jobType),
+      generationSlotId: created.generationSlotId,
+      now: created.createdAt,
+      ownerId: created.ownerId,
+      sourceId: created.id,
+      sourceKind: "provider_job",
+      tool: created.jobType,
+      usageReservationId: created.usageReservationId,
+      usageReservationIds: created.usageReservationIds,
+      worker: "provider",
+    });
 
     await requestWorkerLaunch({
       ctx,
@@ -131,6 +152,9 @@ export const createFromMediaWorker = mutation({
     stage: v.string(),
     idempotencyKey: v.string(),
     inputSnapshotJson: v.string(),
+    usageReservationId: v.optional(v.string()),
+    usageReservationIds: v.optional(v.array(v.string())),
+    generationSlotId: v.optional(v.string()),
     createdAt: v.string(),
   },
   handler: async (ctx, { secret, ...job }) => {
@@ -157,6 +181,9 @@ export const createFromMediaWorker = mutation({
       mediaJobIds: [],
       progress: 0,
       attempt: 0,
+      usageReservationId: job.usageReservationId,
+      usageReservationIds: job.usageReservationIds,
+      generationSlotId: job.generationSlotId,
       updatedAt: job.createdAt,
     });
     const created = await ctx.db.get(jobId);
@@ -166,6 +193,18 @@ export const createFromMediaWorker = mutation({
     }
 
     await upsertWorkerJobSummary(ctx, "provider", created);
+    await enqueueWorkerQueueEntry(ctx, {
+      generationRequired: getGenerationRequiredForProviderJob(created.jobType),
+      generationSlotId: created.generationSlotId,
+      now: created.createdAt,
+      ownerId: created.ownerId,
+      sourceId: created.id,
+      sourceKind: "provider_job",
+      tool: created.jobType,
+      usageReservationId: created.usageReservationId,
+      usageReservationIds: created.usageReservationIds,
+      worker: "provider",
+    });
 
     await requestWorkerLaunch({
       ctx,
@@ -428,6 +467,17 @@ export const markProviderStatus = mutation({
           ? 60_000
           : undefined;
 
+    await updateWorkerQueueEntryStatus(ctx, {
+      continuationDelayMs: relaunchDelayMs,
+      error,
+      handoff: Boolean(mediaJobId && status === "running" && releaseLock),
+      now: updatedAt,
+      releaseLock,
+      sourceId: id,
+      sourceKind: "provider_job",
+      status,
+    });
+
     if (status === "running" && releaseLock && relaunchDelayMs !== undefined) {
       await requestWorkerLaunch({
         ctx,
@@ -504,5 +554,14 @@ export const markMediaStatus = mutation({
     if (updatedJob) {
       await upsertWorkerJobSummary(ctx, "provider", updatedJob);
     }
+
+    await updateWorkerQueueEntryStatus(ctx, {
+      error,
+      handoff: Boolean(mediaJobId && status === "running"),
+      now: updatedAt,
+      sourceId: id,
+      sourceKind: "provider_job",
+      status,
+    });
   },
 });

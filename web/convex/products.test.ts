@@ -6,6 +6,9 @@ type ConvexFunction<Args, Result> = {
 };
 
 const mocks = vi.hoisted(() => ({
+  assertProductLimit: vi.fn(),
+  deleteProductCard: vi.fn(),
+  disableProductAutomation: vi.fn(),
   getAuthenticatedOwnerId: vi.fn(),
   mutation: vi.fn((definition) => definition),
   query: vi.fn((definition) => definition),
@@ -27,14 +30,28 @@ vi.mock("./rateLimiter", () => ({
   rateLimiter: mocks.rateLimiter,
 }));
 
+vi.mock("./products/assertProductLimit", () => ({
+  assertProductLimit: mocks.assertProductLimit,
+}));
+
+vi.mock("./deleteProductCard", () => ({
+  deleteProductCard: mocks.deleteProductCard,
+}));
+
+vi.mock("./products/disableProductAutomation", () => ({
+  disableProductAutomation: mocks.disableProductAutomation,
+}));
+
 function getHandler<Args, Result>(convexFunction: unknown) {
   return (convexFunction as ConvexFunction<Args, Result>).handler;
 }
 
-function createQueryChain(options: {
-  collect?: unknown[];
-  unique?: unknown;
-} = {}) {
+function createQueryChain(
+  options: {
+    collect?: unknown[];
+    unique?: unknown;
+  } = {},
+) {
   const indexQuery = {
     eq: vi.fn(() => indexQuery),
   };
@@ -44,11 +61,13 @@ function createQueryChain(options: {
     order: vi.fn(() => chain),
     take: vi.fn(async () => options.collect ?? []),
     unique: vi.fn(async () => options.unique ?? null),
-    withIndex: vi.fn((_indexName: string, callback: (q: typeof indexQuery) => void) => {
-      callback(indexQuery);
+    withIndex: vi.fn(
+      (_indexName: string, callback: (q: typeof indexQuery) => void) => {
+        callback(indexQuery);
 
-      return chain;
-    }),
+        return chain;
+      },
+    ),
   };
 
   return chain;
@@ -121,7 +140,7 @@ describe("convex products", () => {
       },
     };
 
-    await expect(getHandler(list)(ctx, {})).resolves.toBe(products);
+    await expect(getHandler(list)(ctx, {})).resolves.toEqual(products);
     expect(ctx.db.query).toHaveBeenCalledWith("products");
     expect(queryChain.withIndex).toHaveBeenCalledWith(
       "by_owner_created",
@@ -288,31 +307,43 @@ describe("convex products", () => {
     );
   });
 
-  it("deletes and returns an existing product", async () => {
+  it("archives and returns an existing product", async () => {
     const product = { _id: "doc_123", id: "product_123" };
     const queryChain = createQueryChain({ unique: product });
     const ctx = {
       db: {
-        delete: vi.fn(async () => undefined),
+        patch: vi.fn(async () => undefined),
         query: vi.fn(() => queryChain),
       },
     };
 
-    await expect(getHandler(remove)(ctx, { id: "product_123" })).resolves.toBe(
-      product,
+    await expect(
+      getHandler(remove)(ctx, { id: "product_123" }),
+    ).resolves.toEqual(
+      expect.objectContaining({ archivedAt: expect.any(String) }),
     );
     expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
       ctx,
-      "convexRecordDelete",
+      "convexMetadataUpdate",
       {
         key: "owner_123",
         throws: true,
       },
     );
-    expect(ctx.db.delete).toHaveBeenCalledWith("doc_123");
+    expect(ctx.db.patch).toHaveBeenCalledWith(
+      "doc_123",
+      expect.objectContaining({ archivedAt: expect.any(String) }),
+    );
+    expect(mocks.deleteProductCard).toHaveBeenCalledWith(ctx, product);
+    expect(mocks.disableProductAutomation).toHaveBeenCalledWith(
+      ctx,
+      "owner_123",
+      "product_123",
+      expect.any(String),
+    );
   });
 
-  it("clears the default product preference when deleting the default product", async () => {
+  it("clears the default product preference when archiving the default product", async () => {
     const product = { _id: "doc_123", id: "product_123" };
     const preferences = {
       _id: "pref_doc",
@@ -322,7 +353,6 @@ describe("convex products", () => {
     const preferenceQuery = createQueryChain({ unique: preferences });
     const ctx = {
       db: {
-        delete: vi.fn(async () => undefined),
         patch: vi.fn(async () => undefined),
         query: vi.fn((tableName: string) =>
           tableName === "products" ? productQuery : preferenceQuery,
@@ -330,23 +360,25 @@ describe("convex products", () => {
       },
     };
 
-    await expect(getHandler(remove)(ctx, { id: "product_123" })).resolves.toBe(
-      product,
-    );
+    await expect(
+      getHandler(remove)(ctx, { id: "product_123" }),
+    ).resolves.toEqual(expect.objectContaining({ id: "product_123" }));
     expect(ctx.db.patch).toHaveBeenCalledWith(
       "pref_doc",
       expect.objectContaining({
         defaultProductId: undefined,
       }),
     );
-    expect(ctx.db.delete).toHaveBeenCalledWith("doc_123");
+    expect(ctx.db.patch).toHaveBeenCalledWith(
+      "doc_123",
+      expect.objectContaining({ archivedAt: expect.any(String) }),
+    );
   });
 
   it("returns null when removing a missing product", async () => {
     const queryChain = createQueryChain();
     const ctx = {
       db: {
-        delete: vi.fn(),
         query: vi.fn(() => queryChain),
       },
     };
@@ -354,6 +386,6 @@ describe("convex products", () => {
     await expect(
       getHandler<{ id: string }, unknown>(remove)(ctx, { id: "missing" }),
     ).resolves.toBeNull();
-    expect(ctx.db.delete).not.toHaveBeenCalled();
+    expect(mocks.deleteProductCard).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit3, Star, Trash2 } from "lucide-react";
+import { Archive, Edit3, Star } from "lucide-react";
 import { useState } from "react";
 import { ProductSettingsDetailsDialog } from "@/app/_components/settings/ProductSettingsDetailsDialog";
 import { ProductSettingsEditDialog } from "@/app/_components/settings/ProductSettingsEditDialog";
@@ -18,10 +18,7 @@ type ProductSettingsCardProps = {
   isSaving: boolean;
   onDelete: (id: string) => Promise<void>;
   onSetDefault: (product: ProductProfile) => Promise<void>;
-  onUpdate: (
-    id: string,
-    input: ProductProfileCreateInput,
-  ) => Promise<unknown>;
+  onUpdate: (id: string, input: ProductProfileCreateInput) => Promise<unknown>;
 };
 
 export function ProductSettingsCard({
@@ -42,10 +39,12 @@ export function ProductSettingsCard({
     product.emotionalNarrative ||
     product.audienceDetails ||
     "Saved product";
-  const hookStyleName = getCliprHookStyleName(product.preferredCliprHookStyleKey);
+  const hookStyleName = getCliprHookStyleName(
+    product.preferredCliprHookStyleKey,
+  );
   const handleDelete = async () => {
     const didConfirm = window.confirm(
-      `Delete "${product.name}"?\n\nExisting saved Swipes and generated clips keep their saved snapshots. This cannot be undone.`,
+      `Archive "${product.name}"?\n\nIts saved work stays put, and you can restore it later when your plan has room.`,
     );
 
     if (!didConfirm) {
@@ -119,9 +118,8 @@ export function ProductSettingsCard({
               onClick={() => setIsEditing(true)}
             />
             <IconButton
-              label={isDeleting ? "Deleting product" : "Delete product"}
-              variant="danger"
-              icon={<Trash2 aria-hidden className="h-4 w-4" />}
+              label={isDeleting ? "Archiving product" : "Archive product"}
+              icon={<Archive aria-hidden className="h-4 w-4" />}
               disabled={isDisabled}
               onClick={() => void handleDelete()}
             />

@@ -42,54 +42,80 @@ export async function runCliprJobCreation({
         }),
   ]);
 
-  const job = await createQueuedCliprJobRecord({
-    convex,
-    createdAt,
-    documents,
-    input,
-    secret,
-  });
+  const providerJobId = `provider:clipr:${input.jobId}`;
+  const reservation = await convex.mutation(
+    api.usage.reserveAiVideo.reserveAiVideo,
+    {
+      domainId: input.jobId,
+      domainKind: "clipr_job",
+      idempotencyKey: `clipr-video:${userId}:${input.jobId}`,
+      now: createdAt,
+      operation: "clipr_video",
+    },
+  );
 
-  await convex.mutation(api.providerJobs.create, {
-    secret,
-    ownerId: userId,
-    id: `provider:clipr:${input.jobId}`,
-    jobType: "manual-clipr",
-    stage: "awaiting-script-provider",
-    idempotencyKey: `${userId}:manual-clipr:${input.jobId}`,
-    inputSnapshotJson: JSON.stringify({
-      avatarDescription: documents.avatar?.description,
-      avatarId: documents.avatar?.id ?? "",
-      avatarName: documents.avatar?.name ?? "",
-      avatarPhotoId: documents.avatarPhoto?.id ?? "",
-      avatarPhotoObject: documents.avatarPhoto?.photoObject,
-      avatarSceneLocation: input.avatarSceneLocation,
-      avatarSceneOutfit: input.avatarSceneOutfit,
-      avatarScenePose: input.avatarScenePose,
-      audienceDetails: documents.product.audienceDetails,
-      demoClipId: documents.demoClip?.id,
-      demoClipName: documents.demoClip?.name,
-      demoVideoDescription: documents.demoClip?.videoDescription,
-      demoVideoObject: documents.demoClip?.videoObject,
-      durationSeconds: input.durationSeconds,
-      generationMode: input.generationMode,
-      inferredPainPoints: documents.product.inferredPainPoints,
-      inferredProblem: documents.product.inferredProblem,
-      jobId: input.jobId,
-      lipSyncModelId: input.lipSyncModelId,
-      musicTrack: documents.selectedMusicTrack,
-      productDetails: documents.product.productDetails,
-      productId: documents.product.id,
-      productName: documents.product.name,
-      requestedGenerationMode: input.requestedGenerationMode,
-      requestedVideoModelId: input.requestedVideoModelId,
-      scriptIdea: input.scriptIdea,
-      ttsModelId: input.ttsModelId,
-      videoModelId: input.videoModelId,
-      voiceId: input.voiceId,
-    }),
-    createdAt,
-  });
+  try {
+    const job = await createQueuedCliprJobRecord({
+      convex,
+      createdAt,
+      documents,
+      input,
+      secret,
+      usageReservationId: reservation.reservationId,
+    });
 
-  return job;
+    await convex.mutation(api.providerJobs.create, {
+      secret,
+      ownerId: userId,
+      id: providerJobId,
+      jobType: "manual-clipr",
+      stage: "awaiting-script-provider",
+      idempotencyKey: `${userId}:manual-clipr:${input.jobId}`,
+      inputSnapshotJson: JSON.stringify({
+        avatarDescription: documents.avatar?.description,
+        avatarId: documents.avatar?.id ?? "",
+        avatarName: documents.avatar?.name ?? "",
+        avatarPhotoId: documents.avatarPhoto?.id ?? "",
+        avatarPhotoObject: documents.avatarPhoto?.photoObject,
+        avatarSceneLocation: input.avatarSceneLocation,
+        avatarSceneOutfit: input.avatarSceneOutfit,
+        avatarScenePose: input.avatarScenePose,
+        audienceDetails: documents.product.audienceDetails,
+        demoClipId: documents.demoClip?.id,
+        demoClipName: documents.demoClip?.name,
+        demoVideoDescription: documents.demoClip?.videoDescription,
+        demoVideoObject: documents.demoClip?.videoObject,
+        durationSeconds: input.durationSeconds,
+        generationMode: input.generationMode,
+        inferredPainPoints: documents.product.inferredPainPoints,
+        inferredProblem: documents.product.inferredProblem,
+        jobId: input.jobId,
+        lipSyncModelId: input.lipSyncModelId,
+        musicTrack: documents.selectedMusicTrack,
+        productDetails: documents.product.productDetails,
+        productId: documents.product.id,
+        productName: documents.product.name,
+        requestedGenerationMode: input.requestedGenerationMode,
+        requestedVideoModelId: input.requestedVideoModelId,
+        scriptIdea: input.scriptIdea,
+        ttsModelId: input.ttsModelId,
+        videoModelId: input.videoModelId,
+        voiceId: input.voiceId,
+      }),
+      usageReservationId: reservation.reservationId,
+      createdAt,
+    });
+
+    return job;
+  } catch (error) {
+    await convex.mutation(
+      api.usage.cancelUsageReservation.cancelUsageReservation,
+      {
+        now: new Date().toISOString(),
+        reason: "Clipr job could not be queued",
+        reservationId: reservation.reservationId,
+      },
+    );
+    throw error;
+  }
 }

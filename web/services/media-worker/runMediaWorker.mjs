@@ -1113,6 +1113,7 @@ async function processStitchrDraftFinalization({ client, config, job }) {
     ...(input.socialCaption ? { socialCaption: input.socialCaption } : {}),
     ...(input.textOverlay ? { textOverlay: input.textOverlay } : {}),
     ...(input.ugcQuickEdit ? { ugcQuickEdit: input.ugcQuickEdit } : {}),
+    usageReservationId: job.usageReservationId,
     createdAt: updatedAt,
   });
   await createStitchScoreProviderJob({
@@ -1316,6 +1317,7 @@ async function processSwaprFinalization({ client, config, job, r2 }) {
         prompt: input.prompt || undefined,
         keepOriginalSound: input.keepOriginalSound,
       },
+      usageReservationId: job.usageReservationId,
       createdAt: updatedAt,
       updatedAt,
     });
@@ -1637,12 +1639,22 @@ async function claimNextJob({ client, config }) {
   const now = new Date();
   const lockedUntil = new Date(now.getTime() + config.lockMs).toISOString();
 
-  return await client.mutation(api.mediaJobs.claimNext, {
-    secret: config.mediaWorkerSecret,
-    workerId: config.workerId,
-    lockedUntil,
-    updatedAt: now.toISOString(),
-  });
+  const claimed = await client.mutation(
+    api.workerQueue.claimNextWorkerQueueEntry,
+    {
+      worker: "media",
+      secret: config.mediaWorkerSecret,
+      workerId: config.workerId,
+      lockedUntil,
+      updatedAt: now.toISOString(),
+    },
+  );
+
+  if (!claimed || claimed.sourceKind !== "media_job") {
+    return null;
+  }
+
+  return claimed.source;
 }
 
 async function runOnce({ client, config, maxJobs, r2 }) {

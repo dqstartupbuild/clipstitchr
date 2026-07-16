@@ -7,6 +7,7 @@ import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/ser
 import { parseSwiprGeneratedSlideshows } from "@/lib/clipstitchr/server/parseSwiprGeneratedSlideshows";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
+import type { Prediction } from "replicate";
 
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
@@ -15,32 +16,40 @@ export async function createSwiprBatchTextGeneration({
   count,
   creativeContext = "",
   product,
+  prediction: existingPrediction,
   replicate,
+  onPredictionCreated,
   slideCount,
 }: {
   callToActionStyle?: SwiprCallToActionStyle;
   count: number;
   creativeContext?: string;
   product: ProductProfile;
+  prediction?: Prediction;
   replicate: ReplicateClient;
+  onPredictionCreated?: (prediction: Prediction) => void | Promise<void>;
   slideCount: number;
 }) {
   const providerModel = getCliprHookModelId();
-  const prediction = await replicate.predictions.create({
-    model: providerModel,
-    input: createTextWritingPredictionInput({
-      maxCompletionTokens: Math.min(24000, Math.max(6000, count * 2500)),
-      modelId: providerModel,
-      prompt: createSwiprBatchTextGenerationPrompt({
-        callToActionStyle,
-        count,
-        creativeContext,
-        product,
-        slideCount,
+  const prediction =
+    existingPrediction ??
+    (await replicate.predictions.create({
+      model: providerModel,
+      input: createTextWritingPredictionInput({
+        maxCompletionTokens: Math.min(24000, Math.max(6000, count * 2500)),
+        modelId: providerModel,
+        prompt: createSwiprBatchTextGenerationPrompt({
+          callToActionStyle,
+          count,
+          creativeContext,
+          product,
+          slideCount,
+        }),
+        systemPrompt: getCliprTextSystemPrompt("swipr"),
       }),
-      systemPrompt: getCliprTextSystemPrompt("swipr"),
-    }),
-  });
+    }));
+
+  await onPredictionCreated?.(prediction);
   const outputText = await getCompletedReplicatePredictionOutputText({
     failureMessage: "Replicate did not complete Swipr text generation.",
     prediction,

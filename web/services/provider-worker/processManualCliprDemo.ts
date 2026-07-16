@@ -10,6 +10,7 @@ import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClipName";
+import type { CliprProviderJobSnapshot } from "./getCliprProviderJobSnapshot";
 
 const api = anyApi;
 
@@ -20,6 +21,7 @@ type DemoProviderConfig = {
 type DemoProviderJob = {
   id: string;
   ownerId: string;
+  usageReservationId?: string;
 };
 
 type DemoCliprProviderInput = {
@@ -64,6 +66,7 @@ type ProcessManualCliprDemoOptions<
   input: DemoCliprProviderInput;
   job: TJob;
   markProviderJobStatus: MarkDemoProviderJobStatus<TConfig, TJob>;
+  existingCliprJob: CliprProviderJobSnapshot | null;
 };
 
 export async function processManualCliprDemo<
@@ -76,14 +79,18 @@ export async function processManualCliprDemo<
   input,
   job,
   markProviderJobStatus,
+  existingCliprJob,
 }: ProcessManualCliprDemoOptions<TConfig, TJob>) {
   if (!input.demoClipId || !input.demoClipName || !input.demoVideoObject) {
     throw new Error("Clipr Demo mode needs a saved demo video.");
   }
 
-  assertR2ObjectKeyBelongsToUser(input.demoVideoObject.key, job.ownerId);
+  const demoClipName = input.demoClipName;
+  const demoVideoObject = input.demoVideoObject;
 
-  if (!input.demoVideoObject.contentType.startsWith("video/")) {
+  assertR2ObjectKeyBelongsToUser(demoVideoObject.key, job.ownerId);
+
+  if (!demoVideoObject.contentType.startsWith("video/")) {
     throw new Error("Clipr Demo mode needs a video demo.");
   }
 
@@ -139,17 +146,31 @@ export async function processManualCliprDemo<
     progress: 0.32,
   });
 
-  const demoVideoUrl = await getR2DownloadSignedUrl(input.demoVideoObject.key);
-  const avatarVideoOutput = await createCliprDemoVideoOutput({
-    demoClipName: input.demoClipName,
-    demoVideoDescription: input.demoVideoDescription,
-    durationSeconds: input.durationSeconds,
-    jobId: input.jobId,
-    product,
-    referenceVideoUrl: demoVideoUrl.url,
-    replicate,
-    userId: job.ownerId,
-  });
+  const avatarVideoOutput =
+    existingCliprJob?.avatarVideoObject &&
+    existingCliprJob.avatarVideoProviderPredictionId
+      ? {
+          avatarVideoObject: existingCliprJob.avatarVideoObject,
+          avatarVideoProviderPredictionId:
+            existingCliprJob.avatarVideoProviderPredictionId,
+          providerModels: existingCliprJob.providerModels,
+        }
+      : await (async () => {
+          const demoVideoUrl = await getR2DownloadSignedUrl(
+            demoVideoObject.key,
+          );
+
+          return await createCliprDemoVideoOutput({
+            demoClipName,
+            demoVideoDescription: input.demoVideoDescription,
+            durationSeconds: input.durationSeconds,
+            jobId: input.jobId,
+            product,
+            referenceVideoUrl: demoVideoUrl.url,
+            replicate,
+            userId: job.ownerId,
+          });
+        })();
   const clipName = getCliprFinalClipName(input.productName, getNow());
   const mediaClipId = createId();
   const mediaJob = (await client.mutation(
@@ -171,6 +192,7 @@ export async function processManualCliprDemo<
         sourceVideoObject: avatarVideoOutput.avatarVideoObject,
       }),
       createdAt: getNow(),
+      usageReservationId: job.usageReservationId,
     },
   )) as { id: string };
 

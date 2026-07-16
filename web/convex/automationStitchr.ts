@@ -41,6 +41,9 @@ import { listRecentVideoClipsByLibraryKind } from "./listRecentVideoClipsByLibra
 import { requestWorkerLaunch } from "./workerLaunch";
 import { upsertAutomationRunSummary } from "./upsertAutomationRunSummary";
 import { upsertAutomationTaskSummary } from "./upsertAutomationTaskSummary";
+import { tryReserveCreationCreditsForAutomation } from "./usage/tryReserveCreationCreditsForAutomation";
+import { enqueueWorkerQueueEntry } from "./workerQueue/enqueueWorkerQueueEntry";
+import { getGenerationRequiredForAutomationTask } from "./workerQueue/getGenerationRequiredForAutomationTask";
 
 const AUTOMATION_STITCHR_COMPLETION_TASK_SCAN_LIMIT =
   automationDailyLimits.stitchr + 20;
@@ -548,6 +551,18 @@ export const planDaily = mutation({
       const demoOverlayText = getQuickEditOverlayText({
         quickEdit: demo.quickEdit,
       });
+      const reservation = await tryReserveCreationCreditsForAutomation(ctx, {
+        batchId: run.id,
+        domainId: `${taskId}:stitch`,
+        idempotencyKey: `stitch-daily:${ownerId}:${taskId}:stitch`,
+        now,
+        operation: "stitch",
+        ownerId,
+      });
+
+      if (!reservation) {
+        continue;
+      }
 
       const insertedTaskId = await ctx.db.insert("automationTasks", {
         ownerId,
@@ -635,6 +650,7 @@ export const planDaily = mutation({
         providerJobIds: [],
         mediaJobIds: [],
         attempt: 0,
+        usageReservationId: reservation.reservationId ?? undefined,
         createdAt: now,
         updatedAt: now,
       });
@@ -642,6 +658,18 @@ export const planDaily = mutation({
 
       if (insertedTask) {
         await upsertAutomationTaskSummary(ctx, insertedTask);
+        await enqueueWorkerQueueEntry(ctx, {
+          generationRequired: getGenerationRequiredForAutomationTask(
+            insertedTask.taskType,
+          ),
+          now: insertedTask.createdAt,
+          ownerId: insertedTask.ownerId,
+          sourceId: insertedTask.id,
+          sourceKind: "automation_task",
+          tool: insertedTask.tool,
+          usageReservationId: insertedTask.usageReservationId,
+          worker: "provider",
+        });
       }
 
       taskIds.push(taskId);

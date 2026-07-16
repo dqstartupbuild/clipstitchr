@@ -1,8 +1,8 @@
 # Plan Entitlements, Stripe, and Worker Queue Architecture
 
-**Status:** Proposed
+**Status:** Implemented in test/development mode
 
-**Last reviewed:** July 15, 2026
+**Last reviewed:** July 16, 2026
 
 ## Purpose
 
@@ -37,25 +37,17 @@ specific package version.
 
 ## Current State
 
-The app currently has durable `providerJobs`, `mediaJobs`, `automationRuns`, and
-`automationTasks`, plus bounded Cloud Run provider and media workers.
+The app now has an app-owned Stripe entitlement projection, immutable usage
+ledger, ordered credit grants, usage reservations, owner generation slots, and
+one weighted provider/media scheduling layer. Server-owned plan policy controls
+product limits, daily drafts, Clipr and Swapr video allowances, paid creation
+costs, concurrency, and queue priority. Legacy direct-execution endpoints are
+retired so paid work cannot bypass the queue.
 
-The current behavior is not plan-aware:
-
-- provider and automation claims are primarily oldest-first within a job type;
-- provider jobs are considered before automation tasks;
-- every user shares one active automation-task ceiling of 10;
-- the provider and media Cloud Run Jobs are deployed with one task;
-- each worker task processes up to three jobs sequentially;
-- worker launches are coalesced globally, not by plan;
-- `GenerationSpeedTier` still uses `creator`, `pro`, and `studio` names;
-- some API routes accept a speed tier supplied by the client;
-- the default speed tier is the highest current `studio` profile;
-- `avatarImageConcurrency` is described in a profile but is not enforced by
-  the queue.
-
-These hooks are useful implementation material, but they do not currently
-provide a paid-plan guarantee.
+Stripe test products, prices, portal behavior, event destination, and the
+development Convex environment are configured. Live objects and production
+environment values remain intentionally unconfigured. See
+`docs/operations/billing/stripe-test-mode-and-production-promotion.md`.
 
 ## Goals
 
@@ -93,19 +85,19 @@ Do not retain `creator` or `studio` as billing-plan aliases. If a migration must
 read them, map them at one compatibility boundary and store only the canonical
 key afterward.
 
-| Policy | Starter | Pro | Agency |
-| --- | ---: | ---: | ---: |
-| Monthly price | $39 | $99 | $399 |
-| Products | 1 | 3 | 10 |
-| Monthly creation credits | 2,000 | 8,000 | 20,000 |
-| Combined successful Clipr + Swapr videos | 3 | 10 | 50 |
-| Products with daily drafts | 0 | 1 | 10 |
-| Simultaneous active AI generations per owner | 1 | 2 | 4 |
-| Queue weight | 1 | 3 | 5 |
-| Queue label | Standard | Priority | Highest priority |
-| Stitch creation | 10 credits | 10 credits | Unlimited |
-| Swipr generation | 20 credits | 20 credits | 20 credits |
-| Standalone avatar/background/expansion photo | 25 credits | 25 credits | 25 credits |
+| Policy                                       |    Starter |        Pro |           Agency |
+| -------------------------------------------- | ---------: | ---------: | ---------------: |
+| Monthly price                                |        $39 |        $99 |             $399 |
+| Products                                     |          1 |          3 |               10 |
+| Monthly creation credits                     |      2,000 |      8,000 |           20,000 |
+| Combined successful Clipr + Swapr videos     |          3 |         10 |               50 |
+| Products with daily drafts                   |          0 |          1 |               10 |
+| Simultaneous active AI generations per owner |          1 |          2 |                4 |
+| Queue weight                                 |          1 |          3 |                5 |
+| Queue label                                  |   Standard |   Priority | Highest priority |
+| Stitch creation                              | 10 credits | 10 credits |        Unlimited |
+| Swipr generation                             | 20 credits | 20 credits |       20 credits |
+| Standalone avatar/background/expansion photo | 25 credits | 25 credits |       25 credits |
 
 An active AI generation means one end-to-end job that has acquired a generation
 slot and has not reached a terminal state. Waiting for a provider prediction or
@@ -191,7 +183,9 @@ type EntitlementState = "active" | "grace" | "inactive";
 ```
 
 - Paid and active subscription: `active`.
-- Cancel-at-period-end: remain `active` through the paid period end.
+- Cancel-at-period-end: remain `active` through the paid period end. Treat both
+  Stripe's `cancel_at_period_end` flag and a concrete future `cancel_at`
+  timestamp as this state.
 - Past due: `grace` for 72 hours by default.
 - Payment recovered during grace: return to `active`.
 - Grace expired, unpaid, incomplete-expired, or ended subscription: `inactive`.
@@ -374,15 +368,15 @@ marketing storage quota.
 
 ## Usage Enforcement by Operation
 
-| Operation | Before work | On success | On failure/cancel |
-| --- | --- | --- | --- |
-| New Starter/Pro stitch | Reserve 10 credits | Commit after the new stitch is saved | Release |
-| New Agency stitch | Verify active entitlement; no credit reservation | Record zero-cost usage metric | No credit action |
-| Swipr generation | Reserve 20 credits | Commit after saved result | Release |
-| Standalone photo operation | Reserve 25 credits | Commit after saved image | Release |
-| Clipr or Swapr video | Reserve 1 combined video | Commit after final saved video | Release |
-| Clipr required scene still | Covered by active Clipr reservation | No separate commit | No separate release |
-| Existing stitch export/download | Authorization and rate limit only | No usage charge | No usage charge |
+| Operation                       | Before work                                      | On success                           | On failure/cancel   |
+| ------------------------------- | ------------------------------------------------ | ------------------------------------ | ------------------- |
+| New Starter/Pro stitch          | Reserve 10 credits                               | Commit after the new stitch is saved | Release             |
+| New Agency stitch               | Verify active entitlement; no credit reservation | Record zero-cost usage metric        | No credit action    |
+| Swipr generation                | Reserve 20 credits                               | Commit after saved result            | Release             |
+| Standalone photo operation      | Reserve 25 credits                               | Commit after saved image             | Release             |
+| Clipr or Swapr video            | Reserve 1 combined video                         | Commit after final saved video       | Release             |
+| Clipr required scene still      | Covered by active Clipr reservation              | No separate commit                   | No separate release |
+| Existing stitch export/download | Authorization and rate limit only                | No usage charge                      | No usage charge     |
 
 Browser-local Stitchr rendering needs a server-issued reservation before
 rendering begins. The saved stitch finalization commits it. Abandoned browser
@@ -507,9 +501,10 @@ worker infrastructure.
 
 ## Downgrades, Cancellation, and Adjustments
 
-- Upgrades may take effect after webhook-confirmed payment and create a new
-  policy snapshot for the remaining period.
-- Downgrades should normally take effect at the next billing period.
+- Upgrades take effect after webhook-confirmed positive prorated payment. Grant
+  only the positive prorated allowance difference and key it to the invoice's
+  subscription billing period so replayed events remain idempotent.
+- Downgrades take effect at the next paid billing period.
 - Cancel-at-period-end retains access through the paid period.
 - Refill credits remain usable through the active paid period, subject to their
   12-month expiry, and become unavailable when the entitlement becomes
@@ -828,14 +823,16 @@ Do not enable live paid checkout until all of these are true:
 The architecture is implementation-ready, but these business decisions require
 explicit approval before production:
 
-- whether the default payment-failure grace period remains 72 hours;
-- whether upgrades are prorated immediately or start next period;
-- whether downgrades are always scheduled for the next period;
 - the general refund policy outside the 10k Organic Views Challenge;
 - supported tax jurisdictions and whether Stripe Tax is enabled;
 - final global provider/model concurrency ceilings after quota review;
 - whether an Agency support override can temporarily exceed 4 active
   generations.
+
+The implemented billing decisions are a 72-hour payment-failure grace period,
+immediate paid upgrades with a positive prorated allowance delta, and
+downgrades at the next renewal. Changing any of these requires a coordinated
+policy, portal, webhook, copy, and test update.
 
 Any changed decision should update this document, the offer and monetization
 documents, Terms, tests, and server policy in the same implementation.

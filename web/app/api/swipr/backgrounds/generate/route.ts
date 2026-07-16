@@ -1,30 +1,28 @@
 import { NextResponse } from "next/server";
-import type { Prediction } from "replicate";
 import { api } from "@/convex/_generated/api";
 import { SWIPR_BACKGROUND_GENERATION_METADATA_HEADER_NAME } from "@/lib/clipstitchr/constants/swiprBackgroundGenerationMetadataHeaderName";
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
-import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createSwiprBackgroundGenerationMetadataText } from "@/lib/clipstitchr/server/createSwiprBackgroundGenerationMetadataText";
-import { createSwiprBackgroundGenerationInput } from "@/lib/clipstitchr/server/createSwiprBackgroundGenerationInput";
 import { createSwiprBackgroundGenerationPrompt } from "@/lib/clipstitchr/server/createSwiprBackgroundGenerationPrompt";
 import { createSwiprBackgroundVariation } from "@/lib/clipstitchr/server/createSwiprBackgroundVariation";
-import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
-import { getReplicateOutputUrl } from "@/lib/clipstitchr/server/getReplicateOutputUrl";
-import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/getReplicatePredictionModelReference";
 import { getSwiprBackgroundGenerationModelId } from "@/lib/clipstitchr/server/getSwiprBackgroundGenerationModelId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
+import { deleteR2Object } from "@/lib/clipstitchr/server/r2/deleteR2Object";
+import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
+import { waitForProviderJob } from "@/lib/clipstitchr/server/waitForProviderJob";
+import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getSwiprBackgroundPresetId } from "@/lib/clipstitchr/utils/getSwiprBackgroundPresetId";
 
 export const runtime = "nodejs";
 
 type SwiprBackgroundGenerationRequest = {
-  prompt?: unknown;
-  productContext?: unknown;
   presetId?: unknown;
+  productContext?: unknown;
+  prompt?: unknown;
 };
 
 export async function POST(request: Request) {
@@ -50,10 +48,10 @@ export async function POST(request: Request) {
         ? getSwiprBackgroundPresetId(body.presetId)
         : undefined;
     const convex = createAuthenticatedConvexHttpClient(convexToken);
-    const rateLimitSecret = getRateLimitApiSecret();
+    const secret = getRateLimitApiSecret();
 
     await convex.mutation(api.rateLimits.consumeSwiprBackgroundGenerate, {
-      secret: rateLimitSecret,
+      secret,
     });
 
     const modelId = getSwiprBackgroundGenerationModelId();
@@ -68,42 +66,73 @@ export async function POST(request: Request) {
       userPrompt,
       variation,
     });
-    const replicate = createReplicateClient();
-    const prediction = await replicate.predictions.create({
-      ...getReplicatePredictionModelReference(modelId),
-      input: createSwiprBackgroundGenerationInput({
-        modelId,
-        prompt,
-      }),
-    });
-    const completedPrediction = await replicate.wait(prediction, {
-      interval: 2000,
-    });
+    const createdAt = new Date().toISOString();
+    const outputRecordId = createId();
+    const providerJobId = `provider:swipr-background:${outputRecordId}`;
+    const reservation = await convex.mutation(
+      api.usage.reserveCreationCredits.reserveCreationCredits,
+      {
+        domainId: providerJobId,
+        domainKind: "provider_job",
+        idempotencyKey: `background-photo:${userId}:${outputRecordId}`,
+        now: createdAt,
+        operation: "background_photo",
+        reservationKind: "worker",
+      },
+    );
 
-    if (completedPrediction.status !== "succeeded") {
-      throw new Error(
-        typeof completedPrediction.error === "string"
-          ? completedPrediction.error
-          : "Replicate did not complete Swipr background generation.",
-      );
+    try {
+      await convex.mutation(api.providerJobs.create, {
+        secret,
+        ownerId: userId,
+        id: providerJobId,
+        jobType: "swipr-background-generation",
+        stage: "awaiting-provider",
+        idempotencyKey: `${userId}:swipr-background:${outputRecordId}`,
+        inputSnapshotJson: JSON.stringify({ modelId, outputRecordId, prompt }),
+        usageReservationId: reservation.reservationId ?? undefined,
+        createdAt,
+      });
+    } catch (error) {
+      if (reservation.reservationId) {
+        await convex.mutation(
+          api.usage.cancelUsageReservation.cancelUsageReservation,
+          {
+            now: new Date().toISOString(),
+            reason: "Background photo job could not be queued",
+            reservationId: reservation.reservationId,
+          },
+        );
+      }
+      throw error;
     }
 
-    const outputUrl = getReplicateOutputUrl(
-      (completedPrediction as Prediction).output,
-    );
-    const outputResponse = await fetchReplicateOutput(outputUrl);
-    const headers = new Headers();
-    const contentType = outputResponse.headers.get("content-type");
-    const generationMetadata =
-      createSwiprBackgroundGenerationMetadataText(variation, userPrompt);
+    const job = await waitForProviderJob(convex, providerJobId);
+    const outputKey = job.outputAssetIds[0];
 
-    headers.set("content-type", contentType ?? "image/jpeg");
-    headers.set(
-      SWIPR_BACKGROUND_GENERATION_METADATA_HEADER_NAME,
-      encodeURIComponent(generationMetadata),
-    );
+    if (!outputKey) {
+      throw new Error("The background finished without an image.");
+    }
 
-    return new NextResponse(outputResponse.body, { headers });
+    await convex.mutation(api.rateLimits.consumeR2Download, { secret });
+    const signed = await getR2DownloadSignedUrl(outputKey);
+    const output = await fetch(signed.url);
+
+    if (!output.ok) {
+      throw new Error("Unable to download the finished background.");
+    }
+
+    const result = await output.arrayBuffer();
+    const headers = new Headers({
+      "content-type": output.headers.get("content-type") ?? "image/jpeg",
+      [SWIPR_BACKGROUND_GENERATION_METADATA_HEADER_NAME]: encodeURIComponent(
+        createSwiprBackgroundGenerationMetadataText(variation, userPrompt),
+      ),
+    });
+
+    await deleteR2Object(outputKey).catch(() => null);
+
+    return new NextResponse(result, { headers });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);
 

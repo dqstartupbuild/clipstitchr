@@ -31,6 +31,8 @@ import { quickEditRemoveRangeValidator } from "./validators/quickEditRemoveRange
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
+import { commitUsageReservationForOwner } from "./usage/commitUsageReservation";
+import { reacquireUsageReservation } from "./usage/reacquireUsageReservation";
 import { videoClipLibraryKindValidator } from "./validators/videoClipLibraryKind";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
@@ -78,6 +80,7 @@ const saveFromMediaWorkerArgs = {
   secret: v.string(),
   ownerId: v.string(),
   automation: v.optional(automationProvenanceValidator),
+  usageReservationId: v.optional(v.string()),
   ...saveArgs,
 };
 
@@ -507,7 +510,10 @@ export const saveFromAutomation = mutation({
 
 export const saveFromMediaWorker = mutation({
   args: saveFromMediaWorkerArgs,
-  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+  handler: async (
+    ctx,
+    { secret, ownerId, automation, usageReservationId, ...args },
+  ) => {
     assertMediaWorkerSecret(secret);
 
     const existingClip = await ctx.db
@@ -544,6 +550,28 @@ export const saveFromMediaWorker = mutation({
 
     await assertProductBelongsToOwner(ctx, ownerId, requestedProductId);
 
+    let committedUsageReservationId = usageReservationId;
+
+    if (args.swaprMetadata?.source === "swapr") {
+      if (!usageReservationId) {
+        throw new Error("Swapr usage reservation is missing.");
+      }
+
+      committedUsageReservationId = await reacquireUsageReservation(
+        ctx,
+        ownerId,
+        usageReservationId,
+        args.updatedAt,
+      );
+      await commitUsageReservationForOwner(
+        ctx,
+        ownerId,
+        committedUsageReservationId,
+        args.updatedAt,
+        "worker",
+      );
+    }
+
     const clipArgs = {
       ...args,
       productId: requestedProductId,
@@ -551,6 +579,7 @@ export const saveFromMediaWorker = mutation({
     const clip = {
       ownerId,
       ...clipArgs,
+      usageReservationId: committedUsageReservationId,
       libraryKind: getVideoClipLibraryKind(clipArgs),
       ...(automation ? { automation } : {}),
     };

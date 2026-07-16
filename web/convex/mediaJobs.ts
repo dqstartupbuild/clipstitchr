@@ -9,7 +9,8 @@ import { mediaJobStatusValidator } from "./validators/mediaJobStatus";
 import { mediaJobTypeValidator } from "./validators/mediaJobType";
 import { listActiveWorkerJobSummaries } from "./listActiveWorkerJobSummaries";
 import { upsertWorkerJobSummary } from "./upsertWorkerJobSummary";
-import { requestWorkerLaunch } from "./workerLaunch";
+import { registerCreatedMediaJob } from "./workerQueue/registerCreatedMediaJob";
+import { updateWorkerQueueEntryStatus } from "./workerQueue/updateWorkerQueueEntryStatus";
 
 const mediaMaxJobAttempts = 3;
 
@@ -70,7 +71,7 @@ export const createUploadNormalization = mutation({
       .unique();
 
     if (existing) {
-      await upsertWorkerJobSummary(ctx, "media", existing);
+      await registerCreatedMediaJob(ctx, existing);
 
       return existing;
     }
@@ -94,13 +95,7 @@ export const createUploadNormalization = mutation({
       throw new Error("Unable to create media job.");
     }
 
-    await upsertWorkerJobSummary(ctx, "media", mediaJob);
-
-    await requestWorkerLaunch({
-      ctx,
-      now: createdAt,
-      worker: "media",
-    });
+    await registerCreatedMediaJob(ctx, mediaJob);
 
     return mediaJob;
   },
@@ -114,10 +109,19 @@ export const createCliprFinalizationFromAutomation = mutation({
     idempotencyKey: v.string(),
     inputSnapshotJson: v.string(),
     createdAt: v.string(),
+    usageReservationId: v.optional(v.string()),
   },
   handler: async (
     ctx,
-    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+    {
+      secret,
+      ownerId,
+      id,
+      idempotencyKey,
+      inputSnapshotJson,
+      createdAt,
+      usageReservationId,
+    },
   ) => {
     assertAutomationWorkerSecret(secret);
 
@@ -129,7 +133,7 @@ export const createCliprFinalizationFromAutomation = mutation({
       .unique();
 
     if (existing) {
-      await upsertWorkerJobSummary(ctx, "media", existing);
+      await registerCreatedMediaJob(ctx, existing);
 
       return existing;
     }
@@ -142,6 +146,7 @@ export const createCliprFinalizationFromAutomation = mutation({
       stage: "queued",
       idempotencyKey,
       inputSnapshotJson,
+      usageReservationId,
       outputAssetIds: [],
       attempt: 0,
       createdAt,
@@ -153,13 +158,7 @@ export const createCliprFinalizationFromAutomation = mutation({
       throw new Error("Unable to create media job.");
     }
 
-    await upsertWorkerJobSummary(ctx, "media", mediaJob);
-
-    await requestWorkerLaunch({
-      ctx,
-      now: createdAt,
-      worker: "media",
-    });
+    await registerCreatedMediaJob(ctx, mediaJob);
 
     return mediaJob;
   },
@@ -173,10 +172,19 @@ export const createCliprFinalizationFromProvider = mutation({
     idempotencyKey: v.string(),
     inputSnapshotJson: v.string(),
     createdAt: v.string(),
+    usageReservationId: v.optional(v.string()),
   },
   handler: async (
     ctx,
-    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+    {
+      secret,
+      ownerId,
+      id,
+      idempotencyKey,
+      inputSnapshotJson,
+      createdAt,
+      usageReservationId,
+    },
   ) => {
     assertProviderWorkerSecret(secret);
 
@@ -188,7 +196,7 @@ export const createCliprFinalizationFromProvider = mutation({
       .unique();
 
     if (existing) {
-      await upsertWorkerJobSummary(ctx, "media", existing);
+      await registerCreatedMediaJob(ctx, existing);
 
       return existing;
     }
@@ -201,6 +209,7 @@ export const createCliprFinalizationFromProvider = mutation({
       stage: "queued",
       idempotencyKey,
       inputSnapshotJson,
+      usageReservationId,
       outputAssetIds: [],
       attempt: 0,
       createdAt,
@@ -212,13 +221,7 @@ export const createCliprFinalizationFromProvider = mutation({
       throw new Error("Unable to create media job.");
     }
 
-    await upsertWorkerJobSummary(ctx, "media", mediaJob);
-
-    await requestWorkerLaunch({
-      ctx,
-      now: createdAt,
-      worker: "media",
-    });
+    await registerCreatedMediaJob(ctx, mediaJob);
 
     return mediaJob;
   },
@@ -232,10 +235,19 @@ export const createHookLabVariantFinalizationFromProvider = mutation({
     idempotencyKey: v.string(),
     inputSnapshotJson: v.string(),
     createdAt: v.string(),
+    usageReservationId: v.optional(v.string()),
   },
   handler: async (
     ctx,
-    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+    {
+      secret,
+      ownerId,
+      id,
+      idempotencyKey,
+      inputSnapshotJson,
+      createdAt,
+      usageReservationId,
+    },
   ) => {
     assertProviderWorkerSecret(secret);
     const existing = await ctx.db
@@ -251,6 +263,7 @@ export const createHookLabVariantFinalizationFromProvider = mutation({
           attempt: 0,
           error: undefined,
           inputSnapshotJson,
+          usageReservationId,
           lockedBy: undefined,
           lockedUntil: undefined,
           stage: "queued",
@@ -262,10 +275,7 @@ export const createHookLabVariantFinalizationFromProvider = mutation({
       const refreshed = await ctx.db.get(existing._id);
 
       if (refreshed) {
-        await upsertWorkerJobSummary(ctx, "media", refreshed);
-      }
-      if (refreshed?.status === "queued") {
-        await requestWorkerLaunch({ ctx, now: createdAt, worker: "media" });
+        await registerCreatedMediaJob(ctx, refreshed);
       }
 
       return refreshed ?? existing;
@@ -279,6 +289,7 @@ export const createHookLabVariantFinalizationFromProvider = mutation({
       stage: "queued",
       idempotencyKey,
       inputSnapshotJson,
+      usageReservationId,
       outputAssetIds: [],
       attempt: 0,
       createdAt,
@@ -290,8 +301,7 @@ export const createHookLabVariantFinalizationFromProvider = mutation({
       throw new Error("Unable to create Hook Lab media job.");
     }
 
-    await upsertWorkerJobSummary(ctx, "media", mediaJob);
-    await requestWorkerLaunch({ ctx, now: createdAt, worker: "media" });
+    await registerCreatedMediaJob(ctx, mediaJob);
 
     return mediaJob;
   },
@@ -305,10 +315,19 @@ export const createSwaprFinalizationFromAutomation = mutation({
     idempotencyKey: v.string(),
     inputSnapshotJson: v.string(),
     createdAt: v.string(),
+    usageReservationId: v.optional(v.string()),
   },
   handler: async (
     ctx,
-    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+    {
+      secret,
+      ownerId,
+      id,
+      idempotencyKey,
+      inputSnapshotJson,
+      createdAt,
+      usageReservationId,
+    },
   ) => {
     assertAutomationWorkerSecret(secret);
 
@@ -320,7 +339,7 @@ export const createSwaprFinalizationFromAutomation = mutation({
       .unique();
 
     if (existing) {
-      await upsertWorkerJobSummary(ctx, "media", existing);
+      await registerCreatedMediaJob(ctx, existing);
 
       return existing;
     }
@@ -333,6 +352,7 @@ export const createSwaprFinalizationFromAutomation = mutation({
       stage: "queued",
       idempotencyKey,
       inputSnapshotJson,
+      usageReservationId,
       outputAssetIds: [],
       attempt: 0,
       createdAt,
@@ -344,13 +364,7 @@ export const createSwaprFinalizationFromAutomation = mutation({
       throw new Error("Unable to create media job.");
     }
 
-    await upsertWorkerJobSummary(ctx, "media", mediaJob);
-
-    await requestWorkerLaunch({
-      ctx,
-      now: createdAt,
-      worker: "media",
-    });
+    await registerCreatedMediaJob(ctx, mediaJob);
 
     return mediaJob;
   },
@@ -364,10 +378,19 @@ export const createSwaprFinalizationFromProvider = mutation({
     idempotencyKey: v.string(),
     inputSnapshotJson: v.string(),
     createdAt: v.string(),
+    usageReservationId: v.optional(v.string()),
   },
   handler: async (
     ctx,
-    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+    {
+      secret,
+      ownerId,
+      id,
+      idempotencyKey,
+      inputSnapshotJson,
+      createdAt,
+      usageReservationId,
+    },
   ) => {
     assertProviderWorkerSecret(secret);
 
@@ -379,7 +402,7 @@ export const createSwaprFinalizationFromProvider = mutation({
       .unique();
 
     if (existing) {
-      await upsertWorkerJobSummary(ctx, "media", existing);
+      await registerCreatedMediaJob(ctx, existing);
 
       return existing;
     }
@@ -392,6 +415,7 @@ export const createSwaprFinalizationFromProvider = mutation({
       stage: "queued",
       idempotencyKey,
       inputSnapshotJson,
+      usageReservationId,
       outputAssetIds: [],
       attempt: 0,
       createdAt,
@@ -403,13 +427,7 @@ export const createSwaprFinalizationFromProvider = mutation({
       throw new Error("Unable to create media job.");
     }
 
-    await upsertWorkerJobSummary(ctx, "media", mediaJob);
-
-    await requestWorkerLaunch({
-      ctx,
-      now: createdAt,
-      worker: "media",
-    });
+    await registerCreatedMediaJob(ctx, mediaJob);
 
     return mediaJob;
   },
@@ -423,10 +441,19 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
     idempotencyKey: v.string(),
     inputSnapshotJson: v.string(),
     createdAt: v.string(),
+    usageReservationId: v.optional(v.string()),
   },
   handler: async (
     ctx,
-    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+    {
+      secret,
+      ownerId,
+      id,
+      idempotencyKey,
+      inputSnapshotJson,
+      createdAt,
+      usageReservationId,
+    },
   ) => {
     assertProviderWorkerSecret(secret);
 
@@ -451,22 +478,16 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
           lockedBy: undefined,
           lockedUntil: undefined,
           error: undefined,
+          usageReservationId,
           updatedAt: createdAt,
         });
-        await requestWorkerLaunch({
-          ctx,
-          now: createdAt,
-          worker: "media",
-        });
-
         const retriedJob = (await ctx.db.get(existing._id)) ?? existing;
-
-        await upsertWorkerJobSummary(ctx, "media", retriedJob);
+        await registerCreatedMediaJob(ctx, retriedJob);
 
         return retriedJob;
       }
 
-      await upsertWorkerJobSummary(ctx, "media", existing);
+      await registerCreatedMediaJob(ctx, existing);
 
       return existing;
     }
@@ -479,6 +500,7 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
       stage: "queued",
       idempotencyKey,
       inputSnapshotJson,
+      usageReservationId,
       outputAssetIds: [],
       attempt: 0,
       createdAt,
@@ -490,13 +512,7 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
       throw new Error("Unable to create media job.");
     }
 
-    await upsertWorkerJobSummary(ctx, "media", mediaJob);
-
-    await requestWorkerLaunch({
-      ctx,
-      now: createdAt,
-      worker: "media",
-    });
+    await registerCreatedMediaJob(ctx, mediaJob);
 
     return mediaJob;
   },
@@ -649,6 +665,14 @@ export const markStatus = mutation({
     if (updatedJob) {
       await upsertWorkerJobSummary(ctx, "media", updatedJob);
     }
+
+    await updateWorkerQueueEntryStatus(ctx, {
+      error,
+      now: updatedAt,
+      sourceId: id,
+      sourceKind: "media_job",
+      status,
+    });
   },
 });
 

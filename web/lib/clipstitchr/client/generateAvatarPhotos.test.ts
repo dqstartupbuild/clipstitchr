@@ -37,7 +37,6 @@ describe("generateAvatarPhotos", () => {
       avatarDescription: "A founder with short hair",
       context: "Launch post",
       count: 3,
-      generationSpeedTier: "pro",
       identityMode: "similar",
       lighting: "studio",
       location: "office",
@@ -59,7 +58,7 @@ describe("generateAvatarPhotos", () => {
     expect((formData as FormData).get("avatarName")).toBe("Founder");
     expect((formData as FormData).get("context")).toBe("Launch post");
     expect((formData as FormData).get("count")).toBe("3");
-    expect((formData as FormData).get("generationSpeedTier")).toBe("pro");
+    expect((formData as FormData).get("generationSpeedTier")).toBeNull();
     expect((formData as FormData).get("identityMode")).toBe("similar");
     expect((formData as FormData).get("lighting")).toBe("studio");
     expect((formData as FormData).get("location")).toBe("office");

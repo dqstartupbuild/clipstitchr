@@ -22,6 +22,7 @@ type ConvexFunction<Args, Result> = {
 };
 
 const mocks = vi.hoisted(() => ({
+  commitUserStitchUsage: vi.fn(),
   getAuthenticatedOwnerId: vi.fn(),
   assertMediaWorkerSecret: vi.fn(),
   mutation: vi.fn((definition) => definition),
@@ -42,6 +43,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./_generated/server", () => ({
+  internalMutation: mocks.mutation,
   mutation: mocks.mutation,
   query: mocks.query,
 }));
@@ -63,11 +65,18 @@ vi.mock("./aggregateCounts", () => ({
   stitchProductCounts: mocks.stitchProductCounts,
 }));
 
+vi.mock("./usage/commitUserStitchUsage", () => ({
+  commitUserStitchUsage: mocks.commitUserStitchUsage,
+}));
+
 function getHandler<Args, Result>(convexFunction: unknown) {
   return (convexFunction as ConvexFunction<Args, Result>).handler;
 }
 
-function createQueryChain(uniqueValues: unknown[] = [], collect: unknown[] = []) {
+function createQueryChain(
+  uniqueValues: unknown[] = [],
+  collect: unknown[] = [],
+) {
   const indexQuery = {
     eq: vi.fn(() => indexQuery),
   };
@@ -76,11 +85,13 @@ function createQueryChain(uniqueValues: unknown[] = [], collect: unknown[] = [])
     order: vi.fn(() => chain),
     paginate: vi.fn(async () => collect),
     unique: vi.fn(async () => uniqueValues.shift() ?? null),
-    withIndex: vi.fn((_indexName: string, callback: (q: typeof indexQuery) => void) => {
-      callback(indexQuery);
+    withIndex: vi.fn(
+      (_indexName: string, callback: (q: typeof indexQuery) => void) => {
+        callback(indexQuery);
 
-      return chain;
-    }),
+        return chain;
+      },
+    ),
   };
 
   return chain;
@@ -140,6 +151,7 @@ describe("convex stitches", () => {
     vi.clearAllMocks();
     mocks.getAuthenticatedOwnerId.mockResolvedValue("owner_123");
     mocks.rateLimiter.limit.mockResolvedValue(undefined);
+    mocks.commitUserStitchUsage.mockResolvedValue("reservation_123");
   });
 
   it("lists, gets, inserts, and patches stitches", async () => {
@@ -152,9 +164,9 @@ describe("convex stitches", () => {
         sortOrder: "oldest",
       }),
     ).resolves.toBe(stitches);
-    await expect(getHandler(get)(setup.ctx, { id: "stitch_1" })).resolves.toEqual(
-      { _id: "doc_1", id: "stitch_1" },
-    );
+    await expect(
+      getHandler(get)(setup.ctx, { id: "stitch_1" }),
+    ).resolves.toEqual({ _id: "doc_1", id: "stitch_1" });
     expect(setup.chain.order).toHaveBeenCalledWith("asc");
     expect(setup.chain.paginate).toHaveBeenCalledWith({
       cursor: null,
@@ -408,16 +420,22 @@ describe("convex stitches", () => {
     await expect(
       getHandler(updatePoster)(setup.ctx, {
         id: "missing",
-        posterObject: { contentType: "image/jpeg", key: "poster.jpg", size: 10 },
+        posterObject: {
+          contentType: "image/jpeg",
+          key: "poster.jpg",
+          size: 10,
+        },
         posterVersion: 2,
       }),
     ).rejects.toThrow("Stitch not found.");
 
     setup = createCtx([{ _id: "doc_1", id: "stitch_1" }, null]);
-    await expect(getHandler(remove)(setup.ctx, { id: "stitch_1" })).resolves.toEqual(
-      { _id: "doc_1", id: "stitch_1" },
-    );
-    await expect(getHandler(remove)(setup.ctx, { id: "missing" })).resolves.toBeNull();
+    await expect(
+      getHandler(remove)(setup.ctx, { id: "stitch_1" }),
+    ).resolves.toEqual({ _id: "doc_1", id: "stitch_1" });
+    await expect(
+      getHandler(remove)(setup.ctx, { id: "missing" }),
+    ).resolves.toBeNull();
     expect(setup.ctx.db.delete).toHaveBeenCalledWith("doc_1");
   });
 

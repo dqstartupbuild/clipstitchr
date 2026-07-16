@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => ({
   markAutomationRunStatus: vi.fn(),
   markAutomationRunSkipped: vi.fn(),
   mutation: vi.fn((definition) => definition),
+  tryReserveAiVideoForAutomation: vi.fn(),
 }));
 
 vi.mock("./_generated/server", () => ({
@@ -67,6 +68,10 @@ vi.mock("../lib/clipstitchr/constants/automationToolFeatureFlags", () => ({
 
 vi.mock("./isWithinAutomationGlobalWindow", () => ({
   isWithinAutomationGlobalWindow: mocks.isWithinAutomationGlobalWindow,
+}));
+
+vi.mock("./usage/tryReserveAiVideoForAutomation", () => ({
+  tryReserveAiVideoForAutomation: mocks.tryReserveAiVideoForAutomation,
 }));
 
 function getHandler<Args, Result>(convexFunction: unknown) {
@@ -165,6 +170,10 @@ describe("automationClipr", () => {
     });
     mocks.getDefaultProductForOwner.mockResolvedValue(product);
     mocks.getDefaultAvatarForOwner.mockResolvedValue(avatar);
+    mocks.tryReserveAiVideoForAutomation.mockResolvedValue({
+      planKey: "pro",
+      reservationId: "reservation_123",
+    });
   });
 
   it("coerces hidden Script preferences to automatic Any visual clips", async () => {
@@ -212,9 +221,7 @@ describe("automationClipr", () => {
 
     expect(createTaskCall).toBeDefined();
 
-    const taskInput = JSON.parse(
-      createTaskCall?.[1].inputSnapshotJson,
-    ) as {
+    const taskInput = JSON.parse(createTaskCall?.[1].inputSnapshotJson) as {
       generationMode: string;
       requestedGenerationMode: string;
       requestedVideoModelId: string;
@@ -271,9 +278,7 @@ describe("automationClipr", () => {
     );
 
     const createTaskCall = mocks.createAutomationTask.mock.calls[0];
-    const taskInput = JSON.parse(
-      createTaskCall?.[1].inputSnapshotJson,
-    ) as {
+    const taskInput = JSON.parse(createTaskCall?.[1].inputSnapshotJson) as {
       generationMode: string;
       requestedGenerationMode: string;
       targetDurationSeconds: number;

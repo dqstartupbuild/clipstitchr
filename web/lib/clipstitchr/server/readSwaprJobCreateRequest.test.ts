@@ -32,25 +32,25 @@ function createBody(overrides: object = {}) {
 
 describe("readSwaprJobCreateRequest", () => {
   it("normalizes a valid Swapr job request", async () => {
-    await expect(readSwaprJobCreateRequest(createRequest(createBody()))).resolves
-      .toEqual({
-        batchId: "batch_1",
-        characterOrientation: "video",
-        estimatedDurationSeconds: 4.5,
-        generationSpeedTier: "pro",
-        keepOriginalSound: true,
-        mode: "pro",
-        photoId: "photo_1",
-        prompt: "product demo",
-        segmentIndex: 1,
-        totalEstimatedDurationSeconds: 12,
-        totalSegmentCount: 3,
-        videoObject: {
-          contentType: "video/mp4",
-          key: "users/user_1/swapr/reference.mp4",
-          size: 11,
-        },
-      });
+    await expect(
+      readSwaprJobCreateRequest(createRequest(createBody())),
+    ).resolves.toEqual({
+      batchId: "batch_1",
+      characterOrientation: "video",
+      estimatedDurationSeconds: 4.5,
+      keepOriginalSound: true,
+      mode: "pro",
+      photoId: "photo_1",
+      prompt: "product demo",
+      segmentIndex: 1,
+      totalEstimatedDurationSeconds: 12,
+      totalSegmentCount: 3,
+      videoObject: {
+        contentType: "video/mp4",
+        key: "users/user_1/swapr/reference.mp4",
+        size: 11,
+      },
+    });
   });
 
   it("uses safe defaults for optional generation fields", async () => {
@@ -72,7 +72,6 @@ describe("readSwaprJobCreateRequest", () => {
       batchId: "single",
       characterOrientation: "video",
       estimatedDurationSeconds: 4.5,
-      generationSpeedTier: "studio",
       keepOriginalSound: false,
       mode: "pro",
       prompt: "",
@@ -115,7 +114,9 @@ describe("readSwaprJobCreateRequest", () => {
 
     await expect(
       readSwaprJobCreateRequest(
-        createRequest(createBody({ videoObject: { contentType: "video/mp4" } })),
+        createRequest(
+          createBody({ videoObject: { contentType: "video/mp4" } }),
+        ),
       ),
     ).rejects.toThrow("Missing Swapr reference video object key.");
 

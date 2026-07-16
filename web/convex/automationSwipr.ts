@@ -22,6 +22,7 @@ import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../lib/clipsti
 import { getSwiprCallToActionStyle } from "../lib/clipstitchr/utils/getSwiprCallToActionStyle";
 import { normalizeSwiprCreativeContext } from "../lib/clipstitchr/utils/normalizeSwiprCreativeContext";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
+import { tryReserveCreationCreditsForAutomation } from "./usage/tryReserveCreationCreditsForAutomation";
 
 const AUTOMATION_SWIPR_SELECTED_PRODUCT_LOOKUP_LIMIT = 20;
 
@@ -132,18 +133,48 @@ export const planDaily = mutation({
         defaultAutomationStitchrColorChoice,
     );
 
+    const taskId = `${runId}:batch`;
+    const usageReservationIds: string[] = [];
+
+    for (let index = 0; index < swiprGenerationCount; index += 1) {
+      const reservation = await tryReserveCreationCreditsForAutomation(ctx, {
+        batchId: runId,
+        domainId: `${taskId}:${index}`,
+        idempotencyKey: `swipr:${ownerId}:${taskId}:${index}`,
+        now,
+        operation: "swipr",
+        ownerId,
+      });
+
+      if (!reservation?.reservationId) {
+        break;
+      }
+
+      usageReservationIds.push(reservation.reservationId);
+    }
+
+    if (!usageReservationIds.length) {
+      await markAutomationRunSkipped(
+        ctx,
+        run._id,
+        "Swipr automation is paused until plan access or credits are available.",
+        now,
+      );
+      return { runId, status: "skipped", taskIds: [] };
+    }
+
     await consumeAutomationBudget(ctx, {
       ownerId,
       productId,
       tool: "swipr",
-      count: swiprGenerationCount,
-      providerCostUnits: swiprGenerationCount * 5,
+      count: usageReservationIds.length,
+      providerCostUnits: usageReservationIds.length * 5,
     });
 
     const task = await createAutomationTask(ctx, {
       ownerId,
       productId,
-      id: `${runId}:batch`,
+      id: taskId,
       runId,
       tool: "swipr",
       taskType: "swipr-draft",
@@ -151,7 +182,7 @@ export const planDaily = mutation({
       idempotencyKey: `${ownerId}:${productScopeKey}:${automationDate}:swipr:batch`,
       inputSnapshotJson: JSON.stringify({
         automationDate,
-        generationCount: swiprGenerationCount,
+        generationCount: usageReservationIds.length,
         productId: product.id,
         productName: product.name,
         productDetails: product.productDetails,
@@ -178,6 +209,7 @@ export const planDaily = mutation({
         swiprTextStrokeColorChoice,
       }),
       createdAt: now,
+      usageReservationIds,
     });
 
     await markAutomationRunStatus(ctx, {

@@ -14,11 +14,13 @@ type QueryResult = {
 
 const mocks = vi.hoisted(() => ({
   assertAutomationWorkerSecret: vi.fn(),
+  enqueueWorkerQueueEntry: vi.fn(),
   mutation: vi.fn((definition) => definition),
   requestWorkerLaunch: vi.fn(),
   rateLimiter: {
     limit: vi.fn(),
   },
+  tryReserveCreationCreditsForAutomation: vi.fn(),
 }));
 
 vi.mock("./_generated/server", () => ({
@@ -35,6 +37,15 @@ vi.mock("./workerLaunch", () => ({
 
 vi.mock("./rateLimiter", () => ({
   rateLimiter: mocks.rateLimiter,
+}));
+
+vi.mock("./usage/tryReserveCreationCreditsForAutomation", () => ({
+  tryReserveCreationCreditsForAutomation:
+    mocks.tryReserveCreationCreditsForAutomation,
+}));
+
+vi.mock("./workerQueue/enqueueWorkerQueueEntry", () => ({
+  enqueueWorkerQueueEntry: mocks.enqueueWorkerQueueEntry,
 }));
 
 function getHandler<Args, Result>(convexFunction: unknown) {
@@ -185,6 +196,10 @@ describe("stitchrBatch.plan existing runs", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.rateLimiter.limit.mockResolvedValue(undefined);
+    mocks.tryReserveCreationCreditsForAutomation.mockResolvedValue({
+      planKey: "pro",
+      reservationId: "reservation_123",
+    });
   });
 
   it("returns active queued task IDs and relaunches the provider worker", async () => {

@@ -63,6 +63,7 @@ export async function createCliprJobAvatarImageOutput({
 
   const generatedAvatarImage = await createCliprSceneAvatarImage({
     avatarDescription: documents.avatar.description,
+    quality: "auto",
     referenceImageUrl,
     replicate,
     scene: avatarSourceScene,

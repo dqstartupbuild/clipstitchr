@@ -24,6 +24,7 @@
     "@content-collections/mdx": "^0.2.2",
     "@convex-dev/aggregate": "^0.2.1",
     "@convex-dev/rate-limiter": "^0.3.2",
+    "@convex-dev/stripe": "^0.1.6",
     "@mediabunny/aac-encoder": "^1.44.0",
     "@vercel/analytics": "^2.0.1",
     "convex": "^1.38.0",
@@ -37,6 +38,7 @@
     "react-dom": "19.2.4",
     "remark-gfm": "^4.0.1",
     "replicate": "^1.4.0",
+    "stripe": "^22.2.1",
     "tsx": "^4.22.4",
     "zod": "^4.3.6"
   },
@@ -53,9 +55,9 @@
     "vitest": "^4.1.4"
   },
   "overrides": {
-  "js-yaml": "^4.1.2",
-  "postcss": "^8.5.10",
-  "uuid": "^11.1.1",
-  "ws": "^8.20.2"
+    "js-yaml": "^4.1.2",
+    "postcss": "^8.5.10",
+    "uuid": "^11.1.1",
+    "ws": "^8.20.2"
   }
 }

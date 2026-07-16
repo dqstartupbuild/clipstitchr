@@ -10,6 +10,8 @@ import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { r2ObjectValidator } from "./validators/r2Object";
+import { commitUsageReservationForOwner } from "./usage/commitUsageReservation";
+import { reacquireUsageReservation } from "./usage/reacquireUsageReservation";
 
 const preparationValidator = v.union(
   v.literal("ai-outpaint"),
@@ -57,6 +59,7 @@ const saveFromProviderArgs = {
   secret: v.string(),
   ownerId: v.string(),
   automation: v.optional(automationProvenanceValidator),
+  usageReservationId: v.optional(v.string()),
   ...saveArgs,
 };
 
@@ -259,7 +262,10 @@ export const saveFromAutomation = mutation({
 
 export const saveFromProvider = mutation({
   args: saveFromProviderArgs,
-  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+  handler: async (
+    ctx,
+    { secret, ownerId, automation, usageReservationId, ...args },
+  ) => {
     assertProviderWorkerSecret(secret);
 
     if (automation) {
@@ -278,6 +284,24 @@ export const saveFromProvider = mutation({
     }
     await assertProductBelongsToOwner(ctx, ownerId, args.productId);
 
+    let committedUsageReservationId = usageReservationId;
+
+    if (usageReservationId) {
+      committedUsageReservationId = await reacquireUsageReservation(
+        ctx,
+        ownerId,
+        usageReservationId,
+        args.updatedAt,
+      );
+      await commitUsageReservationForOwner(
+        ctx,
+        ownerId,
+        committedUsageReservationId,
+        args.updatedAt,
+        "worker",
+      );
+    }
+
     const existingPhoto = await ctx.db
       .query("photoAssets")
       .withIndex("by_owner_id", (q) =>
@@ -287,6 +311,9 @@ export const saveFromProvider = mutation({
     const photo = {
       ownerId,
       ...args,
+      ...(committedUsageReservationId
+        ? { usageReservationId: committedUsageReservationId }
+        : {}),
       ...(automation ? { automation } : {}),
     };
 

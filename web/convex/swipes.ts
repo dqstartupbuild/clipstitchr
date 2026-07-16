@@ -15,6 +15,7 @@ import { r2ObjectValidator } from "./validators/r2Object";
 import { swiprProductSourceTypeValidator } from "./validators/swiprProductSourceType";
 import { swiprSlideValidator } from "./validators/swiprSlide";
 import { normalizeSwiprSwipeFields } from "../lib/clipstitchr/utils/normalizeSwiprSwipeFields";
+import { commitSwipeUsageReservation } from "./usage/commitSwipeUsageReservation";
 
 const postedStatusValidator = v.union(
   v.literal("active"),
@@ -39,6 +40,7 @@ const saveArgs = {
   slides: v.array(swiprSlideValidator),
   posterObject: v.optional(r2ObjectValidator),
   posterVersion: v.optional(v.number()),
+  usageReservationId: v.optional(v.string()),
   createdAt: v.string(),
   updatedAt: v.string(),
 };
@@ -47,6 +49,13 @@ const saveFromAutomationArgs = {
   secret: v.string(),
   ownerId: v.string(),
   automation: automationProvenanceValidator,
+  ...saveArgs,
+};
+
+const saveFromProviderArgs = {
+  secret: v.string(),
+  ownerId: v.string(),
+  automation: v.optional(automationProvenanceValidator),
   ...saveArgs,
 };
 
@@ -139,7 +148,7 @@ export const get = query({
 
 export const save = mutation({
   args: saveArgs,
-  handler: async (ctx, args) => {
+  handler: async (ctx, { usageReservationId, ...args }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const background = await ctx.db
       .query("swiprBackgrounds")
@@ -197,10 +206,20 @@ export const save = mutation({
     );
 
     const normalizedFields = normalizeSwiprSwipeFields(args);
+    const committedUsageReservationId = await commitSwipeUsageReservation(
+      ctx,
+      ownerId,
+      usageReservationId,
+      args.updatedAt,
+      "user_action",
+    );
     const swipe = {
       ownerId,
       ...args,
       ...normalizedFields,
+      ...(committedUsageReservationId
+        ? { usageReservationId: committedUsageReservationId }
+        : {}),
     };
 
     if (!normalizedFields.name) {
@@ -252,7 +271,10 @@ export const save = mutation({
 
 export const saveFromAutomation = mutation({
   args: saveFromAutomationArgs,
-  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+  handler: async (
+    ctx,
+    { secret, ownerId, automation, usageReservationId, ...args },
+  ) => {
     assertAutomationWorkerSecret(secret);
 
     const background = await ctx.db
@@ -304,11 +326,21 @@ export const saveFromAutomation = mutation({
       )
       .unique();
     const normalizedFields = normalizeSwiprSwipeFields(args);
+    const committedUsageReservationId = await commitSwipeUsageReservation(
+      ctx,
+      ownerId,
+      usageReservationId,
+      args.updatedAt,
+      "worker",
+    );
     const swipe = {
       ownerId,
       ...args,
       ...normalizedFields,
       automation,
+      ...(committedUsageReservationId
+        ? { usageReservationId: committedUsageReservationId }
+        : {}),
     };
 
     if (existingSwipe) {
@@ -334,8 +366,11 @@ export const saveFromAutomation = mutation({
 });
 
 export const saveFromProvider = mutation({
-  args: saveFromAutomationArgs,
-  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+  args: saveFromProviderArgs,
+  handler: async (
+    ctx,
+    { secret, ownerId, automation, usageReservationId, ...args },
+  ) => {
     assertProviderWorkerSecret(secret);
 
     const background = await ctx.db
@@ -350,7 +385,7 @@ export const saveFromProvider = mutation({
       .unique();
 
     if (!background || background.uploadedByOwnerId !== ownerId || !product) {
-      throw new Error("Automation Swipe source records were not found.");
+      throw new Error("Swipe source records were not found.");
     }
 
     const slideBackgroundIds = [
@@ -372,26 +407,48 @@ export const saveFromProvider = mutation({
       }
     }
 
-    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
-      key: ownerId,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
-      throws: true,
-    });
-
     const existingSwipe = await ctx.db
       .query("swipes")
       .withIndex("by_owner_id", (q) =>
         q.eq("ownerId", ownerId).eq("id", args.id),
       )
       .unique();
+
+    if (automation) {
+      await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+        key: ownerId,
+        throws: true,
+      });
+      await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+        throws: true,
+      });
+    } else {
+      await rateLimiter.limit(
+        ctx,
+        existingSwipe ? "convexMetadataUpdate" : "convexRecordSave",
+        {
+          key: ownerId,
+          throws: true,
+        },
+      );
+    }
+
     const normalizedFields = normalizeSwiprSwipeFields(args);
+    const committedUsageReservationId = await commitSwipeUsageReservation(
+      ctx,
+      ownerId,
+      usageReservationId,
+      args.updatedAt,
+      "worker",
+    );
     const swipe = {
       ownerId,
       ...args,
       ...normalizedFields,
-      automation,
+      ...(automation ? { automation } : {}),
+      ...(committedUsageReservationId
+        ? { usageReservationId: committedUsageReservationId }
+        : {}),
     };
 
     if (existingSwipe) {
@@ -410,6 +467,25 @@ export const saveFromProvider = mutation({
 
     if (insertedSwipe) {
       await upsertSwipeCard(ctx, insertedSwipe);
+    }
+
+    if (!automation) {
+      const notificationCopy = getSwipeNotificationCopy({
+        name: normalizedFields.name,
+        productName: normalizedFields.productName,
+      });
+
+      await createNotification(ctx, {
+        ownerId,
+        productId: args.productSourceId,
+        sourceType: "swipe",
+        sourceId: args.id,
+        dedupeKey: `swipe:${args.id}:created`,
+        title: notificationCopy.title,
+        preview: notificationCopy.preview,
+        message: notificationCopy.message,
+        createdAt: args.createdAt,
+      });
     }
 
     return swipeDocumentId;

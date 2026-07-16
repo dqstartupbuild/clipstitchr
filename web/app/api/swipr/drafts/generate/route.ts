@@ -3,18 +3,14 @@ import { createProductProfileFromConvexDocument } from "@/lib/clipstitchr/backen
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
-import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
-import { createSwiprBatchTextGeneration } from "@/lib/clipstitchr/server/createSwiprBatchTextGeneration";
-import { createSwiprDraftSlides } from "@/lib/clipstitchr/server/createSwiprDraftSlides";
+import { getCliprHookModelId } from "@/lib/clipstitchr/server/getCliprHookModelId";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
-import { pickSwiprDraftBackgroundIds } from "@/lib/clipstitchr/server/pickSwiprDraftBackgroundIds";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { readSwiprLibraryQueries } from "@/lib/clipstitchr/server/readSwiprLibraryQueries";
+import { waitForProviderJob } from "@/lib/clipstitchr/server/waitForProviderJob";
 import { SWIPR_BATCH_DRAFT_COUNT } from "@/lib/clipstitchr/constants/swiprBatchDraftCount";
 import { SWIPR_MAX_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
-import { getProductSwiprContext } from "@/lib/clipstitchr/utils/getProductSwiprContext";
-import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
 import { normalizeSwiprLibraryQueryKey } from "@/lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getSwiprCallToActionStyle } from "@/lib/clipstitchr/utils/getSwiprCallToActionStyle";
@@ -56,12 +52,8 @@ export async function POST(request: Request) {
 
     const body = (await request.json()) as SwiprDraftGenerationRequest;
     const count = SWIPR_BATCH_DRAFT_COUNT;
-    const callToActionStyle = getSwiprCallToActionStyle(
-      body.callToActionStyle,
-    );
-    const creativeContext = normalizeSwiprCreativeContext(
-      body.creativeContext,
-    );
+    const callToActionStyle = getSwiprCallToActionStyle(body.callToActionStyle);
+    const creativeContext = normalizeSwiprCreativeContext(body.creativeContext);
     const productId = readProductId(body.productId);
     const slideCount = SWIPR_MAX_SLIDE_COUNT;
     const selectedLibraryQueries = readSwiprLibraryQueries(
@@ -74,8 +66,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const selectedLibraryQueryKeys = selectedLibraryQueries.map((libraryQuery) =>
-      normalizeSwiprLibraryQueryKey(libraryQuery),
+    const selectedLibraryQueryKeys = selectedLibraryQueries.map(
+      (libraryQuery) => normalizeSwiprLibraryQueryKey(libraryQuery),
     );
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const secret = getRateLimitApiSecret();
@@ -105,61 +97,79 @@ export async function POST(request: Request) {
     }
 
     const product = createProductProfileFromConvexDocument(productDocument);
-    const textGeneration = await createSwiprBatchTextGeneration({
-      callToActionStyle,
-      count,
-      creativeContext,
-      product,
-      replicate: createReplicateClient(),
-      slideCount,
-    });
-    const availableBackgroundIds = libraryBackgrounds.map(
-      (background) => background.id,
+    const batchId = createId();
+    const reservations = await convex.mutation(
+      api.usage.reserveCreationCreditBatch.reserveCreationCreditBatch,
+      {
+        batchId,
+        count,
+        domainIdPrefix: `swipr:${batchId}`,
+        domainKind: "swipe",
+        idempotencyPrefix: `swipr:${userId}:${batchId}`,
+        now: new Date().toISOString(),
+        operation: "swipr",
+      },
     );
-    const coverBackgroundIds = pickSwiprDraftBackgroundIds({
-      availableBackgroundIds,
-      slideCount: textGeneration.slideshows.length,
-    });
-    const createdSwipeIds: string[] = [];
 
-    for (const [index, slideshow] of textGeneration.slideshows.entries()) {
-      const backgroundIds = pickSwiprDraftBackgroundIds({
-        availableBackgroundIds,
-        preferredFirstBackgroundId: coverBackgroundIds[index],
-        slideCount,
-      });
-      const slides = createSwiprDraftSlides({
-        backgroundIds,
-        texts: slideshow.slides,
-      });
-      const id = createId();
-      const now = new Date().toISOString();
-
-      await convex.mutation(api.swipes.save, {
-        id,
-        backgroundId: backgroundIds[0],
-        caption: slideshow.caption,
-        createdAt: now,
-        description: slideshow.description,
-        hashtags: slideshow.hashtags,
-        name: getSwiprSwipeName(product.name),
-        productContext: getProductSwiprContext(product),
-        productName: product.name,
-        productSourceId: product.id,
-        productSourceType: "saved-product",
-        rationale: slideshow.rationale,
-        slides,
-        socialCaption: slideshow.socialCaption,
-        updatedAt: now,
-      });
-      createdSwipeIds.push(id);
+    if (!reservations.length) {
+      throw new Error(
+        "You need 20 creation credits for each Swipe. Add credits or wait for your next plan renewal.",
+      );
     }
 
+    const usageReservationIds = reservations.flatMap((reservation) =>
+      reservation.reservationId ? [reservation.reservationId] : [],
+    );
+    const providerJobId = `provider:manual-swipr-draft:${batchId}`;
+
+    try {
+      await convex.mutation(api.providerJobs.create, {
+        secret,
+        ownerId: userId,
+        id: providerJobId,
+        jobType: "manual-swipr-draft",
+        stage: "awaiting-provider",
+        idempotencyKey: `${userId}:manual-swipr-draft:${batchId}`,
+        inputSnapshotJson: JSON.stringify({
+          availableBackgroundIds: libraryBackgrounds.map(
+            (background) => background.id,
+          ),
+          batchId,
+          callToActionStyle,
+          count: usageReservationIds.length,
+          creativeContext,
+          product,
+          slideCount,
+        }),
+        usageReservationIds,
+        createdAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      await Promise.all(
+        reservations.flatMap((reservation) =>
+          reservation.reservationId
+            ? [
+                convex.mutation(
+                  api.usage.cancelUsageReservation.cancelUsageReservation,
+                  {
+                    now: new Date().toISOString(),
+                    reason: "Swipr draft job could not be queued",
+                    reservationId: reservation.reservationId,
+                  },
+                ),
+              ]
+            : [],
+        ),
+      );
+      throw error;
+    }
+    const job = await waitForProviderJob(convex, providerJobId);
+
     return Response.json({
-      count: createdSwipeIds.length,
-      ids: createdSwipeIds,
-      providerModel: textGeneration.providerModel,
-      providerPredictionId: textGeneration.providerPredictionId,
+      count: job.outputAssetIds.length,
+      ids: job.outputAssetIds,
+      providerModel: getCliprHookModelId(),
+      providerPredictionId: job.providerJobIds[0],
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

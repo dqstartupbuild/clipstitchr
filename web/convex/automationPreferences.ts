@@ -26,6 +26,7 @@ import { automationToolValidator } from "./validators/automationTool";
 import { automationCliprGenerationModeValidator } from "./validators/automationCliprGenerationMode";
 import { swiprCallToActionStyleValidator } from "./validators/swiprCallToActionStyle";
 import type { AutomationTool } from "../lib/clipstitchr/types/AutomationTool";
+import { assertDailyDraftProductLimit } from "./automation/assertDailyDraftProductLimit";
 
 function filterEnabledAutomationTools(tools: AutomationTool[]) {
   return Array.from(new Set(tools)).filter(getIsAutomationToolEnabled);
@@ -137,6 +138,15 @@ export const save = mutation({
   handler: async (ctx, args) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     await assertProductBelongsToOwner(ctx, ownerId, args.productId);
+
+    if (args.enabled) {
+      await assertDailyDraftProductLimit(
+        ctx,
+        ownerId,
+        args.productId,
+        args.updatedAt,
+      );
+    }
 
     const existing = args.productId
       ? await ctx.db

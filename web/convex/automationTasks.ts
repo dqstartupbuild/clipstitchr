@@ -21,6 +21,9 @@ import { markAutomationRunCompletedWhenTasksDone } from "./markAutomationRunComp
 import { requestWorkerLaunch } from "./workerLaunch";
 import { upsertAutomationRunSummary } from "./upsertAutomationRunSummary";
 import { upsertAutomationTaskSummary } from "./upsertAutomationTaskSummary";
+import { enqueueWorkerQueueEntry } from "./workerQueue/enqueueWorkerQueueEntry";
+import { getGenerationRequiredForAutomationTask } from "./workerQueue/getGenerationRequiredForAutomationTask";
+import { updateWorkerQueueEntryStatus } from "./workerQueue/updateWorkerQueueEntryStatus";
 
 type AutomationTaskDocument = Doc<"automationTasks">;
 
@@ -167,6 +170,9 @@ export const create = mutation({
     stage: v.string(),
     idempotencyKey: v.string(),
     inputSnapshotJson: v.string(),
+    usageReservationId: v.optional(v.string()),
+    usageReservationIds: v.optional(v.array(v.string())),
+    generationSlotId: v.optional(v.string()),
     createdAt: v.string(),
   },
   handler: async (ctx, { secret, ...task }) => {
@@ -209,12 +215,29 @@ export const create = mutation({
       providerJobIds: [],
       mediaJobIds: [],
       attempt: 0,
+      usageReservationId: task.usageReservationId,
+      usageReservationIds: task.usageReservationIds,
+      generationSlotId: task.generationSlotId,
       updatedAt: task.createdAt,
     });
     const insertedTask = await ctx.db.get(taskId);
 
     if (insertedTask) {
       await upsertAutomationTaskSummary(ctx, insertedTask);
+      await enqueueWorkerQueueEntry(ctx, {
+        generationRequired: getGenerationRequiredForAutomationTask(
+          insertedTask.taskType,
+        ),
+        generationSlotId: insertedTask.generationSlotId,
+        now: insertedTask.createdAt,
+        ownerId: insertedTask.ownerId,
+        sourceId: insertedTask.id,
+        sourceKind: "automation_task",
+        tool: insertedTask.tool,
+        usageReservationId: insertedTask.usageReservationId,
+        usageReservationIds: insertedTask.usageReservationIds,
+        worker: "provider",
+      });
     }
 
     await requestWorkerLaunch({
@@ -513,6 +536,16 @@ export const markStatus = mutation({
       updatedAt,
     });
 
+    await updateWorkerQueueEntryStatus(ctx, {
+      error,
+      handoff: Boolean(mediaJobId && status === "running" && releaseLock),
+      now: updatedAt,
+      releaseLock,
+      sourceId: id,
+      sourceKind: "automation_task",
+      status,
+    });
+
     if (status === "completed") {
       await markAutomationRunCompletedWhenTasksDone(ctx, {
         completedTaskId: task.id,
@@ -590,6 +623,20 @@ export const markProviderStatus = mutation({
         : { lockedBy: undefined, lockedUntil: undefined }),
       ...(error === undefined ? {} : { error }),
       updatedAt,
+    });
+
+    await updateWorkerQueueEntryStatus(ctx, {
+      continuationDelayMs:
+        status === "running" && releaseLock && stage === "provider-created"
+          ? 60_000
+          : undefined,
+      error,
+      handoff: Boolean(mediaJobId && status === "running" && releaseLock),
+      now: updatedAt,
+      releaseLock,
+      sourceId: id,
+      sourceKind: "automation_task",
+      status,
     });
 
     if (status === "completed") {
@@ -686,6 +733,16 @@ export const markMediaStatus = mutation({
         : { lockedBy: undefined, lockedUntil: undefined }),
       ...(error === undefined ? {} : { error }),
       updatedAt,
+    });
+
+    await updateWorkerQueueEntryStatus(ctx, {
+      error,
+      handoff: Boolean(mediaJobId && status === "running" && releaseLock),
+      now: updatedAt,
+      releaseLock,
+      sourceId: id,
+      sourceKind: "automation_task",
+      status,
     });
 
     if (status === "completed") {

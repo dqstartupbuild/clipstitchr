@@ -36,6 +36,8 @@ import {
 import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 import { getStitchrBatchRateLimitKey } from "../lib/clipstitchr/server/stitchr/getStitchrBatchRateLimitKey";
+import { commitStitchUsageReservation } from "./usage/commitStitchUsageReservation";
+import { commitUserStitchUsage } from "./usage/commitUserStitchUsage";
 
 const saveArgs = {
   id: v.string(),
@@ -66,6 +68,8 @@ const saveArgs = {
   textOverlay: v.optional(textOverlayValidator),
   textOverlays: v.optional(textOverlaysValidator),
   socialCaption: v.optional(v.string()),
+  usageIdempotencyKey: v.optional(v.string()),
+  usageReservationId: v.optional(v.string()),
   createdAt: v.string(),
 };
 
@@ -194,7 +198,10 @@ export const getForProvider = query({
 
 export const save = mutation({
   args: saveArgs,
-  handler: async (ctx, args) => {
+  handler: async (
+    ctx,
+    { usageIdempotencyKey, usageReservationId, ...args },
+  ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     await rateLimiter.limit(ctx, "convexRecordSave", {
@@ -216,6 +223,16 @@ export const save = mutation({
     };
 
     if (existingStitch) {
+      if (usageIdempotencyKey || usageReservationId) {
+        await commitUserStitchUsage(ctx, {
+          now: args.createdAt,
+          ownerId,
+          stitchId: args.id,
+          usageIdempotencyKey,
+          usageReservationId,
+        });
+      }
+
       await ctx.db.patch(existingStitch._id, stitch);
       const updatedStitch = await ctx.db.get(existingStitch._id);
 
@@ -234,7 +251,22 @@ export const save = mutation({
       return existingStitch._id;
     }
 
-    const stitchId = await ctx.db.insert("stitches", stitch);
+    const committedUsageReservationId = await commitUserStitchUsage(ctx, {
+      now: args.createdAt,
+      ownerId,
+      stitchId: args.id,
+      usageIdempotencyKey,
+      usageReservationId,
+    });
+
+    const newStitch = {
+      ...stitch,
+      ...(committedUsageReservationId
+        ? { usageReservationId: committedUsageReservationId }
+        : {}),
+    };
+
+    const stitchId = await ctx.db.insert("stitches", newStitch);
     const insertedStitch = await ctx.db.get(stitchId);
 
     if (insertedStitch) {
@@ -350,7 +382,10 @@ export const saveFromAutomation = mutation({
 
 export const saveFromMediaWorker = mutation({
   args: saveFromAutomationArgs,
-  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+  handler: async (
+    ctx,
+    { secret, ownerId, automation, usageReservationId, ...args },
+  ) => {
     assertMediaWorkerSecret(secret);
 
     const isStitchrBatchSave = getIsStitchrBatchRunId(automation.runId);
@@ -409,11 +444,22 @@ export const saveFromMediaWorker = mutation({
       });
     }
 
+    const committedUsageReservationId = await commitStitchUsageReservation(
+      ctx,
+      ownerId,
+      usageReservationId,
+      args.createdAt,
+      "worker",
+    );
+
     const stitch = {
       ownerId,
       ...args,
       productId: demoClip.productId,
       ...(isStitchrBatchSave ? {} : { automation }),
+      ...(committedUsageReservationId
+        ? { usageReservationId: committedUsageReservationId }
+        : {}),
     };
 
     if (existingStitch) {

@@ -20,6 +20,8 @@ import { cliprResolvedGenerationModeValidator } from "./validators/cliprResolved
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { cliprVideoModelIdValidator } from "./validators/cliprVideoModelId";
 import { r2ObjectValidator } from "./validators/r2Object";
+import { commitUsageReservationForOwner } from "./usage/commitUsageReservation";
+import { reacquireUsageReservation } from "./usage/reacquireUsageReservation";
 
 type CliprJobDocument = Doc<"cliprJobs">;
 
@@ -211,6 +213,7 @@ export const createQueued = mutation({
     videoModelId: v.optional(cliprVideoModelIdValidator),
     scriptIdea: v.optional(v.string()),
     targetDurationSeconds: cliprDurationSecondsValidator,
+    usageReservationId: v.optional(v.string()),
     createdAt: v.string(),
   },
   handler: async (ctx, { secret, ...job }) => {
@@ -273,6 +276,7 @@ export const createQueuedFromAutomation = mutation({
     videoModelId: v.optional(cliprVideoModelIdValidator),
     scriptIdea: v.optional(v.string()),
     targetDurationSeconds: cliprDurationSecondsValidator,
+    usageReservationId: v.optional(v.string()),
     createdAt: v.string(),
   },
   handler: async (ctx, { secret, ownerId, ...job }) => {
@@ -341,6 +345,7 @@ export const createQueuedFromProvider = mutation({
     videoModelId: v.optional(cliprVideoModelIdValidator),
     scriptIdea: v.optional(v.string()),
     targetDurationSeconds: cliprDurationSecondsValidator,
+    usageReservationId: v.optional(v.string()),
     createdAt: v.string(),
   },
   handler: async (ctx, { secret, ownerId, ...job }) => {
@@ -1008,10 +1013,27 @@ export const finalizeWithClip = mutation({
     });
 
     const clipStorageFields = getCliprGeneratedClipStorageFields(job);
+    if (!job.usageReservationId) {
+      throw new Error("Clipr usage reservation is missing.");
+    }
+    const usageReservationId = await reacquireUsageReservation(
+      ctx,
+      ownerId,
+      job.usageReservationId,
+      args.updatedAt,
+    );
+    await commitUsageReservationForOwner(
+      ctx,
+      ownerId,
+      usageReservationId,
+      args.updatedAt,
+      "user_action",
+    );
 
     const insertedClipId = await ctx.db.insert("videoClips", {
       ownerId,
       id: args.clipId,
+      usageReservationId,
       productId: job.productId,
       name: args.name,
       originalName: `${args.name}.mp4`,
@@ -1069,6 +1091,7 @@ export const finalizeWithClip = mutation({
     }
 
     await patchCliprJobAndSummary(ctx, job, {
+      usageReservationId,
       finalClipId: args.clipId,
       status: "completed",
       stage: "finalized",
@@ -1147,9 +1170,26 @@ export const finalizeWithClipFromMediaWorker = mutation({
       )
       .unique();
     const clipStorageFields = getCliprGeneratedClipStorageFields(job);
+    if (!job.usageReservationId) {
+      throw new Error("Clipr usage reservation is missing.");
+    }
+    const usageReservationId = await reacquireUsageReservation(
+      ctx,
+      ownerId,
+      job.usageReservationId,
+      args.updatedAt,
+    );
+    await commitUsageReservationForOwner(
+      ctx,
+      ownerId,
+      usageReservationId,
+      args.updatedAt,
+      "worker",
+    );
     const clip = {
       ownerId,
       id: args.clipId,
+      usageReservationId,
       productId: job.productId,
       name: args.name,
       originalName: `${args.name}.mp4`,
@@ -1227,6 +1267,7 @@ export const finalizeWithClipFromMediaWorker = mutation({
     }
 
     await patchCliprJobAndSummary(ctx, job, {
+      usageReservationId,
       finalClipId: args.clipId,
       status: "completed",
       stage: "finalized",

@@ -125,7 +125,7 @@ export function ClipPickerPanel({
 
   return (
     <Panel className="p-4">
-      <div className="mb-4 grid gap-3 border-b border-border pb-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-end">
+      <div className="mb-4 grid gap-3 border-b border-border pb-4">
         <ClipPickerActionBar
           canStitch={canStitch}
           mode={mode}

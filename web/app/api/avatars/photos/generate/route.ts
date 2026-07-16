@@ -16,10 +16,11 @@ import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/ca
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey";
+import { deleteR2Object } from "@/lib/clipstitchr/server/r2/deleteR2Object";
 import { putR2Object } from "@/lib/clipstitchr/server/r2/putR2Object";
 import { createId } from "@/lib/clipstitchr/utils/createId";
-import { getGenerationSpeedTier } from "@/lib/clipstitchr/utils/getGenerationSpeedTier";
 import { sanitizeAvatarSceneControl } from "@/lib/clipstitchr/utils/sanitizeAvatarSceneControl";
+import { getPlanGenerationProfile } from "@/lib/clipstitchr/billing/getPlanGenerationProfile";
 
 export const runtime = "nodejs";
 
@@ -41,8 +42,10 @@ export async function POST(request: Request) {
     const image = getSwaprFormFile(formData, "image");
     const avatarId = getSwaprFormString(formData, "avatarId").trim();
     const avatarName = getSwaprFormString(formData, "avatarName").trim();
-    const avatarDescription =
-      getSwaprFormString(formData, "avatarDescription").trim();
+    const avatarDescription = getSwaprFormString(
+      formData,
+      "avatarDescription",
+    ).trim();
     const count = getAvatarPhotoGenerationCount(
       getSwaprFormString(formData, "count"),
     );
@@ -66,10 +69,6 @@ export async function POST(request: Request) {
     const wardrobeStyle = getAvatarWardrobeStyle(
       getSwaprFormString(formData, "wardrobeStyle"),
     );
-    const generationSpeedTier = getGenerationSpeedTier(
-      getSwaprFormString(formData, "generationSpeedTier"),
-    );
-
     if (!avatarId) {
       throw new Error("Choose an avatar before creating photos.");
     }
@@ -99,45 +98,108 @@ export async function POST(request: Request) {
     });
 
     const sourceImageId = createId();
+    const createdAt = new Date().toISOString();
+    const providerJobId = `provider:avatar-photo:${sourceImageId}`;
+    const reservations = await convex.mutation(
+      api.usage.reserveCreationCreditBatch.reserveCreationCreditBatch,
+      {
+        batchId: sourceImageId,
+        count,
+        domainIdPrefix: providerJobId,
+        domainKind: "provider_job_output",
+        idempotencyPrefix: `avatar-photo:${userId}:${sourceImageId}`,
+        now: createdAt,
+        operation: "avatar_photo",
+      },
+    );
+
+    if (reservations.length === 0) {
+      throw new Error(
+        "You need 25 creation credits for each avatar photo. Add credits or wait for your next plan renewal.",
+      );
+    }
+
+    const usageReservationIds = reservations.flatMap((reservation) =>
+      reservation.reservationId ? [reservation.reservationId] : [],
+    );
+    const generationProfile = getPlanGenerationProfile(reservations[0].planKey);
     const imageBytes = await image.arrayBuffer();
     const imageType = image.type || "image/jpeg";
-    const sourceImageObject = await putR2Object({
-      body: imageBytes,
-      contentType: imageType,
-      key: createR2ObjectKey({
+    let sourceImageObject;
+
+    try {
+      sourceImageObject = await putR2Object({
+        body: imageBytes,
         contentType: imageType,
-        kind: "provider-input-image",
-        recordId: sourceImageId,
-        userId,
-      }),
-    });
-    const createdAt = new Date().toISOString();
-    const job = await convex.mutation(api.providerJobs.create, {
-      secret: rateLimitSecret,
-      ownerId: userId,
-      id: `provider:avatar-photo:${sourceImageId}`,
-      jobType: "avatar-photo-generation",
-      stage: "awaiting-provider",
-      idempotencyKey: `${userId}:avatar-photo-generation:${sourceImageId}`,
-      inputSnapshotJson: JSON.stringify({
-        avatarDescription,
-        avatarId,
-        avatarName,
-        context,
-        count,
-        generationSpeedTier,
-        identityMode,
-        lighting,
-        location,
-        outfit,
-        productId: productId || undefined,
-        sourceImageName: image.name || "avatar-reference.jpg",
-        sourceImageObject,
-        style,
-        wardrobeStyle,
-      }),
-      createdAt,
-    });
+        key: createR2ObjectKey({
+          contentType: imageType,
+          kind: "provider-input-image",
+          recordId: sourceImageId,
+          userId,
+        }),
+      });
+    } catch (error) {
+      await Promise.all(
+        usageReservationIds.map((reservationId) =>
+          convex.mutation(
+            api.usage.cancelUsageReservation.cancelUsageReservation,
+            {
+              now: new Date().toISOString(),
+              reason: "Avatar source image could not be stored",
+              reservationId,
+            },
+          ),
+        ),
+      );
+      throw error;
+    }
+    let job;
+
+    try {
+      job = await convex.mutation(api.providerJobs.create, {
+        secret: rateLimitSecret,
+        ownerId: userId,
+        id: providerJobId,
+        jobType: "avatar-photo-generation",
+        stage: "awaiting-provider",
+        idempotencyKey: `${userId}:avatar-photo-generation:${sourceImageId}`,
+        inputSnapshotJson: JSON.stringify({
+          avatarDescription,
+          avatarId,
+          avatarImageQuality: generationProfile.avatarImageQuality,
+          avatarName,
+          context,
+          count: reservations.length,
+          identityMode,
+          lighting,
+          location,
+          outfit,
+          productId: productId || undefined,
+          sourceImageName: image.name || "avatar-reference.jpg",
+          sourceImageObject,
+          style,
+          usageReservationIds,
+          wardrobeStyle,
+        }),
+        usageReservationIds,
+        createdAt,
+      });
+    } catch (error) {
+      await deleteR2Object(sourceImageObject.key).catch(() => null);
+      await Promise.all(
+        usageReservationIds.map((reservationId) =>
+          convex.mutation(
+            api.usage.cancelUsageReservation.cancelUsageReservation,
+            {
+              now: new Date().toISOString(),
+              reason: "Avatar photo job could not be queued",
+              reservationId,
+            },
+          ),
+        ),
+      );
+      throw error;
+    }
 
     await capturePostHogServerEvent({
       distinctId: userId,
@@ -147,17 +209,17 @@ export async function POST(request: Request) {
         style,
         lighting,
         identity_mode: identityMode,
-        generation_speed_tier: generationSpeedTier,
+        generation_speed_label: generationProfile.publicSpeedLabel,
         model_id: getAvatarPhotoGenerationModelId(),
       },
       request,
     });
 
     return NextResponse.json({
-      generationSpeedTier,
       job,
       modelId: getAvatarPhotoGenerationModelId(),
-      queuedCount: count,
+      queuedCount: reservations.length,
+      speedLabel: generationProfile.publicSpeedLabel,
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

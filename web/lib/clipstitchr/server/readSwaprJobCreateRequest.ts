@@ -1,16 +1,13 @@
 import { getSwaprCharacterOrientation } from "@/lib/clipstitchr/server/getSwaprCharacterOrientation";
 import { getSwaprMode } from "@/lib/clipstitchr/server/getSwaprMode";
-import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
-import { getGenerationSpeedTier } from "@/lib/clipstitchr/utils/getGenerationSpeedTier";
 
 type SwaprJobCreateRequestBody = {
   batchId?: unknown;
   characterOrientation?: unknown;
   estimatedDurationSeconds?: unknown;
-  generationSpeedTier?: unknown;
   keepOriginalSound?: unknown;
   mode?: unknown;
   photoId?: unknown;
@@ -25,7 +22,6 @@ export type SwaprJobCreateRequest = {
   batchId: string;
   characterOrientation: SwaprCharacterOrientation;
   estimatedDurationSeconds: number;
-  generationSpeedTier?: GenerationSpeedTier;
   keepOriginalSound: boolean;
   mode: SwaprMode;
   photoId: string;
@@ -122,10 +118,6 @@ export async function readSwaprJobCreateRequest(
       getStringValue(body.characterOrientation),
     ),
     estimatedDurationSeconds,
-    generationSpeedTier:
-      typeof body.generationSpeedTier === "string"
-        ? getGenerationSpeedTier(body.generationSpeedTier)
-        : undefined,
     keepOriginalSound: body.keepOriginalSound === true,
     mode: getSwaprMode(getStringValue(body.mode)),
     photoId,

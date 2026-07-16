@@ -1,41 +1,43 @@
 import { Panel } from "@/app/_components/ui/Panel";
 import { ProductSettingsCard } from "@/app/_components/settings/ProductSettingsCard";
+import { ArchivedProductList } from "@/app/_components/settings/ArchivedProductList";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
 
 type ProductSettingsListProps = {
   products: ProductProfile[];
+  archivedProducts?: ProductProfile[];
   defaultProductId?: string;
   defaultingProductId: string | null;
   deletingProductId: string | null;
   isActionDisabled: boolean;
   savingProductId: string | null;
+  restoringProductId?: string | null;
   onDelete: (id: string) => Promise<void>;
   onSetDefault: (product: ProductProfile) => Promise<void>;
-  onUpdate: (
-    id: string,
-    input: ProductProfileCreateInput,
-  ) => Promise<unknown>;
+  onRestore?: (id: string) => Promise<void>;
+  onUpdate: (id: string, input: ProductProfileCreateInput) => Promise<unknown>;
 };
 
 export function ProductSettingsList({
   products,
+  archivedProducts = [],
   defaultProductId,
   defaultingProductId,
   deletingProductId,
   isActionDisabled,
   savingProductId,
+  restoringProductId = null,
   onDelete,
   onSetDefault,
+  onRestore = async () => undefined,
   onUpdate,
 }: ProductSettingsListProps) {
   return (
     <Panel className="p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-accent-dark">
-            Products
-          </p>
+          <p className="text-sm font-semibold text-accent-dark">Products</p>
           <h2 className="mt-1 text-lg font-bold text-text-primary">
             Edit saved products
           </h2>
@@ -63,10 +65,15 @@ export function ProductSettingsList({
         </div>
       ) : (
         <p className="mt-4 text-sm leading-6 text-text-secondary">
-          Use the product switcher in the sidebar to add one, then edit it
-          here.
+          Use the product switcher in the sidebar to add one, then edit it here.
         </p>
       )}
+      <ArchivedProductList
+        isActionDisabled={isActionDisabled}
+        products={archivedProducts}
+        restoringProductId={restoringProductId}
+        onRestore={onRestore}
+      />
     </Panel>
   );
 }

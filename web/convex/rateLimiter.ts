@@ -13,6 +13,45 @@ const GIGABYTE = 1024 * 1024 * 1024;
 const MONTH = 30 * DAY;
 
 export const rateLimiter = new RateLimiter(components.rateLimiter, {
+  stripeSubscriptionCheckout: {
+    kind: "token bucket",
+    rate: 10,
+    period: HOUR,
+    capacity: 3,
+  },
+  stripeSubscriptionCheckoutGlobal: {
+    kind: "token bucket",
+    rate: 1_000,
+    period: HOUR,
+    capacity: 100,
+    shards: 5,
+  },
+  stripeRefillCheckout: {
+    kind: "token bucket",
+    rate: 10,
+    period: HOUR,
+    capacity: 3,
+  },
+  stripeRefillCheckoutGlobal: {
+    kind: "token bucket",
+    rate: 1_000,
+    period: HOUR,
+    capacity: 100,
+    shards: 5,
+  },
+  stripePortalSession: {
+    kind: "token bucket",
+    rate: 30,
+    period: HOUR,
+    capacity: 6,
+  },
+  stripePortalSessionGlobal: {
+    kind: "token bucket",
+    rate: 2_000,
+    period: HOUR,
+    capacity: 200,
+    shards: 5,
+  },
   r2UploadUrl: {
     kind: "token bucket",
     rate: 2000,

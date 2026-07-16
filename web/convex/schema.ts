@@ -96,8 +96,329 @@ import { toolLeadSourceValidator } from "./validators/toolLeadSource";
 import { courseEntitlementStatusValidator } from "./validators/courseEntitlementStatus";
 import { courseKeyValidator } from "./validators/courseKey";
 import { courseVersionValidator } from "./validators/courseVersion";
+import { creditGrantStatusValidator } from "./validators/creditGrantStatus";
+import { creditGrantTypeValidator } from "./validators/creditGrantType";
+import { entitlementStateValidator } from "./validators/entitlementState";
+import { generationSlotStateValidator } from "./validators/generationSlotState";
+import { planKeyValidator } from "./validators/planKey";
+import { stripeWebhookEventStatusValidator } from "./validators/stripeWebhookEventStatus";
+import { usageAllocationStateValidator } from "./validators/usageAllocationState";
+import { usageLedgerEntryTypeValidator } from "./validators/usageLedgerEntryType";
+import { usageLedgerOperationValidator } from "./validators/usageLedgerOperation";
+import { usageLedgerSourceValidator } from "./validators/usageLedgerSource";
+import { usageOperationValidator } from "./validators/usageOperation";
+import { usageReservationStateValidator } from "./validators/usageReservationState";
+import { usageResourceValidator } from "./validators/usageResource";
+import { workerQueueSourceKindValidator } from "./validators/workerQueueSourceKind";
+import { workerQueueStatusValidator } from "./validators/workerQueueStatus";
+import { workerQueueWorkerValidator } from "./validators/workerQueueWorker";
 
 export default defineSchema({
+  billingEntitlements: defineTable({
+    ownerId: v.string(),
+    planKey: planKeyValidator,
+    state: entitlementStateValidator,
+    stripeCustomerId: v.string(),
+    stripeSubscriptionId: v.string(),
+    stripePriceId: v.string(),
+    pendingPlanKey: v.optional(planKeyValidator),
+    pendingStripePriceId: v.optional(v.string()),
+    currentPeriodStart: v.string(),
+    currentPeriodEnd: v.string(),
+    cancelAtPeriodEnd: v.boolean(),
+    graceEndsAt: v.optional(v.string()),
+    billingReviewRequired: v.boolean(),
+    billingReviewReason: v.optional(v.string()),
+    supportOverrideState: v.optional(entitlementStateValidator),
+    supportOverrideActor: v.optional(v.string()),
+    supportOverrideReason: v.optional(v.string()),
+    supportOverrideExpiresAt: v.optional(v.string()),
+    sourceEventId: v.string(),
+    sourceEventCreatedAt: v.number(),
+    latestSubscriptionEventCreatedAt: v.number(),
+    latestPaymentEventCreatedAt: v.number(),
+    latestPaidInvoiceId: v.optional(v.string()),
+    lastPaymentAt: v.optional(v.string()),
+    version: v.number(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner", ["ownerId"])
+    .index("by_stripe_customer", ["stripeCustomerId"])
+    .index("by_stripe_subscription", ["stripeSubscriptionId"])
+    .index("by_state_period_end", ["state", "currentPeriodEnd"]),
+  billingEntitlementHistory: defineTable({
+    ownerId: v.string(),
+    eventId: v.string(),
+    eventType: v.string(),
+    planKey: planKeyValidator,
+    state: entitlementStateValidator,
+    previousPlanKey: v.optional(planKeyValidator),
+    previousState: v.optional(entitlementStateValidator),
+    reason: v.string(),
+    eventCreatedAt: v.number(),
+    createdAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_event", ["eventId"]),
+  dailyDraftLimitReconciliations: defineTable({
+    ownerId: v.string(),
+    eventId: v.string(),
+    planKey: planKeyValidator,
+    disabledProductIds: v.array(v.string()),
+    reason: v.string(),
+    createdAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_event", ["eventId"]),
+  productLimitReconciliations: defineTable({
+    ownerId: v.string(),
+    eventId: v.string(),
+    planKey: planKeyValidator,
+    archivedProductIds: v.array(v.string()),
+    reason: v.string(),
+    createdAt: v.string(),
+  })
+    .index("by_event", ["eventId"])
+    .index("by_owner_created", ["ownerId", "createdAt"]),
+  billingCheckoutSessions: defineTable({
+    ownerId: v.string(),
+    catalogKey: v.string(),
+    stripeCheckoutSessionId: v.string(),
+    mode: v.union(v.literal("subscription"), v.literal("payment")),
+    status: v.union(
+      v.literal("created"),
+      v.literal("completed"),
+      v.literal("expired"),
+    ),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_stripe_session", ["stripeCheckoutSessionId"]),
+  stripeWebhookEvents: defineTable({
+    eventId: v.string(),
+    eventType: v.string(),
+    objectId: v.optional(v.string()),
+    livemode: v.boolean(),
+    eventCreatedAt: v.number(),
+    status: stripeWebhookEventStatusValidator,
+    error: v.optional(v.string()),
+    processedAt: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_event", ["eventId"])
+    .index("by_status_created", ["status", "createdAt"])
+    .index("by_object_created", ["objectId", "eventCreatedAt"]),
+  usagePeriods: defineTable({
+    ownerId: v.string(),
+    periodKey: v.string(),
+    planKeySnapshot: planKeyValidator,
+    stripeSubscriptionId: v.string(),
+    stripeInvoiceId: v.string(),
+    periodStart: v.string(),
+    periodEnd: v.string(),
+    creationCreditsGranted: v.number(),
+    creationCreditsReserved: v.number(),
+    creationCreditsConsumed: v.number(),
+    creationCreditsAdjusted: v.number(),
+    aiVideosGranted: v.number(),
+    aiVideosReserved: v.number(),
+    aiVideosConsumed: v.number(),
+    aiVideosAdjusted: v.number(),
+    grantEventId: v.string(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_period", ["ownerId", "periodKey"])
+    .index("by_subscription_start", ["stripeSubscriptionId", "periodStart"])
+    .index("by_stripe_invoice", ["stripeInvoiceId"])
+    .index("by_period_end", ["periodEnd"]),
+  creditGrants: defineTable({
+    ownerId: v.string(),
+    grantId: v.string(),
+    grantType: creditGrantTypeValidator,
+    periodKey: v.optional(v.string()),
+    amountGranted: v.number(),
+    amountReserved: v.number(),
+    amountConsumed: v.number(),
+    amountRevoked: v.number(),
+    spendPriority: v.number(),
+    availableFrom: v.string(),
+    expiresAt: v.string(),
+    requiresActiveSubscription: v.boolean(),
+    status: creditGrantStatusValidator,
+    stripeInvoiceId: v.optional(v.string()),
+    stripePaymentIntentId: v.optional(v.string()),
+    stripeChargeId: v.optional(v.string()),
+    sourceEventId: v.string(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_status_priority_expiry", [
+      "ownerId",
+      "status",
+      "spendPriority",
+      "expiresAt",
+    ])
+    .index("by_grant", ["grantId"])
+    .index("by_owner_period", ["ownerId", "periodKey"])
+    .index("by_payment_intent", ["stripePaymentIntentId"])
+    .index("by_source_event", ["sourceEventId"])
+    .index("by_status_expiry", ["status", "expiresAt"]),
+  usageReservations: defineTable({
+    ownerId: v.string(),
+    reservationId: v.string(),
+    idempotencyKey: v.string(),
+    resource: usageResourceValidator,
+    operation: usageOperationValidator,
+    amount: v.number(),
+    state: usageReservationStateValidator,
+    planKeySnapshot: planKeyValidator,
+    periodKey: v.optional(v.string()),
+    batchId: v.optional(v.string()),
+    domainKind: v.string(),
+    domainId: v.string(),
+    providerJobId: v.optional(v.string()),
+    mediaJobId: v.optional(v.string()),
+    automationTaskId: v.optional(v.string()),
+    generationSlotId: v.optional(v.string()),
+    expiresAt: v.string(),
+    committedAt: v.optional(v.string()),
+    releasedAt: v.optional(v.string()),
+    releaseReason: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_state", ["ownerId", "state"])
+    .index("by_idempotency_key", ["idempotencyKey"])
+    .index("by_resource_state_expiry", ["resource", "state", "expiresAt"])
+    .index("by_domain", ["domainKind", "domainId"])
+    .index("by_batch", ["batchId"])
+    .index("by_reservation", ["reservationId"]),
+  usageReservationAllocations: defineTable({
+    ownerId: v.string(),
+    reservationId: v.string(),
+    grantId: v.string(),
+    amount: v.number(),
+    state: usageAllocationStateValidator,
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_reservation", ["reservationId"])
+    .index("by_grant_state", ["grantId", "state"])
+    .index("by_owner_reservation", ["ownerId", "reservationId"]),
+  usageLedgerEntries: defineTable({
+    ownerId: v.string(),
+    ledgerEntryId: v.string(),
+    idempotencyKey: v.string(),
+    resource: usageResourceValidator,
+    entryType: usageLedgerEntryTypeValidator,
+    quantity: v.number(),
+    availableDelta: v.number(),
+    reservedDelta: v.number(),
+    consumedDelta: v.number(),
+    periodKey: v.optional(v.string()),
+    grantId: v.optional(v.string()),
+    reservationId: v.optional(v.string()),
+    operation: usageLedgerOperationValidator,
+    domainKind: v.string(),
+    domainId: v.optional(v.string()),
+    batchId: v.optional(v.string()),
+    source: usageLedgerSourceValidator,
+    stripeSourceId: v.optional(v.string()),
+    supportActor: v.optional(v.string()),
+    reason: v.optional(v.string()),
+    createdAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_idempotency_key", ["idempotencyKey"])
+    .index("by_reservation", ["reservationId"])
+    .index("by_grant", ["grantId"])
+    .index("by_stripe_source", ["stripeSourceId"]),
+  zeroCostUsageEvents: defineTable({
+    ownerId: v.string(),
+    eventId: v.string(),
+    idempotencyKey: v.string(),
+    operation: usageOperationValidator,
+    planKeySnapshot: planKeyValidator,
+    domainKind: v.string(),
+    domainId: v.string(),
+    batchId: v.optional(v.string()),
+    source: usageLedgerSourceValidator,
+    generationSlotId: v.optional(v.string()),
+    createdAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_idempotency_key", ["idempotencyKey"])
+    .index("by_domain", ["domainKind", "domainId"]),
+  generationSlots: defineTable({
+    ownerId: v.string(),
+    slotId: v.string(),
+    domainJobId: v.string(),
+    tool: v.string(),
+    planKeySnapshot: planKeyValidator,
+    state: generationSlotStateValidator,
+    idempotencyKey: v.string(),
+    acquiredAt: v.optional(v.string()),
+    releasedAt: v.optional(v.string()),
+    heartbeatAt: v.optional(v.string()),
+    expiresAt: v.string(),
+    releaseReason: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_state", ["ownerId", "state"])
+    .index("by_slot", ["slotId"])
+    .index("by_domain", ["domainJobId"])
+    .index("by_idempotency_key", ["idempotencyKey"])
+    .index("by_state_expiry", ["state", "expiresAt"]),
+  workerQueueEntries: defineTable({
+    queueEntryId: v.string(),
+    worker: workerQueueWorkerValidator,
+    sourceKind: workerQueueSourceKindValidator,
+    sourceId: v.string(),
+    ownerId: v.string(),
+    tool: v.string(),
+    planKeySnapshot: planKeyValidator,
+    queueLane: planKeyValidator,
+    status: workerQueueStatusValidator,
+    generationRequired: v.boolean(),
+    usageReservationId: v.optional(v.string()),
+    usageReservationIds: v.optional(v.array(v.string())),
+    generationSlotId: v.optional(v.string()),
+    lockId: v.optional(v.string()),
+    lockedBy: v.optional(v.string()),
+    lockedUntil: v.optional(v.string()),
+    attempt: v.number(),
+    notBefore: v.optional(v.string()),
+    queuedAt: v.string(),
+    startedAt: v.optional(v.string()),
+    completedAt: v.optional(v.string()),
+    error: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_worker_status_lane_created", [
+      "worker",
+      "status",
+      "queueLane",
+      "queuedAt",
+    ])
+    .index("by_worker_status_created", ["worker", "status", "queuedAt"])
+    .index("by_owner_status", ["ownerId", "status"])
+    .index("by_source", ["sourceKind", "sourceId"])
+    .index("by_status_lock", ["status", "lockedUntil"])
+    .index("by_queue_entry", ["queueEntryId"]),
+  workerQueueSchedulingState: defineTable({
+    worker: workerQueueWorkerValidator,
+    starterDeficit: v.number(),
+    proDeficit: v.number(),
+    agencyDeficit: v.number(),
+    lastLane: v.optional(planKeyValidator),
+    updatedAt: v.string(),
+  }).index("by_worker", ["worker"]),
   waitlist: defineTable({
     name: v.string(),
     email: v.string(),
@@ -353,6 +674,7 @@ export default defineSchema({
   videoClips: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    usageReservationId: v.optional(v.string()),
     name: v.string(),
     tags: assetTagsValidator,
     videoDescription: v.optional(v.string()),
@@ -495,6 +817,7 @@ export default defineSchema({
   photoAssets: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    usageReservationId: v.optional(v.string()),
     productId: v.optional(v.string()),
     avatarId: v.optional(v.string()),
     name: v.string(),
@@ -562,6 +885,7 @@ export default defineSchema({
   products: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    archivedAt: v.optional(v.string()),
     name: v.string(),
     productDetails: v.string(),
     audienceDetails: v.string(),
@@ -665,6 +989,7 @@ export default defineSchema({
   stitches: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    usageReservationId: v.optional(v.string()),
     productId: v.optional(v.string()),
     mode: v.optional(stitchrModeValidator),
     name: v.string(),
@@ -876,7 +1201,9 @@ export default defineSchema({
     sortKey: v.string(),
     status: hookLabIdeaStatusValidator,
     sourceType: hookLabIdeaSourceTypeValidator,
-    sourcePlatform: v.optional(v.union(v.literal("tiktok"), v.literal("instagram"))),
+    sourcePlatform: v.optional(
+      v.union(v.literal("tiktok"), v.literal("instagram")),
+    ),
     canonicalUrl: v.optional(v.string()),
     sourcePostId: v.optional(v.string()),
     sourceCreatedAt: v.optional(v.string()),
@@ -1085,6 +1412,7 @@ export default defineSchema({
   swipes: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    usageReservationId: v.optional(v.string()),
     name: v.string(),
     productSourceType: swiprProductSourceTypeValidator,
     productSourceId: v.string(),
@@ -1161,6 +1489,7 @@ export default defineSchema({
   replicateJobs: defineTable({
     ownerId: v.string(),
     predictionId: v.string(),
+    usageReservationId: v.optional(v.string()),
     purpose: replicateJobPurposeValidator,
     modelId: v.string(),
     status: replicatePredictionStatusValidator,
@@ -1174,6 +1503,7 @@ export default defineSchema({
   cliprJobs: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    usageReservationId: v.optional(v.string()),
     productId: v.string(),
     productName: v.string(),
     productDetails: v.string(),
@@ -1219,6 +1549,7 @@ export default defineSchema({
   cliprJobSummaries: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    usageReservationId: v.optional(v.string()),
     productId: v.string(),
     productName: v.string(),
     avatarId: v.string(),
@@ -1257,6 +1588,8 @@ export default defineSchema({
   mediaJobs: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    usageReservationId: v.optional(v.string()),
+    generationSlotId: v.optional(v.string()),
     jobType: mediaJobTypeValidator,
     status: mediaJobStatusValidator,
     stage: v.string(),
@@ -1286,6 +1619,9 @@ export default defineSchema({
   providerJobs: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    usageReservationId: v.optional(v.string()),
+    usageReservationIds: v.optional(v.array(v.string())),
+    generationSlotId: v.optional(v.string()),
     jobType: providerJobTypeValidator,
     status: providerJobStatusValidator,
     stage: v.string(),
@@ -1455,6 +1791,9 @@ export default defineSchema({
     ownerId: v.string(),
     productId: v.optional(v.string()),
     id: v.string(),
+    usageReservationId: v.optional(v.string()),
+    usageReservationIds: v.optional(v.array(v.string())),
+    generationSlotId: v.optional(v.string()),
     runId: v.string(),
     tool: automationToolValidator,
     taskType: automationTaskTypeValidator,

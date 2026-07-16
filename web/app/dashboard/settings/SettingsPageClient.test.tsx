@@ -15,6 +15,7 @@ type AutomationState = {
 
 type ProductsState = {
   products: ProductProfile[];
+  archivedProducts: ProductProfile[];
   defaultProductId?: string;
   isLoading: boolean;
   isSaving: boolean;
@@ -22,10 +23,12 @@ type ProductsState = {
   savingProductId: string | null;
   deletingProductId: string | null;
   defaultingProductId: string | null;
+  restoringProductId: string | null;
   error: string | null;
   createProduct: ReturnType<typeof vi.fn>;
   updateProduct: ReturnType<typeof vi.fn>;
   deleteProduct: ReturnType<typeof vi.fn>;
+  restoreProduct: ReturnType<typeof vi.fn>;
   setDefaultProduct: ReturnType<typeof vi.fn>;
 };
 
@@ -68,6 +71,7 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
     return {
       activeProduct,
       activeProductId: activeProduct?.id,
+      archivedProducts: mocks.productsState.archivedProducts,
       defaultProductId: mocks.productsState.defaultProductId,
       defaultingProductId: mocks.productsState.defaultingProductId,
       deletingProductId: mocks.productsState.deletingProductId,
@@ -77,12 +81,14 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
       isLoading: mocks.productsState.isLoading,
       isSaving: mocks.productsState.isSaving,
       products: mocks.productsState.products,
+      restoringProductId: mocks.productsState.restoringProductId,
       requiresProductSetup: false,
       requiresOnboarding: false,
       savingProductId: mocks.productsState.savingProductId,
       createProduct: mocks.productsState.createProduct,
       deleteProduct: mocks.productsState.deleteProduct,
       markOnboardingCompletedLocally: vi.fn(),
+      restoreProduct: mocks.productsState.restoreProduct,
       setActiveProduct: mocks.productsState.setDefaultProduct,
       updateProduct: mocks.productsState.updateProduct,
     };
@@ -91,6 +97,20 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
 
 vi.mock("convex/react", () => ({
   useMutation: () => vi.fn(async () => undefined),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useBillingWorkspace", () => ({
+  useBillingWorkspace: () => ({
+    buyRefill: vi.fn(),
+    entitlement: null,
+    error: null,
+    isLoading: false,
+    manageBilling: vi.fn(),
+    pendingAction: null,
+    startPlan: vi.fn(),
+    usage: null,
+    usageHistory: [],
+  }),
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
@@ -112,7 +132,9 @@ vi.mock("@/app/_components/dashboard/DashboardShell", () => ({
   ),
 }));
 
-function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile {
+function createProduct(
+  overrides: Partial<ProductProfile> = {},
+): ProductProfile {
   return {
     audienceDetails: "Creators",
     createdAt: "2026-05-20T00:00:00.000Z",
@@ -130,6 +152,7 @@ function createProductsState(
 ): ProductsState {
   return {
     products: [createProduct()],
+    archivedProducts: [],
     defaultProductId: "product_1",
     isLoading: false,
     isSaving: false,
@@ -137,10 +160,12 @@ function createProductsState(
     savingProductId: null,
     deletingProductId: null,
     defaultingProductId: null,
+    restoringProductId: null,
     error: null,
     createProduct: vi.fn(),
     updateProduct: vi.fn(),
     deleteProduct: vi.fn(),
+    restoreProduct: vi.fn(),
     setDefaultProduct: vi.fn(),
     ...overrides,
   };
@@ -198,6 +223,7 @@ describe("SettingsPageClient", () => {
     expect(markup).toContain("Run ClipStitchr from your product repo");
     expect(markup).toContain("npm install -g clipstitchr");
     expect(markup).toContain("Daily drafts");
+    expect(markup).toContain("Plan and usage");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Contact support");
   });

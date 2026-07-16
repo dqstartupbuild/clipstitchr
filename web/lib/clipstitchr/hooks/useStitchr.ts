@@ -34,6 +34,7 @@ import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEd
 import { getLongrStitchFileName } from "@/lib/clipstitchr/utils/getLongrStitchFileName";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
+import { useBrowserStitchUsage } from "@/lib/clipstitchr/hooks/useBrowserStitchUsage";
 
 type UseStitchrOptions = {
   loadClip?: (id: string) => Promise<VideoClip | null>;
@@ -48,6 +49,7 @@ type StitchrBuildOptions = {
 
 export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
   const saveStitch = useMutation(api.stitches.save);
+  const { cancelStitchUsage, reserveStitchUsage } = useBrowserStitchUsage();
   const [status, setStatus] = useState<ProcessingStatus>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -181,64 +183,74 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
 
         return (await loadClip?.(id)) ?? null;
       };
+      const usage = await reserveStitchUsage(stitchId);
 
-      const renderedVideo = await createRenderedStitchVideoUpload({
-        loadClip: renderLoadClip,
-        onProgress: (progress) => onPairProgress?.(progress * 0.9),
-        stitch: nextStitch,
-      });
+      try {
+        const renderedVideo = await createRenderedStitchVideoUpload({
+          loadClip: renderLoadClip,
+          onProgress: (progress) => onPairProgress?.(progress * 0.9),
+          stitch: nextStitch,
+        });
 
-      nextStitch.blob = renderedVideo.blob;
-      nextStitch.mimeType = renderedVideo.mimeType;
-      nextStitch.size = renderedVideo.size;
-      nextStitch.stitchObject = renderedVideo.stitchObject;
+        nextStitch.blob = renderedVideo.blob;
+        nextStitch.mimeType = renderedVideo.mimeType;
+        nextStitch.size = renderedVideo.size;
+        nextStitch.stitchObject = renderedVideo.stitchObject;
 
-      await saveStitch({
-        id: nextStitch.id,
-        mode: nextStitch.mode,
-        name: nextStitch.name,
-        ugcClipId: nextStitch.ugcClipId,
-        demoClipId: nextStitch.demoClipId,
-        ugcClipName: nextStitch.ugcClipName,
-        demoClipName: nextStitch.demoClipName,
-        ugcTrimRange: nextStitch.ugcTrimRange,
-        demoTrimRange: nextStitch.demoTrimRange,
-        demoQuickEdit: nextStitch.demoQuickEdit,
-        ugcQuickEdit: nextStitch.ugcQuickEdit,
-        ...(nextStitch.posterObject
-          ? {
-              posterObject: nextStitch.posterObject,
-              posterVersion: nextStitch.posterVersion,
-            }
-          : {}),
-        width: nextStitch.width,
-        height: nextStitch.height,
-        duration: nextStitch.duration,
-        includeDemoAudio: nextStitch.includeDemoAudio,
-        includeUgcAudio: nextStitch.includeUgcAudio,
-        demoPlaybackRate: nextStitch.demoPlaybackRate,
-        ugcPlaybackRate: nextStitch.ugcPlaybackRate,
-        ...(nextStitch.stitchObject
-          ? {
-              mimeType: nextStitch.mimeType,
-              size: nextStitch.size,
-              stitchObject: nextStitch.stitchObject,
-            }
-          : {}),
-        ...(nextStitch.music ? { music: nextStitch.music } : {}),
-        textOverlay: nextStitch.textOverlay,
-        textOverlays: nextStitch.textOverlays,
-        ...(nextStitch.socialCaption
-          ? { socialCaption: nextStitch.socialCaption }
-          : {}),
-        createdAt: nextStitch.createdAt,
-      });
+        await saveStitch({
+          id: nextStitch.id,
+          mode: nextStitch.mode,
+          name: nextStitch.name,
+          ugcClipId: nextStitch.ugcClipId,
+          demoClipId: nextStitch.demoClipId,
+          ugcClipName: nextStitch.ugcClipName,
+          demoClipName: nextStitch.demoClipName,
+          ugcTrimRange: nextStitch.ugcTrimRange,
+          demoTrimRange: nextStitch.demoTrimRange,
+          demoQuickEdit: nextStitch.demoQuickEdit,
+          ugcQuickEdit: nextStitch.ugcQuickEdit,
+          ...(nextStitch.posterObject
+            ? {
+                posterObject: nextStitch.posterObject,
+                posterVersion: nextStitch.posterVersion,
+              }
+            : {}),
+          width: nextStitch.width,
+          height: nextStitch.height,
+          duration: nextStitch.duration,
+          includeDemoAudio: nextStitch.includeDemoAudio,
+          includeUgcAudio: nextStitch.includeUgcAudio,
+          demoPlaybackRate: nextStitch.demoPlaybackRate,
+          ugcPlaybackRate: nextStitch.ugcPlaybackRate,
+          ...(nextStitch.stitchObject
+            ? {
+                mimeType: nextStitch.mimeType,
+                size: nextStitch.size,
+                stitchObject: nextStitch.stitchObject,
+              }
+            : {}),
+          ...(nextStitch.music ? { music: nextStitch.music } : {}),
+          textOverlay: nextStitch.textOverlay,
+          textOverlays: nextStitch.textOverlays,
+          ...(nextStitch.socialCaption
+            ? { socialCaption: nextStitch.socialCaption }
+            : {}),
+          usageIdempotencyKey: usage.usageIdempotencyKey,
+          ...(usage.reservationId
+            ? { usageReservationId: usage.reservationId }
+            : {}),
+          createdAt: nextStitch.createdAt,
+        });
+      } catch (error) {
+        await cancelStitchUsage(usage).catch(() => null);
+        throw error;
+      }
 
       onPairProgress?.(1);
 
       return nextStitch;
     },
-    [loadClip, saveStitch],
+    [cancelStitchUsage, loadClip, reserveStitchUsage, saveStitch],
   );
 
   const createLongrStitch = useCallback(
@@ -308,60 +320,71 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         socialCaption: options.socialCaption?.trim() || undefined,
         createdAt: now,
       };
-      const renderLoadClip = async (id: string) => (await loadClip?.(id)) ?? null;
+      const renderLoadClip = async (id: string) =>
+        (await loadClip?.(id)) ?? null;
+      const usage = await reserveStitchUsage(stitchId);
 
-      const renderedVideo = await createRenderedStitchVideoUpload({
-        loadClip: renderLoadClip,
-        onProgress: (progress) => onPairProgress?.(progress * 0.9),
-        stitch: nextStitch,
-      });
+      try {
+        const renderedVideo = await createRenderedStitchVideoUpload({
+          loadClip: renderLoadClip,
+          onProgress: (progress) => onPairProgress?.(progress * 0.9),
+          stitch: nextStitch,
+        });
 
-      nextStitch.blob = renderedVideo.blob;
-      nextStitch.mimeType = renderedVideo.mimeType;
-      nextStitch.size = renderedVideo.size;
-      nextStitch.stitchObject = renderedVideo.stitchObject;
+        nextStitch.blob = renderedVideo.blob;
+        nextStitch.mimeType = renderedVideo.mimeType;
+        nextStitch.size = renderedVideo.size;
+        nextStitch.stitchObject = renderedVideo.stitchObject;
 
-      await saveStitch({
-        id: nextStitch.id,
-        mode: nextStitch.mode,
-        name: nextStitch.name,
-        ugcClipId: nextStitch.ugcClipId,
-        demoClipId: nextStitch.demoClipId,
-        ugcClipName: nextStitch.ugcClipName,
-        demoClipName: nextStitch.demoClipName,
-        ugcTrimRange: nextStitch.ugcTrimRange,
-        demoTrimRange: nextStitch.demoTrimRange,
-        sequenceSegments: nextStitch.sequenceSegments,
-        demoQuickEdit: nextStitch.demoQuickEdit,
-        ugcQuickEdit: nextStitch.ugcQuickEdit,
-        width: nextStitch.width,
-        height: nextStitch.height,
-        duration: nextStitch.duration,
-        includeDemoAudio: nextStitch.includeDemoAudio,
-        includeUgcAudio: nextStitch.includeUgcAudio,
-        demoPlaybackRate: nextStitch.demoPlaybackRate,
-        ugcPlaybackRate: nextStitch.ugcPlaybackRate,
-        ...(nextStitch.stitchObject
-          ? {
-              mimeType: nextStitch.mimeType,
-              size: nextStitch.size,
-              stitchObject: nextStitch.stitchObject,
-            }
-          : {}),
-        ...(nextStitch.music ? { music: nextStitch.music } : {}),
-        textOverlay: nextStitch.textOverlay,
-        textOverlays: nextStitch.textOverlays,
-        ...(nextStitch.socialCaption
-          ? { socialCaption: nextStitch.socialCaption }
-          : {}),
-        createdAt: nextStitch.createdAt,
-      });
+        await saveStitch({
+          id: nextStitch.id,
+          mode: nextStitch.mode,
+          name: nextStitch.name,
+          ugcClipId: nextStitch.ugcClipId,
+          demoClipId: nextStitch.demoClipId,
+          ugcClipName: nextStitch.ugcClipName,
+          demoClipName: nextStitch.demoClipName,
+          ugcTrimRange: nextStitch.ugcTrimRange,
+          demoTrimRange: nextStitch.demoTrimRange,
+          sequenceSegments: nextStitch.sequenceSegments,
+          demoQuickEdit: nextStitch.demoQuickEdit,
+          ugcQuickEdit: nextStitch.ugcQuickEdit,
+          width: nextStitch.width,
+          height: nextStitch.height,
+          duration: nextStitch.duration,
+          includeDemoAudio: nextStitch.includeDemoAudio,
+          includeUgcAudio: nextStitch.includeUgcAudio,
+          demoPlaybackRate: nextStitch.demoPlaybackRate,
+          ugcPlaybackRate: nextStitch.ugcPlaybackRate,
+          ...(nextStitch.stitchObject
+            ? {
+                mimeType: nextStitch.mimeType,
+                size: nextStitch.size,
+                stitchObject: nextStitch.stitchObject,
+              }
+            : {}),
+          ...(nextStitch.music ? { music: nextStitch.music } : {}),
+          textOverlay: nextStitch.textOverlay,
+          textOverlays: nextStitch.textOverlays,
+          ...(nextStitch.socialCaption
+            ? { socialCaption: nextStitch.socialCaption }
+            : {}),
+          usageIdempotencyKey: usage.usageIdempotencyKey,
+          ...(usage.reservationId
+            ? { usageReservationId: usage.reservationId }
+            : {}),
+          createdAt: nextStitch.createdAt,
+        });
+      } catch (error) {
+        await cancelStitchUsage(usage).catch(() => null);
+        throw error;
+      }
 
       onPairProgress?.(1);
 
       return nextStitch;
     },
-    [loadClip, saveStitch],
+    [cancelStitchUsage, loadClip, reserveStitchUsage, saveStitch],
   );
 
   const stitchVideos = useCallback(

@@ -17,14 +17,15 @@ type SettingsProductSectionProps = {
   isAutomationSaving: boolean;
   isProductActionDisabled: boolean;
   products: ProductProfile[];
+  archivedProducts?: ProductProfile[];
   savingProductId: string | null;
+  restoringProductId?: string | null;
   stitchTemplates: StitchTemplate[];
   swiprPacks: SwiprLibraryPack[];
   onDeleteProduct: (id: string) => Promise<void>;
-  onSaveAutomation: (
-    preferences: AutomationPreferencesInput,
-  ) => Promise<void>;
+  onSaveAutomation: (preferences: AutomationPreferencesInput) => Promise<void>;
   onSetActiveProduct: (product: ProductProfile) => Promise<void>;
+  onRestoreProduct?: (id: string) => Promise<void>;
   onUpdateProduct: (
     id: string,
     input: ProductProfileCreateInput,
@@ -42,12 +43,15 @@ export function SettingsProductSection({
   isAutomationSaving,
   isProductActionDisabled,
   products,
+  archivedProducts = [],
   savingProductId,
+  restoringProductId = null,
   stitchTemplates,
   swiprPacks,
   onDeleteProduct,
   onSaveAutomation,
   onSetActiveProduct,
+  onRestoreProduct = async () => undefined,
   onUpdateProduct,
 }: SettingsProductSectionProps) {
   return (
@@ -73,9 +77,12 @@ export function SettingsProductSection({
         deletingProductId={deletingProductId}
         isActionDisabled={isProductActionDisabled}
         products={products}
+        archivedProducts={archivedProducts}
         savingProductId={savingProductId}
+        restoringProductId={restoringProductId}
         onDelete={onDeleteProduct}
         onSetDefault={onSetActiveProduct}
+        onRestore={onRestoreProduct}
         onUpdate={onUpdateProduct}
       />
       <SettingsAutomationPanel

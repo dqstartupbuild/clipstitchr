@@ -52,6 +52,20 @@ vi.mock("convex/react", () => ({
   useMutation: () => mocks.mutation,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useBillingWorkspace", () => ({
+  useBillingWorkspace: () => ({
+    buyRefill: vi.fn(),
+    entitlement: null,
+    error: null,
+    isLoading: false,
+    manageBilling: vi.fn(),
+    pendingAction: null,
+    startPlan: vi.fn(),
+    usage: null,
+    usageHistory: [],
+  }),
+}));
+
 function findElements(
   value: unknown,
   predicate: (element: {
@@ -80,7 +94,9 @@ function findElements(
   return [...matches, ...findElements(element.props?.children, predicate)];
 }
 
-function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile {
+function createProduct(
+  overrides: Partial<ProductProfile> = {},
+): ProductProfile {
   return {
     audienceDetails: "Founders",
     createdAt: "2026-05-20T00:00:00.000Z",
@@ -221,7 +237,9 @@ describe("settings components", () => {
     expect(emptyMarkup).toContain('href="/docs/clipstitchr-cli"');
     expect(emptyMarkup).toContain('target="_blank"');
     expect(emptyMarkup).toContain("Contact support");
-    expect(emptyMarkup).toContain("Coming soon");
+    expect(emptyMarkup).toContain("Plan and usage");
+    expect(emptyMarkup).toContain("Choose Starter");
+    expect(emptyMarkup).toContain("$39");
     expect(emptyMarkup).toContain("Use the product switcher");
     expect(populatedMarkup).toContain("Launch Kit");
     expect(populatedMarkup).toContain("Active product");
@@ -259,8 +277,7 @@ describe("settings components", () => {
     );
     const [stitchrCheckbox] = findElements(
       tree,
-      (element) =>
-        element.type === "input" && element.props?.checked === true,
+      (element) => element.type === "input" && element.props?.checked === true,
     );
     const [stylePicker] = findElements(
       tree,
@@ -318,7 +335,9 @@ describe("settings components", () => {
     );
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
       expect.objectContaining({
-        preferences: expect.objectContaining({ stitchrTextStyleChoice: "hook" }),
+        preferences: expect.objectContaining({
+          stitchrTextStyleChoice: "hook",
+        }),
       }),
     );
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
@@ -407,9 +426,11 @@ describe("settings components", () => {
     const [form] = findElements(tree, (element) => element.type === "form");
     const preventDefault = vi.fn();
 
-    await (form.props.onSubmit as (event: {
-      preventDefault: () => void;
-    }) => Promise<void>)({ preventDefault });
+    await (
+      form.props.onSubmit as (event: {
+        preventDefault: () => void;
+      }) => Promise<void>
+    )({ preventDefault });
 
     expect(preventDefault).toHaveBeenCalledOnce();
     expect(onCreate).toHaveBeenCalledWith({
@@ -443,15 +464,20 @@ describe("settings components", () => {
     const [selectInput] = findElements(
       hookStyleTree,
       (element) =>
-        typeof element.type === "function" && element.type.name === "SelectInput",
+        typeof element.type === "function" &&
+        element.type.name === "SelectInput",
     );
 
-    await (form.props.onSubmit as (event: {
-      preventDefault: () => void;
-    }) => Promise<void>)({ preventDefault: vi.fn() });
-    (selectInput.props.onChange as (event: {
-      currentTarget: { value: string };
-    }) => void)({ currentTarget: { value: "identity" } });
+    await (
+      form.props.onSubmit as (event: {
+        preventDefault: () => void;
+      }) => Promise<void>
+    )({ preventDefault: vi.fn() });
+    (
+      selectInput.props.onChange as (event: {
+        currentTarget: { value: string };
+      }) => void
+    )({ currentTarget: { value: "identity" } });
 
     expect(onCreate).not.toHaveBeenCalled();
     expect(onHookStyleChange).toHaveBeenCalledWith("identity");
@@ -492,18 +518,22 @@ describe("settings components", () => {
     (iconButtons[1].props.onClick as () => void)();
     (iconButtons[2].props.onClick as () => void)();
     await Promise.resolve();
-    await (dialog.props.onSave as (input: {
-      name: string;
-      productDetails: string;
-      audienceDetails: string;
-    }) => Promise<void>)({
+    await (
+      dialog.props.onSave as (input: {
+        name: string;
+        productDetails: string;
+        audienceDetails: string;
+      }) => Promise<void>
+    )({
       audienceDetails: "Teams",
       name: "Updated",
       productDetails: "Details",
     });
 
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(true);
-    expect(mocks.confirm).toHaveBeenCalledWith(expect.stringContaining("Launch Kit"));
+    expect(mocks.confirm).toHaveBeenCalledWith(
+      expect.stringContaining("Launch Kit"),
+    );
     expect(onSetDefault).toHaveBeenCalledWith(
       expect.objectContaining({ id: "product_1" }),
     );

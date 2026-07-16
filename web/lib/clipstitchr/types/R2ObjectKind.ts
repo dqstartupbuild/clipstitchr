@@ -3,6 +3,7 @@ export type R2ObjectKind =
   | "video-clip-poster"
   | "upload-source-video"
   | "provider-input-image"
+  | "provider-output-image"
   | "hook-lab-source-video"
   | "hook-lab-thumbnail"
   | "photo"

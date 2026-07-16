@@ -7,6 +7,7 @@ type CreateQueuedCliprJobRecordOptions = CliprJobServerContext & {
   createdAt: string;
   documents: CliprJobInputDocuments;
   input: CliprJobCreateInput;
+  usageReservationId: string;
 };
 
 export async function createQueuedCliprJobRecord({
@@ -15,6 +16,7 @@ export async function createQueuedCliprJobRecord({
   documents,
   input,
   secret,
+  usageReservationId,
 }: CreateQueuedCliprJobRecordOptions) {
   return await convex.mutation(api.cliprJobs.createQueued, {
     secret,
@@ -41,6 +43,7 @@ export async function createQueuedCliprJobRecord({
     videoModelId: input.videoModelId,
     ...(input.scriptIdea ? { scriptIdea: input.scriptIdea } : {}),
     targetDurationSeconds: input.durationSeconds,
+    usageReservationId,
     createdAt,
   });
 }

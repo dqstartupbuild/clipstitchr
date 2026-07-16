@@ -30,8 +30,9 @@ export function DashboardProductProvider({
   const assignLegacyContentToPrimary = useMutation(
     api.products.assignLegacyContentToPrimary,
   );
-  const [localOnboardingCompletedAt, setLocalOnboardingCompletedAt] =
-    useState<string | null>(null);
+  const [localOnboardingCompletedAt, setLocalOnboardingCompletedAt] = useState<
+    string | null
+  >(null);
   const [isBackfillingLegacyContent, setIsBackfillingLegacyContent] =
     useState(false);
   const activeProduct = useMemo(
@@ -44,8 +45,7 @@ export function DashboardProductProvider({
   const requiresProductSetup =
     setupState?.requiresProductSetup === true && !products.isLoading;
   const requiresOnboarding =
-    setupState?.requiresOnboarding === true &&
-    !localOnboardingCompletedAt;
+    setupState?.requiresOnboarding === true && !localOnboardingCompletedAt;
   const isOnboardingRoute = pathname.startsWith("/dashboard/onboarding");
   const isDashboardGateLoading =
     isAuthenticated && (setupState === undefined || products.isLoading);
@@ -72,12 +72,9 @@ export function DashboardProductProvider({
     },
     [products],
   );
-  const markOnboardingCompletedLocally = useCallback(
-    (completedAt: string) => {
-      setLocalOnboardingCompletedAt(completedAt);
-    },
-    [],
-  );
+  const markOnboardingCompletedLocally = useCallback((completedAt: string) => {
+    setLocalOnboardingCompletedAt(completedAt);
+  }, []);
 
   useEffect(() => {
     if (requiresOnboarding && !isOnboardingRoute) {
@@ -121,6 +118,7 @@ export function DashboardProductProvider({
     () => ({
       activeProduct,
       activeProductId: activeProduct?.id,
+      archivedProducts: products.archivedProducts,
       defaultProductId: products.defaultProductId,
       defaultingProductId: products.defaultingProductId,
       deletingProductId: products.deletingProductId,
@@ -131,12 +129,14 @@ export function DashboardProductProvider({
         products.isLoading || (isAuthenticated && setupState === undefined),
       isSaving: products.isSaving,
       products: products.products,
+      restoringProductId: products.restoringProductId,
       requiresOnboarding,
       requiresProductSetup,
       savingProductId: products.savingProductId,
       createProduct,
       deleteProduct: products.deleteProduct,
       markOnboardingCompletedLocally,
+      restoreProduct: products.restoreProduct,
       setActiveProduct,
       updateProduct: products.updateProduct,
     }),
@@ -146,6 +146,7 @@ export function DashboardProductProvider({
       isAuthenticated,
       isBackfillingLegacyContent,
       products.defaultProductId,
+      products.archivedProducts,
       products.defaultingProductId,
       products.deleteProduct,
       products.deletingProductId,
@@ -154,6 +155,8 @@ export function DashboardProductProvider({
       products.isLoading,
       products.isSaving,
       products.products,
+      products.restoreProduct,
+      products.restoringProductId,
       requiresOnboarding,
       markOnboardingCompletedLocally,
       products.savingProductId,

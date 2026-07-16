@@ -11,8 +11,7 @@ import { SWAPR_MAX_REFERENCE_DURATION_SECONDS } from "@/lib/clipstitchr/constant
 import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import { createId } from "@/lib/clipstitchr/utils/createId";
-import { getGenerationSpeedTier } from "@/lib/clipstitchr/utils/getGenerationSpeedTier";
-import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
+import { getPlanGenerationProfile } from "@/lib/clipstitchr/billing/getPlanGenerationProfile";
 import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSegmentDurationLimit";
 
 export const runtime = "nodejs";
@@ -22,7 +21,6 @@ type SwaprGenerationRequestBody = {
   characterOrientation?: unknown;
   clipId?: unknown;
   clipName?: unknown;
-  generationSpeedTier?: unknown;
   keepOriginalSound?: unknown;
   mode?: unknown;
   photoId?: unknown;
@@ -52,14 +50,6 @@ function getNumber(value: unknown, label: string) {
   }
 
   return value;
-}
-
-function getSwaprMode(value: unknown) {
-  return value === "pro" ? "pro" : "std";
-}
-
-function getSwaprCharacterOrientation(value: unknown) {
-  return value === "video" ? "video" : "image";
 }
 
 function getR2ObjectReference(value: unknown): R2ObjectReference {
@@ -157,19 +147,18 @@ export async function POST(request: Request) {
       }
     }
 
-    const requestedGenerationSpeedTier = getOptionalString(
-      body.generationSpeedTier,
+    const entitlement = await convex.query(
+      api.billing.getCurrentEntitlement.getCurrentEntitlement,
+      {},
     );
-    const generationSpeedTier = requestedGenerationSpeedTier
-      ? getGenerationSpeedTier(requestedGenerationSpeedTier)
-      : undefined;
-    const speedProfile = generationSpeedTier
-      ? getGenerationSpeedTierProfile(generationSpeedTier)
-      : undefined;
-    const mode = speedProfile?.swaprMode ?? getSwaprMode(body.mode);
-    const characterOrientation =
-      speedProfile?.swaprCharacterOrientation ??
-      getSwaprCharacterOrientation(body.characterOrientation);
+
+    if (!entitlement) {
+      throw new Error("Choose a paid plan before starting Swapr.");
+    }
+
+    const speedProfile = getPlanGenerationProfile(entitlement.planKey);
+    const mode = speedProfile.swaprMode;
+    const characterOrientation = speedProfile.swaprCharacterOrientation;
     const segments = getSegments(body.segments);
     const segmentDurationLimit = getSwaprSegmentDurationLimit(
       characterOrientation,
@@ -219,45 +208,74 @@ export async function POST(request: Request) {
     );
 
     const createdAt = new Date().toISOString();
-    const job = await convex.mutation(api.providerJobs.create, {
-      secret,
-      ownerId: userId,
-      id: `provider:swapr:${batchId}`,
-      jobType: "manual-swapr",
-      stage: "awaiting-provider",
-      idempotencyKey: `${userId}:manual-swapr:${batchId}`,
-      inputSnapshotJson: JSON.stringify({
+    const providerJobId = `provider:swapr:${batchId}`;
+    const reservation = await convex.mutation(
+      api.usage.reserveAiVideo.reserveAiVideo,
+      {
         batchId,
-        characterOrientation,
-        clipId: getOptionalString(body.clipId) ?? createId(),
-        clipName:
-          getOptionalString(body.clipName) ??
-          `Swapr - ${photoDocument.name ?? "Generated clip"}`,
-        generationSpeedTier,
-        keepOriginalSound: body.keepOriginalSound === true,
-        mode,
-        photoObject: photoDocument.photoObject,
-        productId,
-        prompt: getOptionalString(body.prompt) ?? "",
-        referenceClipId: getString(body.referenceClipId, "reference clip ID"),
-        referenceClipName: getString(
-          body.referenceClipName,
-          "reference clip name",
-        ),
-        segments: segments.map((segment) => ({
-          ...segment,
+        domainId: providerJobId,
+        domainKind: "provider_job",
+        idempotencyKey: `swapr-video:${userId}:${batchId}`,
+        now: createdAt,
+        operation: "swapr_video",
+      },
+    );
+    let job;
+
+    try {
+      job = await convex.mutation(api.providerJobs.create, {
+        secret,
+        ownerId: userId,
+        id: providerJobId,
+        jobType: "manual-swapr",
+        stage: "awaiting-provider",
+        idempotencyKey: `${userId}:manual-swapr:${batchId}`,
+        inputSnapshotJson: JSON.stringify({
+          batchId,
+          characterOrientation,
+          clipId: getOptionalString(body.clipId) ?? createId(),
+          clipName:
+            getOptionalString(body.clipName) ??
+            `Swapr - ${photoDocument.name ?? "Generated clip"}`,
+          keepOriginalSound: body.keepOriginalSound === true,
+          mode,
+          photoObject: photoDocument.photoObject,
+          productId,
+          prompt: getOptionalString(body.prompt) ?? "",
           referenceClipId: getString(body.referenceClipId, "reference clip ID"),
           referenceClipName: getString(
             body.referenceClipName,
             "reference clip name",
           ),
-        })),
-        sourcePhotoId: photoDocument.id,
-        sourcePhotoName: photoDocument.name,
-        totalEstimatedDurationSeconds,
-      }),
-      createdAt,
-    });
+          segments: segments.map((segment) => ({
+            ...segment,
+            referenceClipId: getString(
+              body.referenceClipId,
+              "reference clip ID",
+            ),
+            referenceClipName: getString(
+              body.referenceClipName,
+              "reference clip name",
+            ),
+          })),
+          sourcePhotoId: photoDocument.id,
+          sourcePhotoName: photoDocument.name,
+          totalEstimatedDurationSeconds,
+        }),
+        usageReservationId: reservation.reservationId,
+        createdAt,
+      });
+    } catch (error) {
+      await convex.mutation(
+        api.usage.cancelUsageReservation.cancelUsageReservation,
+        {
+          now: new Date().toISOString(),
+          reason: "Swapr job could not be queued",
+          reservationId: reservation.reservationId,
+        },
+      );
+      throw error;
+    }
 
     return NextResponse.json({ job });
   } catch (error) {

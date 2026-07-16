@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 import type { Prediction } from "replicate";
 import { ConvexHttpClient } from "convex/browser";
 import { anyApi } from "convex/server";
-import { DEFAULT_GENERATION_SPEED_TIER } from "@/lib/clipstitchr/constants/defaultGenerationSpeedTier";
 import { getIsAutomationToolEnabled } from "@/lib/clipstitchr/constants/automationToolFeatureFlags";
 import { SWIPR_MAX_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
 import { SWAPR_MAX_REFERENCE_DURATION_SECONDS } from "@/lib/clipstitchr/constants/swaprMaxReferenceDurationSeconds";
@@ -29,8 +28,13 @@ import { parseHookLabIdeaAnalysisJobInput } from "./hookLab/parseHookLabIdeaAnal
 import { parseHookLabIdeaUseJobInput } from "./hookLab/parseHookLabIdeaUseJobInput";
 import { processHookLabIdeaAnalysis } from "./hookLab/processHookLabIdeaAnalysis";
 import { processHookLabIdeaUse } from "./hookLab/processHookLabIdeaUse";
+import { getCliprProviderJobSnapshot } from "./getCliprProviderJobSnapshot";
 import { processManualCliprDemo } from "./processManualCliprDemo";
+import { processManualSwiprDraft } from "./processManualSwiprDraft";
+import { processSwiprBackgroundGeneration } from "./processSwiprBackgroundGeneration";
+import { processSwaprPhotoExpansion } from "./processSwaprPhotoExpansion";
 import { PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS } from "./providerWorkerClaimableProviderJobs";
+import { providerWorkerQueueApiReference } from "./providerWorkerQueueApiReference";
 import { PROVIDER_TOOLS, type ProviderTool } from "./providerWorkerTools";
 import { createSwiprAutomationPexelsQuery } from "@/lib/clipstitchr/server/createSwiprAutomationPexelsQuery";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
@@ -88,7 +92,6 @@ import { createStitchSocialCaption } from "@/lib/clipstitchr/utils/createStitchS
 import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { getAvatarGenerationTags } from "@/lib/clipstitchr/utils/getAvatarGenerationTags";
 import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClipName";
-import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
 import { getImageNeedsSwaprOutpaint } from "@/lib/clipstitchr/utils/getImageNeedsSwaprOutpaint";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
@@ -109,12 +112,14 @@ import { normalizeSwiprCreativeContext } from "@/lib/clipstitchr/utils/normalize
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
 import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarPhotoGenerationCount";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
-import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
+import type { AvatarImageGenerationQuality } from "@/lib/clipstitchr/types/AvatarImageGenerationQuality";
 import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import { TEXT_OVERLAY_STYLES } from "@/lib/clipstitchr/constants/textOverlayStyles";
 import { resolveAutomationStitchrColor } from "@/lib/clipstitchr/utils/resolveAutomationStitchrColor";
 import { resolveAutomationStitchrTextStyleId } from "@/lib/clipstitchr/utils/resolveAutomationStitchrTextStyleId";
+import { getPlanGenerationProfile } from "@/lib/clipstitchr/billing/getPlanGenerationProfile";
+import type { PlanKey } from "@/lib/clipstitchr/billing/types/PlanKey";
 
 const api = anyApi;
 const packageRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
@@ -140,11 +145,14 @@ type AutomationTask = {
   id: string;
   inputSnapshotJson: string;
   ownerId: string;
+  planKeySnapshot: PlanKey;
   providerJobIds: string[];
   runId: string;
   stage: string;
   taskType: string;
   tool: ProviderTool;
+  usageReservationId?: string;
+  usageReservationIds?: string[];
 };
 
 type ProviderJob = {
@@ -154,9 +162,12 @@ type ProviderJob = {
   jobType: string;
   mediaJobIds: string[];
   ownerId: string;
+  planKeySnapshot: PlanKey;
   providerJobIds: string[];
   stage: string;
   status: "queued" | "running" | "completed" | "failed" | "canceled";
+  usageReservationId?: string;
+  usageReservationIds?: string[];
 };
 
 type ManualSwaprSegmentInput = {
@@ -172,7 +183,6 @@ type ManualSwaprProviderJobInput = {
   characterOrientation: "image" | "video";
   clipId: string;
   clipName: string;
-  generationSpeedTier?: string;
   keepOriginalSound: boolean;
   mode: "std" | "pro";
   photoObject: R2ObjectReference;
@@ -225,7 +235,7 @@ type ManualAvatarPhotoProviderJobInput = {
   avatarName: string;
   context: string;
   count: AvatarPhotoGenerationCount;
-  generationSpeedTier?: GenerationSpeedTier;
+  avatarImageQuality: AvatarImageGenerationQuality;
   identityMode: "same" | "similar";
   lighting: AvatarLightingOption;
   location: string;
@@ -234,6 +244,7 @@ type ManualAvatarPhotoProviderJobInput = {
   sourceImageName: string;
   sourceImageObject: R2ObjectReference;
   style: AvatarStyleOption;
+  usageReservationIds: string[];
   wardrobeStyle?: "any" | "male" | "female";
 };
 
@@ -299,6 +310,7 @@ type StitchrAutomationTaskInput = {
 
 type AvatarPhotoAutomationTaskInput = {
   automationDate: string;
+  avatarImageQuality: AvatarImageGenerationQuality;
   avatarDescription?: string;
   avatarId: string;
   avatarName: string;
@@ -382,7 +394,10 @@ async function loadEnvFile(path: string) {
       }
 
       const [name, ...valueParts] = trimmed.split("=");
-      const value = valueParts.join("=").replace(/\s+#.*$/, "").trim();
+      const value = valueParts
+        .join("=")
+        .replace(/\s+#.*$/, "")
+        .trim();
 
       if (!process.env[name]) {
         process.env[name] = value;
@@ -446,10 +461,13 @@ function getConfig(): ProviderWorkerConfig {
     ),
     convexUrl: getRequiredEnv("NEXT_PUBLIC_CONVEX_URL"),
     lockMs: Number(process.env.PROVIDER_WORKER_LOCK_MS || LOCK_MS),
-    pollIntervalMs: Number(process.env.PROVIDER_WORKER_POLL_INTERVAL_MS || 2000),
+    pollIntervalMs: Number(
+      process.env.PROVIDER_WORKER_POLL_INTERVAL_MS || 2000,
+    ),
     providerWorkerSecret: getRequiredEnv("PROVIDER_WORKER_SECRET"),
     providerTools,
-    workerId: process.env.PROVIDER_WORKER_ID || `provider-worker-${process.pid}`,
+    workerId:
+      process.env.PROVIDER_WORKER_ID || `provider-worker-${process.pid}`,
   };
 }
 
@@ -512,7 +530,10 @@ function getStringArrayRecord(value: unknown) {
   );
 }
 
-function getR2ObjectReference(value: unknown, label: string): R2ObjectReference {
+function getR2ObjectReference(
+  value: unknown,
+  label: string,
+): R2ObjectReference {
   const object = getObject(value, label);
 
   return {
@@ -716,7 +737,8 @@ function getFallbackProduct(input: {
     id: "stitchr-automation-context",
     name,
     productDetails: `A short-form ad edit using UGC clip "${input.ugcClipName}" followed by demo clip "${input.demoClipName}".`,
-    audienceDetails: "Short-form viewers who need a clear reason to keep watching.",
+    audienceDetails:
+      "Short-form viewers who need a clear reason to keep watching.",
     inferredPainPoints: ["low retention", "unclear product value"],
     createdAt,
     updatedAt: createdAt,
@@ -726,7 +748,10 @@ function getFallbackProduct(input: {
 function parseStitchrAutomationTaskInput(
   inputSnapshotJson: string,
 ): StitchrAutomationTaskInput {
-  const input = getObject(JSON.parse(inputSnapshotJson) as unknown, "Stitchr input");
+  const input = getObject(
+    JSON.parse(inputSnapshotJson) as unknown,
+    "Stitchr input",
+  );
   const ugcDuration = getNumber(input.ugcDuration, "Stitchr UGC duration");
   const demoDuration = getNumber(input.demoDuration, "Stitchr Demo duration");
   const productName = getOptionalString(input.productName);
@@ -739,11 +764,10 @@ function parseStitchrAutomationTaskInput(
     ? {
         id: getOptionalString(input.productId) ?? fallbackProduct.id,
         name: productName,
-        productDetails:
-          stripWebsiteSourcedProductDetails(
-            getOptionalString(input.productDetails) ??
-              fallbackProduct.productDetails,
-          ),
+        productDetails: stripWebsiteSourcedProductDetails(
+          getOptionalString(input.productDetails) ??
+            fallbackProduct.productDetails,
+        ),
         audienceDetails:
           getOptionalString(input.audienceDetails) ??
           fallbackProduct.audienceDetails,
@@ -871,6 +895,12 @@ function parseAvatarPhotoAutomationTaskInput(
 
   return {
     automationDate: getString(input.automationDate, "automation date"),
+    avatarImageQuality:
+      input.avatarImageQuality === "low" ||
+      input.avatarImageQuality === "medium" ||
+      input.avatarImageQuality === "high"
+        ? input.avatarImageQuality
+        : "auto",
     avatarDescription: getOptionalString(input.avatarDescription),
     avatarId: getString(input.avatarId, "avatar ID"),
     avatarName: getString(input.avatarName, "avatar name"),
@@ -1018,7 +1048,6 @@ function parseManualSwaprProviderJobInput(
     ),
     clipId: getString(input.clipId, "manual Swapr output clip ID"),
     clipName: getString(input.clipName, "manual Swapr output name"),
-    generationSpeedTier: getOptionalString(input.generationSpeedTier),
     keepOriginalSound: input.keepOriginalSound === true,
     mode: getSwaprMode(input.mode),
     photoObject: getR2ObjectReference(input.photoObject, "Swapr photo"),
@@ -1059,7 +1088,9 @@ function parseManualCliprProviderJobInput(
           jobId: getString(input.jobId, "Clipr job ID"),
           mode: requestedGenerationMode,
         });
-  const requestedVideoModelId = getCliprVideoModelId(input.requestedVideoModelId);
+  const requestedVideoModelId = getCliprVideoModelId(
+    input.requestedVideoModelId,
+  );
   const parsedVideoModelId = getCliprVideoModelId(input.videoModelId);
   const videoModelId =
     parsedVideoModelId === "auto"
@@ -1125,27 +1156,27 @@ function parseManualAvatarPhotoProviderJobInput(
     "manual avatar photo input",
   );
   const rawCount = Math.trunc(getNumber(input.count, "avatar photo count"));
-  const count: AvatarPhotoGenerationCount =
-    rawCount >= 5 ? 5 : rawCount >= 3 ? 3 : 1;
+  const count = Math.min(
+    5,
+    Math.max(1, rawCount),
+  ) as AvatarPhotoGenerationCount;
   const identityMode = input.identityMode === "similar" ? "similar" : "same";
   const wardrobeStyle = getOptionalString(input.wardrobeStyle);
-  const generationSpeedTier = getOptionalString(input.generationSpeedTier);
   const lighting = getOptionalString(input.lighting);
   const style = getOptionalString(input.style);
 
   return {
-    avatarDescription: getString(
-      input.avatarDescription,
-      "avatar description",
-    ),
+    avatarDescription: getString(input.avatarDescription, "avatar description"),
+    avatarImageQuality:
+      input.avatarImageQuality === "low" ||
+      input.avatarImageQuality === "medium" ||
+      input.avatarImageQuality === "high"
+        ? input.avatarImageQuality
+        : "auto",
     avatarId: getString(input.avatarId, "avatar ID"),
     avatarName: getString(input.avatarName, "avatar name"),
     context: getOptionalString(input.context) ?? "",
     count,
-    generationSpeedTier:
-      generationSpeedTier === "pro" || generationSpeedTier === "studio"
-        ? generationSpeedTier
-        : "creator",
     identityMode,
     lighting:
       lighting === "natural" ||
@@ -1172,6 +1203,7 @@ function parseManualAvatarPhotoProviderJobInput(
       style === "cinematic"
         ? style
         : "ugc",
+    usageReservationIds: getStringArray(input.usageReservationIds),
     wardrobeStyle:
       wardrobeStyle === "male" || wardrobeStyle === "female"
         ? wardrobeStyle
@@ -1374,6 +1406,7 @@ async function processSwaprStart({
   }
 
   const input = parseSwaprAutomationTaskInput(task.inputSnapshotJson);
+  const generationProfile = getPlanGenerationProfile(task.planKeySnapshot);
 
   assertR2ObjectKeyBelongsToUser(input.photoObject.key, task.ownerId);
   assertR2ObjectKeyBelongsToUser(input.referenceVideoObject.key, task.ownerId);
@@ -1391,7 +1424,7 @@ async function processSwaprStart({
   }
 
   const segmentDurationLimit = getSwaprSegmentDurationLimit(
-    input.characterOrientation,
+    generationProfile.swaprCharacterOrientation,
   );
 
   if (input.referenceDurationSeconds > segmentDurationLimit + 0.25) {
@@ -1413,9 +1446,9 @@ async function processSwaprStart({
       image: image.url,
       video: video.url,
       prompt: input.prompt,
-      mode: input.mode,
+      mode: generationProfile.swaprMode,
       keep_original_sound: input.keepOriginalSound,
-      character_orientation: input.characterOrientation,
+      character_orientation: generationProfile.swaprCharacterOrientation,
     },
   });
   const updatedAt = getNow();
@@ -1454,6 +1487,7 @@ async function processSwaprFinalize({
   }
 
   const input = parseSwaprAutomationTaskInput(task.inputSnapshotJson);
+  const generationProfile = getPlanGenerationProfile(task.planKeySnapshot);
   const predictionId = getProviderPredictionId(task);
   const replicate = createReplicateClient();
   const prediction = await replicate.predictions.get(predictionId);
@@ -1520,11 +1554,11 @@ async function processSwaprFinalize({
         automationDate: input.automationDate,
         automationRunId: task.runId,
         automationTaskId: task.id,
-        characterOrientation: input.characterOrientation,
+        characterOrientation: generationProfile.swaprCharacterOrientation,
         clipId,
         clipName: `Swapr - ${input.sourcePhotoName} in ${input.referenceClipName}`,
         keepOriginalSound: input.keepOriginalSound,
-        mode: input.mode,
+        mode: generationProfile.swaprMode,
         modelId: SWAPR_MODEL_ID,
         outputUrl,
         predictionId: prediction.id,
@@ -1536,6 +1570,7 @@ async function processSwaprFinalize({
         sourceSummary: `${input.sourcePhotoName} in ${input.referenceClipName}`,
       }),
       createdAt: updatedAt,
+      usageReservationId: task.usageReservationId,
     },
   )) as { id: string };
 
@@ -1591,6 +1626,7 @@ async function processClipr({
     requestedVideoModelId: input.requestedVideoModelId,
     videoModelId: input.videoModelId,
     targetDurationSeconds: input.targetDurationSeconds,
+    usageReservationId: task.usageReservationId,
     createdAt: getNow(),
   });
   await markTaskStatus({
@@ -1602,92 +1638,117 @@ async function processClipr({
   });
 
   const replicate = createReplicateClient();
-  const textGeneration = await createCliprJobTextGeneration({
-    durationSeconds: input.targetDurationSeconds,
-    generationMode: input.generationMode,
-    jobId: input.jobId,
-    product: input.product,
-    replicate,
-  });
-
-  await client.mutation(api.cliprJobs.applyScriptPlanFromProvider, {
-    secret: config.providerWorkerSecret,
-    ownerId: task.ownerId,
-    id: input.jobId,
-    hookStyleKey: textGeneration.hookStyleKey,
-    hookTemplateId: textGeneration.hookTemplateId,
-    filledHook: textGeneration.filledHook,
-    variablesUsed: textGeneration.variablesUsed,
-    script: textGeneration.script,
-    scenePlan: textGeneration.scenePlan,
-    providerModel: textGeneration.providerModel,
-    updatedAt: getNow(),
-  });
-  await markTaskStatus({
+  const existingCliprJob = await getCliprProviderJobSnapshot(
     client,
-    config,
-    task,
-    status: "running",
-    stage: "avatar-image-provider",
-    providerJobId: textGeneration.providerPredictionId,
-  });
+    config.providerWorkerSecret,
+    task.ownerId,
+    input.jobId,
+  );
+  let script = existingCliprJob?.script;
+  let scenePlan = existingCliprJob?.scenePlan;
+
+  if (!script || !scenePlan?.length) {
+    const textGeneration = await createCliprJobTextGeneration({
+      durationSeconds: input.targetDurationSeconds,
+      generationMode: input.generationMode,
+      jobId: input.jobId,
+      product: input.product,
+      replicate,
+    });
+
+    script = textGeneration.script;
+    scenePlan = textGeneration.scenePlan;
+    await client.mutation(api.cliprJobs.applyScriptPlanFromProvider, {
+      secret: config.providerWorkerSecret,
+      ownerId: task.ownerId,
+      id: input.jobId,
+      hookStyleKey: textGeneration.hookStyleKey,
+      hookTemplateId: textGeneration.hookTemplateId,
+      filledHook: textGeneration.filledHook,
+      variablesUsed: textGeneration.variablesUsed,
+      script,
+      scenePlan,
+      providerModel: textGeneration.providerModel,
+      updatedAt: getNow(),
+    });
+    await markTaskStatus({
+      client,
+      config,
+      task,
+      status: "running",
+      stage: "avatar-image-provider",
+      providerJobId: textGeneration.providerPredictionId,
+    });
+  }
 
   const referenceImageUrl = (
     await getR2DownloadSignedUrl(input.avatarPhotoObject.key)
   ).url;
-  const avatarSourceScene = getCliprAvatarSourceScene(
-    textGeneration.scenePlan,
-    textGeneration.script,
-  );
-  const generatedAvatarImage = await createCliprSceneAvatarImage({
-    avatarDescription: input.avatarDescription,
-    generationMode: input.generationMode,
-    referenceImageUrl,
-    replicate,
-    scene: avatarSourceScene,
-  });
-  const avatarImageObject = await saveCliprSceneImageObject({
-    body: generatedAvatarImage.body,
-    contentType: generatedAvatarImage.contentType,
-    jobId: input.jobId,
-    sceneId: "avatar-source",
-    userId: task.ownerId,
-  });
+  const avatarSourceScene = getCliprAvatarSourceScene(scenePlan, script);
+  let avatarImageObject = existingCliprJob?.avatarImageObject;
 
-  await client.mutation(api.cliprJobs.recordAvatarImageOutputFromProvider, {
-    secret: config.providerWorkerSecret,
-    ownerId: task.ownerId,
-    id: input.jobId,
-    avatarImageObject,
-    avatarImageProviderPredictionId: generatedAvatarImage.predictionId,
-    providerModels: [generatedAvatarImage.modelId],
-    progress: 0.45,
-    updatedAt: getNow(),
-  });
-  await markTaskStatus({
-    client,
-    config,
-    task,
-    status: "running",
-    stage: "avatar-video-provider",
-    providerJobId: generatedAvatarImage.predictionId,
-  });
+  if (!avatarImageObject) {
+    const generatedAvatarImage = await createCliprSceneAvatarImage({
+      avatarDescription: input.avatarDescription,
+      generationMode: input.generationMode,
+      quality: getPlanGenerationProfile(task.planKeySnapshot)
+        .avatarImageQuality,
+      referenceImageUrl,
+      replicate,
+      scene: avatarSourceScene,
+    });
+    avatarImageObject = await saveCliprSceneImageObject({
+      body: generatedAvatarImage.body,
+      contentType: generatedAvatarImage.contentType,
+      jobId: input.jobId,
+      sceneId: "avatar-source",
+      userId: task.ownerId,
+    });
+
+    await client.mutation(api.cliprJobs.recordAvatarImageOutputFromProvider, {
+      secret: config.providerWorkerSecret,
+      ownerId: task.ownerId,
+      id: input.jobId,
+      avatarImageObject,
+      avatarImageProviderPredictionId: generatedAvatarImage.predictionId,
+      providerModels: [generatedAvatarImage.modelId],
+      progress: 0.45,
+      updatedAt: getNow(),
+    });
+    await markTaskStatus({
+      client,
+      config,
+      task,
+      status: "running",
+      stage: "avatar-video-provider",
+      providerJobId: generatedAvatarImage.predictionId,
+    });
+  }
 
   const avatarImageUrl = await getR2DownloadSignedUrl(avatarImageObject.key);
-  const avatarVideoOutput = await createCliprJobVideoOutput({
-    durationSeconds: input.targetDurationSeconds,
-    generationMode: input.generationMode,
-    imageUrl: avatarImageUrl.url,
-    jobId: input.jobId,
-    lipSyncModelId: getCliprLipSyncModelId(),
-    prompt: avatarSourceScene.visualPrompt,
-    replicate,
-    script: textGeneration.script,
-    ttsModelId: getCliprTtsModelId(),
-    userId: task.ownerId,
-    videoModelId: input.videoModelId,
-    voiceId: input.voiceId,
-  });
+  const avatarVideoOutput =
+    existingCliprJob?.avatarVideoObject &&
+    existingCliprJob.avatarVideoProviderPredictionId
+      ? {
+          avatarVideoObject: existingCliprJob.avatarVideoObject,
+          avatarVideoProviderPredictionId:
+            existingCliprJob.avatarVideoProviderPredictionId,
+          providerModels: existingCliprJob.providerModels,
+        }
+      : await createCliprJobVideoOutput({
+          durationSeconds: input.targetDurationSeconds,
+          generationMode: input.generationMode,
+          imageUrl: avatarImageUrl.url,
+          jobId: input.jobId,
+          lipSyncModelId: getCliprLipSyncModelId(),
+          prompt: avatarSourceScene.visualPrompt,
+          replicate,
+          script,
+          ttsModelId: getCliprTtsModelId(),
+          userId: task.ownerId,
+          videoModelId: input.videoModelId,
+          voiceId: input.voiceId,
+        });
   const mediaClipId = createId();
   const mediaJobId = `media:clipr-finalization:${input.jobId}`;
   const clipName = getCliprFinalClipName(input.product.name, getNow());
@@ -1724,6 +1785,7 @@ async function processClipr({
         sourceVideoObject: avatarVideoOutput.avatarVideoObject,
       }),
       createdAt: getNow(),
+      usageReservationId: task.usageReservationId,
     },
   )) as { id: string };
 
@@ -1744,8 +1806,8 @@ function getSavedStitchrHookPlanIsUsable(
 ): plan is SavedStitchrHookPlan {
   return Boolean(
     plan &&
-      (plan.status === "planned" || plan.status === "fallback") &&
-      plan.selectedHook.trim(),
+    (plan.status === "planned" || plan.status === "fallback") &&
+    plan.selectedHook.trim(),
   );
 }
 
@@ -1978,6 +2040,7 @@ async function processStitchr({
         ugcVideoObject: input.ugcVideoObject,
       }),
       createdAt: getNow(),
+      usageReservationId: task.usageReservationId,
     },
   )) as { id: string };
 
@@ -2007,6 +2070,7 @@ async function processAvatarPhoto({
   }
 
   const input = parseAvatarPhotoAutomationTaskInput(task.inputSnapshotJson);
+  const generationProfile = getPlanGenerationProfile(task.planKeySnapshot);
 
   assertR2ObjectKeyBelongsToUser(input.sourcePhotoObject.key, task.ownerId);
 
@@ -2016,11 +2080,9 @@ async function processAvatarPhoto({
 
   const modelId = getAvatarPhotoGenerationModelId();
   const replicate = createReplicateClient();
-  const speedProfile = getGenerationSpeedTierProfile(
-    DEFAULT_GENERATION_SPEED_TIER,
-  );
-  const referenceUrl = (await getR2DownloadSignedUrl(input.sourcePhotoObject.key))
-    .url;
+  const referenceUrl = (
+    await getR2DownloadSignedUrl(input.sourcePhotoObject.key)
+  ).url;
   const referenceImage = await getRemoteImageFile(
     referenceUrl,
     "avatar-reference.jpg",
@@ -2052,7 +2114,7 @@ async function processAvatarPhoto({
       image: referenceImage,
       modelId,
       prompt,
-      quality: speedProfile.avatarImageQuality,
+      quality: generationProfile.avatarImageQuality,
     }),
   });
   const createdAt = getNow();
@@ -2112,7 +2174,8 @@ async function processAvatarPhoto({
   }
 
   const outputResponse = await fetchReplicateOutput(outputUrl);
-  const contentType = outputResponse.headers.get("content-type") ?? "image/jpeg";
+  const contentType =
+    outputResponse.headers.get("content-type") ?? "image/jpeg";
   const body = await outputResponse.arrayBuffer();
   const dimensions = readImageDimensionsFromBytes(body, contentType);
   const photoId = createId();
@@ -2185,6 +2248,7 @@ async function processAvatarPhoto({
       : "original-portrait",
     createdAt: savedAt,
     updatedAt: savedAt,
+    usageReservationId: task.usageReservationId,
   });
 
   await markTaskStatus({
@@ -2226,14 +2290,49 @@ async function processSwipr({
     : [];
 
   const replicate = createReplicateClient();
+  const existingPredictionId = task.providerJobIds[0];
+  const existingPrediction = existingPredictionId
+    ? await replicate.predictions.get(existingPredictionId)
+    : undefined;
   const textGeneration = await createSwiprAutomationTextGeneration({
     callToActionStyle: input.swiprCallToActionStyle,
     count: input.generationCount,
     creativeContext: input.swiprCreativeContext,
     product,
+    prediction: existingPrediction,
     replicate,
+    onPredictionCreated: async (prediction) => {
+      if (existingPredictionId) {
+        return;
+      }
+
+      await markTaskStatus({
+        client,
+        config,
+        task,
+        status: "running",
+        stage: "provider-created",
+        providerJobId: prediction.id,
+      });
+    },
     slideCount: SWIPR_MAX_SLIDE_COUNT,
   });
+  const unusedUsageReservationIds =
+    task.usageReservationIds?.slice(textGeneration.slideshows.length) ?? [];
+
+  if (unusedUsageReservationIds.length > 0) {
+    await client.mutation(
+      api.usage.releaseUsageReservationsFromProvider
+        .releaseUsageReservationsFromProvider,
+      {
+        secret: config.providerWorkerSecret,
+        ownerId: task.ownerId,
+        reservationIds: unusedUsageReservationIds,
+        now,
+        reason: "Swipr provider returned fewer drafts",
+      },
+    );
+  }
 
   const selectedBackgroundIds = selectedPackBackgrounds.map(
     (background) => background.id,
@@ -2396,6 +2495,7 @@ async function processSwipr({
       socialCaption: slideshow.socialCaption,
       slides,
       createdAt: now,
+      usageReservationId: task.usageReservationIds?.[batchIndex],
       updatedAt: now,
     });
 
@@ -2430,6 +2530,7 @@ async function processManualSwaprStart({
   job: ProviderJob;
 }) {
   const input = parseManualSwaprProviderJobInput(job.inputSnapshotJson);
+  const generationProfile = getPlanGenerationProfile(job.planKeySnapshot);
 
   assertR2ObjectKeyBelongsToUser(input.photoObject.key, job.ownerId);
 
@@ -2438,7 +2539,7 @@ async function processManualSwaprStart({
   }
 
   const segmentDurationLimit = getSwaprSegmentDurationLimit(
-    input.characterOrientation,
+    generationProfile.swaprCharacterOrientation,
   );
 
   for (const segment of input.segments) {
@@ -2466,42 +2567,48 @@ async function processManualSwaprStart({
 
   const image = await getR2DownloadSignedUrl(input.photoObject.key);
   const replicate = createReplicateClient();
-  const providerJobIds: string[] = [];
+  let providerCount = 0;
 
-  for (const segment of input.segments) {
+  for (const [index, segment] of input.segments.entries()) {
     const video = await getR2DownloadSignedUrl(segment.videoObject.key);
-    const prediction = await replicate.predictions.create({
-      model: SWAPR_MODEL_ID,
-      input: {
-        image: image.url,
-        video: video.url,
-        prompt: input.prompt,
-        mode: input.mode,
-        keep_original_sound: input.keepOriginalSound,
-        character_orientation: input.characterOrientation,
-      },
-    });
+    const existingPredictionId = job.providerJobIds[index];
+    const prediction = existingPredictionId
+      ? await replicate.predictions.get(existingPredictionId)
+      : await replicate.predictions.create({
+          model: SWAPR_MODEL_ID,
+          input: {
+            image: image.url,
+            video: video.url,
+            prompt: input.prompt,
+            mode: generationProfile.swaprMode,
+            keep_original_sound: input.keepOriginalSound,
+            character_orientation: generationProfile.swaprCharacterOrientation,
+          },
+        });
     const now = getNow();
 
-    providerJobIds.push(prediction.id);
-    await client.mutation(api.replicateJobs.recordSwaprProviderJob, {
-      secret: config.providerWorkerSecret,
-      ownerId: job.ownerId,
-      predictionId: prediction.id,
-      modelId: SWAPR_MODEL_ID,
-      status: getReplicatePredictionStatus(prediction.status),
-      createdAt: now,
-      updatedAt: now,
-    });
-    await markProviderJobStatus({
-      client,
-      config,
-      job,
-      status: "running",
-      stage: "provider-created",
-      providerJobId: prediction.id,
-      progress: 0.1 + (providerJobIds.length / input.segments.length) * 0.2,
-    });
+    providerCount += 1;
+
+    if (!existingPredictionId) {
+      await client.mutation(api.replicateJobs.recordSwaprProviderJob, {
+        secret: config.providerWorkerSecret,
+        ownerId: job.ownerId,
+        predictionId: prediction.id,
+        modelId: SWAPR_MODEL_ID,
+        status: getReplicatePredictionStatus(prediction.status),
+        createdAt: now,
+        updatedAt: now,
+      });
+      await markProviderJobStatus({
+        client,
+        config,
+        job,
+        status: "running",
+        stage: "creating-providers",
+        providerJobId: prediction.id,
+        progress: 0.1 + (providerCount / input.segments.length) * 0.2,
+      });
+    }
   }
 
   await markProviderJobStatus({
@@ -2525,6 +2632,7 @@ async function processManualSwaprFinalize({
   job: ProviderJob;
 }) {
   const input = parseManualSwaprProviderJobInput(job.inputSnapshotJson);
+  const generationProfile = getPlanGenerationProfile(job.planKeySnapshot);
   const replicate = createReplicateClient();
   const segments = [];
   let completedCount = 0;
@@ -2593,11 +2701,11 @@ async function processManualSwaprFinalize({
       id: `media:swapr-finalization:${job.id}`,
       idempotencyKey: `${job.id}:swapr-finalization`,
       inputSnapshotJson: JSON.stringify({
-        characterOrientation: input.characterOrientation,
+        characterOrientation: generationProfile.swaprCharacterOrientation,
         clipId: input.clipId,
         clipName: input.clipName,
         keepOriginalSound: input.keepOriginalSound,
-        mode: input.mode,
+        mode: generationProfile.swaprMode,
         modelId: SWAPR_MODEL_ID,
         productId: input.productId,
         prompt: input.prompt,
@@ -2610,6 +2718,7 @@ async function processManualSwaprFinalize({
         sourceSummary: `${input.sourcePhotoName} in ${input.referenceClipName}`,
       }),
       createdAt: now,
+      usageReservationId: job.usageReservationId,
     },
   )) as { id: string };
 
@@ -2635,6 +2744,12 @@ async function processManualClipr({
   job: ProviderJob;
 }) {
   const input = parseManualCliprProviderJobInput(job.inputSnapshotJson);
+  const existingCliprJob = await getCliprProviderJobSnapshot(
+    client,
+    config.providerWorkerSecret,
+    job.ownerId,
+    input.jobId,
+  );
 
   if (input.generationMode === "demo") {
     await processManualCliprDemo({
@@ -2644,6 +2759,7 @@ async function processManualClipr({
       input,
       job,
       markProviderJobStatus,
+      existingCliprJob,
     });
     return;
   }
@@ -2680,100 +2796,118 @@ async function processManualClipr({
     progress: 0.12,
   });
 
-  const textGeneration = await createCliprJobTextGeneration({
-    durationSeconds: input.durationSeconds,
-    generationMode: input.generationMode,
-    jobId: input.jobId,
-    product,
-    replicate,
-    scriptIdea: input.scriptIdea,
-  });
+  let script = existingCliprJob?.script;
+  let scenePlan = existingCliprJob?.scenePlan;
 
-  await client.mutation(api.cliprJobs.applyScriptPlanFromProvider, {
-    secret: config.providerWorkerSecret,
-    ownerId: job.ownerId,
-    id: input.jobId,
-    hookStyleKey: textGeneration.hookStyleKey,
-    hookTemplateId: textGeneration.hookTemplateId,
-    filledHook: textGeneration.filledHook,
-    variablesUsed: textGeneration.variablesUsed,
-    script: textGeneration.script,
-    scenePlan: textGeneration.scenePlan,
-    providerModel: textGeneration.providerModel,
-    updatedAt: getNow(),
-  });
-  await markProviderJobStatus({
-    client,
-    config,
-    job,
-    status: "running",
-    stage: "avatar-image-provider",
-    providerJobId: textGeneration.providerPredictionId,
-    progress: 0.28,
-  });
+  if (!script || !scenePlan?.length) {
+    const textGeneration = await createCliprJobTextGeneration({
+      durationSeconds: input.durationSeconds,
+      generationMode: input.generationMode,
+      jobId: input.jobId,
+      product,
+      replicate,
+      scriptIdea: input.scriptIdea,
+    });
+
+    script = textGeneration.script;
+    scenePlan = textGeneration.scenePlan;
+    await client.mutation(api.cliprJobs.applyScriptPlanFromProvider, {
+      secret: config.providerWorkerSecret,
+      ownerId: job.ownerId,
+      id: input.jobId,
+      hookStyleKey: textGeneration.hookStyleKey,
+      hookTemplateId: textGeneration.hookTemplateId,
+      filledHook: textGeneration.filledHook,
+      variablesUsed: textGeneration.variablesUsed,
+      script,
+      scenePlan,
+      providerModel: textGeneration.providerModel,
+      updatedAt: getNow(),
+    });
+    await markProviderJobStatus({
+      client,
+      config,
+      job,
+      status: "running",
+      stage: "avatar-image-provider",
+      providerJobId: textGeneration.providerPredictionId,
+      progress: 0.28,
+    });
+  }
 
   const referenceImageUrl = (
     await getR2DownloadSignedUrl(input.avatarPhotoObject.key)
   ).url;
-  const avatarSourceScene = getCliprAvatarSourceScene(
-    textGeneration.scenePlan,
-    textGeneration.script,
-  );
-  const generatedAvatarImage = await createCliprSceneAvatarImage({
-    avatarDescription: input.avatarDescription,
-    generationMode: input.generationMode,
-    referenceImageUrl,
-    replicate,
-    scene: avatarSourceScene,
-    sceneControls: {
-      location: input.avatarSceneLocation,
-      outfit: input.avatarSceneOutfit,
-      pose: input.avatarScenePose,
-    },
-  });
-  const avatarImageObject = await saveCliprSceneImageObject({
-    body: generatedAvatarImage.body,
-    contentType: generatedAvatarImage.contentType,
-    jobId: input.jobId,
-    sceneId: "avatar-source",
-    userId: job.ownerId,
-  });
+  const avatarSourceScene = getCliprAvatarSourceScene(scenePlan, script);
+  let avatarImageObject = existingCliprJob?.avatarImageObject;
 
-  await client.mutation(api.cliprJobs.recordAvatarImageOutputFromProvider, {
-    secret: config.providerWorkerSecret,
-    ownerId: job.ownerId,
-    id: input.jobId,
-    avatarImageObject,
-    avatarImageProviderPredictionId: generatedAvatarImage.predictionId,
-    providerModels: [generatedAvatarImage.modelId],
-    progress: 0.45,
-    updatedAt: getNow(),
-  });
-  await markProviderJobStatus({
-    client,
-    config,
-    job,
-    status: "running",
-    stage: "avatar-video-provider",
-    providerJobId: generatedAvatarImage.predictionId,
-    progress: 0.45,
-  });
+  if (!avatarImageObject) {
+    const generatedAvatarImage = await createCliprSceneAvatarImage({
+      avatarDescription: input.avatarDescription,
+      generationMode: input.generationMode,
+      quality: getPlanGenerationProfile(job.planKeySnapshot).avatarImageQuality,
+      referenceImageUrl,
+      replicate,
+      scene: avatarSourceScene,
+      sceneControls: {
+        location: input.avatarSceneLocation,
+        outfit: input.avatarSceneOutfit,
+        pose: input.avatarScenePose,
+      },
+    });
+    avatarImageObject = await saveCliprSceneImageObject({
+      body: generatedAvatarImage.body,
+      contentType: generatedAvatarImage.contentType,
+      jobId: input.jobId,
+      sceneId: "avatar-source",
+      userId: job.ownerId,
+    });
+
+    await client.mutation(api.cliprJobs.recordAvatarImageOutputFromProvider, {
+      secret: config.providerWorkerSecret,
+      ownerId: job.ownerId,
+      id: input.jobId,
+      avatarImageObject,
+      avatarImageProviderPredictionId: generatedAvatarImage.predictionId,
+      providerModels: [generatedAvatarImage.modelId],
+      progress: 0.45,
+      updatedAt: getNow(),
+    });
+    await markProviderJobStatus({
+      client,
+      config,
+      job,
+      status: "running",
+      stage: "avatar-video-provider",
+      providerJobId: generatedAvatarImage.predictionId,
+      progress: 0.45,
+    });
+  }
 
   const avatarImageUrl = await getR2DownloadSignedUrl(avatarImageObject.key);
-  const avatarVideoOutput = await createCliprJobVideoOutput({
-    durationSeconds: input.durationSeconds,
-    generationMode: input.generationMode,
-    imageUrl: avatarImageUrl.url,
-    jobId: input.jobId,
-    lipSyncModelId: input.lipSyncModelId,
-    prompt: avatarSourceScene.visualPrompt,
-    replicate,
-    script: textGeneration.script,
-    ttsModelId: input.ttsModelId,
-    userId: job.ownerId,
-    videoModelId: input.videoModelId,
-    voiceId: input.voiceId,
-  });
+  const avatarVideoOutput =
+    existingCliprJob?.avatarVideoObject &&
+    existingCliprJob.avatarVideoProviderPredictionId
+      ? {
+          avatarVideoObject: existingCliprJob.avatarVideoObject,
+          avatarVideoProviderPredictionId:
+            existingCliprJob.avatarVideoProviderPredictionId,
+          providerModels: existingCliprJob.providerModels,
+        }
+      : await createCliprJobVideoOutput({
+          durationSeconds: input.durationSeconds,
+          generationMode: input.generationMode,
+          imageUrl: avatarImageUrl.url,
+          jobId: input.jobId,
+          lipSyncModelId: input.lipSyncModelId,
+          prompt: avatarSourceScene.visualPrompt,
+          replicate,
+          script,
+          ttsModelId: input.ttsModelId,
+          userId: job.ownerId,
+          videoModelId: input.videoModelId,
+          voiceId: input.voiceId,
+        });
   const providerModels: string[] = [...avatarVideoOutput.providerModels];
   const music =
     input.generationMode === "script" && input.musicTrack
@@ -2801,6 +2935,7 @@ async function processManualClipr({
         sourceVideoObject: avatarVideoOutput.avatarVideoObject,
       }),
       createdAt: getNow(),
+      usageReservationId: job.usageReservationId,
     },
   )) as { id: string };
 
@@ -2839,6 +2974,7 @@ async function processManualAvatarPhoto({
   job: ProviderJob;
 }) {
   const input = parseManualAvatarPhotoProviderJobInput(job.inputSnapshotJson);
+  const generationProfile = getPlanGenerationProfile(job.planKeySnapshot);
 
   assertR2ObjectKeyBelongsToUser(input.sourceImageObject.key, job.ownerId);
 
@@ -2848,9 +2984,6 @@ async function processManualAvatarPhoto({
 
   const modelId = getAvatarPhotoGenerationModelId();
   const replicate = createReplicateClient();
-  const speedProfile = getGenerationSpeedTierProfile(
-    input.generationSpeedTier ?? DEFAULT_GENERATION_SPEED_TIER,
-  );
   const referenceUrl = (
     await getR2DownloadSignedUrl(input.sourceImageObject.key)
   ).url;
@@ -2867,6 +3000,10 @@ async function processManualAvatarPhoto({
     style: input.style,
     wardrobeStyle: input.wardrobeStyle ?? "any",
   });
+
+  if (input.usageReservationIds.length !== variants.length) {
+    throw new Error("Avatar photo usage reservations do not match the batch.");
+  }
   const savedPhotoIds: string[] = [];
 
   for (const [index, variant] of variants.entries()) {
@@ -2876,35 +3013,40 @@ async function processManualAvatarPhoto({
       modelId,
       variant,
     });
-    const prediction = await replicate.predictions.create({
-      ...getReplicatePredictionModelReference(modelId),
-      input: createAvatarPhotoGenerationInput({
-        image: referenceImage,
-        modelId,
-        prompt,
-        quality: speedProfile.avatarImageQuality,
-      }),
-    });
+    const existingPredictionId = job.providerJobIds[index];
+    const prediction = existingPredictionId
+      ? await replicate.predictions.get(existingPredictionId)
+      : await replicate.predictions.create({
+          ...getReplicatePredictionModelReference(modelId),
+          input: createAvatarPhotoGenerationInput({
+            image: referenceImage,
+            modelId,
+            prompt,
+            quality: generationProfile.avatarImageQuality,
+          }),
+        });
     const createdAt = getNow();
 
-    await client.mutation(api.replicateJobs.recordAvatarPhotoProviderJob, {
-      secret: config.providerWorkerSecret,
-      ownerId: job.ownerId,
-      predictionId: prediction.id,
-      modelId,
-      status: getReplicatePredictionStatus(prediction.status),
-      createdAt,
-      updatedAt: createdAt,
-    });
-    await markProviderJobStatus({
-      client,
-      config,
-      job,
-      status: "running",
-      stage: "provider-created",
-      providerJobId: prediction.id,
-      progress: 0.1 + (index / variants.length) * 0.7,
-    });
+    if (!existingPredictionId) {
+      await client.mutation(api.replicateJobs.recordAvatarPhotoProviderJob, {
+        secret: config.providerWorkerSecret,
+        ownerId: job.ownerId,
+        predictionId: prediction.id,
+        modelId,
+        status: getReplicatePredictionStatus(prediction.status),
+        createdAt,
+        updatedAt: createdAt,
+      });
+      await markProviderJobStatus({
+        client,
+        config,
+        job,
+        status: "running",
+        stage: "provider-created",
+        providerJobId: prediction.id,
+        progress: 0.1 + (index / variants.length) * 0.7,
+      });
+    }
 
     const completedPrediction = await replicate.wait(prediction, {
       interval: 2000,
@@ -2922,24 +3064,49 @@ async function processManualAvatarPhoto({
       (completedPrediction as Prediction).output,
     )[0];
 
-    await client.mutation(api.replicateJobs.updateAvatarPhotoProviderJobStatus, {
-      secret: config.providerWorkerSecret,
-      ownerId: job.ownerId,
-      predictionId: prediction.id,
-      status: completedStatus,
-      outputUrl,
-      error: predictionError,
-      updatedAt: getNow(),
-    });
+    await client.mutation(
+      api.replicateJobs.updateAvatarPhotoProviderJobStatus,
+      {
+        secret: config.providerWorkerSecret,
+        ownerId: job.ownerId,
+        predictionId: prediction.id,
+        status: completedStatus,
+        outputUrl,
+        error: predictionError,
+        updatedAt: getNow(),
+      },
+    );
 
     if (completedPrediction.status !== "succeeded") {
-      throw new Error(
-        predictionError ?? "Replicate did not complete avatar photo generation.",
+      await client.mutation(
+        api.usage.releaseUsageReservationsFromProvider
+          .releaseUsageReservationsFromProvider,
+        {
+          secret: config.providerWorkerSecret,
+          ownerId: job.ownerId,
+          reservationIds: [input.usageReservationIds[index]],
+          now: getNow(),
+          reason:
+            predictionError ??
+            "Replicate did not complete avatar photo generation",
+        },
       );
+      continue;
     }
 
     if (!outputUrl) {
-      throw new Error("Replicate did not return a generated avatar photo.");
+      await client.mutation(
+        api.usage.releaseUsageReservationsFromProvider
+          .releaseUsageReservationsFromProvider,
+        {
+          secret: config.providerWorkerSecret,
+          ownerId: job.ownerId,
+          reservationIds: [input.usageReservationIds[index]],
+          now: getNow(),
+          reason: "Replicate did not return a generated avatar photo",
+        },
+      );
+      continue;
     }
 
     const outputResponse = await fetchReplicateOutput(outputUrl);
@@ -2947,7 +3114,7 @@ async function processManualAvatarPhoto({
       outputResponse.headers.get("content-type") ?? "image/jpeg";
     const body = await outputResponse.arrayBuffer();
     const dimensions = readImageDimensionsFromBytes(body, contentType);
-    const photoId = createId();
+    const photoId = `avatar-photo:${job.id}:${index}`;
     const [photoObject, thumbnailObject] = await Promise.all([
       putR2Object({
         body,
@@ -3005,11 +3172,15 @@ async function processManualAvatarPhoto({
       height: dimensions.height,
       originalWidth: dimensions.width,
       originalHeight: dimensions.height,
-      preparation: getImageNeedsSwaprOutpaint(dimensions.width, dimensions.height)
+      preparation: getImageNeedsSwaprOutpaint(
+        dimensions.width,
+        dimensions.height,
+      )
         ? undefined
         : "original-portrait",
       createdAt: savedAt,
       updatedAt: savedAt,
+      usageReservationId: input.usageReservationIds[index],
     });
 
     savedPhotoIds.push(photoId);
@@ -3023,6 +3194,10 @@ async function processManualAvatarPhoto({
       providerJobId: prediction.id,
       progress: 0.2 + (savedPhotoIds.length / variants.length) * 0.75,
     });
+  }
+
+  if (savedPhotoIds.length === 0) {
+    throw new Error("Replicate did not complete any avatar photos.");
   }
 
   await markProviderJobStatus({
@@ -3218,8 +3393,27 @@ async function processProviderJob({
     return;
   }
 
+  if (job.jobType === "manual-swipr-draft") {
+    await processManualSwiprDraft(client, job, config.providerWorkerSecret);
+    return;
+  }
+
   if (job.jobType === "avatar-photo-generation") {
     await processManualAvatarPhoto({ client, config, job });
+    return;
+  }
+
+  if (job.jobType === "swipr-background-generation") {
+    await processSwiprBackgroundGeneration(
+      client,
+      job,
+      config.providerWorkerSecret,
+    );
+    return;
+  }
+
+  if (job.jobType === "swapr-photo-expansion") {
+    await processSwaprPhotoExpansion(client, job, config.providerWorkerSecret);
     return;
   }
 
@@ -3247,6 +3441,7 @@ async function processProviderJob({
       client,
       job,
       providerWorkerSecret: config.providerWorkerSecret,
+      quality: getPlanGenerationProfile(job.planKeySnapshot).avatarImageQuality,
     });
     return;
   }
@@ -3394,7 +3589,10 @@ async function failProviderJob({
 
     if (temporaryObjectKeys.length > 0) {
       await deleteR2Objects(temporaryObjectKeys).catch((cleanupError) => {
-        console.error("Hook Lab temporary object cleanup failed.", cleanupError);
+        console.error(
+          "Hook Lab temporary object cleanup failed.",
+          cleanupError,
+        );
       });
     }
     return;
@@ -3423,150 +3621,32 @@ async function failProviderJob({
   ]);
 }
 
-async function claimProviderJobByStage({
+async function claimNextQueuedWork({
   client,
   config,
-  jobType,
-  stage,
 }: {
   client: ConvexHttpClient;
   config: ProviderWorkerConfig;
-  jobType?: string;
-  stage?: string;
 }) {
   const now = getNow();
+  const allowedTools = [
+    ...PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS.filter(([, tool]) =>
+      config.providerTools.has(tool),
+    ).map(([jobType]) => jobType),
+    ...config.automationTools,
+  ];
 
-  return (await client.mutation(api.providerJobs.claimNextForProvider, {
-    secret: config.providerWorkerSecret,
-    workerId: config.workerId,
+  return (await client.mutation(providerWorkerQueueApiReference, {
+    allowedTools,
     lockedUntil: getLockedUntil(config, now),
-    updatedAt: now,
-    jobType,
-    stage,
-  })) as ProviderJob | null;
-}
-
-async function claimNextProviderJob({
-  client,
-  config,
-}: {
-  client: ConvexHttpClient;
-  config: ProviderWorkerConfig;
-}) {
-  if (config.providerTools.has("stitchr")) {
-    const hookLabAnalysisJob = await claimProviderJobByStage({
-      client,
-      config,
-      jobType: "hook-lab-idea-analysis",
-      stage: "hook-lab-awaiting-apify",
-    });
-
-    if (hookLabAnalysisJob) {
-      return hookLabAnalysisJob;
-    }
-  }
-
-  if (config.providerTools.has("swapr")) {
-    const swaprFinalizationJob = await claimProviderJobByStage({
-      client,
-      config,
-      jobType: "manual-swapr",
-      stage: "provider-created",
-    });
-
-    if (swaprFinalizationJob) {
-      return swaprFinalizationJob;
-    }
-  }
-
-  for (const [jobType, tool] of PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS) {
-    if (!config.providerTools.has(tool)) {
-      continue;
-    }
-
-    const job = await claimProviderJobByStage({
-      client,
-      config,
-      jobType,
-    });
-
-    if (job) {
-      return job;
-    }
-  }
-
-  return null;
-}
-
-async function claimTaskByStage({
-  client,
-  config,
-  stage,
-  tool,
-}: {
-  client: ConvexHttpClient;
-  config: ProviderWorkerConfig;
-  stage?: string;
-  tool: ProviderTool;
-}) {
-  const now = getNow();
-
-  return (await client.mutation(api.automationTasks.claimNextForProvider, {
     secret: config.providerWorkerSecret,
-    workerId: config.workerId,
-    lockedUntil: getLockedUntil(config, now),
     updatedAt: now,
-    tool,
-    stage,
-  })) as AutomationTask | null;
-}
-
-async function claimNextTask({
-  client,
-  config,
-}: {
-  client: ConvexHttpClient;
-  config: ProviderWorkerConfig;
-}) {
-  if (config.automationTools.has("stitchr")) {
-    const staleStitchrTextTask = await claimTaskByStage({
-      client,
-      config,
-      tool: "stitchr",
-      stage: "awaiting-text-provider",
-    });
-
-    if (staleStitchrTextTask) {
-      return staleStitchrTextTask;
-    }
-  }
-
-  if (config.automationTools.has("swapr")) {
-    const swaprFinalizationTask = await claimTaskByStage({
-      client,
-      config,
-      tool: "swapr",
-      stage: "provider-created",
-    });
-
-    if (swaprFinalizationTask) {
-      return swaprFinalizationTask;
-    }
-  }
-
-  for (const tool of PROVIDER_TOOLS) {
-    if (!config.automationTools.has(tool)) {
-      continue;
-    }
-
-    const task = await claimTaskByStage({ client, config, tool });
-
-    if (task) {
-      return task;
-    }
-  }
-
-  return null;
+    worker: "provider",
+    workerId: config.workerId,
+  })) as {
+    source: AutomationTask | ProviderJob;
+    sourceKind: "automation_task" | "provider_job";
+  } | null;
 }
 
 async function runOnce({
@@ -3581,9 +3661,15 @@ async function runOnce({
   let processedCount = 0;
 
   while (processedCount < maxJobs) {
-    const providerJob = await claimNextProviderJob({ client, config });
+    const queuedWork = await claimNextQueuedWork({ client, config });
 
-    if (providerJob) {
+    if (!queuedWork) {
+      break;
+    }
+
+    if (queuedWork.sourceKind === "provider_job") {
+      const providerJob = queuedWork.source as ProviderJob;
+
       if (providerJob.status === "failed") {
         await failProviderJob({
           client,
@@ -3629,11 +3715,7 @@ async function runOnce({
       continue;
     }
 
-    const task = await claimNextTask({ client, config });
-
-    if (!task) {
-      break;
-    }
+    const task = queuedWork.source as AutomationTask;
 
     try {
       await processTask({ client, config, task });

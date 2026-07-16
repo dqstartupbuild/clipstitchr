@@ -10,6 +10,8 @@ import { rateLimiter } from "./rateLimiter";
 import { deleteProductCard } from "./deleteProductCard";
 import { upsertProductCard } from "./upsertProductCard";
 import { normalizePostBridgeSocialAccountIds } from "../lib/clipstitchr/utils/normalizePostBridgeSocialAccountIds";
+import { assertProductLimit } from "./products/assertProductLimit";
+import { disableProductAutomation } from "./products/disableProductAutomation";
 
 const PRODUCT_TEXT_MAX_LENGTH = 2000;
 const PRODUCT_NAME_MAX_LENGTH = 120;
@@ -95,11 +97,13 @@ export const list = query({
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
-    return await ctx.db
+    const products = await ctx.db
       .query("products")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .take(PRODUCT_LIST_LIMIT);
+
+    return products.filter((product) => !product.archivedAt);
   },
 });
 
@@ -209,6 +213,7 @@ export const create = mutation({
       key: ownerId,
       throws: true,
     });
+    await assertProductLimit(ctx, ownerId, updatedAt);
 
     const existingPrimaryProduct = await getPrimaryProductForOwner(
       ctx,
@@ -475,10 +480,12 @@ export const get = query({
   handler: async (ctx, { id }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
-    return await ctx.db
+    const product = await ctx.db
       .query("products")
       .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
       .unique();
+
+    return product?.archivedAt ? null : product;
   },
 });
 
@@ -525,7 +532,7 @@ export const remove = mutation({
   handler: async (ctx, { id }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
-    await rateLimiter.limit(ctx, "convexRecordDelete", {
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
       key: ownerId,
       throws: true,
     });
@@ -551,9 +558,15 @@ export const remove = mutation({
       });
     }
 
-    await ctx.db.delete(product._id);
-    await deleteProductCard(ctx, product);
+    const updatedAt = new Date().toISOString();
 
-    return product;
+    await ctx.db.patch(product._id, {
+      archivedAt: updatedAt,
+      updatedAt,
+    });
+    await deleteProductCard(ctx, product);
+    await disableProductAutomation(ctx, ownerId, product.id, updatedAt);
+
+    return { ...product, archivedAt: updatedAt, updatedAt };
   },
 });

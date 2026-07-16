@@ -1,8 +1,8 @@
 # Creation Credit System
 
-**Status:** Proposed
+**Status:** Implemented in test/development mode
 
-**Last reviewed:** July 15, 2026
+**Last reviewed:** July 16, 2026
 
 ## Purpose
 
@@ -62,11 +62,11 @@ reservations, or historical support questions.
 
 ### Monthly grants
 
-| Plan | Monthly creation credits | Grant expiry |
-| --- | ---: | --- |
-| Starter | 2,000 | Current Stripe period end |
-| Pro | 8,000 | Current Stripe period end |
-| Agency | 20,000 | Current Stripe period end |
+| Plan    | Monthly creation credits | Grant expiry              |
+| ------- | -----------------------: | ------------------------- |
+| Starter |                    2,000 | Current Stripe period end |
+| Pro     |                    8,000 | Current Stripe period end |
+| Agency  |                   20,000 | Current Stripe period end |
 
 Monthly credits do not roll over. A successful renewal creates one new grant
 for the new Stripe billing period. An old monthly grant expires at its recorded
@@ -74,9 +74,9 @@ period end even if unused.
 
 ### Refill grants
 
-| Refill | Price | Credits | Grant expiry |
-| --- | ---: | ---: | --- |
-| Creation-credit refill | $29 | 2,000 | 12 months after confirmed purchase |
+| Refill                 | Price | Credits | Grant expiry                       |
+| ---------------------- | ----: | ------: | ---------------------------------- |
+| Creation-credit refill |   $29 |   2,000 | 12 months after confirmed purchase |
 
 Refills are available only to active paid subscribers. A refill does not add
 Clipr or Swapr videos and does not extend a subscription.
@@ -96,17 +96,17 @@ is disabled before launch, the account becomes inactive immediately instead.
 
 ### Operation costs
 
-| Operation | Resource | Cost | Successful output boundary |
-| --- | --- | ---: | --- |
-| New Starter or Pro stitch | Creation credits | 10 | New `stitches` record and its finished media are durably saved |
-| New Agency stitch | Metered event only | 0 | Same boundary, recorded for cost analytics |
-| Swipr generation | Creation credits | 20 | New generated `swipes` result is durably saved |
-| Standalone avatar photo | Creation credits | 25 | New generated `photoAssets` result is durably saved |
-| Standalone AI background | Creation credits | 25 | New generated background asset is durably saved |
-| Standalone photo expansion | Creation credits | 25 | New expanded `photoAssets` result is durably saved |
-| Clipr video | AI-video allowance | 1 | Final Clipr `videoClips` result is saved and job is completed |
-| Swapr video | AI-video allowance | 1 | Final Swapr `videoClips` result is saved and job is completed |
-| Clipr required scene still | Included in Clipr | 0 | Never receives a separate creation-credit reservation |
+| Operation                  | Resource           | Cost | Successful output boundary                                     |
+| -------------------------- | ------------------ | ---: | -------------------------------------------------------------- |
+| New Starter or Pro stitch  | Creation credits   |   10 | New `stitches` record and its finished media are durably saved |
+| New Agency stitch          | Metered event only |    0 | Same boundary, recorded for cost analytics                     |
+| Swipr generation           | Creation credits   |   20 | New generated `swipes` result is durably saved                 |
+| Standalone avatar photo    | Creation credits   |   25 | New generated `photoAssets` result is durably saved            |
+| Standalone AI background   | Creation credits   |   25 | New generated background asset is durably saved                |
+| Standalone photo expansion | Creation credits   |   25 | New expanded `photoAssets` result is durably saved             |
+| Clipr video                | AI-video allowance |    1 | Final Clipr `videoClips` result is saved and job is completed  |
+| Swapr video                | AI-video allowance |    1 | Final Swapr `videoClips` result is saved and job is completed  |
+| Clipr required scene still | Included in Clipr  |    0 | Never receives a separate creation-credit reservation          |
 
 The following actions cost zero credits:
 
@@ -133,11 +133,11 @@ different resource:
 type UsageResource = "creation_credit" | "ai_video";
 ```
 
-| Plan | Combined successful Clipr + Swapr videos per period |
-| --- | ---: |
-| Starter | 3 |
-| Pro | 10 |
-| Agency | 50 |
+| Plan    | Combined successful Clipr + Swapr videos per period |
+| ------- | --------------------------------------------------: |
+| Starter |                                                   3 |
+| Pro     |                                                  10 |
+| Agency  |                                                  50 |
 
 Never convert creation credits into AI videos or AI videos into creation
 credits. The refill product grants only `creation_credit`.
@@ -369,13 +369,13 @@ Required indexes:
 
 Use these delta conventions:
 
-| Entry | Available delta | Reserved delta | Consumed delta |
-| --- | ---: | ---: | ---: |
-| Grant 10 | +10 | 0 | 0 |
-| Reserve 10 | -10 | +10 | 0 |
-| Commit 10 | 0 | -10 | +10 |
-| Release 10 | +10 | -10 | 0 |
-| Expire or revoke 10 unused | -10 | 0 | 0 |
+| Entry                      | Available delta | Reserved delta | Consumed delta |
+| -------------------------- | --------------: | -------------: | -------------: |
+| Grant 10                   |             +10 |              0 |              0 |
+| Reserve 10                 |             -10 |            +10 |              0 |
+| Commit 10                  |               0 |            -10 |            +10 |
+| Release 10                 |             +10 |            -10 |              0 |
+| Expire or revoke 10 unused |             -10 |              0 |              0 |
 
 Adjustments and reversals record the actual signed effect in each projection.
 Keep `entryType` and positive `quantity` so a support timeline does not have to
@@ -432,20 +432,23 @@ Do not add any AI-video allowance. Do not extend the current billing period.
 
 ### Upgrade and downgrade
 
-The general plan architecture intentionally leaves proration timing for final
-business approval. The credit implementation must isolate that policy in one
-function instead of embedding it in webhook handlers.
+The approved policy applies a paid upgrade immediately after Stripe confirms a
+positive prorated invoice. Keep the calculation isolated in one policy function
+instead of embedding it in webhook handlers.
 
 Required interface:
 
 ```ts
-getPlanChangeCreditAdjustment(previousPlan, nextPlan, period, effectiveAt)
+getPlanChangeCreditAdjustment(previousPlan, nextPlan, period, effectiveAt);
 ```
 
-Until the policy is approved, do not grant an upgrade difference in production.
+Use the invoice's subscription billing period rather than a short proration
+line-item period. Grant only the positive prorated allowance difference and use
+a deterministic invoice adjustment key so webhook replay cannot grant twice.
 Downgrades scheduled for the next renewal require no current-period credit
 reduction. Never revoke already-consumed monthly credits because of a plan
-change.
+change. Reconciliation may merge historical duplicate upgrade grants only with
+compensating ledger entries; it must not rewrite their original history.
 
 ## Reservation Algorithm
 
@@ -961,7 +964,8 @@ Do not enable credit enforcement until:
 - scheduled reconciliation and alerts are running;
 - rate-limit documentation is current;
 - the Terms and pricing copy match the implemented behavior;
-- the unresolved upgrade-proration and reactivation policies are approved.
+- the approved upgrade-proration policy and the refill reactivation policy are
+  reflected in tests and customer copy.
 
 ## Consequences
 
@@ -992,14 +996,12 @@ Do not enable credit enforcement until:
 - **Projection drift:** Recalculate from immutable records and alert.
 - **Late browser save:** Reacquire atomically or reject and clean orphaned media.
 
-## Decisions Still Requiring Approval
+## Decision Still Requiring Approval
 
-The agreed credit policy is implementable as written. These two edge policies
-remain tied to unresolved billing decisions in the parent architecture:
+The paid-upgrade policy is finalized: a positive mid-period proration grants
+the corresponding incremental credits after confirmed payment. One edge policy
+still requires live-billing approval: whether an unexpired refill becomes
+available again after a canceled account later starts a new paid subscription.
 
-- whether a mid-period paid upgrade grants prorated incremental credits;
-- whether an unexpired refill becomes available again after a canceled account
-  later starts a new paid subscription.
-
-Keep both behind focused policy functions. Do not let webhook handlers or UI
-code choose the behavior implicitly.
+Keep that behavior behind a focused policy function. Do not let webhook
+handlers or UI code choose it implicitly.

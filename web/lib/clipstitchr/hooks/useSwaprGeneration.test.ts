@@ -75,7 +75,6 @@ describe("useSwaprGeneration", () => {
     await state.generate({
       characterOrientation: "image",
       clip: createClip(),
-      generationSpeedTier: "pro",
       keepOriginalSound: true,
       mode: "pro",
       photo: createPhoto(),
@@ -88,7 +87,6 @@ describe("useSwaprGeneration", () => {
       characterOrientation: "image",
       clipId: "generated_clip_1",
       clipName: "Swapr - Avatar in Source",
-      generationSpeedTier: "pro",
       keepOriginalSound: true,
       mode: "pro",
       photoId: "photo_1",
