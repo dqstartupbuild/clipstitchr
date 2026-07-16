@@ -8,35 +8,39 @@ export async function resolveStripeOwnerId(
     subscriptionId?: string;
   },
 ) {
-  if (args.metadataOwnerId) {
-    return args.metadataOwnerId;
+  const [bySubscription, byCustomer] = await Promise.all([
+    args.subscriptionId
+      ? ctx.db
+          .query("billingEntitlements")
+          .withIndex("by_stripe_subscription", (query) =>
+            query.eq("stripeSubscriptionId", args.subscriptionId!),
+          )
+          .unique()
+      : null,
+    args.customerId
+      ? ctx.db
+          .query("billingEntitlements")
+          .withIndex("by_stripe_customer", (query) =>
+            query.eq("stripeCustomerId", args.customerId!),
+          )
+          .unique()
+      : null,
+  ]);
+  const ownerIds = new Set(
+    [args.metadataOwnerId?.trim(), bySubscription?.ownerId, byCustomer?.ownerId]
+      .filter((ownerId): ownerId is string => Boolean(ownerId))
+      .map((ownerId) => ownerId.trim()),
+  );
+
+  if (ownerIds.size > 1) {
+    throw new Error("Stripe billing ownership metadata conflicts with stored ownership.");
   }
 
-  if (args.subscriptionId) {
-    const bySubscription = await ctx.db
-      .query("billingEntitlements")
-      .withIndex("by_stripe_subscription", (query) =>
-        query.eq("stripeSubscriptionId", args.subscriptionId!),
-      )
-      .unique();
+  const [ownerId] = ownerIds;
 
-    if (bySubscription) {
-      return bySubscription.ownerId;
-    }
+  if (!ownerId) {
+    throw new Error("Unable to map the Stripe event to a ClipStitchr owner.");
   }
 
-  if (args.customerId) {
-    const byCustomer = await ctx.db
-      .query("billingEntitlements")
-      .withIndex("by_stripe_customer", (query) =>
-        query.eq("stripeCustomerId", args.customerId!),
-      )
-      .unique();
-
-    if (byCustomer) {
-      return byCustomer.ownerId;
-    }
-  }
-
-  throw new Error("Unable to map the Stripe event to a ClipStitchr owner.");
+  return ownerId;
 }

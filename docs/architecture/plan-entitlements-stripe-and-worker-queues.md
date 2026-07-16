@@ -135,12 +135,27 @@ to its Stripe Product and recurring Price IDs.
 The browser may request `starter`, `pro`, or `agency`. It must never submit an
 arbitrary Stripe Price ID that the server trusts.
 
-Define the 2,000-credit refill as a separate allowlisted one-time Price. A
-confirmed refill payment grants credits but never changes the Clipr + Swapr
-video allowance. Consume monthly plan credits before refill credits, then use
-the refill grants with the earliest expiry first. Each refill grant expires 12
-months after purchase and is available only while the paid subscription remains
-active. Preserve its ledger history after expiration or cancellation.
+Webhook subscription snapshots must derive `PlanKey` from that configured Price
+allowlist. Subscription metadata may identify the owner and corroborate the
+catalog entry, but a valid-looking metadata `planKey` must never rescue an
+unknown Price.
+
+Define the 2,000-credit refill as a separate allowlisted one-time Price. Refill
+Checkout and payment confirmation require canonical paid Stripe access: stored
+active state, a current paid period, and no billing review. A temporary support
+override cannot make an inactive subscription eligible. A confirmed refill
+payment grants credits but never changes the Clipr + Swapr video allowance.
+Consume monthly plan credits before refill credits, then use the refill grants
+with the earliest expiry first. Each refill grant expires 12 months after
+purchase. An already-granted refill remains spendable while the paid
+subscription is active or inside its valid payment grace window, but refill
+Checkout and refill payment acceptance still require canonical active paid
+access. Bind each refill grant to that Stripe subscription. A replacement
+subscription cannot reactivate it, and legacy refill rows without a binding
+fail closed. Preserve its ledger history after expiration or cancellation.
+Persist a server-created Checkout intent with the exact refill Price before
+returning the hosted URL. The successful PaymentIntent must reference that
+record, so copied metadata and a matching amount cannot manufacture credits.
 
 ### Checkout
 
@@ -148,9 +163,11 @@ active. Preserve its ledger history after expiration or cancellation.
 2. Rate-limit Checkout creation per owner and globally.
 3. Validate the requested `PlanKey` against the server catalog.
 4. Reuse or create the Stripe customer idempotently.
-5. Create hosted Checkout with `ownerId` and `planKey` metadata.
-6. Return only the hosted Checkout URL.
-7. Do not activate access from the success redirect.
+5. List that customer's Stripe subscriptions and fail closed if any
+   nonterminal subscription already exists.
+6. Create hosted Checkout with `ownerId` and `planKey` metadata.
+7. Return only the hosted Checkout URL.
+8. Do not activate access from the success redirect.
 
 ### Customer Portal
 
@@ -164,15 +181,21 @@ active. Preserve its ledger history after expiration or cancellation.
 
 - Verify the Stripe signature before reading the event.
 - Store or rely on component-level event idempotency by Stripe event ID.
-- Process duplicate and out-of-order deliveries safely.
+- Process duplicate and out-of-order deliveries safely across subscription,
+  paid-invoice, and invoice-failure event families. Use event time first and a
+  monotonic transition priority for equal-second events so deletion cannot be
+  undone by paid state and paid state cannot be undone by failure. Never sort
+  Stripe event IDs as chronology. Refresh subscription create/update events
+  from Stripe, and compare same-second paid invoices by subscription, period,
+  and plan semantics.
 - Update the app entitlement projection in one idempotent mutation.
 - Send purchase analytics only after webhook-backed paid activation.
 - Never activate a plan from client metadata alone.
 
 At minimum, handle subscription creation/update/deletion, Checkout completion,
-successful invoice payment, failed invoice payment, one-time refill payment,
-refund, dispute, and chargeback events relevant to the selected Stripe API
-version.
+successful invoice payment, failed invoice finalization, failed invoice
+payment, one-time refill payment, refund, dispute, and chargeback events
+relevant to the selected Stripe API version.
 
 ### Subscription-to-Entitlement Mapping
 
@@ -183,10 +206,17 @@ type EntitlementState = "active" | "grace" | "inactive";
 ```
 
 - Paid and active subscription: `active`.
+- Runtime access also requires server time to fall inside the recorded paid
+  period. A missing, malformed, future, or ended paid period fails closed even
+  when the stored projection still says `active`.
 - Cancel-at-period-end: remain `active` through the paid period end. Treat both
   Stripe's `cancel_at_period_end` flag and a concrete future `cancel_at`
   timestamp as this state.
-- Past due: `grace` for 72 hours by default.
+- Past due after at least one confirmed paid invoice for the same Stripe
+  subscription: `grace` for 72 hours by default.
+- The first failure owns the grace deadline. Retries and later subscription
+  updates cannot extend it or reopen an expired grace window.
+- Initial invoice failure with no confirmed payment: remain `inactive`.
 - Payment recovered during grace: return to `active`.
 - Grace expired, unpaid, incomplete-expired, or ended subscription: `inactive`.
 - Support override: explicit app-owned state with actor, reason, and expiry.
@@ -231,6 +261,17 @@ Required indexes:
 - unique by owner;
 - unique by Stripe subscription;
 - by state and period end for reconciliation.
+
+### `stripePaymentHolds`
+
+Store one durable refund or dispute hold per Stripe charge and adverse source.
+Each row records the owner, customer, optional PaymentIntent and invoice, source
+event clock, open or resolved status, and resolution event. Recompute billing
+review from every open owner hold; never clear customer-wide review because one
+unrelated dispute closed. Persist resolved tombstones for out-of-order closure
+events. When an open hold suppressed the original grant, retrieve the paid
+invoice or PaymentIntent, validate the recorded Checkout where applicable, and
+replay the stable idempotent grant only after that hold resolves.
 
 ### `usagePeriods`
 
@@ -453,6 +494,12 @@ Enforce both owner and global/provider limits:
 - one configurable global active limit for provider worker work;
 - one configurable global active limit for media worker work.
 
+One owner slot follows generation from provider work through media
+finalization. During handoff it remains active for the owner but is temporarily
+capacity-neutral. The claimant assigns that same slot to the media worker only
+after the independent media and per-tool caps have room. Media-only work also
+acquires a media slot before processing.
+
 Rate limits control how often work can be requested. Generation slots control
 how many expensive jobs can be active. Queue weights control who runs next.
 These mechanisms are complementary and must not replace one another.
@@ -506,11 +553,13 @@ worker infrastructure.
   subscription billing period so replayed events remain idempotent.
 - Downgrades take effect at the next paid billing period.
 - Cancel-at-period-end retains access through the paid period.
-- Refill credits remain usable through the active paid period, subject to their
-  12-month expiry, and become unavailable when the entitlement becomes
-  inactive.
-- Immediate cancellation releases queued work, but already-running provider
-  work should finish only if usage was validly reserved before cancellation.
+- Refill credits remain usable while the entitlement is active or inside its
+  valid payment grace window, subject to their 12-month expiry, and become
+  unavailable when the entitlement becomes inactive.
+- Immediate cancellation releases queued work that has never started. An
+  already-running provider job and its queued media continuation may finish
+  only when usage was validly reserved and the continuation carries the
+  inherited provider lifecycle slot.
 - A downgrade never deletes products or completed assets.
 - If the user is over the new product limit, block new products until they
   archive enough existing products.
@@ -518,9 +567,10 @@ worker infrastructure.
   owner.
 - Support adjustments use append-only ledger entries with actor, reason, and
   idempotency key.
-- Refunds and chargebacks reverse unused grants where possible and flag a
-  negative or disputed account for support review. Do not silently delete
-  ledger history.
+- Refunds and chargebacks persist separate per-charge source holds, reverse
+  unused refill and invoice-linked monthly grants where possible, and flag a
+  negative or disputed account for support review. Resolving one dispute does
+  not clear another hold. Do not silently delete ledger history.
 
 ## Security and Abuse Protection
 

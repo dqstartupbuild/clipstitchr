@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as avatars from "./avatars";
 import * as cliprPreferences from "./cliprPreferences";
 import * as photoAssets from "./photoAssets";
@@ -20,6 +20,7 @@ type QueryResult = {
 
 const mocks = vi.hoisted(() => ({
   assertRateLimitApiSecret: vi.fn(),
+  commitSwipeUsageReservation: vi.fn(),
   getAuthenticatedOwnerId: vi.fn(),
   mutation: vi.fn((definition) => definition),
   query: vi.fn((definition) => definition),
@@ -64,6 +65,10 @@ vi.mock("./auth/getAuthenticatedOwnerId", () => ({
 
 vi.mock("./rateLimiter", () => ({
   rateLimiter: mocks.rateLimiter,
+}));
+
+vi.mock("./usage/commitSwipeUsageReservation", () => ({
+  commitSwipeUsageReservation: mocks.commitSwipeUsageReservation,
 }));
 
 vi.mock("./aggregateCounts", () => ({
@@ -253,6 +258,10 @@ describe("convex media collections", () => {
     vi.clearAllMocks();
     mocks.getAuthenticatedOwnerId.mockResolvedValue("owner_123");
     mocks.rateLimiter.limit.mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("creates demo clips only for owned products and updates Clipr music", async () => {
@@ -901,6 +910,43 @@ describe("convex media collections", () => {
       }),
     ).resolves.toEqual({ _id: "swipe_doc", id: "swipe_1" });
     expect(removeCtx.db.delete).toHaveBeenCalledWith("swipe_doc");
+  });
+
+  it("does not let client time control Swipr reservation completion", async () => {
+    const serverNow = "2026-07-16T12:00:00.000Z";
+    vi.useFakeTimers();
+    vi.setSystemTime(serverNow);
+    mocks.commitSwipeUsageReservation.mockResolvedValue("reservation_1");
+    const ctx = createCtx({
+      products: [{ unique: { _id: "product_doc", id: "product_1" } }],
+      swipes: [{ unique: null }],
+      swiprBackgrounds: [
+        { unique: { _id: "background_doc", uploadedByOwnerId: "owner_123" } },
+      ],
+    });
+
+    await getHandler<Record<string, unknown>, unknown>(swipes.save)(
+      ctx,
+      createSwipeArgs({
+        updatedAt: "2000-01-01T00:00:00.000Z",
+        usageReservationId: "reservation_1",
+      }),
+    );
+
+    expect(mocks.commitSwipeUsageReservation).toHaveBeenCalledWith(
+      ctx,
+      "owner_123",
+      "reservation_1",
+      serverNow,
+      "user_action",
+      {
+        domainId: "swipe_1",
+        domainKind: "swipe",
+        operation: "swipr",
+        reservationKind: "worker",
+        resource: "creation_credit",
+      },
+    );
   });
 
   it("records and updates Replicate job rows by purpose", async () => {

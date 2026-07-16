@@ -6,6 +6,11 @@ import { createUsageError } from "./createUsageError";
 import { getCreditGrantAvailableAmount } from "./getCreditGrantAvailableAmount";
 import { getCurrentUsagePeriod } from "./getCurrentUsagePeriod";
 import { releaseGenerationSlot } from "../workerQueue/releaseGenerationSlot";
+import type { UsageReservationCommitBinding } from "../../lib/clipstitchr/usage/types/UsageReservationCommitBinding";
+import { usageOperationValidator } from "../validators/usageOperation";
+import { usageReservationKindValidator } from "../validators/usageReservationKind";
+import { usageResourceValidator } from "../validators/usageResource";
+import { assertUsageReservationCommitBinding } from "./assertUsageReservationCommitBinding";
 
 export async function commitUsageReservationForOwner(
   ctx: MutationCtx,
@@ -13,6 +18,7 @@ export async function commitUsageReservationForOwner(
   reservationId: string,
   now: string,
   source: "user_action" | "worker" | "reconciler",
+  binding: UsageReservationCommitBinding,
 ) {
   const reservation = await ctx.db
     .query("usageReservations")
@@ -24,6 +30,8 @@ export async function commitUsageReservationForOwner(
   if (!reservation || reservation.ownerId !== ownerId) {
     throw new Error("Usage reservation not found.");
   }
+
+  assertUsageReservationCommitBinding(reservation, binding);
 
   if (reservation.state === "committed") {
     return reservation;
@@ -126,6 +134,8 @@ export async function commitUsageReservationForOwner(
   }
 
   await ctx.db.patch(reservation._id, {
+    commitDomainId: binding.domainId,
+    commitDomainKind: binding.domainKind,
     committedAt: now,
     state: "committed",
     updatedAt: now,
@@ -164,18 +174,26 @@ export const commitUsageReservation = internalMutation({
     now: v.string(),
     ownerId: v.string(),
     reservationId: v.string(),
+    binding: v.object({
+      domainId: v.string(),
+      domainKind: v.string(),
+      operation: usageOperationValidator,
+      reservationKind: usageReservationKindValidator,
+      resource: usageResourceValidator,
+    }),
     source: v.union(
       v.literal("user_action"),
       v.literal("worker"),
       v.literal("reconciler"),
     ),
   },
-  handler: async (ctx, { now, ownerId, reservationId, source }) =>
+  handler: async (ctx, { binding, now, ownerId, reservationId, source }) =>
     await commitUsageReservationForOwner(
       ctx,
       ownerId,
       reservationId,
       now,
       source,
+      binding,
     ),
 });

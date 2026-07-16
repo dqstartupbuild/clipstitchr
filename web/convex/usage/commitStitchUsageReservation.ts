@@ -1,4 +1,5 @@
 import type { MutationCtx } from "../_generated/server";
+import type { UsageReservationCommitBinding } from "../../lib/clipstitchr/usage/types/UsageReservationCommitBinding";
 import { commitUsageReservationForOwner } from "./commitUsageReservation";
 import { reacquireUsageReservation } from "./reacquireUsageReservation";
 
@@ -8,6 +9,7 @@ export async function commitStitchUsageReservation(
   reservationId: string | undefined,
   now: string,
   source: "user_action" | "worker",
+  binding: UsageReservationCommitBinding,
 ) {
   if (!reservationId) {
     return undefined;
@@ -18,6 +20,7 @@ export async function commitStitchUsageReservation(
     ownerId,
     reservationId,
     now,
+    binding,
   );
   await commitUsageReservationForOwner(
     ctx,
@@ -25,6 +28,7 @@ export async function commitStitchUsageReservation(
     committedReservationId,
     now,
     source,
+    binding,
   );
 
   return committedReservationId;

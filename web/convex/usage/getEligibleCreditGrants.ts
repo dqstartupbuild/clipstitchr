@@ -5,7 +5,8 @@ export async function getEligibleCreditGrants(
   ctx: MutationCtx | QueryCtx,
   ownerId: string,
   now: string,
-  entitlementIsActive: boolean,
+  canSpendSubscriptionCredits: boolean,
+  currentStripeSubscriptionId: string,
 ) {
   const grants = await ctx.db
     .query("creditGrants")
@@ -20,7 +21,9 @@ export async function getEligibleCreditGrants(
     (grant) =>
       Date.parse(grant.availableFrom) <= nowMs &&
       Date.parse(grant.expiresAt) > nowMs &&
-      (!grant.requiresActiveSubscription || entitlementIsActive) &&
+      (!grant.requiresActiveSubscription ||
+        (canSpendSubscriptionCredits &&
+          grant.stripeSubscriptionId === currentStripeSubscriptionId)) &&
       getCreditGrantAvailableAmount(grant) > 0,
   );
 }

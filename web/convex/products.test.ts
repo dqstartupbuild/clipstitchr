@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { create, get, list, remove, update } from "./products";
 
 type ConvexFunction<Args, Result> = {
@@ -131,6 +131,10 @@ describe("convex products", () => {
     mocks.rateLimiter.limit.mockResolvedValue(undefined);
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("lists products for the authenticated owner", async () => {
     const products = [{ _id: "doc_1", id: "product_1" }];
     const queryChain = createQueryChain({ collect: products });
@@ -218,6 +222,69 @@ describe("convex products", () => {
         defaultProductId: "product_123",
         ownerId: "owner_123",
       }),
+    );
+  });
+
+  it("cannot use a historical client timestamp to pass an expired product entitlement", async () => {
+    const serverNow = "2026-07-16T12:00:00.000Z";
+    vi.useFakeTimers();
+    vi.setSystemTime(serverNow);
+    mocks.assertProductLimit.mockImplementationOnce(
+      async (_ctx, _ownerId, checkedAt) => {
+        expect(checkedAt).toBe(serverNow);
+        throw new Error("Subscription inactive");
+      },
+    );
+    const queryChain = createQueryChain();
+    const ctx = {
+      db: {
+        insert: vi.fn(),
+        patch: vi.fn(),
+        query: vi.fn(() => queryChain),
+      },
+    };
+
+    await expect(
+      getHandler(create)(
+        ctx,
+        createProductArgs({
+          createdAt: "2000-01-01T00:00:00.000Z",
+          updatedAt: "2000-01-01T00:00:00.000Z",
+        }),
+      ),
+    ).rejects.toThrow("Subscription inactive");
+    expect(ctx.db.insert).not.toHaveBeenCalled();
+  });
+
+  it("stores server timestamps instead of future client product timestamps", async () => {
+    const serverNow = "2026-07-16T12:00:00.000Z";
+    vi.useFakeTimers();
+    vi.setSystemTime(serverNow);
+    const queryChain = createQueryChain();
+    const ctx = {
+      db: {
+        insert: vi.fn(async () => "doc_123"),
+        patch: vi.fn(async () => undefined),
+        query: vi.fn(() => queryChain),
+      },
+    };
+
+    await getHandler(create)(
+      ctx,
+      createProductArgs({
+        createdAt: "2099-01-01T00:00:00.000Z",
+        updatedAt: "2099-01-01T00:00:00.000Z",
+      }),
+    );
+
+    expect(ctx.db.insert).toHaveBeenCalledWith(
+      "products",
+      expect.objectContaining({ createdAt: serverNow, updatedAt: serverNow }),
+    );
+    expect(mocks.assertProductLimit).toHaveBeenCalledWith(
+      ctx,
+      "owner_123",
+      serverNow,
     );
   });
 

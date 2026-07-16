@@ -5,7 +5,7 @@ export function getEntitlementStateForSubscriptionStatus(
   status: Stripe.Subscription.Status,
   hasConfirmedPayment: boolean,
 ): EntitlementState {
-  if (status === "past_due") {
+  if (status === "past_due" && hasConfirmedPayment) {
     return "grace";
   }
 

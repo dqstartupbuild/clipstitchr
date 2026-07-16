@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { api } from "@/convex/_generated/api";
 import { createCliAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/cli/createCliAuthenticationRequiredResponse";
 import { getCliSessionFromRequest } from "@/lib/clipstitchr/server/cli/getCliSessionFromRequest";
+import { getCliProductCreationErrorMessage } from "@/lib/clipstitchr/server/cli/getCliProductCreationErrorMessage";
 import { createConvexHttpClient } from "@/lib/clipstitchr/server/convex/createConvexHttpClient";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { readCliJsonObject } from "@/lib/clipstitchr/server/cli/readCliJsonObject";
@@ -39,7 +40,6 @@ export async function POST(request: Request) {
 
   try {
     const body = await readCliJsonObject(request);
-    const now = new Date().toISOString();
     const convex = createConvexHttpClient();
     const product = await convex.mutation(
       api.cliProducts.createCliProduct.createCliProduct,
@@ -49,7 +49,6 @@ export async function POST(request: Request) {
           "audienceDetails",
           "audience",
         ),
-        createdAt: now,
         id: createId(),
         name: readCliRequiredString(body, "name", "product name"),
         ownerId: session.ownerId,
@@ -59,7 +58,6 @@ export async function POST(request: Request) {
           "product details",
         ),
         secret: getRateLimitApiSecret(),
-        updatedAt: now,
       },
     );
 
@@ -73,10 +71,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unable to save this product.",
+        message: getCliProductCreationErrorMessage(error),
       },
       { status: 400 },
     );

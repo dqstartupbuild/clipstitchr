@@ -10,6 +10,7 @@ import { mediaJobTypeValidator } from "./validators/mediaJobType";
 import { listActiveWorkerJobSummaries } from "./listActiveWorkerJobSummaries";
 import { upsertWorkerJobSummary } from "./upsertWorkerJobSummary";
 import { registerCreatedMediaJob } from "./workerQueue/registerCreatedMediaJob";
+import { refreshQueuedMediaJobHandoff } from "./workerQueue/refreshQueuedMediaJobHandoff";
 import { updateWorkerQueueEntryStatus } from "./workerQueue/updateWorkerQueueEntryStatus";
 
 const mediaMaxJobAttempts = 3;
@@ -173,6 +174,7 @@ export const createCliprFinalizationFromProvider = mutation({
     inputSnapshotJson: v.string(),
     createdAt: v.string(),
     usageReservationId: v.optional(v.string()),
+    generationSlotId: v.optional(v.string()),
   },
   handler: async (
     ctx,
@@ -184,6 +186,7 @@ export const createCliprFinalizationFromProvider = mutation({
       inputSnapshotJson,
       createdAt,
       usageReservationId,
+      generationSlotId,
     },
   ) => {
     assertProviderWorkerSecret(secret);
@@ -196,9 +199,14 @@ export const createCliprFinalizationFromProvider = mutation({
       .unique();
 
     if (existing) {
-      await registerCreatedMediaJob(ctx, existing);
+      const refreshed = await refreshQueuedMediaJobHandoff(ctx, existing, {
+        generationSlotId,
+        updatedAt: createdAt,
+        usageReservationId,
+      });
+      await registerCreatedMediaJob(ctx, refreshed);
 
-      return existing;
+      return refreshed;
     }
 
     const mediaJobId = await ctx.db.insert("mediaJobs", {
@@ -210,6 +218,7 @@ export const createCliprFinalizationFromProvider = mutation({
       idempotencyKey,
       inputSnapshotJson,
       usageReservationId,
+      generationSlotId,
       outputAssetIds: [],
       attempt: 0,
       createdAt,
@@ -236,6 +245,7 @@ export const createHookLabVariantFinalizationFromProvider = mutation({
     inputSnapshotJson: v.string(),
     createdAt: v.string(),
     usageReservationId: v.optional(v.string()),
+    generationSlotId: v.optional(v.string()),
   },
   handler: async (
     ctx,
@@ -247,6 +257,7 @@ export const createHookLabVariantFinalizationFromProvider = mutation({
       inputSnapshotJson,
       createdAt,
       usageReservationId,
+      generationSlotId,
     },
   ) => {
     assertProviderWorkerSecret(secret);
@@ -264,6 +275,7 @@ export const createHookLabVariantFinalizationFromProvider = mutation({
           error: undefined,
           inputSnapshotJson,
           usageReservationId,
+          generationSlotId,
           lockedBy: undefined,
           lockedUntil: undefined,
           stage: "queued",
@@ -290,6 +302,7 @@ export const createHookLabVariantFinalizationFromProvider = mutation({
       idempotencyKey,
       inputSnapshotJson,
       usageReservationId,
+      generationSlotId,
       outputAssetIds: [],
       attempt: 0,
       createdAt,
@@ -379,6 +392,7 @@ export const createSwaprFinalizationFromProvider = mutation({
     inputSnapshotJson: v.string(),
     createdAt: v.string(),
     usageReservationId: v.optional(v.string()),
+    generationSlotId: v.optional(v.string()),
   },
   handler: async (
     ctx,
@@ -390,6 +404,7 @@ export const createSwaprFinalizationFromProvider = mutation({
       inputSnapshotJson,
       createdAt,
       usageReservationId,
+      generationSlotId,
     },
   ) => {
     assertProviderWorkerSecret(secret);
@@ -402,9 +417,14 @@ export const createSwaprFinalizationFromProvider = mutation({
       .unique();
 
     if (existing) {
-      await registerCreatedMediaJob(ctx, existing);
+      const refreshed = await refreshQueuedMediaJobHandoff(ctx, existing, {
+        generationSlotId,
+        updatedAt: createdAt,
+        usageReservationId,
+      });
+      await registerCreatedMediaJob(ctx, refreshed);
 
-      return existing;
+      return refreshed;
     }
 
     const mediaJobId = await ctx.db.insert("mediaJobs", {
@@ -416,6 +436,7 @@ export const createSwaprFinalizationFromProvider = mutation({
       idempotencyKey,
       inputSnapshotJson,
       usageReservationId,
+      generationSlotId,
       outputAssetIds: [],
       attempt: 0,
       createdAt,
@@ -442,6 +463,7 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
     inputSnapshotJson: v.string(),
     createdAt: v.string(),
     usageReservationId: v.optional(v.string()),
+    generationSlotId: v.optional(v.string()),
   },
   handler: async (
     ctx,
@@ -453,6 +475,7 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
       inputSnapshotJson,
       createdAt,
       usageReservationId,
+      generationSlotId,
     },
   ) => {
     assertProviderWorkerSecret(secret);
@@ -478,6 +501,7 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
           lockedBy: undefined,
           lockedUntil: undefined,
           error: undefined,
+          generationSlotId,
           usageReservationId,
           updatedAt: createdAt,
         });
@@ -501,6 +525,7 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
       idempotencyKey,
       inputSnapshotJson,
       usageReservationId,
+      generationSlotId,
       outputAssetIds: [],
       attempt: 0,
       createdAt,

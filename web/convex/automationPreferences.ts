@@ -137,15 +137,17 @@ export const save = mutation({
   },
   handler: async (ctx, args) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
+
+    await rateLimiter.limit(ctx, "convexRecordSave", {
+      key: ownerId,
+      throws: true,
+    });
+
     await assertProductBelongsToOwner(ctx, ownerId, args.productId);
 
     if (args.enabled) {
-      await assertDailyDraftProductLimit(
-        ctx,
-        ownerId,
-        args.productId,
-        args.updatedAt,
-      );
+      await assertDailyDraftProductLimit(ctx, ownerId, args.productId, now);
     }
 
     const existing = args.productId
@@ -161,15 +163,6 @@ export const save = mutation({
             q.eq("ownerId", ownerId).eq("productId", undefined),
           )
           .unique();
-
-    await rateLimiter.limit(
-      ctx,
-      existing ? "convexMetadataUpdate" : "convexRecordSave",
-      {
-        key: ownerId,
-        throws: true,
-      },
-    );
 
     const productIds = Array.from(new Set(args.selectedProductIds));
     const avatarIds = Array.from(new Set(args.selectedAvatarIds));
@@ -276,8 +269,8 @@ export const save = mutation({
       selectedAvatarIds:
         args.avatarSelectionMode === "selected" ? avatarIds : [],
       preferenceVersion: (existing?.preferenceVersion ?? 0) + 1,
-      createdAt: existing?.createdAt ?? args.updatedAt,
-      updatedAt: args.updatedAt,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
     };
 
     if (existing) {

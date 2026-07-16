@@ -10,6 +10,7 @@ import { appendUsageLedgerEntry } from "./appendUsageLedgerEntry";
 import { createUsageError } from "./createUsageError";
 import { createUsagePeriodKey } from "./createUsagePeriodKey";
 import { getCurrentUsagePeriod } from "./getCurrentUsagePeriod";
+import { getUsagePeriodIsActiveAt } from "./getUsagePeriodIsActiveAt";
 
 type ReserveAiVideoArgs = {
   batchId?: string;
@@ -65,10 +66,11 @@ export async function reserveAiVideoForOwner(
   );
   const period = await getCurrentUsagePeriod(ctx, ownerId, periodKey);
 
-  if (!period) {
+  if (!period || !getUsagePeriodIsActiveAt(period, args.now)) {
     throw createUsageError({
       code: "USAGE_RECONCILIATION_REQUIRED",
-      message: "Your current video allowance is still syncing. Try again shortly.",
+      message:
+        "Your current video allowance is still syncing. Try again shortly.",
     });
   }
 
@@ -106,6 +108,7 @@ export async function reserveAiVideoForOwner(
     ownerId,
     periodKey,
     planKeySnapshot: entitlement.planKey,
+    reservationKind: "worker",
     reservationId,
     resource: "ai_video",
     state: "reserved",
@@ -150,9 +153,11 @@ export const reserveAiVideo = mutation({
   },
   handler: async (ctx, args) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
 
     return await reserveAiVideoForOwner(ctx, ownerId, {
       ...args,
+      now,
       source: "user_action",
     });
   },

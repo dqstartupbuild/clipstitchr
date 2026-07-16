@@ -11,12 +11,12 @@ portal configurations into live mode.
 
 The Stripe test workspace contains four products:
 
-| Catalog key              | Product name                       | Lookup key                           | Price behavior |
-| ------------------------ | ---------------------------------- | ------------------------------------ | -------------- |
-| `starter`                | ClipStitchr Starter                | `clipstitchr_starter_monthly`        | $39 monthly    |
-| `pro`                    | ClipStitchr Pro                    | `clipstitchr_pro_monthly`            | $99 monthly    |
-| `agency`                 | ClipStitchr Agency                 | `clipstitchr_agency_monthly`         | $399 monthly   |
-| `creation-credit-refill` | ClipStitchr Creation Credit Refill | `clipstitchr_creation_credit_refill` | $29 one time   |
+| Catalog key              | Product name                       | Lookup key                                | Price behavior |
+| ------------------------ | ---------------------------------- | ----------------------------------------- | -------------- |
+| `starter`                | ClipStitchr Starter                | `clipstitchr_test_starter_monthly`        | $39 monthly    |
+| `pro`                    | ClipStitchr Pro                    | `clipstitchr_test_pro_monthly`            | $99 monthly    |
+| `agency`                 | ClipStitchr Agency                 | `clipstitchr_test_agency_monthly`         | $399 monthly   |
+| `creation-credit-refill` | ClipStitchr Creation Credit Refill | `clipstitchr_test_creation_credit_refill` | $29 one time   |
 
 Actual Product IDs, Price IDs, endpoint IDs, portal configuration IDs, and
 secrets live in the deployment environment or secret inventory. They are not
@@ -29,7 +29,9 @@ The test portal configuration:
 - invoices plan upgrades immediately with prorations;
 - schedules a decrease for the end of the paid period;
 - keeps the billing-cycle anchor unchanged; and
-- schedules cancellation at period end without a cancellation proration.
+- schedules cancellation at period end without a cancellation proration; and
+- links to `https://clipstitchr.com/terms` and
+  `https://clipstitchr.com/privacy` from the hosted portal.
 
 The test event destination is the development Convex HTTP endpoint at
 `/stripe/webhook`, uses Stripe API `2026-05-27.dahlia`, and subscribes only to:
@@ -38,11 +40,13 @@ The test event destination is the development Convex HTTP endpoint at
 - `customer.created`, `customer.updated`, `customer.deleted`
 - `customer.subscription.created`, `customer.subscription.updated`,
   `customer.subscription.deleted`
-- `invoice.created`, `invoice.finalized`, `invoice.updated`, `invoice.paid`,
-  `invoice.payment_succeeded`, `invoice.payment_failed`
+- `invoice.created`, `invoice.finalized`, `invoice.finalization_failed`,
+  `invoice.updated`, `invoice.paid`, `invoice.payment_succeeded`,
+  `invoice.payment_failed`
 - `payment_intent.succeeded`, `payment_intent.payment_failed`
 - `charge.refunded`
 - `charge.dispute.created`, `charge.dispute.closed`
+- `refund.failed`
 
 ## Required Environment
 
@@ -89,19 +93,41 @@ real card or customer data.
 7. Cancel at period end. Confirm the account stays active through the displayed
    period end whether Stripe supplies `cancel_at_period_end` or a concrete
    `cancel_at` timestamp.
-8. In test mode, simulate `invoice.payment_failed`. Confirm a 72-hour grace
-   deadline, existing balance access, blocked refills, and no new monthly grant.
+8. In test mode, simulate `invoice.payment_failed` and
+   `invoice.finalization_failed`. Confirm each current event starts a 72-hour
+   grace deadline with existing balance access, blocked refills, and no new
+   monthly grant. Also fail an initial invoice for an account with no prior paid
+   invoice and confirm it remains inactive with onboarding still locked.
+   Deliver another failure after the first deadline and confirm the deadline is
+   unchanged and expired grace does not reopen.
 9. Simulate payment recovery. Confirm the entitlement returns to active without
    duplicating the monthly grant.
-10. Send the same event twice and send an older subscription event after a newer
-    one. Confirm one event effect and no backward entitlement movement.
-11. Refund the refill charge. Confirm unspent refill capacity is revoked and the
-    original ledger remains visible.
+10. Send the same event twice and send older subscription and invoice-failure
+    events after newer paid state. Send paid and failure events with the same
+    Stripe-second timestamp, then deliver them in both orders. Confirm one event
+    effect and no backward entitlement movement. Repeat with deletion followed
+    by an older paid invoice. Pay a replacement subscription, then deliver a
+    newer update and deletion for the old subscription and confirm they cannot
+    replace it. Attempt a second paid subscription while the first is current
+    and confirm no second grant is created and billing review is raised.
+11. Refund both a refill charge and a monthly invoice charge. Confirm unspent
+    refill and invoice-linked monthly capacity is revoked and the original
+    ledger remains visible. Deliver the adverse event before its grant and
+    confirm the later webhook cannot create that grant until recovery. Fail the
+    refund and confirm exactly one skipped grant is replayed.
 12. Create and close a test dispute. Confirm billing review blocks new paid work,
-    and closure or reconciliation clears the state according to Stripe.
+    and closure or reconciliation clears only that dispute's hold. Keep a
+    second dispute or refund open and confirm review remains required. Deliver
+    the won closure before the opening event and confirm the older opening event
+    cannot reopen review or revoke credits. For both a monthly charge and a
+    refill, open the dispute before the paid event, then win it and confirm the
+    skipped grant appears exactly once.
 13. Exercise a paid creation, a failure, and a retry. Confirm reserve, release,
     reacquire, and one final commit.
 14. Exercise an over-limit batch. Confirm only the funded subset starts.
+15. Cancel an account with both queued and running work. Confirm never-started
+    queue entries and reservations are canceled while an already-started
+    provider-to-media continuation can finish.
 
 For browser test cards use Stripe's published test data. The ordinary success
 card is `4242 4242 4242 4242`, with any future expiry, any CVC, and any postal
@@ -188,13 +214,17 @@ on the test objects.
    handling.
 3. Confirm webhook-lag, processing-failure, billing-review, reconciliation, and
    queue-cap alerts have owners and escalation paths.
-4. In Stripe live mode, create four new Products with the same catalog metadata
-   and four new Prices with the exact amounts and intervals. Use the same lookup
-   key names only if the live workspace has no conflicts.
+4. In Stripe live mode, create four new Products with `environment=live` and
+   the matching `catalog_key` metadata. Create the four exact Prices with
+   `environment=live` plus `plan_key` on subscriptions or `catalog_key` on the
+   refill. Use `clipstitchr_live_starter_monthly`,
+   `clipstitchr_live_pro_monthly`, `clipstitchr_live_agency_monthly`, and
+   `clipstitchr_live_creation_credit_refill` as lookup keys.
 5. Create a new live portal configuration. Allowlist only the three new live
    subscription prices. Configure immediate prorated upgrades, period-end
    decreases, unchanged billing anchors, payment updates, invoice history, and
-   period-end cancellation.
+   period-end cancellation. Set the business-profile Terms and Privacy URLs to
+   the two public ClipStitchr legal pages before opening the portal.
 6. Create a new live event destination pointing to the production Convex
    `/stripe/webhook` URL. Pin it to `2026-05-27.dahlia` and select exactly the
    event list in this runbook.
@@ -240,6 +270,7 @@ If a failure happens after subscriptions exist:
 
 ## Related Documents
 
+- `docs/operations/billing/complimentary-access.md`
 - `docs/features/billing/paid-plans-and-usage.md`
 - `docs/architecture/stripe-billing-integration-decision.md`
 - `docs/architecture/plan-entitlements-stripe-and-worker-queues.md`

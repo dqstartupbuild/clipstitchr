@@ -3,8 +3,11 @@ import { commitUsageReservationForOwner } from "../usage/commitUsageReservation"
 import { reacquireUsageReservation } from "../usage/reacquireUsageReservation";
 import { releaseUsageReservationForOwner } from "../usage/releaseUsageReservation";
 import { heartbeatGenerationSlot } from "./heartbeatGenerationSlot";
+import { prepareGenerationSlotHandoff } from "./prepareGenerationSlotHandoff";
 import { releaseGenerationSlot } from "./releaseGenerationSlot";
 import { getQueueUsageReservationIds } from "./getQueueUsageReservationIds";
+import { validateWorkerQueueUsageReservations } from "./validateWorkerQueueUsageReservations";
+import { requestWorkerLaunch } from "../workerLaunch";
 
 type QueueSourceKind = "provider_job" | "media_job" | "automation_task";
 
@@ -40,22 +43,28 @@ export async function updateWorkerQueueEntryStatus(
     (args.status === "running" && args.releaseLock === true);
 
   if (args.handoff) {
-    await releaseGenerationSlot(
+    const handoffSlot = await prepareGenerationSlotHandoff(
       ctx,
       entry.generationSlotId,
       args.now,
-      "Work handed off to media finalization",
     );
+
+    if (!handoffSlot) {
+      throw new Error(
+        "Provider generation slot is not active for media handoff.",
+      );
+    }
+
     await ctx.db.patch(entry._id, {
       completedAt: args.now,
       error: args.error,
-      generationSlotId: undefined,
       lockId: undefined,
       lockedBy: undefined,
       lockedUntil: undefined,
       status: "completed",
       updatedAt: args.now,
     });
+    await requestWorkerLaunch({ ctx, now: args.now, worker: "media" });
 
     return entry._id;
   }
@@ -109,15 +118,38 @@ export async function updateWorkerQueueEntryStatus(
     }
 
     if (isCompleted) {
-      if (reservation.state === "released") {
+      if (reservation.state === "committed") {
+        if (reservation.workerQueueEntryId !== entry.queueEntryId) {
+          throw new Error("Queue usage reservation belongs to another job.");
+        }
+
         continue;
       }
 
+      if (reservation.state === "reserved") {
+        await validateWorkerQueueUsageReservations(ctx, {
+          now: args.now,
+          ownerId: entry.ownerId,
+          queueEntryId: entry.queueEntryId,
+          reservationIds: [originalReservationId],
+        });
+      } else if (reservation.workerQueueEntryId !== entry.queueEntryId) {
+        throw new Error("Queue usage reservation belongs to another job.");
+      }
+
+      const binding = {
+        domainId: reservation.domainId,
+        domainKind: reservation.domainKind,
+        operation: reservation.operation,
+        reservationKind: "worker" as const,
+        resource: reservation.resource,
+      };
       const usageReservationId = await reacquireUsageReservation(
         ctx,
         entry.ownerId,
         originalReservationId,
         args.now,
+        binding,
       );
       await commitUsageReservationForOwner(
         ctx,
@@ -125,6 +157,7 @@ export async function updateWorkerQueueEntryStatus(
         usageReservationId,
         args.now,
         "worker",
+        binding,
       );
     } else if (reservation.state === "reserved") {
       await releaseUsageReservationForOwner(

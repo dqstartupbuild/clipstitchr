@@ -2,6 +2,11 @@ import type Stripe from "stripe";
 import type { MutationCtx } from "../_generated/server";
 import { grantMonthlyAllowance } from "../usage/grantMonthlyAllowance";
 import { getStripeInvoiceSnapshot } from "./getStripeInvoiceSnapshot";
+import { getStripePaidInvoiceTransitionShouldApply } from "./getStripePaidInvoiceTransitionShouldApply";
+import { getStripePaidInvoiceConflictsWithCurrentSubscription } from "./getStripePaidInvoiceConflictsWithCurrentSubscription";
+import { markBillingReviewRequired } from "./markBillingReviewRequired";
+import { getStripePaymentHasOpenHold } from "./getStripePaymentHasOpenHold";
+import { syncBillingReviewFromPaymentHolds } from "./syncBillingReviewFromPaymentHolds";
 import { resolveStripeOwnerId } from "./resolveStripeOwnerId";
 import { writeEntitlementHistory } from "./writeEntitlementHistory";
 import { reconcileDailyDraftsAfterPlanChange } from "../automation/reconcileDailyDraftsAfterPlanChange";
@@ -23,34 +28,68 @@ export async function activateEntitlementFromInvoice(
     .withIndex("by_owner", (query) => query.eq("ownerId", ownerId))
     .unique();
 
-  if (existing && existing.latestPaymentEventCreatedAt > event.created) {
+  if (
+    existing &&
+    getStripePaidInvoiceConflictsWithCurrentSubscription(existing, {
+      createdAt: event.created,
+      subscriptionId: snapshot.subscriptionId,
+    })
+  ) {
+    await markBillingReviewRequired(
+      ctx,
+      ownerId,
+      "A second paid Stripe subscription needs billing support review.",
+      new Date(event.created * 1_000).toISOString(),
+    );
+    return existing._id;
+  }
+
+  if (
+    existing &&
+    (existing.latestPaymentEventCreatedAt > event.created ||
+      !(await getStripePaidInvoiceTransitionShouldApply(ctx, existing, {
+        createdAt: event.created,
+        eventId: event.id,
+        eventType: event.type,
+        invoiceId: snapshot.invoiceId,
+        periodEnd: snapshot.periodEnd,
+        periodStart: snapshot.periodStart,
+        planKey: snapshot.planKey,
+        subscriptionId: snapshot.subscriptionId,
+      })))
+  ) {
     return existing._id;
   }
 
   const now = new Date(event.created * 1_000).toISOString();
-
-  await grantMonthlyAllowance(ctx, {
-    eventId: event.id,
+  const paymentHasOpenHold = await getStripePaymentHasOpenHold(ctx, {
     invoiceId: snapshot.invoiceId,
-    now,
-    ownerId,
-    periodEnd: snapshot.periodEnd,
-    periodStart: snapshot.periodStart,
-    planKey: snapshot.planKey,
-    stripeSubscriptionId: snapshot.subscriptionId,
   });
-  await reconcileProductsAfterPlanChange(ctx, {
-    eventId: event.id,
-    now,
-    ownerId,
-    planKey: snapshot.planKey,
-  });
-  await reconcileDailyDraftsAfterPlanChange(ctx, {
-    eventId: event.id,
-    now,
-    ownerId,
-    planKey: snapshot.planKey,
-  });
+
+  if (!paymentHasOpenHold) {
+    await grantMonthlyAllowance(ctx, {
+      eventId: event.id,
+      invoiceId: snapshot.invoiceId,
+      now,
+      ownerId,
+      periodEnd: snapshot.periodEnd,
+      periodStart: snapshot.periodStart,
+      planKey: snapshot.planKey,
+      stripeSubscriptionId: snapshot.subscriptionId,
+    });
+    await reconcileProductsAfterPlanChange(ctx, {
+      eventId: event.id,
+      now,
+      ownerId,
+      planKey: snapshot.planKey,
+    });
+    await reconcileDailyDraftsAfterPlanChange(ctx, {
+      eventId: event.id,
+      now,
+      ownerId,
+      planKey: snapshot.planKey,
+    });
+  }
 
   if (!existing) {
     const entitlementId = await ctx.db.insert("billingEntitlements", {
@@ -84,6 +123,9 @@ export async function activateEntitlementFromInvoice(
       reason: "Stripe invoice paid",
       state: "active",
     });
+    if (paymentHasOpenHold) {
+      await syncBillingReviewFromPaymentHolds(ctx, ownerId, now);
+    }
 
     return entitlementId;
   }
@@ -119,6 +161,9 @@ export async function activateEntitlementFromInvoice(
     reason: "Stripe invoice paid",
     state: "active",
   });
+  if (paymentHasOpenHold) {
+    await syncBillingReviewFromPaymentHolds(ctx, ownerId, now);
+  }
 
   return existing._id;
 }

@@ -17,6 +17,7 @@ export const reserveCreationCreditBatch = mutation({
   },
   handler: async (ctx, args) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
     const count = Math.trunc(args.count);
 
     if (count < 1 || count > 20) {
@@ -35,7 +36,7 @@ export const reserveCreationCreditBatch = mutation({
             domainId: `${args.domainIdPrefix}:${index}`,
             domainKind: args.domainKind,
             idempotencyKey: `${args.idempotencyPrefix}:${index}`,
-            now: args.now,
+            now,
             operation: args.operation,
             reservationKind: "worker",
             source: "user_action",

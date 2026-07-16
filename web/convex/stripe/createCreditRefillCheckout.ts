@@ -3,7 +3,9 @@ import { action } from "../_generated/server";
 import { internal } from "../_generated/api";
 import { assertStripeCatalogEntry } from "../../lib/clipstitchr/billing/assertStripeCatalogEntry";
 import { createStripeSdk } from "../../lib/clipstitchr/billing/createStripeSdk";
+import { createCheckoutIntentId } from "../../lib/clipstitchr/billing/createCheckoutIntentId";
 import { getBillingAppUrl } from "../../lib/clipstitchr/billing/getBillingAppUrl";
+import { getCanonicalPaidStripeAccessIsActive } from "../../lib/clipstitchr/billing/getCanonicalPaidStripeAccessIsActive";
 import { getEffectiveEntitlementState } from "../../lib/clipstitchr/billing/getEffectiveEntitlementState";
 import { getStripeCatalogEntry } from "../../lib/clipstitchr/billing/getStripeCatalogEntry";
 import { getStripeComponentClient } from "./getStripeComponentClient";
@@ -26,7 +28,7 @@ export const createCreditRefillCheckout = action({
 
     if (
       !entitlement ||
-      entitlement.billingReviewRequired ||
+      !getCanonicalPaidStripeAccessIsActive(entitlement, now) ||
       getEffectiveEntitlementState(entitlement, now) !== "active"
     ) {
       throw new Error(
@@ -44,6 +46,7 @@ export const createCreditRefillCheckout = action({
     await assertStripeCatalogEntry(createStripeSdk(), catalogEntry);
 
     const appUrl = getBillingAppUrl();
+    const checkoutIntentId = createCheckoutIntentId();
     const checkout = await getStripeComponentClient().createCheckoutSession(
       ctx,
       {
@@ -58,7 +61,9 @@ export const createCreditRefillCheckout = action({
         params: { allow_promotion_codes: false },
         paymentIntentMetadata: {
           catalogKey: catalogEntry.catalogKey,
+          checkoutIntentId,
           ownerId: identity.subject,
+          stripeSubscriptionId: entitlement.stripeSubscriptionId,
         },
         priceId: catalogEntry.priceId,
         successUrl: `${appUrl}/dashboard/settings?billing=refill-success`,
@@ -73,10 +78,12 @@ export const createCreditRefillCheckout = action({
       internal.billing.recordCheckoutSession.recordCheckoutSession,
       {
         catalogKey: catalogEntry.catalogKey,
+        checkoutIntentId,
         mode: "payment",
         now,
         ownerId: identity.subject,
         stripeCheckoutSessionId: checkout.sessionId,
+        stripePriceId: catalogEntry.priceId,
       },
     );
 

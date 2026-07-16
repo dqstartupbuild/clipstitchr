@@ -1,8 +1,6 @@
 import type { MutationCtx } from "../_generated/server";
 import type { PlanKey } from "../../lib/clipstitchr/billing/types/PlanKey";
 import { getPlanPolicy } from "../../lib/clipstitchr/billing/getPlanPolicy";
-import { deleteProductCard } from "../deleteProductCard";
-import { disableProductAutomation } from "./disableProductAutomation";
 
 export async function reconcileProductsAfterPlanChange(
   ctx: MutationCtx,
@@ -22,45 +20,16 @@ export async function reconcileProductsAfterPlanChange(
     return existing.archivedProductIds;
   }
 
-  const [products, preferences] = await Promise.all([
-    ctx.db
-      .query("products")
-      .withIndex("by_owner_created", (query) =>
-        query.eq("ownerId", args.ownerId),
-      )
-      .collect(),
-    ctx.db
-      .query("productPreferences")
-      .withIndex("by_owner", (query) => query.eq("ownerId", args.ownerId))
-      .unique(),
-  ]);
-  const defaultProductId = preferences?.defaultProductId;
-  const sorted = products
-    .filter((product) => !product.archivedAt)
-    .sort((left, right) => {
-      const leftDefault = left.id === defaultProductId ? 1 : 0;
-      const rightDefault = right.id === defaultProductId ? 1 : 0;
-
-      return (
-        rightDefault - leftDefault ||
-        left.createdAt.localeCompare(right.createdAt) ||
-        left.id.localeCompare(right.id)
-      );
-    });
+  const products = await ctx.db
+    .query("products")
+    .withIndex("by_owner_created", (query) => query.eq("ownerId", args.ownerId))
+    .collect();
+  const activeProductCount = products.filter(
+    (product) => !product.archivedAt,
+  ).length;
   const policy = getPlanPolicy(args.planKey);
-  const archived = sorted.slice(policy.productLimit);
-
-  for (const product of archived) {
-    await ctx.db.patch(product._id, {
-      archivedAt: args.now,
-      updatedAt: args.now,
-    });
-    await deleteProductCard(ctx, product);
-
-    await disableProductAutomation(ctx, args.ownerId, product.id, args.now);
-  }
-
-  const archivedProductIds = archived.map((product) => product.id);
+  const overLimitCount = Math.max(0, activeProductCount - policy.productLimit);
+  const archivedProductIds: string[] = [];
 
   await ctx.db.insert("productLimitReconciliations", {
     archivedProductIds,
@@ -68,7 +37,10 @@ export async function reconcileProductsAfterPlanChange(
     eventId: args.eventId,
     ownerId: args.ownerId,
     planKey: args.planKey,
-    reason: `${policy.name} includes ${policy.productLimit} active ${policy.productLimit === 1 ? "product" : "products"}.`,
+    reason:
+      overLimitCount === 0
+        ? `${policy.name} includes ${policy.productLimit} active ${policy.productLimit === 1 ? "product" : "products"}; the workspace is within its limit.`
+        : `${overLimitCount} active ${overLimitCount === 1 ? "product is" : "products are"} over the ${policy.name} limit. Existing products stay available, and the owner must archive products before creating or restoring another.`,
   });
 
   return archivedProductIds;

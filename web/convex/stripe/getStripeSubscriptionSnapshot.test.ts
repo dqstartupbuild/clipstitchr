@@ -38,6 +38,29 @@ describe("getStripeSubscriptionSnapshot", () => {
     expect(getStripeSubscriptionSnapshot(subscription).planKey).toBe("pro");
   });
 
+  it("rejects an unknown price even when metadata names a valid plan", () => {
+    const subscription = {
+      id: "sub_unknown",
+      cancel_at_period_end: false,
+      customer: "cus_1",
+      items: {
+        data: [
+          {
+            current_period_end: 1_789_000_000,
+            current_period_start: 1_786_000_000,
+            price: { id: "price_not_in_catalog" },
+          },
+        ],
+      },
+      metadata: { ownerId: "owner_1", planKey: "agency" },
+      status: "active",
+    } as unknown as Stripe.Subscription;
+
+    expect(() => getStripeSubscriptionSnapshot(subscription)).toThrow(
+      "Stripe subscription is missing ClipStitchr billing data.",
+    );
+  });
+
   it("recognizes Stripe's concrete period-end cancellation timestamp", () => {
     const subscription = {
       id: "sub_1",

@@ -15,7 +15,8 @@ export async function registerCreatedMediaJob(
   }
 
   await enqueueWorkerQueueEntry(ctx, {
-    generationRequired: false,
+    generationRequired: true,
+    generationSlotId: mediaJob.generationSlotId,
     now: mediaJob.updatedAt,
     ownerId: mediaJob.ownerId,
     sourceId: mediaJob.id,

@@ -1,4 +1,5 @@
 import type { PricingPlan } from "@/lib/clipstitchr/pricing/PricingPlan";
+import { getPlanSignupHref } from "@/lib/clipstitchr/billing/getPlanSignupHref";
 
 export const pricingPlans: PricingPlan[] = [
   {
@@ -17,7 +18,7 @@ export const pricingPlans: PricingPlan[] = [
       "Buy more credits anytime",
     ],
     ctaLabel: "Choose Starter",
-    ctaHref: "/sign-up",
+    ctaHref: getPlanSignupHref("starter"),
   },
   {
     key: "pro",
@@ -35,7 +36,7 @@ export const pricingPlans: PricingPlan[] = [
       "More jobs active at once",
     ],
     ctaLabel: "Choose Pro",
-    ctaHref: "/sign-up",
+    ctaHref: getPlanSignupHref("pro"),
     isFeatured: true,
   },
   {
@@ -55,6 +56,6 @@ export const pricingPlans: PricingPlan[] = [
       "Priority support",
     ],
     ctaLabel: "Choose Agency",
-    ctaHref: "/sign-up",
+    ctaHref: getPlanSignupHref("agency"),
   },
 ];

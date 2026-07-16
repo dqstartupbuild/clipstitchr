@@ -1,6 +1,9 @@
 import type { MutationCtx } from "../_generated/server";
 import type { PlanKey } from "../../lib/clipstitchr/billing/types/PlanKey";
 import { getEffectiveEntitlementForOwner } from "../billing/getEffectiveEntitlementForOwner";
+import { getGenerationSlotForQueue } from "./getGenerationSlotForQueue";
+import { validateWorkerQueueUsageReservations } from "./validateWorkerQueueUsageReservations";
+import { createWorkerQueueEntryId } from "./createWorkerQueueEntryId";
 
 type QueueSourceKind = "provider_job" | "media_job" | "automation_task";
 type QueueWorker = "provider" | "media";
@@ -21,12 +24,45 @@ export async function enqueueWorkerQueueEntry(
     worker: QueueWorker;
   },
 ) {
+  const queueEntryId = createWorkerQueueEntryId(
+    args.worker,
+    args.sourceKind,
+    args.sourceId,
+  );
   const existing = await ctx.db
     .query("workerQueueEntries")
     .withIndex("by_source", (query) =>
       query.eq("sourceKind", args.sourceKind).eq("sourceId", args.sourceId),
     )
     .unique();
+  const inheritedSlot = args.generationSlotId
+    ? await getGenerationSlotForQueue(ctx, {
+        generationSlotId: args.generationSlotId,
+        now: args.now,
+        ownerId: args.ownerId,
+        sourceKind: args.sourceKind,
+        worker: args.worker,
+      })
+    : null;
+  const usageReservationId =
+    args.usageReservationId ?? existing?.usageReservationId;
+  const usageReservationIdsInput =
+    args.usageReservationIds ?? existing?.usageReservationIds;
+  const linkedUsageReservationIds = Array.from(
+    new Set([
+      ...(usageReservationId ? [usageReservationId] : []),
+      ...(usageReservationIdsInput ?? []),
+    ]),
+  );
+
+  if (linkedUsageReservationIds.length > 0) {
+    await validateWorkerQueueUsageReservations(ctx, {
+      now: args.now,
+      ownerId: args.ownerId,
+      queueEntryId,
+      reservationIds: linkedUsageReservationIds,
+    });
+  }
 
   if (existing) {
     if (
@@ -46,8 +82,23 @@ export async function enqueueWorkerQueueEntry(
         queuedAt: args.now,
         status: "queued",
         updatedAt: args.now,
-        usageReservationId: args.usageReservationId,
-        usageReservationIds: args.usageReservationIds,
+        usageReservationId,
+        usageReservationIds: usageReservationIdsInput,
+      });
+
+      return (await ctx.db.get(existing._id)) ?? existing;
+    }
+
+    if (
+      existing.status === "queued" &&
+      args.generationSlotId &&
+      existing.generationSlotId !== args.generationSlotId
+    ) {
+      await ctx.db.patch(existing._id, {
+        generationSlotId: args.generationSlotId,
+        updatedAt: args.now,
+        usageReservationId,
+        usageReservationIds: usageReservationIdsInput,
       });
 
       return (await ctx.db.get(existing._id)) ?? existing;
@@ -82,18 +133,8 @@ export async function enqueueWorkerQueueEntry(
 
   let planKey: PlanKey;
 
-  if (args.generationSlotId) {
-    const generationSlotId = args.generationSlotId;
-    const slot = await ctx.db
-      .query("generationSlots")
-      .withIndex("by_slot", (query) => query.eq("slotId", generationSlotId))
-      .unique();
-
-    if (!slot || slot.ownerId !== args.ownerId || slot.state !== "active") {
-      throw new Error("Generation slot is not active for this queue entry.");
-    }
-
-    planKey = slot.planKeySnapshot;
+  if (inheritedSlot) {
+    planKey = inheritedSlot.planKeySnapshot;
   } else {
     const effective = await getEffectiveEntitlementForOwner(
       ctx,
@@ -112,43 +153,19 @@ export async function enqueueWorkerQueueEntry(
     planKey = effective.entitlement.planKey;
   }
 
-  const usageReservationIds = Array.from(
-    new Set([
-      ...(args.usageReservationId ? [args.usageReservationId] : []),
-      ...(args.usageReservationIds ?? []),
-    ]),
-  );
-
   const usageReservationExempt =
+    args.sourceKind === "media_job" ||
     args.tool === "hook-lab-idea-use" ||
     (args.tool === "stitchr" && planKey === "agency");
 
   if (
     args.generationRequired &&
     !usageReservationExempt &&
-    usageReservationIds.length === 0
+    linkedUsageReservationIds.length === 0
   ) {
     throw new Error("Paid generation requires a usage reservation.");
   }
 
-  for (const usageReservationId of usageReservationIds) {
-    const reservation = await ctx.db
-      .query("usageReservations")
-      .withIndex("by_reservation", (query) =>
-        query.eq("reservationId", usageReservationId),
-      )
-      .unique();
-
-    if (
-      !reservation ||
-      reservation.ownerId !== args.ownerId ||
-      (reservation.state !== "reserved" && reservation.state !== "committed")
-    ) {
-      throw new Error("Queue entry usage reservation is invalid.");
-    }
-  }
-
-  const queueEntryId = `${args.worker}:${args.sourceKind}:${args.sourceId}`;
   const id = await ctx.db.insert("workerQueueEntries", {
     attempt: 0,
     createdAt: args.now,
@@ -164,8 +181,8 @@ export async function enqueueWorkerQueueEntry(
     status: "queued",
     tool: args.tool,
     updatedAt: args.now,
-    usageReservationId: args.usageReservationId,
-    usageReservationIds: args.usageReservationIds,
+    usageReservationId,
+    usageReservationIds: usageReservationIdsInput,
     worker: args.worker,
   });
   const entry = await ctx.db.get(id);

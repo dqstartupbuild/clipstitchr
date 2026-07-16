@@ -24,6 +24,11 @@ The page shows three plan levels:
 - Agency at $399/month for 10 products, 20,000 creation credits, unlimited
   stitches, and 50 combined Clipr or Swapr videos.
 
+Each plan action includes its canonical key in the signup URL. Clerk preserves
+that selection through account creation, and onboarding repeats it before
+opening Stripe-hosted Checkout. The public query value never supplies a Stripe
+Price ID.
+
 Starter centers Stitchr and Swipr while retaining a small monthly taste of
 Clipr and Swapr. Pro adds weekly generation room and daily drafts for one
 product. Agency raises the product limit to 10 and enables daily drafts for all

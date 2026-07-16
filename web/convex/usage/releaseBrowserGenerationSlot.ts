@@ -9,8 +9,9 @@ export const releaseBrowserGenerationSlot = mutation({
     reason: v.string(),
     slotId: v.string(),
   },
-  handler: async (ctx, { now, reason, slotId }) => {
+  handler: async (ctx, { reason, slotId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
     const slot = await ctx.db
       .query("generationSlots")
       .withIndex("by_slot", (query) => query.eq("slotId", slotId))
@@ -18,6 +19,17 @@ export const releaseBrowserGenerationSlot = mutation({
 
     if (!slot || slot.ownerId !== ownerId) {
       throw new Error("Generation slot not found.");
+    }
+
+    const hasBrowserIdempotencyProvenance =
+      slot.idempotencyKey.startsWith("browser:") &&
+      slot.slotId === `generation:${slot.idempotencyKey}`;
+
+    if (
+      slot.provenance === "worker_queue" ||
+      !hasBrowserIdempotencyProvenance
+    ) {
+      throw new Error("Browser generation slot not found.");
     }
 
     return await releaseGenerationSlot(ctx, slotId, now, reason);

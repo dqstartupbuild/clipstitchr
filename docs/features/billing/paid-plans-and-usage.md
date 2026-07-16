@@ -24,18 +24,26 @@ shared video allowance. A Clipr scene still is included in that video and never
 receives a separate photo charge.
 
 The one-time refill costs $29 and adds 2,000 creation credits. A refill requires
-an active paid subscription, expires 12 months after payment, and never adds
-videos. Monthly credits are spent first. Refill grants are then spent in expiry
-order, with the earliest expiry first.
+canonical paid Stripe access: the stored entitlement must be active, its paid
+period must include the current time, and billing review must be clear. A
+temporary support override cannot qualify an otherwise inactive subscription.
+The refill expires 12 months after payment and never adds videos. Monthly
+credits are spent first. Refill grants are then spent in expiry order, with the
+earliest expiry first.
 
 ## Customer Experience
 
 Settings shows the current plan, entitlement state, exact plan comparison,
 creation-credit balance, monthly and refill split, video use, active-generation
-slots, refill expiry, and recent usage.
+slots, refill expiry, and recent usage. The entitlement query exposes
+`canBuyRefill`, computed on the Convex server from canonical paid Stripe access.
+The UI uses that boolean instead of re-creating billing eligibility from display
+state.
 
 - A customer without a managed subscription chooses Starter, Pro, or Agency and
-  completes Stripe-hosted Checkout.
+  completes Stripe-hosted Checkout. Before opening a new session, the server
+  checks Stripe's customer subscriptions directly and rejects any nonterminal
+  subscription that the local projection has not seen yet.
 - An existing customer opens Stripe's hosted customer portal to change the
   plan, update payment details, view invoices, or cancel.
 - A paid upgrade applies immediately after Stripe confirms the positive
@@ -47,14 +55,42 @@ slots, refill expiry, and recent usage.
 - Cancel-at-period-end remains active through the paid period end. Stripe may
   express that schedule with either `cancel_at_period_end` or a concrete
   `cancel_at` timestamp; both project to the same customer-facing behavior.
-- A failed renewal enters a 72-hour grace period. Existing credits remain usable
-  during grace, but refills are unavailable. Recovery returns the account to
-  active. Unpaid expiry becomes inactive.
-- Refunds and disputes preserve the ledger and place affected billing state into
-  review rather than deleting history.
+- A failed renewal or invoice-finalization failure enters a 72-hour grace
+  period. Existing credits remain usable during grace, but refills are
+  unavailable. Recovery returns the account to active. Unpaid expiry becomes
+  inactive.
+- Grace is only for a previously paid subscription. If the first invoice fails,
+  the account remains inactive and product setup stays locked until a signed
+  paid invoice arrives. The first failure fixes the grace deadline; retries and
+  later subscription updates cannot extend or reopen it. Subscription-only
+  events for a different subscription cannot replace the current mapping. Only
+  that replacement subscription's paid invoice can adopt it after the current
+  subscription has ended.
+- Refill confirmation must match a server-recorded Checkout intent and the
+  exact allowlisted one-time Price, not only PaymentIntent metadata and amount.
+- Refunds and disputes create source-specific payment holds, preserve the
+  ledger, revoke unused refill or invoice-linked monthly grants, and place the
+  affected billing state into review. Resolving one dispute cannot clear a
+  separate refund or dispute hold. If the adverse event arrived before the
+  original grant, a won dispute or failed refund securely replays that monthly
+  or refill grant from Stripe's invoice or PaymentIntent and the recorded
+  Checkout. Replays use stable IDs, so retries cannot duplicate credits.
 
 Checkout and portal redirects never activate a plan. Only signed Stripe
 webhooks update the Convex entitlement projection.
+
+Every entitlement-changing Stripe event shares one monotonic ordering rule.
+Older events cannot replace newer state. When Stripe creates distinct events in
+the same second, deletion outranks paid state and paid state outranks payment
+failure. Subscription create/update payloads are refreshed from Stripe, and
+paid invoices use subscription, billing-period, and plan meaning rather than
+event-ID sorting, so delivery order cannot change the final access decision.
+
+All user-triggered plan-limit and usage decisions use Convex server time.
+Client timestamps cannot keep an expired entitlement or refill grant active,
+extend a reservation, backdate a completion, or change product and daily-draft
+limit enforcement. Worker-secret and internal flows preserve timestamps that
+were created by the trusted server-side pipeline.
 
 ## Usage Lifecycle
 
@@ -68,6 +104,28 @@ Every paid creation uses the same durable sequence:
 6. Release the reservation after a terminal failure or cancellation.
 7. Reacquire the same logical reservation during a retry without charging
    twice.
+
+The save mutation must present the reservation's exact resource, operation,
+original domain kind and ID, and browser-or-worker provenance. Convex verifies
+that binding before returning either a still-reserved or already-committed row,
+and stores the commit domain on first success so a committed reservation cannot
+be replayed across creations.
+
+Already-granted monthly and refill credits remain spendable while an account is
+active or inside its valid payment grace window. Buying another refill still
+requires canonical active paid access, so grace never enables refill Checkout.
+Refills remain bound to the Stripe subscription that bought them; replacing the
+subscription does not revive an old refill, and legacy unbound refill rows fail
+closed.
+Once a worker reservation is linked to queue work, a browser or API client
+cannot release it; terminal queue, worker, and reconciliation paths own that
+lifecycle. When billing becomes inactive, queued work that never started is
+canceled and its reservation is released. A provider-to-media continuation
+that already carries the provider lifecycle's slot is allowed to finish.
+Queue linkage records the deterministic queue-entry ID, not only a timestamp.
+Another queue cannot reuse that reservation, and enqueue rejects committed
+reservations. Legacy reserved rows with no prior linkage can be attributed to
+their first queue; rows with ambiguous legacy linkage fail closed.
 
 Batch Stitchr reserves each selected output independently. If the account can
 fund only part of the batch, it starts the funded subset and reports the rest.
@@ -83,20 +141,24 @@ minutes and Starter jobs after five minutes, so lower plans cannot starve.
 The claimant considers only the oldest eligible entry for each owner before
 choosing a plan lane. This prevents one owner with a large backlog from blocking
 other owners. Active generation slots enforce the per-owner plan limits across
-the complete provider-to-media lifecycle. Global provider and media caps default
-to 50 each, and optional per-tool provider caps protect shared third-party
-capacity.
+the complete provider-to-media lifecycle. A provider handoff keeps the same
+owner slot alive, releases provider capacity, and assigns that slot to the media
+worker only when media capacity is available. Normal media work also acquires a
+media slot before it starts. Global provider and media caps are counted
+independently and default to 50 each, while optional per-tool caps protect shared
+third-party capacity.
 
 ## Downgrade Reconciliation
 
 Plan limits apply when the scheduled downgrade becomes effective. Products over
-the new limit are archived, not deleted. The most recently updated products are
-kept first. Daily drafts are disabled beyond the new plan's allowance. Settings
-keeps archived products visible and allows restoration once the account has
-room.
+the new limit stay readable and editable. New product creation and restoration
+remain blocked until the owner chooses which products to archive. ClipStitchr
+does not make that choice automatically. Daily drafts are disabled beyond the
+new plan's allowance.
 
-The reconciliation records make these changes idempotent and support-readable.
-Media, historical usage, and product data remain intact.
+The reconciliation records make the over-limit state and daily-draft changes
+idempotent and support-readable. Media, historical usage, and product data
+remain intact.
 
 The usage history describes each ledger transition directly. A reservation is
 shown as credits or videos held, a commit as used, a release as returned, a
@@ -147,12 +209,13 @@ web/
 
 The main durable tables are `billingEntitlements`,
 `billingEntitlementHistory`, `billingCheckoutSessions`,
-`stripeWebhookEvents`, `usagePeriods`, `creditGrants`, `usageReservations`,
+`stripeWebhookEvents`, `stripePaymentHolds`, `usagePeriods`, `creditGrants`, `usageReservations`,
 `usageReservationAllocations`, `usageLedgerEntries`, `generationSlots`, and
 `workerQueueEntries`.
 
 ## Source References
 
+- `docs/operations/billing/complimentary-access.md`
 - `docs/architecture/plan-entitlements-stripe-and-worker-queues.md`
 - `docs/architecture/creation-credit-system.md`
 - `docs/architecture/stripe-billing-integration-decision.md`

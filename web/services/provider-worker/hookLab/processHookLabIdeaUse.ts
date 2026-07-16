@@ -23,6 +23,7 @@ const api = anyApi;
 const HOOK_LAB_OPENING_DURATION_SECONDS = 8;
 
 type HookLabUseJob = {
+  generationSlotId?: string;
   id: string;
   inputSnapshotJson: string;
   ownerId: string;
@@ -357,6 +358,7 @@ export async function processHookLabIdeaUse({
         ugcTrimRange: { start: 0, end: HOOK_LAB_OPENING_DURATION_SECONDS },
       }),
       createdAt: updatedAt,
+      generationSlotId: job.generationSlotId,
       usageReservationId: job.usageReservationId,
     },
   );

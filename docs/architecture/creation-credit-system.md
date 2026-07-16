@@ -35,8 +35,8 @@ ClipStitchr will use an app-owned, append-only credit ledger in Convex.
 - Failed or canceled work releases its reservation.
 - Monthly plan credits are spent before refill credits.
 - Monthly credits expire at the end of their Stripe billing period.
-- Refill credits expire 12 months after purchase and work only while a paid
-  subscription is active.
+- Refill credits expire 12 months after purchase and remain spendable while a
+  paid subscription is active or inside its valid payment grace window.
 - Downloading, editing, previewing, retrying the same job, or deleting an asset
   never creates a second charge or a refund.
 - Clipr and Swapr videos use a separate combined video allowance, not creation
@@ -253,6 +253,7 @@ One spendable source of creation credits:
 - `availableFrom`
 - `expiresAt`
 - `requiresActiveSubscription`
+- optional `stripeSubscriptionId`; required for every refill grant
 - `status`: `available`, `exhausted`, `expired`, or `revoked`
 - optional `stripeInvoiceId`, `stripePaymentIntentId`, and `stripeChargeId`
 - `sourceEventId`
@@ -298,6 +299,14 @@ One reservation per billable output:
 - `domainKind`
 - `domainId`
 - optional provider, media, and automation job IDs
+- optional `reservationKind`: `browser` or `worker`; new reservations always
+  persist it, while legacy rows without it fail closed for public cancellation
+- optional `workerQueueLinkedAt`, written atomically when a queue entry first
+  accepts the reservation
+- optional `workerQueueEntryId`, the exclusive deterministic queue owner; a
+  different queue and any new queue attempt after commit are rejected
+- optional `commitDomainKind` and `commitDomainId`, persisted on first commit
+  and required to match on an idempotent committed replay
 - `expiresAt`
 - optional `committedAt` and `releasedAt`
 - optional release reason
@@ -427,6 +436,12 @@ Before granting, verify that:
 Set `amountGranted` to 2,000, `availableFrom` to the confirmed-payment time,
 `expiresAt` to exactly 12 months later, and
 `requiresActiveSubscription` to `true`.
+For spending, that flag means subscription-gated access: active and valid grace
+may spend an existing grant only while the entitlement still references the
+same Stripe subscription that bought it. Inactive access, replacement
+subscriptions, and legacy refill rows without `stripeSubscriptionId` fail
+closed. This does not relax the canonical-active requirement for buying or
+granting a refill.
 
 Do not add any AI-video allowance. Do not extend the current billing period.
 
@@ -453,6 +468,11 @@ compensating ledger entries; it must not rewrite their original history.
 ## Reservation Algorithm
 
 All balance checks and reservations happen in one authenticated Convex mutation.
+The public mutation derives its decision timestamp from the Convex server. A
+browser-supplied timestamp is never used to evaluate entitlement state, grant
+expiry, allowance availability, concurrency, reservation expiry, or ledger
+lifecycle timestamps. Trusted internal and worker helpers may carry a
+server-created timestamp through a multi-stage operation.
 
 For a creation-credit operation:
 
@@ -473,7 +493,9 @@ For a creation-credit operation:
 
 For an AI-video operation, use the same flow against the active period's
 `aiVideosGranted`, `aiVideosReserved`, `aiVideosConsumed`, and
-`aiVideosAdjusted` totals.
+`aiVideosAdjusted` totals. The period start is inclusive and the period end is
+exclusive. A future, expired, or malformed allowance period fails closed using
+the Convex server timestamp.
 
 Do not read a balance in a Next.js route and reserve later. That creates a race.
 
@@ -483,8 +505,10 @@ Commit only from the mutation that durably saves the promised output or from an
 atomic helper called inside that mutation.
 
 1. Load the reservation by idempotency key or reservation ID.
-2. Verify that it belongs to the domain output being saved.
-3. If already committed, return success without changing totals.
+2. Verify the exact resource, operation, original domain kind and ID, and
+   browser-or-worker reservation provenance expected by the save path.
+3. If already committed, also require the persisted commit domain to match,
+   then return success without changing totals.
 4. If released or expired, attempt the documented late-finalization recovery.
 5. For each creation-credit allocation, move the amount from reserved to
    consumed on its grant.
@@ -512,6 +536,22 @@ A retry of the same logical job reuses the released reservation only by
 atomically reacquiring the required usage. A new user-requested regeneration
 uses a new idempotency key and a new reservation.
 
+Public cancellation is allowed for browser reservations and for worker
+reservations only before queue linkage. Enqueue validates that every attached
+reservation is still reserved, marks it worker-backed, and writes both
+`workerQueueLinkedAt` and the deterministic `workerQueueEntryId` in the same
+transaction as the queue entry. The same reserved row may be retried only by
+that queue; another queue, a committed row, or a legacy row with an old linkage
+timestamp but no attributable queue ID fails closed. Once that link exists,
+only the trusted queue, worker, or reconciler lifecycle may release the
+reservation. Convex transaction serialization closes both race orders: a
+cancel that wins first makes enqueue reject the released reservation, while an
+enqueue that wins first makes public cancellation reject the queue-linked row.
+
+Browser-only slot release also requires the server-issued `browser:`
+idempotency prefix and rejects worker-queue slot provenance. A client cannot
+release provider or media capacity by guessing a slot ID.
+
 ## Expiration and Recovery
 
 Reservation expiry makes work eligible for reconciliation. It must not blindly
@@ -536,6 +576,10 @@ The reconciler must inspect the domain job:
 If a browser finishes after its reservation was released, the final save may
 atomically reacquire credits. If reacquisition fails, do not create the stitch
 record. Clean up any orphaned upload through the existing R2 compensation path.
+Worker completion follows the same rule. It must never mark queue work complete
+by skipping a released reservation. Reacquisition uses a deterministic chained
+idempotency key, so asset persistence and the later queue completion converge
+on the same replacement charge rather than charging twice.
 
 ## Idempotency Keys
 
@@ -817,6 +861,8 @@ and grant revocation for removal. Never directly edit a displayed balance.
 - Rate-limit refill Checkout creation per owner and globally.
 - Keep provider, generation, R2, and Convex rate limits in addition to credits.
 - Validate reservation ownership again at commit and release.
+- Derive time on the Convex server for every user-triggered entitlement, limit,
+  grant-expiry, reservation, commit, cancellation, and slot-release decision.
 - Never accept credit cost, plan, grant, balance, or allowance from the browser.
 - Never expose Stripe secrets or internal ledger details to the client.
 - Update `docs/operations/security/rate-limits.md` with every new action and

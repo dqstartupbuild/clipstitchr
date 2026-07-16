@@ -1,5 +1,7 @@
+import type { PlanKey } from "@/lib/clipstitchr/billing/types/PlanKey";
+
 export type PricingPlan = {
-  key: string;
+  key: PlanKey;
   name: string;
   price: string;
   monthlyPriceUsd: number | null;

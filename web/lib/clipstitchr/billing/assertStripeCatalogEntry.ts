@@ -30,7 +30,11 @@ export async function assertStripeCatalogEntry(
   }
 
   if (entry.priceType === "recurring") {
-    if (price.type !== "recurring" || price.recurring?.interval !== "month") {
+    if (
+      price.type !== "recurring" ||
+      price.recurring?.interval !== "month" ||
+      price.recurring.interval_count !== 1
+    ) {
       throw new Error("Subscription price must recur monthly.");
     }
   } else if (price.type !== "one_time") {

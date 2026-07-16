@@ -4,8 +4,15 @@ import { useAction, useConvexAuth, useQuery } from "convex/react";
 import { useCallback, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { PlanKey } from "@/lib/clipstitchr/billing/types/PlanKey";
+import type { BillingPortalFlow } from "@/lib/clipstitchr/billing/types/BillingPortalFlow";
+import type { SubscriptionCheckoutReturnTarget } from "@/lib/clipstitchr/billing/types/SubscriptionCheckoutReturnTarget";
 
 type BillingAction = "checkout" | "portal" | "refill";
+
+type PendingBillingAction = {
+  action: BillingAction;
+  planKey?: PlanKey;
+};
 
 export function useBillingWorkspace() {
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
@@ -30,9 +37,8 @@ export function useBillingWorkspace() {
   const createPortalSession = useAction(
     api.stripe.createPortalSession.createPortalSession,
   );
-  const [pendingAction, setPendingAction] = useState<BillingAction | null>(
-    null,
-  );
+  const [pendingBillingAction, setPendingBillingAction] =
+    useState<PendingBillingAction | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const openHostedUrl = useCallback((url: string) => {
@@ -40,12 +46,18 @@ export function useBillingWorkspace() {
   }, []);
 
   const startPlan = useCallback(
-    async (planKey: PlanKey) => {
+    async (
+      planKey: PlanKey,
+      returnTarget: SubscriptionCheckoutReturnTarget = "settings",
+    ) => {
       setError(null);
-      setPendingAction("checkout");
+      setPendingBillingAction({ action: "checkout", planKey });
 
       try {
-        const result = await createSubscriptionCheckout({ planKey });
+        const result = await createSubscriptionCheckout({
+          planKey,
+          returnTarget,
+        });
         openHostedUrl(result.url);
       } catch (nextError) {
         setError(
@@ -53,18 +65,21 @@ export function useBillingWorkspace() {
             ? nextError.message
             : "Unable to open secure checkout.",
         );
-        setPendingAction(null);
+        setPendingBillingAction(null);
       }
     },
     [createSubscriptionCheckout, openHostedUrl],
   );
 
-  const manageBilling = useCallback(async () => {
+  const manageBilling = useCallback(async (
+    flow: BillingPortalFlow = "home",
+    planKey?: PlanKey,
+  ) => {
     setError(null);
-    setPendingAction("portal");
+    setPendingBillingAction({ action: "portal", planKey });
 
     try {
-      const result = await createPortalSession({});
+      const result = await createPortalSession({ flow });
       openHostedUrl(result.url);
     } catch (nextError) {
       setError(
@@ -72,13 +87,13 @@ export function useBillingWorkspace() {
           ? nextError.message
           : "Unable to open billing settings.",
       );
-      setPendingAction(null);
+      setPendingBillingAction(null);
     }
   }, [createPortalSession, openHostedUrl]);
 
   const buyRefill = useCallback(async () => {
     setError(null);
-    setPendingAction("refill");
+    setPendingBillingAction({ action: "refill" });
 
     try {
       const result = await createCreditRefillCheckout({});
@@ -89,7 +104,7 @@ export function useBillingWorkspace() {
           ? nextError.message
           : "Unable to open refill checkout.",
       );
-      setPendingAction(null);
+      setPendingBillingAction(null);
     }
   }, [createCreditRefillCheckout, openHostedUrl]);
 
@@ -104,7 +119,8 @@ export function useBillingWorkspace() {
           usage === undefined ||
           usageHistory === undefined)),
     manageBilling,
-    pendingAction,
+    pendingAction: pendingBillingAction?.action ?? null,
+    pendingPlanKey: pendingBillingAction?.planKey ?? null,
     startPlan,
     usage,
     usageHistory,

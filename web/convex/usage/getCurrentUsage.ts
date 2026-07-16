@@ -27,7 +27,8 @@ export const getCurrentUsage = query({
       ctx,
       ownerId,
       now,
-      state === "active",
+      state === "active" || state === "grace",
+      entitlement.stripeSubscriptionId,
     );
     const monthlyGrants = grants.filter(
       (grant) => grant.grantType !== "refill",

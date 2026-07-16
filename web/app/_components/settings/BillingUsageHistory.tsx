@@ -20,14 +20,28 @@ export function BillingUsageHistory({ entries }: BillingUsageHistoryProps) {
       <summary className="cursor-pointer text-sm font-bold text-text-primary">
         Recent usage
       </summary>
-      <div className="mt-3 overflow-x-auto">
+      <div
+        aria-label="Recent credit and video usage"
+        className="mt-3 overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        role="region"
+        tabIndex={0}
+      >
         <table className="w-full min-w-[560px] text-left text-sm">
+          <caption className="sr-only">Recent credit and video usage</caption>
           <thead className="text-text-secondary">
             <tr>
-              <th className="pb-2 font-semibold">When</th>
-              <th className="pb-2 font-semibold">Activity</th>
-              <th className="pb-2 font-semibold">Resource</th>
-              <th className="pb-2 text-right font-semibold">Amount</th>
+              <th className="pb-2 font-semibold" scope="col">
+                When
+              </th>
+              <th className="pb-2 font-semibold" scope="col">
+                Activity
+              </th>
+              <th className="pb-2 font-semibold" scope="col">
+                Resource
+              </th>
+              <th className="pb-2 text-right font-semibold" scope="col">
+                Amount
+              </th>
             </tr>
           </thead>
           <tbody>

@@ -1,10 +1,12 @@
 import type Stripe from "stripe";
 import type { MutationCtx } from "../_generated/server";
-import { STRIPE_GRACE_PERIOD_MS } from "../../lib/clipstitchr/billing/stripeGracePeriodMs";
 import { getStripeSubscriptionSnapshot } from "./getStripeSubscriptionSnapshot";
 import { getEntitlementStateForSubscriptionStatus } from "./getEntitlementStateForSubscriptionStatus";
+import { getStripeGraceEndsAt } from "./getStripeGraceEndsAt";
+import { getStripeSubscriptionTransitionDisposition } from "./getStripeSubscriptionTransitionDisposition";
 import { resolveStripeOwnerId } from "./resolveStripeOwnerId";
 import { writeEntitlementHistory } from "./writeEntitlementHistory";
+import { cancelNeverStartedQueueForOwner } from "../workerQueue/cancelNeverStartedQueueForOwner";
 
 export async function syncEntitlementFromSubscription(
   ctx: MutationCtx,
@@ -21,36 +23,87 @@ export async function syncEntitlementFromSubscription(
     .query("billingEntitlements")
     .withIndex("by_owner", (query) => query.eq("ownerId", ownerId))
     .unique();
+  if (existing && existing.stripeSubscriptionId !== snapshot.subscriptionId) {
+    return existing._id;
+  }
+
+  const hasConfirmedPayment = Boolean(existing?.latestPaidInvoiceId);
+  const subscriptionState = getEntitlementStateForSubscriptionStatus(
+    snapshot.status,
+    hasConfirmedPayment,
+  );
+  const state =
+    existing?.state === "grace" && subscriptionState === "active"
+      ? "grace"
+      : subscriptionState;
 
   if (
     existing &&
-    existing.latestSubscriptionEventCreatedAt > event.created
+    (existing.latestSubscriptionEventCreatedAt ?? 0) > event.created
   ) {
     return existing._id;
   }
 
   const now = new Date(event.created * 1_000).toISOString();
-  const state = getEntitlementStateForSubscriptionStatus(
-    snapshot.status,
-    Boolean(existing?.latestPaidInvoiceId),
-  );
   const graceEndsAt =
     state === "grace"
-      ? existing?.graceEndsAt && Date.parse(existing.graceEndsAt) > Date.parse(now)
-        ? existing.graceEndsAt
-        : new Date(
-            event.created * 1_000 + STRIPE_GRACE_PERIOD_MS,
-          ).toISOString()
+      ? getStripeGraceEndsAt(existing?.graceEndsAt, event.created)
       : undefined;
   const planChanged = Boolean(
     existing && existing.planKey !== snapshot.planKey,
   );
   const deferPlanChange = Boolean(
     existing &&
-      planChanged &&
-      (existing.state === "active" || existing.state === "grace") &&
-      (snapshot.status === "active" || snapshot.status === "past_due"),
+    planChanged &&
+    (existing.state === "active" || existing.state === "grace") &&
+    (snapshot.status === "active" || snapshot.status === "past_due"),
   );
+  const transitionDisposition = existing
+    ? await getStripeSubscriptionTransitionDisposition(ctx, existing, {
+        createdAt: event.created,
+        eventId: event.id,
+        eventType: event.type,
+        state,
+      })
+    : "full";
+
+  if (existing && transitionDisposition === "ignore") {
+    return existing._id;
+  }
+
+  if (existing && transitionDisposition === "auxiliary") {
+    await ctx.db.patch(existing._id, {
+      cancelAtPeriodEnd: snapshot.cancelAtPeriodEnd,
+      ...(planChanged &&
+      (snapshot.status === "active" || snapshot.status === "past_due")
+        ? {
+            pendingPlanKey: snapshot.planKey,
+            pendingStripePriceId: snapshot.priceId,
+          }
+        : {
+            pendingPlanKey: undefined,
+            pendingStripePriceId: undefined,
+          }),
+      latestSubscriptionEventCreatedAt: event.created,
+      updatedAt: now,
+      version: existing.version + 1,
+    });
+    await writeEntitlementHistory(ctx, {
+      createdAt: now,
+      eventCreatedAt: event.created,
+      eventId: event.id,
+      eventType: event.type,
+      ownerId,
+      planKey: existing.planKey,
+      previousPlanKey: existing.planKey,
+      previousState: existing.state,
+      reason:
+        "Authoritative Stripe subscription schedule refreshed without replacing higher-priority entitlement state",
+      state: existing.state,
+    });
+
+    return existing._id;
+  }
 
   if (!existing) {
     const entitlementId = await ctx.db.insert("billingEntitlements", {
@@ -85,13 +138,19 @@ export async function syncEntitlementFromSubscription(
       reason: `Stripe subscription ${snapshot.status}`,
       state,
     });
+    if (state === "inactive") {
+      await cancelNeverStartedQueueForOwner(ctx, {
+        now,
+        ownerId,
+        reason: "Subscription ended before this work started.",
+      });
+    }
 
     return entitlementId;
   }
 
   const periodPatch =
-    snapshot.periodStart <= existing.currentPeriodStart ||
-    !existing.latestPaidInvoiceId
+    snapshot.periodStart <= existing.currentPeriodStart || !hasConfirmedPayment
       ? {
           currentPeriodEnd: snapshot.periodEnd,
           currentPeriodStart: snapshot.periodStart,
@@ -137,6 +196,13 @@ export async function syncEntitlementFromSubscription(
       : `Stripe subscription ${snapshot.status}`,
     state,
   });
+  if (state === "inactive") {
+    await cancelNeverStartedQueueForOwner(ctx, {
+      now,
+      ownerId,
+      reason: "Subscription ended before this work started.",
+    });
+  }
 
   return existing._id;
 }

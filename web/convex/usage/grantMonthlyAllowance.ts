@@ -74,6 +74,7 @@ export async function grantMonthlyAllowance(
       stripeChargeId: args.stripeChargeId,
       stripeInvoiceId: args.invoiceId,
       stripePaymentIntentId: args.stripePaymentIntentId,
+      stripeSubscriptionId: args.stripeSubscriptionId,
       updatedAt: args.now,
     });
     await appendUsageLedgerEntry(ctx, {
@@ -152,6 +153,7 @@ export async function grantMonthlyAllowance(
       stripeChargeId: args.stripeChargeId,
       stripeInvoiceId: args.invoiceId,
       stripePaymentIntentId: args.stripePaymentIntentId,
+      stripeSubscriptionId: args.stripeSubscriptionId,
       updatedAt: args.now,
     });
     await appendUsageLedgerEntry(ctx, {

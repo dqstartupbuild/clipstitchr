@@ -54,9 +54,9 @@ const staticPageContent: Record<string, TikTokPageContent> = {
     contentName: "Sign in",
   },
   "/sign-up": {
-    contentCategory: "Waitlist",
-    contentId: "waitlist",
-    contentName: "Waitlist",
+    contentCategory: "Auth",
+    contentId: "sign_up",
+    contentName: "Sign up",
   },
   "/terms": {
     contentCategory: "Legal",

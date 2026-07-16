@@ -1,4 +1,5 @@
 import { Button } from "@/app/_components/ui/Button";
+import { formatBillingUsageDate } from "@/app/_components/settings/formatBillingUsageDate";
 
 type BillingUsageSummaryProps = {
   activeGenerationLimit: number;
@@ -15,15 +16,6 @@ type BillingUsageSummaryProps = {
   onBuyRefill: () => void;
 };
 
-function formatDate(value?: string) {
-  return value
-    ? new Intl.DateTimeFormat("en-US", {
-        dateStyle: "medium",
-        timeZone: "UTC",
-      }).format(new Date(value))
-    : null;
-}
-
 export function BillingUsageSummary({
   activeGenerationLimit,
   activeGenerations,
@@ -38,7 +30,7 @@ export function BillingUsageSummary({
   videoReserved,
   onBuyRefill,
 }: BillingUsageSummaryProps) {
-  const refillExpiry = formatDate(nextRefillExpiryAt);
+  const refillExpiry = formatBillingUsageDate(nextRefillExpiryAt);
 
   return (
     <section

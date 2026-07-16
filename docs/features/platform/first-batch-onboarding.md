@@ -4,13 +4,16 @@
 
 The first batch onboarding flow gives new users one direct path into ClipStitchr:
 
-1. Add a product name and website.
-2. Review and edit the generated product profile.
-3. Choose Hook Lab writing goal/tone and any phrases to avoid.
-4. Upload Hook/UGC clips and review their scores.
-5. Upload a product demo and review its score.
-6. Choose Stitchr batch text style and colors.
-7. Queue the first batch and land on the Library Stitches tab.
+1. Confirm the plan carried from pricing, or choose a plan when none was carried.
+2. Complete Stripe-hosted Checkout.
+3. Wait for the signed Stripe confirmation to unlock setup.
+4. Add a product name and website.
+5. Review and edit the generated product profile.
+6. Choose Hook Lab writing goal/tone and any phrases to avoid.
+7. Upload Hook/UGC clips and review their scores.
+8. Upload a product demo and review its score.
+9. Choose Stitchr batch text style and colors.
+10. Queue the first batch and land on the Library Stitches tab.
 
 The flow intentionally skips a dashboard tour. It assumes the user already has
 Hook/UGC clips and a product demo, which is the only supported onboarding
@@ -20,11 +23,17 @@ segment for now.
 
 - `/dashboard/onboarding`
 
-The route renders inside the normal dashboard shell. Users who have not completed onboarding are redirected here from other dashboard routes.
+The route renders inside the normal dashboard shell. Users who have not
+completed onboarding are redirected here from other dashboard routes. Product
+steps remain behind `OnboardingBillingGate` until the projected entitlement is
+usable.
 
 ## Implementation
 
-- `web/app/dashboard/onboarding/page.tsx` defines the route metadata and renders the client.
+- `web/app/dashboard/onboarding/page.tsx` validates the plan and Checkout result
+  query values, then renders the billing gate and product client.
+- `web/app/_components/onboarding/OnboardingBillingGate.tsx` owns the
+  payment-first boundary and webhook-confirmation state.
 - `web/app/dashboard/onboarding/OnboardingPageClient.tsx` owns the step state, product creation/update calls, upload review state, and final batch redirect.
 - `web/app/_components/onboarding/` contains the focused onboarding UI pieces.
 - `web/app/_components/dashboard/UploadPanel.tsx` is reused for Hook/UGC and demo uploads.

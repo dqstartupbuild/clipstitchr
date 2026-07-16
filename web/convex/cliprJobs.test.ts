@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as cliprJobs from "./cliprJobs";
 
 type ConvexFunction<Args, Result> = {
@@ -210,6 +210,10 @@ describe("convex cliprJobs", () => {
     mocks.getAuthenticatedOwnerId.mockResolvedValue("owner_123");
     mocks.rateLimiter.limit.mockResolvedValue(undefined);
     mocks.reacquireUsageReservation.mockResolvedValue("reservation_123");
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("lists and gets only the authenticated owner's jobs", async () => {
@@ -535,6 +539,64 @@ describe("convex cliprJobs", () => {
         stage: "finalized",
         status: "completed",
       }),
+    );
+  });
+
+  it("does not let client time control Clipr reservation completion", async () => {
+    const serverNow = "2026-07-16T12:00:00.000Z";
+    vi.useFakeTimers();
+    vi.setSystemTime(serverNow);
+    const { ctx } = createCtx({
+      cliprJobs: [{ unique: createJob() }],
+    });
+    const args = {
+      aspectRatio: 9 / 16,
+      clipId: "clip_1",
+      duration: 30,
+      hasAudio: true,
+      height: 1920,
+      id: "job_1",
+      mimeType: "video/mp4",
+      name: "Product Clipr",
+      originalSize: 200,
+      size: 100,
+      sourceMimeType: "video/mp4",
+      updatedAt: "2000-01-01T00:00:00.000Z",
+      videoObject,
+      width: 1080,
+    };
+
+    await getHandler<typeof args, string>(cliprJobs.finalizeWithClip)(
+      ctx,
+      args,
+    );
+
+    expect(mocks.reacquireUsageReservation).toHaveBeenCalledWith(
+      ctx,
+      "owner_123",
+      "reservation_123",
+      serverNow,
+      {
+        domainId: "job_1",
+        domainKind: "clipr_job",
+        operation: "clipr_video",
+        reservationKind: "worker",
+        resource: "ai_video",
+      },
+    );
+    expect(mocks.commitUsageReservationForOwner).toHaveBeenCalledWith(
+      ctx,
+      "owner_123",
+      "reservation_123",
+      serverNow,
+      "user_action",
+      {
+        domainId: "job_1",
+        domainKind: "clipr_job",
+        operation: "clipr_video",
+        reservationKind: "worker",
+        resource: "ai_video",
+      },
     );
   });
 

@@ -3,9 +3,10 @@ import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
 import { activateEntitlementFromInvoice } from "./activateEntitlementFromInvoice";
 import { assertStripeEventMode } from "./assertStripeEventMode";
-import { clearBillingReviewForCustomer } from "./clearBillingReviewForCustomer";
-import { getStripeResourceId } from "./getStripeResourceId";
 import { grantConfirmedCreditRefill } from "./grantConfirmedCreditRefill";
+import { getStripeInvoiceFailureEventIsSupported } from "./getStripeInvoiceFailureEventIsSupported";
+import { getStripeWebhookEventStatusIsTerminal } from "./getStripeWebhookEventStatusIsTerminal";
+import { getStripeFailedRefundCanResolveHold } from "./getStripeFailedRefundCanResolveHold";
 import { markCheckoutSessionCompleted } from "./markCheckoutSessionCompleted";
 import { markEntitlementInactiveForCustomer } from "./markEntitlementInactiveForCustomer";
 import { markEntitlementPaymentFailed } from "./markEntitlementPaymentFailed";
@@ -27,7 +28,7 @@ export const processStripeEvent = internalMutation({
       .withIndex("by_event", (query) => query.eq("eventId", event.id))
       .unique();
 
-    if (existing?.status === "processed" || existing?.status === "ignored") {
+    if (existing && getStripeWebhookEventStatusIsTerminal(existing.status)) {
       return existing.status;
     }
 
@@ -70,12 +71,15 @@ export const processStripeEvent = internalMutation({
           event.data.object as Stripe.Invoice,
         );
         break;
+      case "invoice.finalization_failed":
       case "invoice.payment_failed":
-        await markEntitlementPaymentFailed(
-          ctx,
-          event,
-          event.data.object as Stripe.Invoice,
-        );
+        if (getStripeInvoiceFailureEventIsSupported(event.type)) {
+          await markEntitlementPaymentFailed(
+            ctx,
+            event,
+            event.data.object as Stripe.Invoice,
+          );
+        }
         break;
       case "payment_intent.succeeded":
         await grantConfirmedCreditRefill(
@@ -96,7 +100,7 @@ export const processStripeEvent = internalMutation({
           ctx,
           event,
           event.data.object as Stripe.Charge,
-          "Stripe payment refunded",
+          { kind: "refund", reason: "Stripe payment refunded" },
         );
         break;
       case "charge.dispute.created": {
@@ -104,15 +108,15 @@ export const processStripeEvent = internalMutation({
         const charge = dispute.charge;
 
         if (typeof charge === "string") {
-          throw new Error("Stripe dispute event is missing its expanded charge.");
+          throw new Error(
+            "Stripe dispute event is missing its expanded charge.",
+          );
         }
 
-        await revokeGrantForCharge(
-          ctx,
-          event,
-          charge,
-          "Stripe payment dispute opened",
-        );
+        await revokeGrantForCharge(ctx, event, charge, {
+          kind: "dispute",
+          reason: "Stripe payment dispute opened",
+        });
         break;
       }
       case "charge.dispute.closed": {
@@ -120,23 +124,33 @@ export const processStripeEvent = internalMutation({
         const charge = dispute.charge;
 
         if (typeof charge === "string") {
-          throw new Error("Stripe dispute event is missing its expanded charge.");
+          throw new Error(
+            "Stripe dispute event is missing its expanded charge.",
+          );
         }
 
         if (dispute.status === "won") {
           await restoreGrantForCharge(ctx, event, charge);
-
-          const customerId = getStripeResourceId(charge.customer);
-          if (customerId) {
-            await clearBillingReviewForCustomer(ctx, customerId, now);
-          }
         } else {
-          await revokeGrantForCharge(
-            ctx,
-            event,
-            charge,
-            "Stripe payment dispute closed without recovery",
+          await revokeGrantForCharge(ctx, event, charge, {
+            kind: "dispute",
+            reason: "Stripe payment dispute closed without recovery",
+          });
+        }
+        break;
+      }
+      case "refund.failed": {
+        const refund = event.data.object as Stripe.Refund;
+        const charge = refund.charge;
+
+        if (!charge || typeof charge === "string") {
+          throw new Error(
+            "Stripe failed refund event is missing its expanded charge.",
           );
+        }
+
+        if (getStripeFailedRefundCanResolveHold(charge)) {
+          await restoreGrantForCharge(ctx, event, charge, "refund");
         }
         break;
       }

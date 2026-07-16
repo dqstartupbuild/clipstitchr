@@ -1,8 +1,11 @@
 import type { MutationCtx } from "../_generated/server";
-import { getPlanPolicy } from "../../lib/clipstitchr/billing/getPlanPolicy";
 import type { PlanKey } from "../../lib/clipstitchr/billing/types/PlanKey";
+import type { GenerationSlotProvenance } from "../../lib/clipstitchr/usage/types/GenerationSlotProvenance";
 import { getWorkerQueueGlobalLimit } from "./getWorkerQueueGlobalLimit";
 import { getWorkerQueueToolLimit } from "./getWorkerQueueToolLimit";
+import { getActiveGenerationSlots } from "./getActiveGenerationSlots";
+import { getCanAcquireGenerationSlot } from "./getCanAcquireGenerationSlot";
+import { generationSlotDurationMs } from "./generationSlotDurationMs";
 
 export async function acquireGenerationSlot(
   ctx: MutationCtx,
@@ -12,6 +15,7 @@ export async function acquireGenerationSlot(
     now: string;
     ownerId: string;
     planKey: PlanKey;
+    provenance: GenerationSlotProvenance;
     tool: string;
     worker: "provider" | "media";
   },
@@ -23,50 +27,84 @@ export async function acquireGenerationSlot(
     )
     .unique();
 
-  if (existing?.state === "active") {
-    return existing;
+  if (existing && existing.ownerId !== args.ownerId) {
+    return null;
+  }
+
+  if (
+    existing?.provenance !== undefined &&
+    existing.provenance !== args.provenance
+  ) {
+    return null;
   }
 
   const nowMs = Date.parse(args.now);
-  const ownerSlots = await ctx.db
-    .query("generationSlots")
-    .withIndex("by_owner_state", (query) =>
-      query.eq("ownerId", args.ownerId).eq("state", "active"),
-    )
-    .collect();
-  const activeOwnerSlots = ownerSlots.filter(
-    (slot) => Date.parse(slot.expiresAt) > nowMs,
-  );
 
-  if (activeOwnerSlots.length >= getPlanPolicy(args.planKey).activeGenerationLimit) {
-    return null;
+  if (existing?.state === "active" && Date.parse(existing.expiresAt) > nowMs) {
+    if (existing.worker === args.worker) {
+      if (existing.provenance === undefined) {
+        await ctx.db.patch(existing._id, {
+          provenance: args.provenance,
+          updatedAt: args.now,
+        });
+
+        return await ctx.db.get(existing._id);
+      }
+
+      return existing;
+    }
+
+    if (existing.worker !== undefined) {
+      return null;
+    }
+
+    const activeSlots = await getActiveGenerationSlots(ctx);
+    const canAssignExisting = getCanAcquireGenerationSlot({
+      enforceOwnerLimit: false,
+      globalLimit: getWorkerQueueGlobalLimit(args.worker),
+      now: args.now,
+      ownerId: args.ownerId,
+      planKey: args.planKey,
+      slots: activeSlots,
+      tool: args.tool,
+      toolLimit: getWorkerQueueToolLimit(args.tool),
+      worker: args.worker,
+    });
+
+    if (!canAssignExisting) {
+      return null;
+    }
+
+    await ctx.db.patch(existing._id, {
+      expiresAt: new Date(nowMs + generationSlotDurationMs).toISOString(),
+      heartbeatAt: args.now,
+      tool: args.tool,
+      updatedAt: args.now,
+      worker: args.worker,
+    });
+
+    return await ctx.db.get(existing._id);
   }
 
-  const globalSlots = await ctx.db
-    .query("generationSlots")
-    .withIndex("by_state_expiry", (query) => query.eq("state", "active"))
-    .collect();
-  const activeGlobalSlots = globalSlots.filter(
-    (slot) => Date.parse(slot.expiresAt) > nowMs,
-  );
+  const slots = await getActiveGenerationSlots(ctx);
+  const canAcquire = getCanAcquireGenerationSlot({
+    enforceOwnerLimit: true,
+    globalLimit: getWorkerQueueGlobalLimit(args.worker),
+    now: args.now,
+    ownerId: args.ownerId,
+    planKey: args.planKey,
+    slots,
+    tool: args.tool,
+    toolLimit: getWorkerQueueToolLimit(args.tool),
+    worker: args.worker,
+  });
 
-  if (
-    activeGlobalSlots.length >= getWorkerQueueGlobalLimit(args.worker)
-  ) {
-    return null;
-  }
-
-  const toolLimit = getWorkerQueueToolLimit(args.tool);
-
-  if (
-    toolLimit !== null &&
-    activeGlobalSlots.filter((slot) => slot.tool === args.tool).length >= toolLimit
-  ) {
+  if (!canAcquire) {
     return null;
   }
 
   const slotId = `generation:${args.idempotencyKey}`;
-  const expiresAt = new Date(nowMs + 45 * 60_000).toISOString();
+  const expiresAt = new Date(nowMs + generationSlotDurationMs).toISOString();
 
   if (existing) {
     await ctx.db.patch(existing._id, {
@@ -74,10 +112,13 @@ export async function acquireGenerationSlot(
       expiresAt,
       heartbeatAt: args.now,
       planKeySnapshot: args.planKey,
+      provenance: args.provenance,
       releaseReason: undefined,
       releasedAt: undefined,
       state: "active",
+      tool: args.tool,
       updatedAt: args.now,
+      worker: args.worker,
     });
 
     return await ctx.db.get(existing._id);
@@ -92,10 +133,12 @@ export async function acquireGenerationSlot(
     idempotencyKey: args.idempotencyKey,
     ownerId: args.ownerId,
     planKeySnapshot: args.planKey,
+    provenance: args.provenance,
     slotId,
     state: "active",
     tool: args.tool,
     updatedAt: args.now,
+    worker: args.worker,
   });
 
   return await ctx.db.get(id);

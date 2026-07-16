@@ -4,6 +4,7 @@ import { assertMediaWorkerSecret } from "../auth/assertMediaWorkerSecret";
 import { assertProviderWorkerSecret } from "../auth/assertProviderWorkerSecret";
 import { workerQueueWorkerValidator } from "../validators/workerQueueWorker";
 import { acquireGenerationSlot } from "./acquireGenerationSlot";
+import { assignGenerationSlotWorker } from "./assignGenerationSlotWorker";
 import { getClaimableQueueCandidates } from "./getClaimableQueueCandidates";
 import { getWeightedQueueLane } from "./getWeightedQueueLane";
 import { heartbeatGenerationSlot } from "./heartbeatGenerationSlot";
@@ -97,6 +98,21 @@ export const claimNextWorkerQueueEntry = mutation({
         Date.parse(existingSlot.expiresAt) <= Date.parse(updatedAt)
       ) {
         generationSlotId = undefined;
+      } else if (existingSlot.worker === undefined) {
+        const assigned = await assignGenerationSlotWorker(ctx, {
+          domainJobId: candidate.sourceId,
+          now: updatedAt,
+          ownerId: candidate.ownerId,
+          slotId: existingSlot.slotId,
+          tool: candidate.tool,
+          worker,
+        });
+
+        if (!assigned) {
+          return null;
+        }
+      } else if (existingSlot.worker !== worker) {
+        return null;
       }
     }
 
@@ -107,6 +123,7 @@ export const claimNextWorkerQueueEntry = mutation({
         now: updatedAt,
         ownerId: candidate.ownerId,
         planKey: candidate.planKeySnapshot,
+        provenance: "worker_queue",
         tool: candidate.tool,
         worker,
       });

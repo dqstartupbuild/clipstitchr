@@ -62,8 +62,12 @@ not own:
 4. App-owned event ordering compares Stripe event creation time and object
    state before changing the current entitlement projection.
 5. `invoice.paid` creates monthly usage periods and grants. Successful refill
-   PaymentIntents create refill grants. Refund and dispute events revoke
-   unspent grants or place the account in billing review.
+   PaymentIntents create refill grants only when they reference a
+   server-recorded Checkout intent for the exact allowlisted Price. Refund and
+   dispute events persist source-specific holds, revoke unspent refill or
+   invoice-linked monthly grants, and place the account in billing review. If
+   an adverse event arrived before its grant, a won dispute or failed refund
+   replays the same idempotent grant path from authoritative Stripe context.
 6. A reconciliation action reads Stripe only for support and recovery. Normal
    requests read the Convex projection.
 
@@ -83,7 +87,11 @@ event claim makes the usage or entitlement effect exactly-once.
 ## Checkout and Portal Boundaries
 
 - Subscription Checkout uses `mode: "subscription"` and an allowlisted
-  recurring Price.
+  recurring Price. The action also lists the customer's authoritative Stripe
+  subscriptions and refuses Checkout while any nonterminal subscription
+  exists. Before Stripe session creation, an atomic owner-scoped Convex claim
+  supplies the Stripe idempotency key. Concurrent requests therefore reuse one
+  session, while a competing plan cannot open beside an in-flight Checkout.
 - Refill Checkout uses `mode: "payment"` and the allowlisted one-time refill
   Price.
 - Both attach server-created `ownerId`, catalog key, and operation metadata.
@@ -110,11 +118,13 @@ only the events used by the component or ClipStitchr:
 - `customer.subscription.created`, `customer.subscription.updated`,
   `customer.subscription.deleted`
 - `checkout.session.completed`
-- `invoice.created`, `invoice.finalized`, `invoice.updated`, `invoice.paid`,
-  `invoice.payment_succeeded`, `invoice.payment_failed`
+- `invoice.created`, `invoice.finalized`, `invoice.finalization_failed`,
+  `invoice.updated`, `invoice.paid`, `invoice.payment_succeeded`,
+  `invoice.payment_failed`
 - `payment_intent.succeeded`, `payment_intent.payment_failed`
 - `charge.refunded`
 - `charge.dispute.created`, `charge.dispute.closed`
+- `refund.failed`
 
 The Convex component validates the raw request body with the endpoint's Stripe
 signing secret before either its default synchronization or ClipStitchr's
@@ -124,12 +134,24 @@ custom handler runs.
 
 - An active paid subscription is `active`.
 - Cancel-at-period-end stays `active` until the paid period ends.
-- A failed renewal enters a 72-hour `grace` period.
+- A failed renewal enters a 72-hour `grace` period only when the entitlement
+  already records a confirmed paid invoice for the same Stripe subscription. A
+  replacement subscription does not inherit the old subscription's paid
+  history. An initial invoice failure remains `inactive` and cannot unlock
+  onboarding or generation.
+- Grace is anchored to the first failure. Retry failures and subscription
+  updates preserve that original deadline, even after it expires.
 - Recovered payment returns the entitlement to `active`.
 - Ended, unpaid after grace, or incomplete-expired subscriptions are
   `inactive`.
-- The current projection advances only from a newer source event or a
-  reconciliation result that proves the present Stripe state.
+- The current projection compares every subscription, paid-invoice, and
+  invoice-failure transition against one cross-family source clock. At equal
+  Stripe-second timestamps, terminal deletion wins over paid state, paid state
+  wins over failure, and failure wins over a subscription-only state. Stripe
+  event IDs are identifiers, not clocks. Same-second subscription create/update
+  events are refreshed from Stripe before projection. Same-second paid invoices
+  compare subscription identity, billing-period bounds, and monotonic plan
+  movement instead of sorting event IDs.
 - A paid upgrade can apply immediately. It grants only the positive,
   time-prorated difference in monthly creation credits after the related
   invoice is paid.
@@ -137,7 +159,22 @@ custom handler runs.
   normal monthly grant only when that renewal invoice is paid.
 - Monthly grants are unique by Stripe subscription and billing-period start.
 - Refill grants are unique by successful PaymentIntent and expire after 12
-  months. They never increase the shared Clipr and Swapr video allowance.
+  months. The PaymentIntent and resulting grant retain the purchasing Stripe
+  subscription ID, so a replacement subscription cannot reactivate the old
+  refill. Legacy unbound refill rows fail closed. Refills never increase the
+  shared Clipr and Swapr video allowance.
+- Subscription events for a different subscription ID cannot overwrite the
+  current projection. A paid invoice may adopt a replacement only after the
+  current subscription ends; a second paid subscription while access is still
+  current is blocked from granting and flagged for review.
+- Refund and dispute holds are durable per charge and adverse source. A won
+  dispute resolves only its dispute hold, so another open refund or dispute
+  continues to block billing. Adverse events delivered before their grant
+  prevent that grant from being created until the adverse state is resolved.
+  Recovery retrieves the expanded paid invoice or PaymentIntent and validates
+  the stored refill Checkout before replaying the idempotent grant. A closing
+  event delivered before its opening event persists a resolved tombstone so
+  the older opening event cannot revoke or strand credits later.
 
 ## Mode and Credential Safety
 

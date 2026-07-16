@@ -1,6 +1,5 @@
 import type Stripe from "stripe";
 import { getPlanKeyForStripePrice } from "../../lib/clipstitchr/billing/getPlanKeyForStripePrice";
-import { isPlanKey } from "../../lib/clipstitchr/billing/isPlanKey";
 import { getStripeResourceId } from "./getStripeResourceId";
 import { toStripeIsoString } from "./toStripeIsoString";
 
@@ -9,12 +8,7 @@ export function getStripeSubscriptionSnapshot(
 ) {
   const item = subscription.items.data[0];
   const priceId = item?.price.id;
-  const pricePlanKey = priceId ? getPlanKeyForStripePrice(priceId) : undefined;
-  const planKey =
-    pricePlanKey ??
-    (isPlanKey(subscription.metadata.planKey)
-      ? subscription.metadata.planKey
-      : undefined);
+  const planKey = priceId ? getPlanKeyForStripePrice(priceId) : undefined;
   const ownerId = subscription.metadata.ownerId?.trim();
   const customerId = getStripeResourceId(subscription.customer);
 

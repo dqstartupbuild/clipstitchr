@@ -978,6 +978,7 @@ export const finalizeWithClip = mutation({
   },
   handler: async (ctx, args) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
     const job = await ctx.db
       .query("cliprJobs")
       .withIndex("by_owner_id", (q) =>
@@ -1016,18 +1017,27 @@ export const finalizeWithClip = mutation({
     if (!job.usageReservationId) {
       throw new Error("Clipr usage reservation is missing.");
     }
+    const usageBinding = {
+      domainId: job.id,
+      domainKind: "clipr_job",
+      operation: "clipr_video" as const,
+      reservationKind: "worker" as const,
+      resource: "ai_video" as const,
+    };
     const usageReservationId = await reacquireUsageReservation(
       ctx,
       ownerId,
       job.usageReservationId,
-      args.updatedAt,
+      now,
+      usageBinding,
     );
     await commitUsageReservationForOwner(
       ctx,
       ownerId,
       usageReservationId,
-      args.updatedAt,
+      now,
       "user_action",
+      usageBinding,
     );
 
     const insertedClipId = await ctx.db.insert("videoClips", {
@@ -1173,11 +1183,19 @@ export const finalizeWithClipFromMediaWorker = mutation({
     if (!job.usageReservationId) {
       throw new Error("Clipr usage reservation is missing.");
     }
+    const usageBinding = {
+      domainId: automation?.taskId ?? job.id,
+      domainKind: automation ? "automation_task" : "clipr_job",
+      operation: "clipr_video" as const,
+      reservationKind: "worker" as const,
+      resource: "ai_video" as const,
+    };
     const usageReservationId = await reacquireUsageReservation(
       ctx,
       ownerId,
       job.usageReservationId,
       args.updatedAt,
+      usageBinding,
     );
     await commitUsageReservationForOwner(
       ctx,
@@ -1185,6 +1203,7 @@ export const finalizeWithClipFromMediaWorker = mutation({
       usageReservationId,
       args.updatedAt,
       "worker",
+      usageBinding,
     );
     const clip = {
       ownerId,

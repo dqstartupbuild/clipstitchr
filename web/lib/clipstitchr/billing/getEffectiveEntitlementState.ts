@@ -4,6 +4,7 @@ export function getEffectiveEntitlementState(
   entitlement: {
     cancelAtPeriodEnd?: boolean;
     currentPeriodEnd?: string;
+    currentPeriodStart?: string;
     graceEndsAt?: string;
     state: EntitlementState;
     supportOverrideState?: EntitlementState;
@@ -21,6 +22,10 @@ export function getEffectiveEntitlementState(
 
   const nowMs = Date.parse(now);
 
+  if (!Number.isFinite(nowMs)) {
+    return "inactive";
+  }
+
   if (
     entitlement.state === "grace" &&
     (!entitlement.graceEndsAt || Date.parse(entitlement.graceEndsAt) <= nowMs)
@@ -28,13 +33,20 @@ export function getEffectiveEntitlementState(
     return "inactive";
   }
 
-  if (
-    entitlement.state === "active" &&
-    entitlement.cancelAtPeriodEnd &&
-    entitlement.currentPeriodEnd &&
-    Date.parse(entitlement.currentPeriodEnd) <= nowMs
-  ) {
-    return "inactive";
+  if (entitlement.state === "active") {
+    const periodEndMs = Date.parse(entitlement.currentPeriodEnd ?? "");
+    const periodStartMs = entitlement.currentPeriodStart
+      ? Date.parse(entitlement.currentPeriodStart)
+      : undefined;
+
+    if (
+      !Number.isFinite(periodEndMs) ||
+      periodEndMs <= nowMs ||
+      (periodStartMs !== undefined &&
+        (!Number.isFinite(periodStartMs) || periodStartMs > nowMs))
+    ) {
+      return "inactive";
+    }
   }
 
   return entitlement.state;

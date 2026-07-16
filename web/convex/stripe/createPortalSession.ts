@@ -3,12 +3,14 @@ import { action } from "../_generated/server";
 import { components, internal } from "../_generated/api";
 import { createStripeSdk } from "../../lib/clipstitchr/billing/createStripeSdk";
 import { getBillingAppUrl } from "../../lib/clipstitchr/billing/getBillingAppUrl";
+import { getBillingPortalSessionParams } from "../../lib/clipstitchr/billing/getBillingPortalSessionParams";
 import { getStripePortalConfigurationId } from "../../lib/clipstitchr/billing/getStripePortalConfigurationId";
+import { billingPortalFlowValidator } from "../validators/billingPortalFlow";
 
 export const createPortalSession = action({
-  args: {},
+  args: { flow: v.optional(billingPortalFlowValidator) },
   returns: v.object({ url: v.string() }),
-  handler: async (ctx) => {
+  handler: async (ctx, { flow = "home" }) => {
     const identity = await ctx.auth.getUserIdentity();
 
     if (!identity) {
@@ -37,11 +39,16 @@ export const createPortalSession = action({
       throw new Error("Start a plan before opening billing settings.");
     }
 
-    const session = await createStripeSdk().billingPortal.sessions.create({
-      configuration: getStripePortalConfigurationId(),
-      customer: customerId,
-      return_url: `${getBillingAppUrl()}/dashboard/settings`,
-    });
+    const returnUrl = `${getBillingAppUrl()}/dashboard/settings`;
+    const session = await createStripeSdk().billingPortal.sessions.create(
+      getBillingPortalSessionParams({
+        configurationId: getStripePortalConfigurationId(),
+        customerId,
+        flow,
+        returnUrl,
+        subscriptionId: entitlement?.stripeSubscriptionId,
+      }),
+    );
 
     return { url: session.url };
   },

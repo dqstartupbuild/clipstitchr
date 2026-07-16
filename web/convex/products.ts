@@ -198,11 +198,10 @@ export const create = mutation({
       rejectedHookExamples,
       hookGenerationGoal,
       hookEdgeLevel,
-      createdAt,
-      updatedAt,
     },
   ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
     const normalizedName = normalizeText(name, PRODUCT_NAME_MAX_LENGTH);
 
     if (!normalizedName) {
@@ -213,7 +212,7 @@ export const create = mutation({
       key: ownerId,
       throws: true,
     });
-    await assertProductLimit(ctx, ownerId, updatedAt);
+    await assertProductLimit(ctx, ownerId, now);
 
     const existingPrimaryProduct = await getPrimaryProductForOwner(
       ctx,
@@ -281,8 +280,8 @@ export const create = mutation({
         hookEdgeLevels,
         HOOK_EDGE_LEVEL_MAX_LENGTH,
       ),
-      createdAt,
-      updatedAt,
+      createdAt: now,
+      updatedAt: now,
     };
     const productId = await ctx.db.insert("products", productFields);
     await upsertProductCard(ctx, productFields);
@@ -295,7 +294,7 @@ export const create = mutation({
       const preferences = {
         ownerId,
         defaultProductId: id,
-        updatedAt,
+        updatedAt: now,
       };
 
       if (existingPreferences) {
@@ -304,7 +303,7 @@ export const create = mutation({
         await ctx.db.insert("productPreferences", preferences);
       }
 
-      await assignLegacyRecordsToProduct(ctx, ownerId, id, updatedAt);
+      await assignLegacyRecordsToProduct(ctx, ownerId, id, now);
     }
 
     return productId;

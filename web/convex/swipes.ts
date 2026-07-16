@@ -49,6 +49,7 @@ const saveFromAutomationArgs = {
   secret: v.string(),
   ownerId: v.string(),
   automation: automationProvenanceValidator,
+  usageReservationDomainId: v.optional(v.string()),
   ...saveArgs,
 };
 
@@ -56,6 +57,7 @@ const saveFromProviderArgs = {
   secret: v.string(),
   ownerId: v.string(),
   automation: v.optional(automationProvenanceValidator),
+  usageReservationDomainId: v.optional(v.string()),
   ...saveArgs,
 };
 
@@ -150,6 +152,7 @@ export const save = mutation({
   args: saveArgs,
   handler: async (ctx, { usageReservationId, ...args }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
     const background = await ctx.db
       .query("swiprBackgrounds")
       .withIndex("by_background_id", (q) => q.eq("id", args.backgroundId))
@@ -205,14 +208,31 @@ export const save = mutation({
       },
     );
 
+    if (
+      existingSwipe?.usageReservationId &&
+      existingSwipe.usageReservationId !== usageReservationId
+    ) {
+      throw new Error("Swipe already has a different usage reservation.");
+    }
+
     const normalizedFields = normalizeSwiprSwipeFields(args);
-    const committedUsageReservationId = await commitSwipeUsageReservation(
-      ctx,
-      ownerId,
-      usageReservationId,
-      args.updatedAt,
-      "user_action",
-    );
+    const committedUsageReservationId =
+      existingSwipe?.usageReservationId === usageReservationId
+        ? usageReservationId
+        : await commitSwipeUsageReservation(
+            ctx,
+            ownerId,
+            usageReservationId,
+            now,
+            "user_action",
+            {
+              domainId: args.id,
+              domainKind: "swipe",
+              operation: "swipr",
+              reservationKind: "worker",
+              resource: "creation_credit",
+            },
+          );
     const swipe = {
       ownerId,
       ...args,
@@ -273,7 +293,14 @@ export const saveFromAutomation = mutation({
   args: saveFromAutomationArgs,
   handler: async (
     ctx,
-    { secret, ownerId, automation, usageReservationId, ...args },
+    {
+      secret,
+      ownerId,
+      automation,
+      usageReservationDomainId,
+      usageReservationId,
+      ...args
+    },
   ) => {
     assertAutomationWorkerSecret(secret);
 
@@ -325,14 +352,31 @@ export const saveFromAutomation = mutation({
         q.eq("ownerId", ownerId).eq("id", args.id),
       )
       .unique();
+    if (
+      existingSwipe?.usageReservationId &&
+      existingSwipe.usageReservationId !== usageReservationId
+    ) {
+      throw new Error("Swipe already has a different usage reservation.");
+    }
+
     const normalizedFields = normalizeSwiprSwipeFields(args);
-    const committedUsageReservationId = await commitSwipeUsageReservation(
-      ctx,
-      ownerId,
-      usageReservationId,
-      args.updatedAt,
-      "worker",
-    );
+    const committedUsageReservationId =
+      existingSwipe?.usageReservationId === usageReservationId
+        ? usageReservationId
+        : await commitSwipeUsageReservation(
+            ctx,
+            ownerId,
+            usageReservationId,
+            args.updatedAt,
+            "worker",
+            {
+              domainId: usageReservationDomainId ?? "",
+              domainKind: "automation_task",
+              operation: "swipr",
+              reservationKind: "worker",
+              resource: "creation_credit",
+            },
+          );
     const swipe = {
       ownerId,
       ...args,
@@ -369,7 +413,14 @@ export const saveFromProvider = mutation({
   args: saveFromProviderArgs,
   handler: async (
     ctx,
-    { secret, ownerId, automation, usageReservationId, ...args },
+    {
+      secret,
+      ownerId,
+      automation,
+      usageReservationDomainId,
+      usageReservationId,
+      ...args
+    },
   ) => {
     assertProviderWorkerSecret(secret);
 
@@ -433,14 +484,31 @@ export const saveFromProvider = mutation({
       );
     }
 
+    if (
+      existingSwipe?.usageReservationId &&
+      existingSwipe.usageReservationId !== usageReservationId
+    ) {
+      throw new Error("Swipe already has a different usage reservation.");
+    }
+
     const normalizedFields = normalizeSwiprSwipeFields(args);
-    const committedUsageReservationId = await commitSwipeUsageReservation(
-      ctx,
-      ownerId,
-      usageReservationId,
-      args.updatedAt,
-      "worker",
-    );
+    const committedUsageReservationId =
+      existingSwipe?.usageReservationId === usageReservationId
+        ? usageReservationId
+        : await commitSwipeUsageReservation(
+            ctx,
+            ownerId,
+            usageReservationId,
+            args.updatedAt,
+            "worker",
+            {
+              domainId: automation ? (usageReservationDomainId ?? "") : args.id,
+              domainKind: automation ? "automation_task" : "swipe",
+              operation: "swipr",
+              reservationKind: "worker",
+              resource: "creation_credit",
+            },
+          );
     const swipe = {
       ownerId,
       ...args,

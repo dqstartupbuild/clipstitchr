@@ -80,6 +80,7 @@ const saveFromMediaWorkerArgs = {
   secret: v.string(),
   ownerId: v.string(),
   automation: v.optional(automationProvenanceValidator),
+  usageReservationDomainId: v.optional(v.string()),
   usageReservationId: v.optional(v.string()),
   ...saveArgs,
 };
@@ -512,7 +513,14 @@ export const saveFromMediaWorker = mutation({
   args: saveFromMediaWorkerArgs,
   handler: async (
     ctx,
-    { secret, ownerId, automation, usageReservationId, ...args },
+    {
+      secret,
+      ownerId,
+      automation,
+      usageReservationDomainId,
+      usageReservationId,
+      ...args
+    },
   ) => {
     assertMediaWorkerSecret(secret);
 
@@ -557,19 +565,37 @@ export const saveFromMediaWorker = mutation({
         throw new Error("Swapr usage reservation is missing.");
       }
 
-      committedUsageReservationId = await reacquireUsageReservation(
-        ctx,
-        ownerId,
-        usageReservationId,
-        args.updatedAt,
-      );
-      await commitUsageReservationForOwner(
-        ctx,
-        ownerId,
-        committedUsageReservationId,
-        args.updatedAt,
-        "worker",
-      );
+      if (
+        existingClip?.usageReservationId &&
+        existingClip.usageReservationId !== usageReservationId
+      ) {
+        throw new Error("Video already has a different usage reservation.");
+      }
+
+      if (existingClip?.usageReservationId !== usageReservationId) {
+        const binding = {
+          domainId: usageReservationDomainId ?? "",
+          domainKind: automation ? "automation_task" : "provider_job",
+          operation: "swapr_video" as const,
+          reservationKind: "worker" as const,
+          resource: "ai_video" as const,
+        };
+        committedUsageReservationId = await reacquireUsageReservation(
+          ctx,
+          ownerId,
+          usageReservationId,
+          args.updatedAt,
+          binding,
+        );
+        await commitUsageReservationForOwner(
+          ctx,
+          ownerId,
+          committedUsageReservationId,
+          args.updatedAt,
+          "worker",
+          binding,
+        );
+      }
     }
 
     const clipArgs = {

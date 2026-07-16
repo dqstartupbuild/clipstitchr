@@ -227,6 +227,15 @@ only `.clipstitchr.yml` and saved local CLI credentials.
 handlers as `products list`, `products create`, and `products use`, so scripts
 and direct terminal commands keep the same behavior.
 
+Product creation is not a separate entitlement path. After the API verifies the
+CLI bearer session, the Convex mutation uses its own server time and checks the
+owner's active paid entitlement plus the same Starter, Pro, or Agency active
+product limit used by dashboard creation and archived-product restoration. The
+check and insert run in one Convex transaction, so concurrent CLI and dashboard
+creates cannot exceed the limit. Existing products remain readable after a
+downgrade; the owner must archive enough products before creating or restoring
+another one.
+
 ## Recording Behavior
 
 The first built-in recorder supports web apps and Expo web targets. It detects

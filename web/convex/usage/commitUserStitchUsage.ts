@@ -19,6 +19,13 @@ export async function commitUserStitchUsage(
       args.usageReservationId,
       args.now,
       "user_action",
+      {
+        domainId: args.stitchId,
+        domainKind: "stitch",
+        operation: "stitch",
+        reservationKind: "browser",
+        resource: "creation_credit",
+      },
     );
   }
 

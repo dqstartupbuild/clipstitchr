@@ -203,6 +203,7 @@ export const save = mutation({
     { usageIdempotencyKey, usageReservationId, ...args },
   ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
 
     await rateLimiter.limit(ctx, "convexRecordSave", {
       key: ownerId,
@@ -223,9 +224,12 @@ export const save = mutation({
     };
 
     if (existingStitch) {
-      if (usageIdempotencyKey || usageReservationId) {
+      if (
+        (usageIdempotencyKey || usageReservationId) &&
+        usageReservationId !== existingStitch.usageReservationId
+      ) {
         await commitUserStitchUsage(ctx, {
-          now: args.createdAt,
+          now,
           ownerId,
           stitchId: args.id,
           usageIdempotencyKey,
@@ -252,7 +256,7 @@ export const save = mutation({
     }
 
     const committedUsageReservationId = await commitUserStitchUsage(ctx, {
-      now: args.createdAt,
+      now,
       ownerId,
       stitchId: args.id,
       usageIdempotencyKey,
@@ -450,6 +454,13 @@ export const saveFromMediaWorker = mutation({
       usageReservationId,
       args.createdAt,
       "worker",
+      {
+        domainId: `${automation.taskId}:stitch`,
+        domainKind: "automation_task",
+        operation: "stitch",
+        reservationKind: "worker",
+        resource: "creation_credit",
+      },
     );
 
     const stitch = {

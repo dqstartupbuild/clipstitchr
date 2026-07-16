@@ -7,6 +7,7 @@ import { getEffectiveEntitlementState } from "../../lib/clipstitchr/billing/getE
 import { getCreationCreditCost } from "../../lib/clipstitchr/usage/getCreationCreditCost";
 import { getUsageReservationExpiry } from "../../lib/clipstitchr/usage/getUsageReservationExpiry";
 import type { UsageOperation } from "../../lib/clipstitchr/usage/types/UsageOperation";
+import type { UsageReservationKind } from "../../lib/clipstitchr/usage/types/UsageReservationKind";
 import { usageOperationValidator } from "../validators/usageOperation";
 import { appendUsageLedgerEntry } from "./appendUsageLedgerEntry";
 import { createUsageError } from "./createUsageError";
@@ -24,7 +25,7 @@ type ReserveCreationCreditsArgs = {
   idempotencyKey: string;
   now: string;
   operation: UsageOperation;
-  reservationKind: "browser" | "worker";
+  reservationKind: UsageReservationKind;
   source: "user_action" | "worker";
 };
 
@@ -33,6 +34,13 @@ export async function reserveCreationCreditsForOwner(
   ownerId: string,
   args: ReserveCreationCreditsArgs,
 ) {
+  if (
+    args.reservationKind === "browser" &&
+    (args.operation !== "stitch" || args.domainKind !== "stitch")
+  ) {
+    throw new Error("Browser reservations are only available for Stitchr.");
+  }
+
   const existing = await ctx.db
     .query("usageReservations")
     .withIndex("by_idempotency_key", (query) =>
@@ -45,7 +53,9 @@ export async function reserveCreationCreditsForOwner(
       existing.ownerId !== ownerId ||
       existing.operation !== args.operation ||
       existing.domainId !== args.domainId ||
-      existing.resource !== "creation_credit"
+      existing.resource !== "creation_credit" ||
+      (existing.reservationKind !== undefined &&
+        existing.reservationKind !== args.reservationKind)
     ) {
       throw createUsageError({
         code: "USAGE_RESERVATION_CONFLICT",
@@ -72,6 +82,7 @@ export async function reserveCreationCreditsForOwner(
           now: args.now,
           ownerId,
           planKey: entitlement.planKey,
+          provenance: "browser",
           tool: args.operation === "stitch" ? "stitchr" : args.operation,
           worker: "media",
         })
@@ -120,11 +131,17 @@ export async function reserveCreationCreditsForOwner(
     });
   }
 
+  const effectiveEntitlementState = getEffectiveEntitlementState(
+    entitlement,
+    args.now,
+  );
   const grants = await getEligibleCreditGrants(
     ctx,
     ownerId,
     args.now,
-    getEffectiveEntitlementState(entitlement, args.now) === "active",
+    effectiveEntitlementState === "active" ||
+      effectiveEntitlementState === "grace",
+    entitlement.stripeSubscriptionId,
   );
   const available = grants.reduce(
     (total, grant) => total + getCreditGrantAvailableAmount(grant),
@@ -191,6 +208,7 @@ export async function reserveCreationCreditsForOwner(
     ownerId,
     periodKey,
     planKeySnapshot: entitlement.planKey,
+    reservationKind: args.reservationKind,
     reservationId,
     resource: "creation_credit",
     state: "reserved",
@@ -236,10 +254,21 @@ export const reserveCreationCredits = mutation({
     reservationKind: v.union(v.literal("browser"), v.literal("worker")),
   },
   handler: async (ctx, args) => {
+    const expectedReservationKind =
+      args.operation === "stitch" && args.domainKind === "stitch"
+        ? "browser"
+        : "worker";
+
+    if (args.reservationKind !== expectedReservationKind) {
+      throw new Error("Creation reservation provenance is invalid.");
+    }
+
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
 
     return await reserveCreationCreditsForOwner(ctx, ownerId, {
       ...args,
+      now,
       source: "user_action",
     });
   },

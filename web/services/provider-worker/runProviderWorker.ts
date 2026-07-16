@@ -142,6 +142,7 @@ type ProviderWorkerConfig = {
 };
 
 type AutomationTask = {
+  generationSlotId?: string;
   id: string;
   inputSnapshotJson: string;
   ownerId: string;
@@ -157,6 +158,7 @@ type AutomationTask = {
 
 type ProviderJob = {
   error?: string;
+  generationSlotId?: string;
   id: string;
   inputSnapshotJson: string;
   jobType: string;
@@ -1570,6 +1572,7 @@ async function processSwaprFinalize({
         sourceSummary: `${input.sourcePhotoName} in ${input.referenceClipName}`,
       }),
       createdAt: updatedAt,
+      generationSlotId: task.generationSlotId,
       usageReservationId: task.usageReservationId,
     },
   )) as { id: string };
@@ -1785,6 +1788,7 @@ async function processClipr({
         sourceVideoObject: avatarVideoOutput.avatarVideoObject,
       }),
       createdAt: getNow(),
+      generationSlotId: task.generationSlotId,
       usageReservationId: task.usageReservationId,
     },
   )) as { id: string };
@@ -2040,6 +2044,7 @@ async function processStitchr({
         ugcVideoObject: input.ugcVideoObject,
       }),
       createdAt: getNow(),
+      generationSlotId: task.generationSlotId,
       usageReservationId: task.usageReservationId,
     },
   )) as { id: string };
@@ -2248,6 +2253,7 @@ async function processAvatarPhoto({
       : "original-portrait",
     createdAt: savedAt,
     updatedAt: savedAt,
+    usageReservationDomainId: task.id,
     usageReservationId: task.usageReservationId,
   });
 
@@ -2495,6 +2501,7 @@ async function processSwipr({
       socialCaption: slideshow.socialCaption,
       slides,
       createdAt: now,
+      usageReservationDomainId: `${task.id}:${batchIndex}`,
       usageReservationId: task.usageReservationIds?.[batchIndex],
       updatedAt: now,
     });
@@ -2718,6 +2725,7 @@ async function processManualSwaprFinalize({
         sourceSummary: `${input.sourcePhotoName} in ${input.referenceClipName}`,
       }),
       createdAt: now,
+      generationSlotId: job.generationSlotId,
       usageReservationId: job.usageReservationId,
     },
   )) as { id: string };
@@ -2935,6 +2943,7 @@ async function processManualClipr({
         sourceVideoObject: avatarVideoOutput.avatarVideoObject,
       }),
       createdAt: getNow(),
+      generationSlotId: job.generationSlotId,
       usageReservationId: job.usageReservationId,
     },
   )) as { id: string };
@@ -3180,6 +3189,7 @@ async function processManualAvatarPhoto({
         : "original-portrait",
       createdAt: savedAt,
       updatedAt: savedAt,
+      usageReservationDomainId: `${job.id}:${index}`,
       usageReservationId: input.usageReservationIds[index],
     });
 

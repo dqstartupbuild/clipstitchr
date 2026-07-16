@@ -7,8 +7,9 @@ import { assertProductLimit } from "./assertProductLimit";
 
 export const restoreProduct = mutation({
   args: { id: v.string(), now: v.string() },
-  handler: async (ctx, { id, now }) => {
+  handler: async (ctx, { id }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
       key: ownerId,

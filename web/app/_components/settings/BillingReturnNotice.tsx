@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { getBillingReturnSearch } from "@/lib/clipstitchr/client/getBillingReturnSearch";
+import { getBillingReturnServerSnapshot } from "@/lib/clipstitchr/client/getBillingReturnServerSnapshot";
 import { subscribeBillingReturnSearch } from "@/lib/clipstitchr/client/subscribeBillingReturnSearch";
 
 const notices: Record<string, string> = {
@@ -16,12 +17,15 @@ export function BillingReturnNotice() {
   const result = useSyncExternalStore(
     subscribeBillingReturnSearch,
     getBillingReturnSearch,
-    getBillingReturnSearch,
+    getBillingReturnServerSnapshot,
   );
   const notice = result ? (notices[result] ?? null) : null;
 
   return notice ? (
-    <p className="rounded-lg bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary">
+    <p
+      className="rounded-lg bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary"
+      role="status"
+    >
       {notice}
     </p>
   ) : null;

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   applyQuickEdit,
   addPostBridgePost,
@@ -154,6 +154,10 @@ describe("convex stitches", () => {
     mocks.commitUserStitchUsage.mockResolvedValue("reservation_123");
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("lists, gets, inserts, and patches stitches", async () => {
     const stitches = [{ _id: "doc_1", id: "stitch_1" }];
     let setup = createCtx([{ _id: "doc_1", id: "stitch_1" }], stitches);
@@ -208,6 +212,29 @@ describe("convex stitches", () => {
         ownerId: "owner_123",
       }),
     );
+  });
+
+  it("does not let client time control Stitchr reservation completion", async () => {
+    const serverNow = "2026-07-16T12:00:00.000Z";
+    vi.useFakeTimers();
+    vi.setSystemTime(serverNow);
+    const setup = createCtx([null, null]);
+
+    await getHandler(save)(
+      setup.ctx,
+      createSaveArgs({
+        createdAt: "2000-01-01T00:00:00.000Z",
+        usageReservationId: "reservation_123",
+      }),
+    );
+
+    expect(mocks.commitUserStitchUsage).toHaveBeenCalledWith(setup.ctx, {
+      now: serverNow,
+      ownerId: "owner_123",
+      stitchId: "stitch_1",
+      usageIdempotencyKey: undefined,
+      usageReservationId: "reservation_123",
+    });
   });
 
   it("keys Stitchr Batch media-worker saves by the batch date", async () => {

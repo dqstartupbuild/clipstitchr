@@ -5,6 +5,7 @@ import { BillingPlanComparison } from "@/app/_components/settings/BillingPlanCom
 import { BillingReturnNotice } from "@/app/_components/settings/BillingReturnNotice";
 import { BillingUsageHistory } from "@/app/_components/settings/BillingUsageHistory";
 import { BillingUsageSummary } from "@/app/_components/settings/BillingUsageSummary";
+import { getBillingEntitlementStateLabel } from "@/app/_components/settings/getBillingEntitlementStateLabel";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { useBillingWorkspace } from "@/lib/clipstitchr/hooks/useBillingWorkspace";
@@ -40,11 +41,14 @@ export function SettingsSubscriptionPanel() {
             <Button
               size="sm"
               variant="secondary"
-              isLoading={billing.pendingAction === "portal"}
+              isLoading={
+                billing.pendingAction === "portal" &&
+                billing.pendingPlanKey === null
+              }
               disabled={billing.pendingAction !== null}
               onClick={() => void billing.manageBilling()}
             >
-              Manage in Stripe
+              Billing &amp; invoices
             </Button>
           ) : null}
         </div>
@@ -61,17 +65,24 @@ export function SettingsSubscriptionPanel() {
         ) : null}
 
         {billing.isLoading ? (
-          <p className="py-6 text-sm font-semibold text-text-secondary">
+          <p
+            className="py-6 text-sm font-semibold text-text-secondary"
+            role="status"
+          >
             Loading your billing details...
           </p>
         ) : (
           <>
             {entitlement ? (
-              <div className="rounded-lg bg-surface-muted px-4 py-3 text-sm text-text-secondary">
+              <div
+                aria-live="polite"
+                className="rounded-lg bg-surface-muted px-4 py-3 text-sm text-text-secondary"
+                role="status"
+              >
                 <span className="font-bold text-text-primary">
                   {entitlement.planName}
-                </span>{" "}
-                is {entitlement.state}.
+                </span>
+                : {getBillingEntitlementStateLabel(entitlement.state)}.
                 {entitlement.cancelAtPeriodEnd
                   ? ` It stays available through ${new Intl.DateTimeFormat(
                       "en-US",
@@ -102,7 +113,12 @@ export function SettingsSubscriptionPanel() {
             <BillingPlanComparison
               currentPlanKey={entitlement?.planKey}
               hasManagedSubscription={hasManagedSubscription}
+              isManagingPlan={billing.pendingAction === "portal"}
               isStartingPlan={billing.pendingAction === "checkout"}
+              pendingPlanKey={billing.pendingPlanKey}
+              onManagePlan={(planKey) =>
+                void billing.manageBilling("subscription_update", planKey)
+              }
               onStartPlan={(planKey) => void billing.startPlan(planKey)}
             />
 
@@ -111,10 +127,7 @@ export function SettingsSubscriptionPanel() {
                 activeGenerationLimit={entitlement.activeGenerationLimit}
                 activeGenerations={usage.activeGenerations}
                 availableCredits={usage.creationCredits.available}
-                canBuyRefill={
-                  entitlement.state === "active" &&
-                  !entitlement.billingReviewRequired
-                }
+                canBuyRefill={entitlement.canBuyRefill}
                 isBuyingRefill={billing.pendingAction === "refill"}
                 monthlyRemaining={usage.creationCredits.monthlyRemaining}
                 nextRefillExpiryAt={usage.creationCredits.nextRefillExpiryAt}

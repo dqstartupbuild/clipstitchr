@@ -1,6 +1,7 @@
 import type { MutationCtx } from "../_generated/server";
 import type { PlanKey } from "../../lib/clipstitchr/billing/types/PlanKey";
 import { getEffectiveEntitlementForOwner } from "../billing/getEffectiveEntitlementForOwner";
+import { canAssignGenerationSlotWorker } from "./canAssignGenerationSlotWorker";
 import { canAcquireGenerationSlot } from "./canAcquireGenerationSlot";
 import { getQueueUsageReservationIds } from "./getQueueUsageReservationIds";
 import { getOldestQueueCandidatePerOwner } from "./getOldestQueueCandidatePerOwner";
@@ -79,29 +80,60 @@ export async function getClaimableQueueCandidates(
     const hasActiveSlot = Boolean(
       existingSlot &&
       existingSlot.state === "active" &&
-      Date.parse(existingSlot.expiresAt) > nowMs,
+      Date.parse(existingSlot.expiresAt) > nowMs &&
+      existingSlot.worker === args.worker,
+    );
+    const hasTransferableSlot = Boolean(
+      existingSlot &&
+      existingSlot.state === "active" &&
+      Date.parse(existingSlot.expiresAt) > nowMs &&
+      existingSlot.worker === undefined,
+    );
+    const hasWrongActiveWorker = Boolean(
+      existingSlot &&
+      existingSlot.state === "active" &&
+      Date.parse(existingSlot.expiresAt) > nowMs &&
+      existingSlot.worker !== undefined &&
+      existingSlot.worker !== args.worker,
     );
 
-    if (candidate.generationRequired && !hasActiveSlot) {
-      const entitlement = await getEffectiveEntitlementForOwner(
-        ctx,
-        candidate.ownerId,
-        args.now,
-      );
+    if (candidate.generationRequired && hasWrongActiveWorker) {
+      continue;
+    }
 
-      if (
-        !entitlement ||
-        entitlement.state === "inactive" ||
-        entitlement.entitlement.billingReviewRequired ||
-        !(await canAcquireGenerationSlot(ctx, {
+    if (candidate.generationRequired && !hasActiveSlot) {
+      if (hasTransferableSlot && existingSlot) {
+        const canAssign = await canAssignGenerationSlotWorker(ctx, {
           now: args.now,
-          ownerId: candidate.ownerId,
-          planKey: candidate.planKeySnapshot,
+          slotId: existingSlot.slotId,
           tool: candidate.tool,
           worker: args.worker,
-        }))
-      ) {
-        continue;
+        });
+
+        if (!canAssign) {
+          continue;
+        }
+      } else {
+        const entitlement = await getEffectiveEntitlementForOwner(
+          ctx,
+          candidate.ownerId,
+          args.now,
+        );
+
+        if (
+          !entitlement ||
+          entitlement.state === "inactive" ||
+          entitlement.entitlement.billingReviewRequired ||
+          !(await canAcquireGenerationSlot(ctx, {
+            now: args.now,
+            ownerId: candidate.ownerId,
+            planKey: candidate.planKeySnapshot,
+            tool: candidate.tool,
+            worker: args.worker,
+          }))
+        ) {
+          continue;
+        }
       }
     }
 

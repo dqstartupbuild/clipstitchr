@@ -9,8 +9,28 @@ export const cancelUsageReservation = mutation({
     reason: v.string(),
     reservationId: v.string(),
   },
-  handler: async (ctx, { now, reason, reservationId }) => {
+  handler: async (ctx, { reason, reservationId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
+    const reservation = await ctx.db
+      .query("usageReservations")
+      .withIndex("by_reservation", (query) =>
+        query.eq("reservationId", reservationId),
+      )
+      .unique();
+
+    if (!reservation || reservation.ownerId !== ownerId) {
+      throw new Error("Usage reservation not found.");
+    }
+
+    if (
+      reservation.reservationKind === undefined ||
+      reservation.workerQueueLinkedAt !== undefined
+    ) {
+      throw new Error(
+        "This creation is already queued and cannot be canceled here.",
+      );
+    }
 
     return await releaseUsageReservationForOwner(
       ctx,

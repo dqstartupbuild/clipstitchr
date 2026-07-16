@@ -99,14 +99,19 @@ import { courseVersionValidator } from "./validators/courseVersion";
 import { creditGrantStatusValidator } from "./validators/creditGrantStatus";
 import { creditGrantTypeValidator } from "./validators/creditGrantType";
 import { entitlementStateValidator } from "./validators/entitlementState";
+import { generationSlotProvenanceValidator } from "./validators/generationSlotProvenance";
 import { generationSlotStateValidator } from "./validators/generationSlotState";
 import { planKeyValidator } from "./validators/planKey";
 import { stripeWebhookEventStatusValidator } from "./validators/stripeWebhookEventStatus";
+import { stripePaymentHoldKindValidator } from "./validators/stripePaymentHoldKind";
+import { stripePaymentHoldStatusValidator } from "./validators/stripePaymentHoldStatus";
+import { subscriptionCheckoutReturnTargetValidator } from "./validators/subscriptionCheckoutReturnTarget";
 import { usageAllocationStateValidator } from "./validators/usageAllocationState";
 import { usageLedgerEntryTypeValidator } from "./validators/usageLedgerEntryType";
 import { usageLedgerOperationValidator } from "./validators/usageLedgerOperation";
 import { usageLedgerSourceValidator } from "./validators/usageLedgerSource";
 import { usageOperationValidator } from "./validators/usageOperation";
+import { usageReservationKindValidator } from "./validators/usageReservationKind";
 import { usageReservationStateValidator } from "./validators/usageReservationState";
 import { usageResourceValidator } from "./validators/usageResource";
 import { workerQueueSourceKindValidator } from "./validators/workerQueueSourceKind";
@@ -184,9 +189,13 @@ export default defineSchema({
   billingCheckoutSessions: defineTable({
     ownerId: v.string(),
     catalogKey: v.string(),
+    checkoutIntentId: v.optional(v.string()),
+    returnTarget: v.optional(subscriptionCheckoutReturnTargetValidator),
     stripeCheckoutSessionId: v.string(),
+    stripePriceId: v.optional(v.string()),
     mode: v.union(v.literal("subscription"), v.literal("payment")),
     status: v.union(
+      v.literal("creating"),
       v.literal("created"),
       v.literal("completed"),
       v.literal("expired"),
@@ -194,7 +203,9 @@ export default defineSchema({
     createdAt: v.string(),
     updatedAt: v.string(),
   })
+    .index("by_checkout_intent", ["checkoutIntentId"])
     .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_mode_status", ["ownerId", "mode", "status"])
     .index("by_stripe_session", ["stripeCheckoutSessionId"]),
   stripeWebhookEvents: defineTable({
     eventId: v.string(),
@@ -211,6 +222,28 @@ export default defineSchema({
     .index("by_event", ["eventId"])
     .index("by_status_created", ["status", "createdAt"])
     .index("by_object_created", ["objectId", "eventCreatedAt"]),
+  stripePaymentHolds: defineTable({
+    holdId: v.string(),
+    kind: stripePaymentHoldKindValidator,
+    ownerId: v.string(),
+    reason: v.string(),
+    sourceEventCreatedAt: v.number(),
+    sourceEventId: v.string(),
+    status: stripePaymentHoldStatusValidator,
+    stripeChargeId: v.string(),
+    stripeCustomerId: v.string(),
+    stripeInvoiceId: v.optional(v.string()),
+    stripePaymentIntentId: v.optional(v.string()),
+    resolvedAt: v.optional(v.string()),
+    resolvedByEventId: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_hold", ["holdId"])
+    .index("by_owner_status", ["ownerId", "status"])
+    .index("by_charge_status", ["stripeChargeId", "status"])
+    .index("by_invoice_status", ["stripeInvoiceId", "status"])
+    .index("by_payment_intent_status", ["stripePaymentIntentId", "status"]),
   usagePeriods: defineTable({
     ownerId: v.string(),
     periodKey: v.string(),
@@ -252,6 +285,7 @@ export default defineSchema({
     stripeInvoiceId: v.optional(v.string()),
     stripePaymentIntentId: v.optional(v.string()),
     stripeChargeId: v.optional(v.string()),
+    stripeSubscriptionId: v.optional(v.string()),
     sourceEventId: v.string(),
     createdAt: v.string(),
     updatedAt: v.string(),
@@ -263,6 +297,7 @@ export default defineSchema({
       "expiresAt",
     ])
     .index("by_grant", ["grantId"])
+    .index("by_invoice", ["stripeInvoiceId"])
     .index("by_owner_period", ["ownerId", "periodKey"])
     .index("by_payment_intent", ["stripePaymentIntentId"])
     .index("by_source_event", ["sourceEventId"])
@@ -284,6 +319,11 @@ export default defineSchema({
     mediaJobId: v.optional(v.string()),
     automationTaskId: v.optional(v.string()),
     generationSlotId: v.optional(v.string()),
+    reservationKind: v.optional(usageReservationKindValidator),
+    workerQueueLinkedAt: v.optional(v.string()),
+    workerQueueEntryId: v.optional(v.string()),
+    commitDomainKind: v.optional(v.string()),
+    commitDomainId: v.optional(v.string()),
     expiresAt: v.string(),
     committedAt: v.optional(v.string()),
     releasedAt: v.optional(v.string()),
@@ -358,6 +398,8 @@ export default defineSchema({
     slotId: v.string(),
     domainJobId: v.string(),
     tool: v.string(),
+    worker: v.optional(workerQueueWorkerValidator),
+    provenance: v.optional(generationSlotProvenanceValidator),
     planKeySnapshot: planKeyValidator,
     state: generationSlotStateValidator,
     idempotencyKey: v.string(),
@@ -373,6 +415,7 @@ export default defineSchema({
     .index("by_slot", ["slotId"])
     .index("by_domain", ["domainJobId"])
     .index("by_idempotency_key", ["idempotencyKey"])
+    .index("by_worker_state_expiry", ["worker", "state", "expiresAt"])
     .index("by_state_expiry", ["state", "expiresAt"]),
   workerQueueEntries: defineTable({
     queueEntryId: v.string(),

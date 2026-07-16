@@ -57,11 +57,28 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@clerk/nextjs", () => ({
-  SignIn: () => <div>Clerk sign in</div>,
-}));
-
-vi.mock("@/app/_components/auth/WaitlistForm", () => ({
-  WaitlistForm: () => <form>Waitlist form</form>,
+  SignIn: ({
+    forceRedirectUrl,
+    signUpUrl,
+  }: {
+    forceRedirectUrl?: string;
+    signUpUrl?: string;
+  }) => (
+    <div data-force-redirect={forceRedirectUrl} data-sign-up-url={signUpUrl}>
+      Clerk sign in
+    </div>
+  ),
+  SignUp: ({
+    forceRedirectUrl,
+    signInUrl,
+  }: {
+    forceRedirectUrl?: string;
+    signInUrl?: string;
+  }) => (
+    <div data-force-redirect={forceRedirectUrl} data-sign-in-url={signInUrl}>
+      Clerk sign up
+    </div>
+  ),
 }));
 
 vi.mock("@/app/dashboard/DashboardPageClient", () => ({
@@ -96,6 +113,12 @@ vi.mock("@/app/dashboard/onboarding/OnboardingPageClient", () => ({
   OnboardingPageClient: () => <main>Onboarding client</main>,
 }));
 
+vi.mock("@/app/_components/onboarding/OnboardingBillingGate", () => ({
+  OnboardingBillingGate: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+}));
+
 vi.mock("@/app/dashboard/settings/SettingsPageClient", () => ({
   SettingsPageClient: () => <main>Settings client</main>,
 }));
@@ -125,30 +148,43 @@ vi.mock("@/lib/clipstitchr/hooks/useSwiprLibraryState", () => ({
 }));
 
 describe("app route wrappers", () => {
-  it("renders auth route shells", () => {
+  it("renders account routes and preserves the selected plan", async () => {
+    const signInPage = await SignInPage({
+      searchParams: Promise.resolve({ plan: "pro" }),
+    });
+    const signUpPage = await SignUpPage({
+      searchParams: Promise.resolve({ plan: "pro" }),
+    });
     const markup = renderToStaticMarkup(
       <>
-        <SignInPage />
-        <SignUpPage />
+        {signInPage}
+        {signUpPage}
       </>,
     );
 
     expect(markup).toContain("Sign in to ClipStitchr.");
     expect(markup).toContain("Clerk sign in");
-    expect(markup).toContain("Private access. Finished ads.");
-    expect(markup).toContain("Waitlist form");
+    expect(markup).toContain("Create your account.");
+    expect(markup).toContain("Pro plan selected");
+    expect(markup).toContain("Pro is $99 per month");
+    expect(markup).toContain("Clerk sign up");
+    expect(markup).toContain("/dashboard/onboarding?plan=pro");
+    expect(markup).toContain('data-sign-up-url="/sign-up?plan=pro"');
+    expect(markup).toContain('data-sign-in-url="/sign-in?plan=pro"');
+    expect(markup).not.toContain("Waitlist form");
     expect(markup).toContain("Hook/UGC + demo Stitches");
   });
 
   it("renders dashboard page wrapper clients and provider layout", async () => {
     const libraryPage = await LibraryPage();
+    const onboardingPage = await OnboardingPage();
     const markup = renderToStaticMarkup(
       <DashboardLayout>
         <DashboardPage />
         <CliprPage />
         <HookLabPage />
         {libraryPage}
-        <OnboardingPage />
+        {onboardingPage}
         <SettingsPage />
         <StitchrPage />
         <SwaprPage />

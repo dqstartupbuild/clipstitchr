@@ -1317,6 +1317,8 @@ async function processSwaprFinalization({ client, config, job, r2 }) {
         prompt: input.prompt || undefined,
         keepOriginalSound: input.keepOriginalSound,
       },
+      usageReservationDomainId:
+        input.automation?.automationTaskId ?? input.providerJobId,
       usageReservationId: job.usageReservationId,
       createdAt: updatedAt,
       updatedAt,

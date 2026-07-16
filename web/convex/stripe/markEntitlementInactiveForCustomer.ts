@@ -1,5 +1,6 @@
 import type { MutationCtx } from "../_generated/server";
 import { writeEntitlementHistory } from "./writeEntitlementHistory";
+import { cancelNeverStartedQueueForOwner } from "../workerQueue/cancelNeverStartedQueueForOwner";
 
 export async function markEntitlementInactiveForCustomer(
   ctx: MutationCtx,
@@ -42,6 +43,11 @@ export async function markEntitlementInactiveForCustomer(
     previousState: entitlement.state,
     reason: args.reason,
     state: "inactive",
+  });
+  await cancelNeverStartedQueueForOwner(ctx, {
+    now,
+    ownerId: entitlement.ownerId,
+    reason: "Billing account ended before this work started.",
   });
 
   return entitlement._id;

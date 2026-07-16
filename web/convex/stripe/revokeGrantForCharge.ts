@@ -1,67 +1,57 @@
 import type Stripe from "stripe";
 import type { MutationCtx } from "../_generated/server";
 import { revokeCreditGrant } from "../usage/revokeCreditGrant";
-import { getStripeResourceId } from "./getStripeResourceId";
-import { markBillingReviewRequired } from "./markBillingReviewRequired";
+import { getStripeChargeBillingContext } from "./getStripeChargeBillingContext";
+import { syncBillingReviewFromPaymentHolds } from "./syncBillingReviewFromPaymentHolds";
+import { upsertStripePaymentHold } from "./upsertStripePaymentHold";
 
 export async function revokeGrantForCharge(
   ctx: MutationCtx,
   event: Stripe.Event,
   charge: Stripe.Charge,
-  reason: string,
+  adverse: { kind: "refund" | "dispute"; reason: string },
 ) {
-  const paymentIntentId = getStripeResourceId(charge.payment_intent);
   const now = new Date(event.created * 1_000).toISOString();
+  const context = await getStripeChargeBillingContext(ctx, charge);
 
-  if (!paymentIntentId) {
-    return null;
-  }
-
-  const grant = await ctx.db
-    .query("creditGrants")
-    .withIndex("by_payment_intent", (query) =>
-      query.eq("stripePaymentIntentId", paymentIntentId),
-    )
-    .unique();
-
-  if (!grant) {
-    const customerId = getStripeResourceId(charge.customer);
-    const entitlement = customerId
-      ? await ctx.db
-          .query("billingEntitlements")
-          .withIndex("by_stripe_customer", (query) =>
-            query.eq("stripeCustomerId", customerId),
-          )
-          .unique()
-      : null;
-
-    if (entitlement) {
-      await markBillingReviewRequired(ctx, entitlement.ownerId, reason, now);
-    }
-
-    return null;
-  }
-
-  const entitlement = await ctx.db
-    .query("billingEntitlements")
-    .withIndex("by_owner", (query) => query.eq("ownerId", grant.ownerId))
-    .unique();
-
-  if (!entitlement) {
-    return null;
-  }
-
-  const result = await revokeCreditGrant(ctx, {
+  const hold = await upsertStripePaymentHold(ctx, {
+    eventCreatedAt: event.created,
     eventId: event.id,
-    grantId: grant.grantId,
+    kind: adverse.kind,
     now,
-    planKey: entitlement.planKey,
-    reason,
+    ownerId: context.ownerId,
+    reason: adverse.reason,
+    stripeChargeId: charge.id,
+    stripeCustomerId: context.customerId,
+    stripeInvoiceId: context.invoiceId,
+    stripePaymentIntentId: context.paymentIntentId,
   });
 
-  if (result.consumedAmount > 0 || reason.includes("dispute")) {
-    await markBillingReviewRequired(ctx, grant.ownerId, reason, now);
+  if (!hold.opened) {
+    return [];
   }
 
-  return result;
+  const results = [];
+
+  for (const grant of context.grants) {
+    const planKey = context.entitlement?.planKey;
+
+    if (!planKey) {
+      throw new Error("Stripe charge entitlement could not be resolved.");
+    }
+
+    results.push(
+      await revokeCreditGrant(ctx, {
+        eventId: event.id,
+        grantId: grant.grantId,
+        now,
+        planKey,
+        reason: adverse.reason,
+      }),
+    );
+  }
+
+  await syncBillingReviewFromPaymentHolds(ctx, context.ownerId, now);
+
+  return results;
 }

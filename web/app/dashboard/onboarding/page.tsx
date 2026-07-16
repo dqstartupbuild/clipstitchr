@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { OnboardingBillingGate } from "@/app/_components/onboarding/OnboardingBillingGate";
 import { OnboardingPageClient } from "@/app/dashboard/onboarding/OnboardingPageClient";
+import { getPlanKeyFromSearchParam } from "@/lib/clipstitchr/billing/getPlanKeyFromSearchParam";
+import { getSubscriptionCheckoutReturnStatus } from "@/lib/clipstitchr/billing/getSubscriptionCheckoutReturnStatus";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -11,6 +14,26 @@ export const metadata: Metadata = createPageMetadata({
   noIndex: true,
 });
 
-export default function OnboardingPage() {
-  return <OnboardingPageClient />;
+type OnboardingPageProps = {
+  searchParams?: Promise<{
+    billing?: string | string[];
+    plan?: string | string[];
+  }>;
+};
+
+export default async function OnboardingPage({
+  searchParams = Promise.resolve({}),
+}: OnboardingPageProps = {}) {
+  const resolvedSearchParams = await searchParams;
+
+  return (
+    <OnboardingBillingGate
+      billingReturn={getSubscriptionCheckoutReturnStatus(
+        resolvedSearchParams.billing,
+      )}
+      selectedPlanKey={getPlanKeyFromSearchParam(resolvedSearchParams.plan)}
+    >
+      <OnboardingPageClient />
+    </OnboardingBillingGate>
+  );
 }

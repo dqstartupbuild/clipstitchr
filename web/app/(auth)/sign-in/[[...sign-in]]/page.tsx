@@ -1,5 +1,9 @@
 import { SignIn } from "@clerk/nextjs";
 import { AuthPageShell } from "@/app/_components/auth/AuthPageShell";
+import { authComponentAppearance } from "@/app/_components/auth/authComponentAppearance";
+import { getOnboardingPlanHref } from "@/lib/clipstitchr/billing/getOnboardingPlanHref";
+import { getPlanKeyFromSearchParam } from "@/lib/clipstitchr/billing/getPlanKeyFromSearchParam";
+import { getPlanSignupHref } from "@/lib/clipstitchr/billing/getPlanSignupHref";
 import { createPageMetadata } from "@/lib/metadata";
 
 export const metadata = createPageMetadata({
@@ -10,7 +14,18 @@ export const metadata = createPageMetadata({
   noIndex: true,
 });
 
-export default function SignInPage() {
+type SignInPageProps = {
+  searchParams?: Promise<{ plan?: string | string[] }>;
+};
+
+export default async function SignInPage({
+  searchParams = Promise.resolve({}),
+}: SignInPageProps = {}) {
+  const selectedPlanKey = getPlanKeyFromSearchParam((await searchParams).plan);
+  const planRedirectHref = selectedPlanKey
+    ? getOnboardingPlanHref(selectedPlanKey)
+    : "/dashboard";
+
   return (
     <AuthPageShell
       eyebrow="ClipStitchr access"
@@ -18,41 +33,16 @@ export default function SignInPage() {
       description="Manage Hook/UGC clips, product demos, avatar photos, Stitches, Swipes, and longer vertical exports."
     >
       <SignIn
-        routing="path"
+        appearance={authComponentAppearance}
+        fallbackRedirectUrl={planRedirectHref}
+        forceRedirectUrl={selectedPlanKey ? planRedirectHref : undefined}
         path="/sign-in"
-        signUpUrl="/sign-up"
-        fallbackRedirectUrl="/dashboard"
-        appearance={{
-          variables: {
-            colorPrimary: "#ad7659",
-            colorText: "#201510",
-            colorTextSecondary: "#725f53",
-            borderRadius: "0.2rem",
-            fontFamily: "Arial, Helvetica, sans-serif",
-          },
-          elements: {
-            rootBox: { width: "100%", maxWidth: "28rem" },
-            cardBox: {
-              width: "100%",
-              border: 0,
-              borderRadius: "0.2rem",
-              boxShadow: "none",
-            },
-            card: {
-              width: "100%",
-              borderRadius: "0.2rem",
-              boxShadow: "none",
-            },
-            headerTitle: { color: "#f5f0e9" },
-            headerSubtitle: { color: "#a7998e" },
-            formButtonPrimary: {
-              backgroundColor: "#ad7659",
-              borderRadius: "0.2rem",
-              boxShadow: "none",
-            },
-            footerActionLink: { color: "#ddb498" },
-          },
-        }}
+        routing="path"
+        signUpFallbackRedirectUrl={planRedirectHref}
+        signUpForceRedirectUrl={selectedPlanKey ? planRedirectHref : undefined}
+        signUpUrl={
+          selectedPlanKey ? getPlanSignupHref(selectedPlanKey) : "/sign-up"
+        }
       />
     </AuthPageShell>
   );

@@ -19,6 +19,7 @@ type DemoProviderConfig = {
 };
 
 type DemoProviderJob = {
+  generationSlotId?: string;
   id: string;
   ownerId: string;
   usageReservationId?: string;
@@ -192,6 +193,7 @@ export async function processManualCliprDemo<
         sourceVideoObject: avatarVideoOutput.avatarVideoObject,
       }),
       createdAt: getNow(),
+      generationSlotId: job.generationSlotId,
       usageReservationId: job.usageReservationId,
     },
   )) as { id: string };

@@ -2,40 +2,27 @@ import { v } from "convex/values";
 import { assignLegacyRecordsToProduct } from "../assignLegacyRecordsToProduct";
 import { assertRateLimitApiSecret } from "../auth/assertRateLimitApiSecret";
 import { getPrimaryProductForOwner } from "../getPrimaryProductForOwner";
+import { assertProductLimit } from "../products/assertProductLimit";
 import { mutation } from "../_generated/server";
 import { rateLimiter } from "../rateLimiter";
 import { upsertProductCard } from "../upsertProductCard";
+import { normalizeCliProductText } from "./normalizeCliProductText";
 
 const productTextMaxLength = 2000;
 const productNameMaxLength = 120;
 
-function normalizeCliProductText(value: string, maxLength: number) {
-  return value.trim().slice(0, maxLength);
-}
-
 export const createCliProduct = mutation({
   args: {
     audienceDetails: v.string(),
-    createdAt: v.string(),
     id: v.string(),
     name: v.string(),
     ownerId: v.string(),
     productDetails: v.string(),
     secret: v.string(),
-    updatedAt: v.string(),
   },
   handler: async (
     ctx,
-    {
-      audienceDetails,
-      createdAt,
-      id,
-      name,
-      ownerId,
-      productDetails,
-      secret,
-      updatedAt,
-    },
+    { audienceDetails, id, name, ownerId, productDetails, secret },
   ) => {
     assertRateLimitApiSecret(secret);
 
@@ -49,6 +36,9 @@ export const createCliProduct = mutation({
       key: ownerId,
       throws: true,
     });
+    const now = new Date().toISOString();
+
+    await assertProductLimit(ctx, ownerId, now);
 
     const existingPrimaryProduct = await getPrimaryProductForOwner(
       ctx,
@@ -59,7 +49,7 @@ export const createCliProduct = mutation({
         audienceDetails,
         productTextMaxLength,
       ),
-      createdAt,
+      createdAt: now,
       id,
       inferredPainPoints: [],
       name: normalizedName,
@@ -68,7 +58,7 @@ export const createCliProduct = mutation({
         productDetails,
         productTextMaxLength,
       ),
-      updatedAt,
+      updatedAt: now,
     };
     await ctx.db.insert("products", productFields);
 
@@ -82,7 +72,7 @@ export const createCliProduct = mutation({
       const preferences = {
         defaultProductId: id,
         ownerId,
-        updatedAt,
+        updatedAt: now,
       };
 
       if (existingPreferences) {
@@ -91,7 +81,7 @@ export const createCliProduct = mutation({
         await ctx.db.insert("productPreferences", preferences);
       }
 
-      await assignLegacyRecordsToProduct(ctx, ownerId, id, updatedAt);
+      await assignLegacyRecordsToProduct(ctx, ownerId, id, now);
     }
 
     return {

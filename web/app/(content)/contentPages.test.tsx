@@ -320,6 +320,9 @@ describe("content pages", () => {
     expect(pricingMarkup).toContain("Choose Starter");
     expect(pricingMarkup).toContain("Choose Pro");
     expect(pricingMarkup).toContain("Choose Agency");
+    expect(pricingMarkup).toContain('href="/sign-up?plan=starter"');
+    expect(pricingMarkup).toContain('href="/sign-up?plan=pro"');
+    expect(pricingMarkup).toContain('href="/sign-up?plan=agency"');
     expect(pricingMarkup).not.toContain("library storage");
     expect(pricingMarkup).not.toContain("Stitchr export");
     expect(pricingMarkup).not.toContain("Previewing and editing in Stitchr");

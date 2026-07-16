@@ -1,6 +1,8 @@
 import type Stripe from "stripe";
 import type { MutationCtx } from "../_generated/server";
-import { STRIPE_GRACE_PERIOD_MS } from "../../lib/clipstitchr/billing/stripeGracePeriodMs";
+import { getStripeEntitlementTransitionShouldApply } from "./getStripeEntitlementTransitionShouldApply";
+import { getStripeGraceEndsAt } from "./getStripeGraceEndsAt";
+import { getStripeInvoiceFailureShouldApply } from "./getStripeInvoiceFailureShouldApply";
 import { getStripeInvoiceSnapshot } from "./getStripeInvoiceSnapshot";
 import { resolveStripeOwnerId } from "./resolveStripeOwnerId";
 import { writeEntitlementHistory } from "./writeEntitlementHistory";
@@ -23,15 +25,27 @@ export async function markEntitlementPaymentFailed(
 
   if (
     !entitlement ||
-    entitlement.latestPaymentEventCreatedAt > event.created
+    !entitlement.latestPaidInvoiceId ||
+    entitlement.stripeSubscriptionId !== snapshot.subscriptionId ||
+    !getStripeInvoiceFailureShouldApply(
+      entitlement.latestPaymentEventCreatedAt,
+      event.created,
+    ) ||
+    !(await getStripeEntitlementTransitionShouldApply(ctx, entitlement, {
+      createdAt: event.created,
+      eventId: event.id,
+      eventType: event.type,
+      state: "grace",
+    }))
   ) {
     return entitlement?._id;
   }
 
   const now = new Date(event.created * 1_000).toISOString();
-  const graceEndsAt = new Date(
-    event.created * 1_000 + STRIPE_GRACE_PERIOD_MS,
-  ).toISOString();
+  const graceEndsAt = getStripeGraceEndsAt(
+    entitlement.graceEndsAt,
+    event.created,
+  );
 
   await ctx.db.patch(entitlement._id, {
     graceEndsAt,
@@ -51,7 +65,10 @@ export async function markEntitlementPaymentFailed(
     planKey: entitlement.planKey,
     previousPlanKey: entitlement.planKey,
     previousState: entitlement.state,
-    reason: "Stripe invoice payment failed; 72-hour grace started",
+    reason:
+      event.type === "invoice.finalization_failed"
+        ? "Stripe invoice finalization failed; 72-hour grace started"
+        : "Stripe invoice payment failed; 72-hour grace started",
     state: "grace",
   });
 

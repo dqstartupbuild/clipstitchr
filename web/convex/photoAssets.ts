@@ -59,6 +59,7 @@ const saveFromProviderArgs = {
   secret: v.string(),
   ownerId: v.string(),
   automation: v.optional(automationProvenanceValidator),
+  usageReservationDomainId: v.optional(v.string()),
   usageReservationId: v.optional(v.string()),
   ...saveArgs,
 };
@@ -264,7 +265,14 @@ export const saveFromProvider = mutation({
   args: saveFromProviderArgs,
   handler: async (
     ctx,
-    { secret, ownerId, automation, usageReservationId, ...args },
+    {
+      secret,
+      ownerId,
+      automation,
+      usageReservationDomainId,
+      usageReservationId,
+      ...args
+    },
   ) => {
     assertProviderWorkerSecret(secret);
 
@@ -284,14 +292,39 @@ export const saveFromProvider = mutation({
     }
     await assertProductBelongsToOwner(ctx, ownerId, args.productId);
 
+    const existingPhoto = await ctx.db
+      .query("photoAssets")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+
+    if (
+      existingPhoto?.usageReservationId &&
+      existingPhoto.usageReservationId !== usageReservationId
+    ) {
+      throw new Error("Photo already has a different usage reservation.");
+    }
+
     let committedUsageReservationId = usageReservationId;
 
-    if (usageReservationId) {
+    if (
+      usageReservationId &&
+      existingPhoto?.usageReservationId !== usageReservationId
+    ) {
+      const binding = {
+        domainId: usageReservationDomainId ?? "",
+        domainKind: automation ? "automation_task" : "provider_job_output",
+        operation: "avatar_photo" as const,
+        reservationKind: "worker" as const,
+        resource: "creation_credit" as const,
+      };
       committedUsageReservationId = await reacquireUsageReservation(
         ctx,
         ownerId,
         usageReservationId,
         args.updatedAt,
+        binding,
       );
       await commitUsageReservationForOwner(
         ctx,
@@ -299,15 +332,9 @@ export const saveFromProvider = mutation({
         committedUsageReservationId,
         args.updatedAt,
         "worker",
+        binding,
       );
     }
-
-    const existingPhoto = await ctx.db
-      .query("photoAssets")
-      .withIndex("by_owner_id", (q) =>
-        q.eq("ownerId", ownerId).eq("id", args.id),
-      )
-      .unique();
     const photo = {
       ownerId,
       ...args,

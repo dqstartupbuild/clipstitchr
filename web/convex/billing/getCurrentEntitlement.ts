@@ -1,3 +1,4 @@
+import { getCanonicalPaidStripeAccessIsActive } from "../../lib/clipstitchr/billing/getCanonicalPaidStripeAccessIsActive";
 import { getEffectiveEntitlementState } from "../../lib/clipstitchr/billing/getEffectiveEntitlementState";
 import { getPlanPolicy } from "../../lib/clipstitchr/billing/getPlanPolicy";
 import { getAuthenticatedOwnerId } from "../auth/getAuthenticatedOwnerId";
@@ -18,10 +19,14 @@ export const getCurrentEntitlement = query({
 
     const now = new Date().toISOString();
     const policy = getPlanPolicy(entitlement.planKey);
+    const state = getEffectiveEntitlementState(entitlement, now);
 
     return {
       activeGenerationLimit: policy.activeGenerationLimit,
       billingReviewRequired: entitlement.billingReviewRequired,
+      canBuyRefill:
+        state === "active" &&
+        getCanonicalPaidStripeAccessIsActive(entitlement, now),
       cancelAtPeriodEnd: entitlement.cancelAtPeriodEnd,
       currentPeriodEnd: entitlement.currentPeriodEnd,
       currentPeriodStart: entitlement.currentPeriodStart,
@@ -32,7 +37,7 @@ export const getCurrentEntitlement = query({
       planName: policy.name,
       productLimit: policy.productLimit,
       queueLabel: policy.queueLabel,
-      state: getEffectiveEntitlementState(entitlement, now),
+      state,
     };
   },
 });

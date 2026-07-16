@@ -12,6 +12,7 @@ export async function grantCreditRefill(
     planKey: "starter" | "pro" | "agency";
     stripeChargeId?: string;
     stripePaymentIntentId: string;
+    stripeSubscriptionId: string;
   },
 ) {
   const existing = await ctx.db
@@ -48,6 +49,7 @@ export async function grantCreditRefill(
     status: "available",
     stripeChargeId: args.stripeChargeId,
     stripePaymentIntentId: args.stripePaymentIntentId,
+    stripeSubscriptionId: args.stripeSubscriptionId,
     updatedAt: args.now,
   });
   await appendUsageLedgerEntry(ctx, {

@@ -1,8 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/convex/_generated/api";
 import { useBillingWorkspace } from "@/lib/clipstitchr/hooks/useBillingWorkspace";
 
 const mocks = vi.hoisted(() => ({
+  checkoutAction: vi.fn(),
+  locationAssign: vi.fn(),
+  portalAction: vi.fn(),
+  refillAction: vi.fn(),
   stateSetter: vi.fn(),
   useAction: vi.fn(),
   useConvexAuth: vi.fn(),
@@ -48,7 +52,26 @@ vi.mock("@/convex/_generated/api", () => ({
 describe("useBillingWorkspace", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.useAction.mockReturnValue(vi.fn());
+    vi.stubGlobal("window", {
+      location: { assign: mocks.locationAssign },
+    });
+    mocks.checkoutAction.mockResolvedValue({ url: "https://checkout.test" });
+    mocks.portalAction.mockResolvedValue({ url: "https://portal.test" });
+    mocks.refillAction.mockResolvedValue({ url: "https://refill.test" });
+    mocks.useAction.mockImplementation((actionId) => {
+      if (
+        actionId ===
+        api.stripe.createSubscriptionCheckout.createSubscriptionCheckout
+      ) {
+        return mocks.checkoutAction;
+      }
+
+      if (actionId === api.stripe.createPortalSession.createPortalSession) {
+        return mocks.portalAction;
+      }
+
+      return mocks.refillAction;
+    });
     mocks.useConvexAuth.mockReturnValue({
       isAuthenticated: true,
       isLoading: false,
@@ -60,6 +83,10 @@ describe("useBillingWorkspace", () => {
 
       return queryId === api.usage.getUsageHistory.getUsageHistory ? [] : null;
     });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("loads billing data only after Convex authentication is ready", () => {
@@ -102,5 +129,36 @@ describe("useBillingWorkspace", () => {
       api.usage.getUsageHistory.getUsageHistory,
       "skip",
     );
+  });
+
+  it("starts onboarding Checkout with the selected plan and return target", async () => {
+    const state = useBillingWorkspace();
+
+    await state.startPlan("pro", "onboarding");
+
+    expect(mocks.checkoutAction).toHaveBeenCalledWith({
+      planKey: "pro",
+      returnTarget: "onboarding",
+    });
+    expect(mocks.stateSetter).toHaveBeenCalledWith({
+      action: "checkout",
+      planKey: "pro",
+    });
+    expect(mocks.locationAssign).toHaveBeenCalledWith("https://checkout.test");
+  });
+
+  it("opens Stripe's dedicated subscription-update portal flow", async () => {
+    const state = useBillingWorkspace();
+
+    await state.manageBilling("subscription_update", "agency");
+
+    expect(mocks.portalAction).toHaveBeenCalledWith({
+      flow: "subscription_update",
+    });
+    expect(mocks.stateSetter).toHaveBeenCalledWith({
+      action: "portal",
+      planKey: "agency",
+    });
+    expect(mocks.locationAssign).toHaveBeenCalledWith("https://portal.test");
   });
 });

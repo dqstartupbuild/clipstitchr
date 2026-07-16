@@ -29,4 +29,12 @@ describe("pricingPlans", () => {
       "20,000 creation credits/month",
     ]);
   });
+
+  it("carries each selected plan into account creation", () => {
+    expect(pricingPlans.map(({ ctaHref }) => ctaHref)).toEqual([
+      "/sign-up?plan=starter",
+      "/sign-up?plan=pro",
+      "/sign-up?plan=agency",
+    ]);
+  });
 });
