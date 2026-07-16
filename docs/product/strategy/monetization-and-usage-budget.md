@@ -12,6 +12,10 @@ document for the authoritative Stripe boundary, entitlement schema, usage
 reservations, plan enforcement, queue priority, concurrency, rollout, and test
 requirements.
 
+The detailed ledger, grant ordering, reservation lifecycle, tool integration,
+and credit verification plan lives in
+`docs/architecture/creation-credit-system.md`.
+
 ## Pricing Strategy
 
 Target gross margin: 60%.

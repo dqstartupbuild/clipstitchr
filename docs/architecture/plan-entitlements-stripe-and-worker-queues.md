@@ -22,6 +22,7 @@ to identify a plan, price, speed tier, balance, or queue priority.
 
 ## Related Documents
 
+- `docs/architecture/creation-credit-system.md`
 - `docs/product/strategy/offer.md`
 - `docs/product/strategy/monetization-and-usage-budget.md`
 - `docs/operations/evaluations/stripe.md`
@@ -207,6 +208,10 @@ plan, period, source event, and change history for support and audit.
 Names may be adapted to the final schema, but the responsibilities must remain
 separate.
 
+The exact grant allocation, reservation lifecycle, operation integration, and
+credit acceptance tests are defined in
+`docs/architecture/creation-credit-system.md`.
+
 ### `billingEntitlements`
 
 One current projection per owner:
@@ -257,7 +262,7 @@ Append-only audit entries:
 - `resource`: `creation_credit` or `ai_video`
 - `entryType`: grant, reserve, commit, release, adjustment, refill, expiry,
   refund, or reversal
-- signed amount
+- positive quantity plus signed available, reserved, and consumed deltas
 - operation/tool
 - domain job ID
 - idempotency key
@@ -267,6 +272,13 @@ Append-only audit entries:
 - created timestamp
 
 Never update a committed entry to change history. Add a compensating entry.
+
+### `creditGrants` and `usageReservationAllocations`
+
+Implement these supporting tables as specified in
+`docs/architecture/creation-credit-system.md`. They are required to spend
+monthly credits before refill credits, honor different expiration dates, and
+return the exact grant allocations after failed work.
 
 ### `usageReservations`
 

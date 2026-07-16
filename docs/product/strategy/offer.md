@@ -89,6 +89,10 @@ credits roll over for 12 months while the subscription stays active.
 
 Refills do not increase the plan's Clipr and Swapr video allowance.
 
+Implementation details for grants, reservations, expiration, retries, and
+partial batch success are defined in
+`docs/architecture/creation-credit-system.md`.
+
 ## Workspace Decision
 
 A future multi-brand workspace would be a separate client or brand environment
