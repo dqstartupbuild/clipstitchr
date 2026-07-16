@@ -177,6 +177,11 @@ Public-tool gate and Loops variables:
   `LOOPS_EMAIL_CONFIRMATION_TRANSACTIONAL_ID`, and
   `EMAIL_CONFIRMATION_TOKEN_SECRET` gate progressively riskier contact,
   Workflow, email-native, and confirmation behavior.
+- `LOOPS_ACCOUNT_EMAIL_ENABLED` and the four
+  `LOOPS_*_TRANSACTIONAL_ID` account-template mappings gate service messages
+  independently from marketing email. `CLERK_WEBHOOK_SIGNING_SECRET` verifies
+  the account-contact webhook. Missing or partial account configuration holds
+  the durable operation without calling Loops.
 - `NEXT_PUBLIC_SITE_URL` or `SITE_URL` supplies the absolute confirmation-link
   origin. `RATE_LIMIT_API_SECRET` is still required in both Next.js and Convex
   for lead, interaction, and confirmation mutations.
@@ -480,6 +485,14 @@ Optional Replicate model overrides:
 Changing an avatar's linked product uses `avatars.update` and patches the
 avatar's photo records to the same product under the shared Convex metadata
 update limit.
+
+`products.getProductAccessState` is an authenticated, owner-scoped, capped
+read. It derives locked product IDs from the current server-owned entitlement,
+saved default, and active products without a provider call, write, or new cost,
+so it intentionally has no separate quota. `productPreferences.setDefaultProduct`
+keeps the existing `convexMetadataUpdate` quota and rejects archived or locked
+targets before writing.
+
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations, including `hookLabIdeas.remove` and legacy `stitchTemplates.remove` | 2,000/hour/user, burst 500 |
 

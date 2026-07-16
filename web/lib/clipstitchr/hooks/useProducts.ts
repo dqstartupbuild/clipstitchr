@@ -19,6 +19,10 @@ export function useProducts() {
     api.productPreferences.get,
     isAuthenticated ? {} : "skip",
   );
+  const productAccessState = useQuery(
+    api.products.getProductAccessState.getProductAccessState,
+    isAuthenticated ? {} : "skip",
+  );
   const archivedProductDocuments = useQuery(
     api.products.listArchivedProducts.listArchivedProducts,
     isAuthenticated ? {} : "skip",
@@ -54,7 +58,8 @@ export function useProducts() {
       [],
     [archivedProductDocuments],
   );
-  const preferredDefaultProductId = productPreferences?.defaultProductId;
+  const preferredDefaultProductId =
+    productAccessState?.defaultProductId ?? productPreferences?.defaultProductId;
   const defaultProductId =
     preferredDefaultProductId &&
     products.some((product) => product.id === preferredDefaultProductId)
@@ -173,7 +178,8 @@ export function useProducts() {
       (isAuthenticated &&
         (productDocuments === undefined ||
           archivedProductDocuments === undefined ||
-          productPreferences === undefined)),
+          productPreferences === undefined ||
+          productAccessState === undefined)),
     isSaving:
       isCreating ||
       savingProductId !== null ||
@@ -185,6 +191,11 @@ export function useProducts() {
     defaultingProductId,
     restoringProductId,
     error,
+    isProductLimitReached:
+      productAccessState?.isProductLimitReached ?? false,
+    lockedProductIds: productAccessState?.lockedProductIds ?? [],
+    planName: productAccessState?.planName ?? null,
+    productLimit: productAccessState?.productLimit ?? null,
     createProduct,
     updateProduct,
     deleteProduct,

@@ -19,7 +19,7 @@ export function SettingsSubscriptionPanel() {
   );
 
   return (
-    <Panel className="p-5">
+    <Panel className="scroll-mt-6 p-5" id="plan-and-usage">
       <div className="flex flex-col gap-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-start gap-3">

@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
+import { assertProductIsUnlockedForOwner } from "./products/assertProductIsUnlockedForOwner";
 
 export const get = query({
   args: {},
@@ -20,8 +21,9 @@ export const setDefaultProduct = mutation({
     productId: v.string(),
     updatedAt: v.string(),
   },
-  handler: async (ctx, { productId, updatedAt }) => {
+  handler: async (ctx, { productId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
       key: ownerId,
@@ -35,9 +37,11 @@ export const setDefaultProduct = mutation({
       )
       .unique();
 
-    if (!product) {
+    if (!product || product.archivedAt) {
       throw new Error("Product not found.");
     }
+
+    await assertProductIsUnlockedForOwner(ctx, ownerId, productId, now);
 
     const existing = await ctx.db
       .query("productPreferences")
@@ -46,7 +50,7 @@ export const setDefaultProduct = mutation({
     const preferences = {
       ownerId,
       defaultProductId: product.id,
-      updatedAt,
+      updatedAt: now,
     };
 
     if (existing) {

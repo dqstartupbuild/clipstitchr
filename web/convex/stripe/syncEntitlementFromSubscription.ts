@@ -7,6 +7,7 @@ import { getStripeSubscriptionTransitionDisposition } from "./getStripeSubscript
 import { resolveStripeOwnerId } from "./resolveStripeOwnerId";
 import { writeEntitlementHistory } from "./writeEntitlementHistory";
 import { cancelNeverStartedQueueForOwner } from "../workerQueue/cancelNeverStartedQueueForOwner";
+import { createSubscriptionTransitionCommunication } from "../accountEmail/createSubscriptionTransitionCommunication";
 
 export async function syncEntitlementFromSubscription(
   ctx: MutationCtx,
@@ -100,6 +101,19 @@ export async function syncEntitlementFromSubscription(
       reason:
         "Authoritative Stripe subscription schedule refreshed without replacing higher-priority entitlement state",
       state: existing.state,
+    });
+    await createSubscriptionTransitionCommunication(ctx, {
+      eventId: event.id,
+      hadConfirmedPayment: hasConfirmedPayment,
+      nextCancelAtPeriodEnd: snapshot.cancelAtPeriodEnd,
+      nextState: existing.state,
+      now,
+      ownerId,
+      periodEnd: snapshot.periodEnd,
+      planKey: existing.planKey,
+      previousCancelAtPeriodEnd: existing.cancelAtPeriodEnd,
+      previousState: existing.state,
+      subscriptionId: snapshot.subscriptionId,
     });
 
     return existing._id;
@@ -203,6 +217,19 @@ export async function syncEntitlementFromSubscription(
       reason: "Subscription ended before this work started.",
     });
   }
+  await createSubscriptionTransitionCommunication(ctx, {
+    eventId: event.id,
+    hadConfirmedPayment: hasConfirmedPayment,
+    nextCancelAtPeriodEnd: snapshot.cancelAtPeriodEnd,
+    nextState: state,
+    now,
+    ownerId,
+    periodEnd: snapshot.periodEnd,
+    planKey: deferPlanChange ? existing.planKey : snapshot.planKey,
+    previousCancelAtPeriodEnd: existing.cancelAtPeriodEnd,
+    previousState: existing.state,
+    subscriptionId: snapshot.subscriptionId,
+  });
 
   return existing._id;
 }

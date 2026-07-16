@@ -388,9 +388,12 @@ The authenticated Convex product-creation mutation must count products owned by
 the user before insertion and reject the write when the plan limit is reached.
 API-route or UI checks are helpful messaging but are not enforcement.
 
-On downgrade, keep existing products readable. Block new products while the
-owner remains above the new limit. Require the owner to archive products before
-enabling additional daily drafts or creating another product.
+On downgrade, keep every existing product and its saved work readable. Keep the
+valid saved default selectable first, then fill any remaining plan slots with
+the owner's oldest active products. Excess products stay saved but are locked:
+they cannot become the active product until the plan has room. Block product
+creation and restoration while the owner is at or above the limit. Archiving an
+unlocked product immediately opens its slot for the next deterministic product.
 
 ### Daily Drafts
 
@@ -561,8 +564,10 @@ worker infrastructure.
   only when usage was validly reserved and the continuation carries the
   inherited provider lifecycle slot.
 - A downgrade never deletes products or completed assets.
-- If the user is over the new product limit, block new products until they
-  archive enough existing products.
+- If the user is over the new product limit, keep the default and the oldest
+  remaining products selectable up to the limit. Keep every excess product
+  readable but locked, and block product creation or restoration until the user
+  archives enough products or changes plans.
 - Disable daily drafts above the new limit deterministically and notify the
   owner.
 - Support adjustments use append-only ledger entries with actor, reason, and

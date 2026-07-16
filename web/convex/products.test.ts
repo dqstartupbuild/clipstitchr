@@ -147,7 +147,7 @@ describe("convex products", () => {
     await expect(getHandler(list)(ctx, {})).resolves.toEqual(products);
     expect(ctx.db.query).toHaveBeenCalledWith("products");
     expect(queryChain.withIndex).toHaveBeenCalledWith(
-      "by_owner_created",
+      "by_owner_archived_created",
       expect.any(Function),
     );
     expect(queryChain.order).toHaveBeenCalledWith("desc");

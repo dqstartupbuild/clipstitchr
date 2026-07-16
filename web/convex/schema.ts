@@ -70,6 +70,7 @@ import { videoClipLibraryKindValidator } from "./validators/videoClipLibraryKind
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 import { waitlistSourceValidator } from "./validators/waitlistSource";
 import { browserRecognitionRevocationReasonValidator } from "./validators/browserRecognitionRevocationReason";
+import { accountEmailTemplateKeyValidator } from "./validators/accountEmailTemplateKey";
 import { emailDeliveryStatusValidator } from "./validators/emailDeliveryStatus";
 import { emailProviderAcceptanceStatusValidator } from "./validators/emailProviderAcceptanceStatus";
 import { emailProviderFailureCategoryValidator } from "./validators/emailProviderFailureCategory";
@@ -181,6 +182,7 @@ export default defineSchema({
     eventId: v.string(),
     planKey: planKeyValidator,
     archivedProductIds: v.array(v.string()),
+    lockedProductIds: v.optional(v.array(v.string())),
     reason: v.string(),
     createdAt: v.string(),
   })
@@ -503,6 +505,33 @@ export default defineSchema({
     .index("by_provider_contact_key", ["providerContactKey"])
     .index("by_provider_contact_id", ["providerContactId"])
     .index("by_legacy_waitlist_id", ["legacyWaitlistId"]),
+  accountContacts: defineTable({
+    ownerId: v.string(),
+    normalizedEmail: v.string(),
+    primaryEmailId: v.string(),
+    displayName: v.optional(v.string()),
+    firstName: v.optional(v.string()),
+    emailVerified: v.boolean(),
+    emailSuppressedAt: v.optional(v.number()),
+    emailSuppressionReason: v.optional(
+      v.union(v.literal("hardBounce"), v.literal("complaint")),
+    ),
+    deletedAt: v.optional(v.number()),
+    lastClerkEventAt: v.number(),
+    lastClerkWebhookId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_owner", ["ownerId"])
+    .index("by_normalized_email", ["normalizedEmail"]),
+  clerkWebhookEvents: defineTable({
+    webhookId: v.string(),
+    eventType: v.string(),
+    ownerId: v.optional(v.string()),
+    eventAt: v.number(),
+    status: v.union(v.literal("processed"), v.literal("ignored")),
+    processedAt: v.number(),
+  }).index("by_webhook", ["webhookId"]),
   marketingConsents: defineTable({
     contactId: v.id("marketingContacts"),
     status: marketingConsentStatusValidator,
@@ -646,6 +675,38 @@ export default defineSchema({
     .index("by_compensated_operation", ["compensatesOperationId"])
     .index("by_dependency_status", ["dependsOnOperationId", "status"])
     .index("by_provider_message_id", ["providerMessageId"]),
+  accountEmailOperations: defineTable({
+    ownerId: v.string(),
+    communicationKey: v.string(),
+    templateKey: accountEmailTemplateKeyValidator,
+    dataVariables: v.record(
+      v.string(),
+      v.union(v.string(), v.number()),
+    ),
+    status: emailProviderOperationStatusValidator,
+    acceptanceStatus: emailProviderAcceptanceStatusValidator,
+    deliveryStatus: emailDeliveryStatusValidator,
+    attemptCount: v.number(),
+    nextAttemptAt: v.number(),
+    leaseOwner: v.optional(v.string()),
+    leaseExpiresAt: v.optional(v.number()),
+    attemptLeaseOwner: v.optional(v.string()),
+    idempotencyExpiresAt: v.number(),
+    ambiguousAt: v.optional(v.number()),
+    providerMessageId: v.optional(v.string()),
+    failureCategory: v.optional(emailProviderFailureCategoryValidator),
+    acceptedAt: v.optional(v.number()),
+    deliveredAt: v.optional(v.number()),
+    deliveryChangedAt: v.optional(v.number()),
+    terminalAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_communication_key", ["communicationKey"])
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_status_next_attempt", ["status", "nextAttemptAt"])
+    .index("by_status_lease_expiration", ["status", "leaseExpiresAt"])
+    .index("by_provider_message_id", ["providerMessageId"]),
   marketingWorkflowEnrollments: defineTable({
     contactId: v.id("marketingContacts"),
     workflowKey: marketingWorkflowKeyValidator,
@@ -669,6 +730,7 @@ export default defineSchema({
     disposition: loopsWebhookDispositionValidator,
     contactId: v.optional(v.id("marketingContacts")),
     operationId: v.optional(v.id("emailProviderOperations")),
+    accountEmailOperationId: v.optional(v.id("accountEmailOperations")),
     processedAt: v.number(),
   })
     .index("by_webhook_id", ["webhookId"])
@@ -957,6 +1019,11 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_archived_created", [
+      "ownerId",
+      "archivedAt",
+      "createdAt",
+    ])
     .index("by_owner_id", ["ownerId", "id"]),
   productCards: defineTable({
     ownerId: v.string(),

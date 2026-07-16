@@ -7,6 +7,8 @@ type CreateNotificationArgs = {
   sourceType:
     | "automation-run"
     | "avatar"
+    | "billing"
+    | "credit"
     | "photo"
     | "stitch"
     | "stitchr-batch"

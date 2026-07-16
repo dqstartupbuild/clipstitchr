@@ -3,6 +3,7 @@ import { ProductSettingsCard } from "@/app/_components/settings/ProductSettingsC
 import { ArchivedProductList } from "@/app/_components/settings/ArchivedProductList";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
+import type { ProductLimitDialogReason } from "@/lib/clipstitchr/types/ProductLimitDialogReason";
 
 type ProductSettingsListProps = {
   products: ProductProfile[];
@@ -11,10 +12,12 @@ type ProductSettingsListProps = {
   defaultingProductId: string | null;
   deletingProductId: string | null;
   isActionDisabled: boolean;
+  lockedProductIds?: string[];
   savingProductId: string | null;
   restoringProductId?: string | null;
   onDelete: (id: string) => Promise<void>;
   onSetDefault: (product: ProductProfile) => Promise<void>;
+  onShowProductPlanLimit?: (reason: ProductLimitDialogReason) => void;
   onRestore?: (id: string) => Promise<void>;
   onUpdate: (id: string, input: ProductProfileCreateInput) => Promise<unknown>;
 };
@@ -26,10 +29,12 @@ export function ProductSettingsList({
   defaultingProductId,
   deletingProductId,
   isActionDisabled,
+  lockedProductIds = [],
   savingProductId,
   restoringProductId = null,
   onDelete,
   onSetDefault,
+  onShowProductPlanLimit = () => undefined,
   onRestore = async () => undefined,
   onUpdate,
 }: ProductSettingsListProps) {
@@ -56,9 +61,11 @@ export function ProductSettingsList({
               isDefaulting={defaultingProductId === product.id}
               isDisabled={isActionDisabled}
               isDeleting={deletingProductId === product.id}
+              isLocked={lockedProductIds.includes(product.id)}
               isSaving={savingProductId === product.id}
               onDelete={onDelete}
               onSetDefault={onSetDefault}
+              onShowProductPlanLimit={onShowProductPlanLimit}
               onUpdate={onUpdate}
             />
           ))}

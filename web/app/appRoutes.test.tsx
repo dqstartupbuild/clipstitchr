@@ -85,6 +85,10 @@ vi.mock("@/app/dashboard/DashboardPageClient", () => ({
   DashboardPageClient: () => <main>Dashboard client</main>,
 }));
 
+vi.mock("@/app/_components/dashboard/AccountContactSync", () => ({
+  AccountContactSync: () => null,
+}));
+
 vi.mock("@/app/dashboard/DashboardProductProvider", () => ({
   DashboardProductProvider: ({ children }: { children: React.ReactNode }) => (
     <>{children}</>

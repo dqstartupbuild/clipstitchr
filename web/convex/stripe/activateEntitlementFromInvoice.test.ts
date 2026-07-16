@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { activateEntitlementFromInvoice } from "./activateEntitlementFromInvoice";
 
 const mocks = vi.hoisted(() => ({
+  createInvoicePaidCommunication: vi.fn(),
   getStripeEntitlementSourceEvent: vi.fn(),
   getStripeInvoiceSnapshot: vi.fn(),
   grantMonthlyAllowance: vi.fn(),
@@ -13,6 +14,10 @@ const mocks = vi.hoisted(() => ({
   writeEntitlementHistory: vi.fn(),
   markBillingReviewRequired: vi.fn(),
   syncBillingReviewFromPaymentHolds: vi.fn(),
+}));
+
+vi.mock("../accountEmail/createInvoicePaidCommunication", () => ({
+  createInvoicePaidCommunication: mocks.createInvoicePaidCommunication,
 }));
 
 vi.mock("./getStripeEntitlementSourceEvent", () => ({
@@ -66,6 +71,12 @@ describe("activateEntitlementFromInvoice", () => {
     vi.clearAllMocks();
     mocks.resolveStripeOwnerId.mockResolvedValue("owner_123");
     mocks.getStripePaymentHasOpenHold.mockResolvedValue(false);
+    mocks.grantMonthlyAllowance.mockResolvedValue({
+      creditGrant: 2_000,
+      periodKey: "sub_123:2026-07-01",
+    });
+    mocks.reconcileProductsAfterPlanChange.mockResolvedValue([]);
+    mocks.reconcileDailyDraftsAfterPlanChange.mockResolvedValue([]);
     mocks.getStripeEntitlementSourceEvent.mockResolvedValue({
       eventType: "customer.subscription.deleted",
       state: "inactive",
@@ -168,6 +179,13 @@ describe("activateEntitlementFromInvoice", () => {
       expect.objectContaining({
         state: "active",
         stripeSubscriptionId: "sub_replacement",
+      }),
+    );
+    expect(mocks.createInvoicePaidCommunication).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({
+        kind: "plan-change",
+        planKey: "pro",
       }),
     );
   });

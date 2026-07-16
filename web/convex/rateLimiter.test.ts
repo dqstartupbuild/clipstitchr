@@ -44,6 +44,10 @@ describe("public lead and email rate-limit configuration", () => {
       "emailWorkflowEventGlobal",
       "emailTransactionalByContact",
       "emailTransactionalGlobal",
+      "accountTransactionalEmailByOwner",
+      "accountTransactionalEmailGlobal",
+      "accountContactSyncByOwner",
+      "accountContactSyncGlobal",
       "marketingPrivacyDeletionOperator",
     ] as const;
 

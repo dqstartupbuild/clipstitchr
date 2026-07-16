@@ -54,4 +54,68 @@ describe("getStripeInvoiceSnapshot", () => {
     expect(snapshot.priceId).toBe("price_pro");
     expect(snapshot.periodStart).toBe("2026-08-05T03:20:00.000Z");
   });
+
+  it("selects the new plan when a full discount makes both prorations zero", () => {
+    const invoice = {
+      id: "in_discounted_upgrade",
+      billing_reason: "subscription_update",
+      customer: "cus_1",
+      lines: {
+        data: [
+          {
+            amount: 0,
+            parent: {
+              invoice_item_details: null,
+              subscription_item_details: {
+                invoice_item: "ii_starter_credit",
+                proration: true,
+                proration_details: {
+                  credited_items: {
+                    invoice: "in_starter",
+                    invoice_line_items: ["il_starter"],
+                  },
+                },
+                subscription: "sub_1",
+                subscription_item: "si_1",
+              },
+              type: "subscription_item_details",
+            },
+            period: { end: 1_789_000_000, start: 1_786_000_000 },
+            pricing: { price_details: { price: "price_starter" } },
+            subscription: "sub_1",
+          },
+          {
+            amount: 0,
+            parent: {
+              invoice_item_details: null,
+              subscription_item_details: {
+                invoice_item: "ii_agency_debit",
+                proration: true,
+                proration_details: { credited_items: null },
+                subscription: "sub_1",
+                subscription_item: "si_1",
+              },
+              type: "subscription_item_details",
+            },
+            period: { end: 1_789_000_000, start: 1_786_000_000 },
+            pricing: { price_details: { price: "price_agency" } },
+            subscription: "sub_1",
+          },
+        ],
+      },
+      metadata: {},
+      period_start: 1_785_900_000,
+      parent: {
+        subscription_details: {
+          metadata: { ownerId: "owner_1", planKey: "agency" },
+          subscription: "sub_1",
+        },
+      },
+    } as unknown as Stripe.Invoice;
+
+    const snapshot = getStripeInvoiceSnapshot(invoice);
+
+    expect(snapshot.planKey).toBe("agency");
+    expect(snapshot.priceId).toBe("price_agency");
+  });
 });

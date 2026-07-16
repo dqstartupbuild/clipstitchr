@@ -487,6 +487,32 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 200,
     shards: 5,
   },
+  accountTransactionalEmailByOwner: {
+    kind: "token bucket",
+    rate: 30,
+    period: DAY,
+    capacity: 10,
+  },
+  accountTransactionalEmailGlobal: {
+    kind: "token bucket",
+    rate: 3000,
+    period: HOUR,
+    capacity: 300,
+    shards: 5,
+  },
+  accountContactSyncByOwner: {
+    kind: "token bucket",
+    rate: 30,
+    period: HOUR,
+    capacity: 6,
+  },
+  accountContactSyncGlobal: {
+    kind: "token bucket",
+    rate: 3000,
+    period: HOUR,
+    capacity: 300,
+    shards: 5,
+  },
   loopsProviderRequest: {
     kind: "token bucket",
     rate: 8,

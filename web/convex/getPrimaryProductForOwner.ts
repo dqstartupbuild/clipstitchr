@@ -18,14 +18,18 @@ export async function getPrimaryProductForOwner(
       )
       .unique();
 
-    if (preferredProduct) {
+    if (preferredProduct && !preferredProduct.archivedAt) {
       return preferredProduct;
     }
   }
 
-  return await ctx.db
+  const products = await ctx.db
     .query("products")
-    .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+    .withIndex("by_owner_archived_created", (q) =>
+      q.eq("ownerId", ownerId).eq("archivedAt", undefined),
+    )
     .order("asc")
-    .first();
+    .take(100);
+
+  return products[0] ?? null;
 }

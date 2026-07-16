@@ -2,10 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 import { reconcileProductsAfterPlanChange } from "./reconcileProductsAfterPlanChange";
 
 describe("reconcileProductsAfterPlanChange", () => {
-  it("keeps every existing product when a downgrade exceeds the new limit", async () => {
-    const products = ["one", "two", "three"].map((id) => ({
+  it("keeps every existing product saved and locks excess products", async () => {
+    const products = ["one", "two", "three"].map((id, index) => ({
       _id: `document_${id}`,
       archivedAt: undefined,
+      createdAt: `2026-01-0${index + 1}T00:00:00.000Z`,
       id,
     }));
     const insert = vi.fn(async () => "reconciliation_1");
@@ -13,6 +14,7 @@ describe("reconcileProductsAfterPlanChange", () => {
     const query = vi.fn((table: string) => ({
       withIndex: vi.fn(() => ({
         collect: vi.fn(async () => (table === "products" ? products : [])),
+        take: vi.fn(async () => (table === "products" ? products : [])),
         unique: vi.fn(async () => null),
       })),
     }));
@@ -27,7 +29,7 @@ describe("reconcileProductsAfterPlanChange", () => {
       planKey: "starter",
     });
 
-    expect(result).toEqual([]);
+    expect(result).toEqual(["two", "three"]);
     expect(patch).not.toHaveBeenCalled();
     expect(products.every((product) => product.archivedAt === undefined)).toBe(
       true,
@@ -36,7 +38,8 @@ describe("reconcileProductsAfterPlanChange", () => {
       "productLimitReconciliations",
       expect.objectContaining({
         archivedProductIds: [],
-        reason: expect.stringContaining("must archive products"),
+        lockedProductIds: ["two", "three"],
+        reason: expect.stringContaining("stay saved but locked"),
       }),
     );
   });

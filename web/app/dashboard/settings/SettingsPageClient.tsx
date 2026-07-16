@@ -43,6 +43,7 @@ export function SettingsPageClient() {
           }
           isAutomationSaving={automation.isSaving}
           isProductActionDisabled={products.isSaving}
+          lockedProductIds={products.lockedProductIds}
           products={products.products}
           restoringProductId={products.restoringProductId}
           savingProductId={products.savingProductId}
@@ -52,6 +53,7 @@ export function SettingsPageClient() {
           onSaveAutomation={automation.savePreferences}
           onRestoreProduct={products.restoreProduct}
           onSetActiveProduct={products.setActiveProduct}
+          onShowProductPlanLimit={products.showProductPlanLimitDialog}
           onUpdateProduct={products.updateProduct}
         />
         <SettingsAccountSection

@@ -1,6 +1,7 @@
 import type { MutationCtx } from "../_generated/server";
 import { writeEntitlementHistory } from "./writeEntitlementHistory";
 import { cancelNeverStartedQueueForOwner } from "../workerQueue/cancelNeverStartedQueueForOwner";
+import { createSubscriptionTransitionCommunication } from "../accountEmail/createSubscriptionTransitionCommunication";
 
 export async function markEntitlementInactiveForCustomer(
   ctx: MutationCtx,
@@ -48,6 +49,19 @@ export async function markEntitlementInactiveForCustomer(
     now,
     ownerId: entitlement.ownerId,
     reason: "Billing account ended before this work started.",
+  });
+  await createSubscriptionTransitionCommunication(ctx, {
+    eventId: args.eventId,
+    hadConfirmedPayment: Boolean(entitlement.latestPaidInvoiceId),
+    nextCancelAtPeriodEnd: entitlement.cancelAtPeriodEnd,
+    nextState: "inactive",
+    now,
+    ownerId: entitlement.ownerId,
+    periodEnd: entitlement.currentPeriodEnd,
+    planKey: entitlement.planKey,
+    previousCancelAtPeriodEnd: entitlement.cancelAtPeriodEnd,
+    previousState: entitlement.state,
+    subscriptionId: entitlement.stripeSubscriptionId,
   });
 
   return entitlement._id;

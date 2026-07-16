@@ -40,6 +40,9 @@ vi.mock("@/convex/_generated/api", () => ({
       listArchivedProducts: {
         listArchivedProducts: "products.listArchivedProducts",
       },
+      getProductAccessState: {
+        getProductAccessState: "products.getProductAccessState",
+      },
       restoreProduct: { restoreProduct: "products.restoreProduct" },
     },
     productPreferences: {
@@ -90,6 +93,16 @@ describe("useProducts", () => {
         : mocks.archiveProductMutation;
     });
     mocks.useQuery.mockImplementation((queryId) => {
+      if (queryId === api.products.getProductAccessState.getProductAccessState) {
+        return {
+          defaultProductId: "product_1",
+          isProductLimitReached: false,
+          lockedProductIds: [],
+          planName: "Starter",
+          productLimit: 1,
+        };
+      }
+
       if (queryId === api.productPreferences.get) {
         return { defaultProductId: "product_1" };
       }
@@ -132,6 +145,10 @@ describe("useProducts", () => {
     expect(state.defaultProductId).toBe("product_1");
     expect(state.isLoading).toBe(false);
     expect(mocks.useQuery).toHaveBeenCalledWith(api.products.list, {});
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      api.products.getProductAccessState.getProductAccessState,
+      {},
+    );
     expect(mocks.useQuery).toHaveBeenCalledWith(api.productPreferences.get, {});
     expect(mocks.useMutation).toHaveBeenCalledWith(
       api.products.archiveProduct.archiveProduct,
@@ -159,6 +176,10 @@ describe("useProducts", () => {
     );
     expect(mocks.useQuery).toHaveBeenCalledWith(
       api.productPreferences.get,
+      "skip",
+    );
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      api.products.getProductAccessState.getProductAccessState,
       "skip",
     );
   });

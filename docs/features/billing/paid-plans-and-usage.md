@@ -69,6 +69,12 @@ The approved customer policy is part of the production billing contract:
   security alerts, and service messages go to the account email independently
   of marketing consent.
 
+ClipStitchr's service messages are durable and idempotent. Stripe continues to
+send invoices and receipts; ClipStitchr sends only the account impact, such as
+the active plan, credits added, a grace deadline, or a cancellation date. The
+same verified billing transition creates a dashboard notification. See
+`docs/features/platform/account-billing-communications.md`.
+
 ## Customer Experience
 
 Settings shows the current plan, entitlement state, exact plan comparison,
@@ -188,11 +194,14 @@ third-party capacity.
 
 ## Downgrade Reconciliation
 
-Plan limits apply when the scheduled downgrade becomes effective. Products over
-the new limit stay readable and editable. New product creation and restoration
-remain blocked until the owner chooses which products to archive. ClipStitchr
-does not make that choice automatically. Daily drafts are disabled beyond the
-new plan's allowance.
+Plan limits apply when the scheduled downgrade becomes effective. The saved
+default product stays selectable, followed by the oldest products that fit in
+the new limit. Every excess product stays readable and editable but shows as
+locked and cannot become active. Selecting a locked product, or choosing New
+product while every slot is used, explains the limit and links directly to
+subscription settings. Product creation and restoration remain blocked until
+the owner archives enough products or changes plans. Daily drafts are disabled
+beyond the new plan's allowance.
 
 The reconciliation records make the over-limit state and daily-draft changes
 idempotent and support-readable. Media, historical usage, and product data

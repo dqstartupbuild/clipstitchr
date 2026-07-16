@@ -3,6 +3,7 @@ import { SettingsAutomationPanel } from "@/app/_components/settings/SettingsAuto
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
+import type { ProductLimitDialogReason } from "@/lib/clipstitchr/types/ProductLimitDialogReason";
 import type { StitchTemplate } from "@/lib/clipstitchr/types/StitchTemplate";
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 
@@ -16,6 +17,7 @@ type SettingsProductSectionProps = {
   isAutomationLoading: boolean;
   isAutomationSaving: boolean;
   isProductActionDisabled: boolean;
+  lockedProductIds?: string[];
   products: ProductProfile[];
   archivedProducts?: ProductProfile[];
   savingProductId: string | null;
@@ -25,6 +27,7 @@ type SettingsProductSectionProps = {
   onDeleteProduct: (id: string) => Promise<void>;
   onSaveAutomation: (preferences: AutomationPreferencesInput) => Promise<void>;
   onSetActiveProduct: (product: ProductProfile) => Promise<void>;
+  onShowProductPlanLimit?: (reason: ProductLimitDialogReason) => void;
   onRestoreProduct?: (id: string) => Promise<void>;
   onUpdateProduct: (
     id: string,
@@ -42,6 +45,7 @@ export function SettingsProductSection({
   isAutomationLoading,
   isAutomationSaving,
   isProductActionDisabled,
+  lockedProductIds = [],
   products,
   archivedProducts = [],
   savingProductId,
@@ -51,6 +55,7 @@ export function SettingsProductSection({
   onDeleteProduct,
   onSaveAutomation,
   onSetActiveProduct,
+  onShowProductPlanLimit = () => undefined,
   onRestoreProduct = async () => undefined,
   onUpdateProduct,
 }: SettingsProductSectionProps) {
@@ -76,12 +81,14 @@ export function SettingsProductSection({
         defaultingProductId={defaultingProductId}
         deletingProductId={deletingProductId}
         isActionDisabled={isProductActionDisabled}
+        lockedProductIds={lockedProductIds}
         products={products}
         archivedProducts={archivedProducts}
         savingProductId={savingProductId}
         restoringProductId={restoringProductId}
         onDelete={onDeleteProduct}
         onSetDefault={onSetActiveProduct}
+        onShowProductPlanLimit={onShowProductPlanLimit}
         onRestore={onRestoreProduct}
         onUpdate={onUpdateProduct}
       />

@@ -13,6 +13,13 @@ and shows the full message in a dialog. Users can dismiss the dialog, click
 outside it, or delete the message. Tapping anywhere outside the open Notification
 Center closes it, while taps on the bell or inside the inbox continue to work.
 
+Billing-backed notifications use the same inbox. Plan activation and changes,
+renewals, cancellation changes, payment failures and recovery, plan end, and
+credit refills create account-level `billing` or `credit` messages. Their
+dedupe key is shared with the matching transactional-email communication, so a
+retried Stripe webhook cannot create a second alert. Stripe Checkout redirects
+never create a notification.
+
 ## When Notifications Are Created
 
 Single user-facing saves create one notification:
@@ -25,6 +32,8 @@ Single user-facing saves create one notification:
 - Avatar records through `avatars.save`, including create-avatar-from-UGC flows
 - Avatar/photo assets through `photoAssets.save` and non-automation
   `photoAssets.saveFromProvider`
+- Verified Stripe subscription, payment, and credit transitions through the
+  focused helpers under `convex/accountEmail`
 
 Automated or batch work creates one grouped notification when the full run is
 done, not one message per output. `automationTasks.markStatus`,
@@ -41,6 +50,8 @@ create a normal automation run document.
 - `web/convex/createNotification.ts` inserts deduped notifications.
 - `web/convex/createCompletedRunNotification.ts` creates grouped automation
   and Stitchr Batch completion notifications.
+- `web/convex/accountEmail/enqueueAccountCommunication.ts` pairs one durable
+  account email with one deduplicated billing or credit notification.
 - `web/convex/markAutomationRunStatus.ts`,
   `web/convex/markAutomationRunCompletedIfAllTasksDone.ts`, and
   `web/convex/markAutomationRunCompletedWhenTasksDone.ts` keep run completion

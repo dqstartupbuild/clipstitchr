@@ -1,5 +1,6 @@
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
+import type { ProductLimitDialogReason } from "@/lib/clipstitchr/types/ProductLimitDialogReason";
 
 export type DashboardProductContextValue = {
   activeProduct?: ProductProfile;
@@ -12,7 +13,11 @@ export type DashboardProductContextValue = {
   isBackfillingLegacyContent: boolean;
   isCreating: boolean;
   isLoading: boolean;
+  isProductLimitReached: boolean;
   isSaving: boolean;
+  lockedProductIds: string[];
+  planName: string | null;
+  productLimit: number | null;
   products: ProductProfile[];
   restoringProductId: string | null;
   requiresOnboarding: boolean;
@@ -23,6 +28,7 @@ export type DashboardProductContextValue = {
   markOnboardingCompletedLocally: (completedAt: string) => void;
   restoreProduct: (id: string) => Promise<void>;
   setActiveProduct: (product: ProductProfile) => Promise<void>;
+  showProductPlanLimitDialog: (reason: ProductLimitDialogReason) => void;
   updateProduct: (
     id: string,
     input: ProductProfileCreateInput,

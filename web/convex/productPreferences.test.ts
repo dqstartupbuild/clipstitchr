@@ -11,6 +11,7 @@ type ConvexFunction<Args, Result> = {
 
 const mocks = vi.hoisted(() => ({
   getAuthenticatedOwnerId: vi.fn(),
+  assertProductIsUnlockedForOwner: vi.fn(),
   mutation: vi.fn((definition) => definition),
   query: vi.fn((definition) => definition),
   rateLimiter: {
@@ -29,6 +30,10 @@ vi.mock("./auth/getAuthenticatedOwnerId", () => ({
 
 vi.mock("./rateLimiter", () => ({
   rateLimiter: mocks.rateLimiter,
+}));
+
+vi.mock("./products/assertProductIsUnlockedForOwner", () => ({
+  assertProductIsUnlockedForOwner: mocks.assertProductIsUnlockedForOwner,
 }));
 
 function getHandler<Args, Result>(convexFunction: unknown) {
@@ -56,6 +61,7 @@ describe("product preferences", () => {
     vi.clearAllMocks();
     mocks.getAuthenticatedOwnerId.mockResolvedValue("owner_123");
     mocks.rateLimiter.limit.mockResolvedValue(undefined);
+    mocks.assertProductIsUnlockedForOwner.mockResolvedValue(undefined);
   });
 
   it("gets preferences for the authenticated owner", async () => {
@@ -107,10 +113,16 @@ describe("product preferences", () => {
         throws: true,
       },
     );
+    expect(mocks.assertProductIsUnlockedForOwner).toHaveBeenCalledWith(
+      ctx,
+      "owner_123",
+      "product_1",
+      expect.any(String),
+    );
     expect(ctx.db.patch).toHaveBeenCalledWith("pref_doc", {
       ownerId: "owner_123",
       defaultProductId: "product_1",
-      updatedAt: "2026-06-01T00:00:00.000Z",
+      updatedAt: expect.any(String),
     });
     expect(ctx.db.insert).not.toHaveBeenCalled();
   });
@@ -137,7 +149,7 @@ describe("product preferences", () => {
     expect(ctx.db.insert).toHaveBeenCalledWith("productPreferences", {
       ownerId: "owner_123",
       defaultProductId: "product_1",
-      updatedAt: "2026-06-01T00:00:00.000Z",
+      updatedAt: expect.any(String),
     });
   });
 

@@ -11,6 +11,7 @@ import { resolveStripeOwnerId } from "./resolveStripeOwnerId";
 import { writeEntitlementHistory } from "./writeEntitlementHistory";
 import { reconcileDailyDraftsAfterPlanChange } from "../automation/reconcileDailyDraftsAfterPlanChange";
 import { reconcileProductsAfterPlanChange } from "../products/reconcileProductsAfterPlanChange";
+import { createInvoicePaidCommunication } from "../accountEmail/createInvoicePaidCommunication";
 
 export async function activateEntitlementFromInvoice(
   ctx: MutationCtx,
@@ -65,9 +66,12 @@ export async function activateEntitlementFromInvoice(
   const paymentHasOpenHold = await getStripePaymentHasOpenHold(ctx, {
     invoiceId: snapshot.invoiceId,
   });
+  let creditsAdded = 0;
+  let disabledDailyDraftCount = 0;
+  let lockedProductCount = 0;
 
   if (!paymentHasOpenHold) {
-    await grantMonthlyAllowance(ctx, {
+    const allowance = await grantMonthlyAllowance(ctx, {
       eventId: event.id,
       invoiceId: snapshot.invoiceId,
       now,
@@ -77,18 +81,22 @@ export async function activateEntitlementFromInvoice(
       planKey: snapshot.planKey,
       stripeSubscriptionId: snapshot.subscriptionId,
     });
-    await reconcileProductsAfterPlanChange(ctx, {
+    creditsAdded = allowance?.creditGrant ?? 0;
+    const lockedProductIds = await reconcileProductsAfterPlanChange(ctx, {
       eventId: event.id,
       now,
       ownerId,
       planKey: snapshot.planKey,
     });
-    await reconcileDailyDraftsAfterPlanChange(ctx, {
+    lockedProductCount = lockedProductIds?.length ?? 0;
+    const disabledDailyDraftProductIds =
+      await reconcileDailyDraftsAfterPlanChange(ctx, {
       eventId: event.id,
       now,
       ownerId,
       planKey: snapshot.planKey,
     });
+    disabledDailyDraftCount = disabledDailyDraftProductIds?.length ?? 0;
   }
 
   if (!existing) {
@@ -125,6 +133,20 @@ export async function activateEntitlementFromInvoice(
     });
     if (paymentHasOpenHold) {
       await syncBillingReviewFromPaymentHolds(ctx, ownerId, now);
+    }
+    if (!paymentHasOpenHold) {
+      await createInvoicePaidCommunication(ctx, {
+        creditsAdded,
+        disabledDailyDraftCount,
+        eventId: event.id,
+        invoiceId: snapshot.invoiceId,
+        kind: "activation",
+        lockedProductCount,
+        now,
+        ownerId,
+        periodEnd: snapshot.periodEnd,
+        planKey: snapshot.planKey,
+      });
     }
 
     return entitlementId;
@@ -163,6 +185,26 @@ export async function activateEntitlementFromInvoice(
   });
   if (paymentHasOpenHold) {
     await syncBillingReviewFromPaymentHolds(ctx, ownerId, now);
+  }
+  if (!paymentHasOpenHold) {
+    const kind =
+      existing.planKey !== snapshot.planKey
+        ? ("plan-change" as const)
+        : existing.state === "grace"
+          ? ("recovery" as const)
+          : ("renewal" as const);
+    await createInvoicePaidCommunication(ctx, {
+      creditsAdded,
+      disabledDailyDraftCount,
+      eventId: event.id,
+      invoiceId: snapshot.invoiceId,
+      kind,
+      lockedProductCount,
+      now,
+      ownerId,
+      periodEnd: snapshot.periodEnd,
+      planKey: snapshot.planKey,
+    });
   }
 
   return existing._id;

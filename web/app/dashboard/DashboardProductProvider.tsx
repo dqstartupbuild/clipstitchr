@@ -7,10 +7,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { DashboardGateState } from "@/app/_components/dashboard/DashboardGateState";
 import { ProductCreateDialog } from "@/app/_components/products/ProductCreateDialog";
+import { ProductPlanLimitDialog } from "@/app/_components/products/ProductPlanLimitDialog";
 import { DashboardProductContext } from "@/lib/clipstitchr/context/DashboardProductContext";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
+import type { ProductLimitDialogReason } from "@/lib/clipstitchr/types/ProductLimitDialogReason";
 
 type DashboardProductProviderProps = {
   children: ReactNode;
@@ -35,6 +37,8 @@ export function DashboardProductProvider({
   >(null);
   const [isBackfillingLegacyContent, setIsBackfillingLegacyContent] =
     useState(false);
+  const [productLimitDialogReason, setProductLimitDialogReason] =
+    useState<ProductLimitDialogReason | null>(null);
   const activeProduct = useMemo(
     () =>
       products.products.find(
@@ -127,7 +131,11 @@ export function DashboardProductProvider({
       isCreating: products.isCreating,
       isLoading:
         products.isLoading || (isAuthenticated && setupState === undefined),
+      isProductLimitReached: products.isProductLimitReached,
       isSaving: products.isSaving,
+      lockedProductIds: products.lockedProductIds,
+      planName: products.planName,
+      productLimit: products.productLimit,
       products: products.products,
       restoringProductId: products.restoringProductId,
       requiresOnboarding,
@@ -138,6 +146,7 @@ export function DashboardProductProvider({
       markOnboardingCompletedLocally,
       restoreProduct: products.restoreProduct,
       setActiveProduct,
+      showProductPlanLimitDialog: setProductLimitDialogReason,
       updateProduct: products.updateProduct,
     }),
     [
@@ -153,7 +162,11 @@ export function DashboardProductProvider({
       products.error,
       products.isCreating,
       products.isLoading,
+      products.isProductLimitReached,
       products.isSaving,
+      products.lockedProductIds,
+      products.planName,
+      products.productLimit,
       products.products,
       products.restoreProduct,
       products.restoringProductId,
@@ -185,6 +198,14 @@ export function DashboardProductProvider({
           isRequired
           isSaving={products.isCreating}
           onCreate={createProduct}
+        />
+      ) : null}
+      {productLimitDialogReason ? (
+        <ProductPlanLimitDialog
+          planName={products.planName}
+          productLimit={products.productLimit}
+          reason={productLimitDialogReason}
+          onClose={() => setProductLimitDialogReason(null)}
         />
       ) : null}
     </DashboardProductContext.Provider>

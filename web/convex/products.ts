@@ -99,11 +99,13 @@ export const list = query({
 
     const products = await ctx.db
       .query("products")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .withIndex("by_owner_archived_created", (q) =>
+        q.eq("ownerId", ownerId).eq("archivedAt", undefined),
+      )
       .order("desc")
       .take(PRODUCT_LIST_LIMIT);
 
-    return products.filter((product) => !product.archivedAt);
+    return products;
   },
 });
 

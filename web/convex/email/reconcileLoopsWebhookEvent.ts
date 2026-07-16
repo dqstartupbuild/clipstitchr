@@ -13,6 +13,7 @@ import { getMarketingSuppressionEventIsStale } from "./getMarketingSuppressionEv
 import { getOrBindConfirmationEmailOperation } from "./getOrBindConfirmationEmailOperation";
 import { getMarketingSubscriptionEventIsStale } from "./getMarketingSubscriptionEventIsStale";
 import { stopCourseReleasesForContact } from "../courseAccess/stopCourseReleasesForContact";
+import { reconcileAccountEmailWebhookEvidence } from "../accountEmail/reconcileAccountEmailWebhookEvidence";
 
 const nullableString = v.union(v.null(), v.string());
 
@@ -64,6 +65,30 @@ export const reconcileLoopsWebhookEvent = internalMutation({
       .unique();
 
     if (duplicate) return { status: "duplicate" as const };
+
+    const accountEvidence = await reconcileAccountEmailWebhookEvidence(ctx, {
+      contactEmail: args.contactIdentity?.email ?? null,
+      eventAt,
+      eventName: args.eventName,
+      providerEmailId: args.providerEmailId,
+      providerSourceId: args.providerSourceId,
+      receivedAt: args.receivedAt,
+      sourceType: args.sourceType,
+    });
+
+    if (accountEvidence.matched) {
+      await ctx.db.insert("loopsWebhookEvents", {
+        accountEmailOperationId: accountEvidence.operationId,
+        disposition: accountEvidence.disposition,
+        eventAt,
+        eventType: args.eventName,
+        processedAt: args.receivedAt,
+        schemaVersion: args.webhookSchemaVersion,
+        webhookId: args.webhookId,
+      });
+
+      return { status: accountEvidence.disposition };
+    }
 
     let contact: Doc<"marketingContacts"> | null = null;
     let linkedByEmail = false;

@@ -18,8 +18,10 @@ audit history as a paid subscription.
   Never create or attach a separate $0 Price.
 - Create a unique coupon for one approved Clerk account. Set `percent_off=100`,
   `duration=forever`, and `max_redemptions=1`.
-- Scope the coupon to the selected canonical plan Product with
-  `applies_to.products` where the Stripe surface supports it.
+- Scope the coupon either to the selected canonical plan Product or, when one
+  approved complimentary subscription may move between plans, to the canonical
+  Starter, Pro, and Agency Products together. Never include the refill Product
+  or any unrelated Product.
 - Do not create a Promotion Code. Apply the coupon directly while creating the
   subscription so the customer cannot share or self-redeem a code.
 - Create the subscription with `ownerId=<Clerk subject>` and
@@ -91,6 +93,8 @@ applies_to.products: [canonical plan Product ID]
 name: Complimentary access
 metadata.ownerId: <Clerk subject>
 metadata.planKey: <starter|pro|agency>
+metadata.eligiblePlanKeys: <selected plan, or starter,pro,agency>
+metadata.scope: <selected-plan or all-paid-plans>
 metadata.purpose: complimentary-access
 metadata.approvalRef: <ticket or approval reference>
 ```
@@ -99,6 +103,54 @@ Do not create a Promotion Code for the coupon and do not put its ID in customer
 communications. A short `redeem_by` window may be added when operations policy
 requires it; this limits new redemption and does not replace
 `max_redemptions=1`.
+
+## Move an Existing Complimentary Subscription
+
+An existing subscription must not be replaced with a second subscription. To
+move it to a new canonical plan while keeping it complimentary:
+
+1. Re-read the Customer, subscription, single subscription item, current
+   discount, metadata, mode, status, pending update, and subscription schedule.
+   Stop on a second subscription, multiple plan items, a schedule, or an
+   unexpected pending update.
+2. Create and validate a new private coupon scoped to all three canonical paid
+   plan Products. Stripe coupons cannot expand an existing Product restriction,
+   so do not try to reuse a single-plan coupon.
+3. Attach only the new coupon to the existing subscription. Confirm the old
+   discount is detached, the current Price is unchanged, and the new coupon has
+   exactly one redemption. This safe intermediate state remains fully
+   complimentary if the plan update later fails.
+4. Capture one `proration_date` and persist it in the operator record before
+   previewing. Retries must reuse that exact timestamp and identical parameters.
+5. Preview the existing subscription item changing to the target canonical
+   Price with `proration_behavior=always_invoice`. Let the subscription's
+   already-attached discount apply. Require `total=0` and `amount_due=0`.
+6. Update only the existing item Price and the server-owned `ownerId`,
+   `planKey`, and `catalogKey` metadata. Use
+   `proration_behavior=always_invoice`, the persisted `proration_date`, and
+   `payment_behavior=error_if_incomplete`. Do not reset the billing anchor.
+7. Require a paid, zero-total `subscription_update` invoice and signed
+   `customer.subscription.updated` plus `invoice.paid` processing before
+   treating the new plan as active.
+
+The zero-total proration invoice can contain both an old-plan credit and a
+new-plan debit with `amount=0`. The invoice parser must deprioritize a credited
+proration line whose `proration_details.credited_items` is populated, then
+select the new-plan line using its allowlisted Price. Deploy and test that parser
+before running a fully discounted plan change.
+
+Use a separate Stripe idempotency key for coupon creation, discount replacement,
+and the plan update. Store the coupon ID and `proration_date` before the update.
+Do not recompute the timestamp when retrying the same key.
+
+If coupon creation or preview fails, the subscription remains unchanged and an
+unused zero-redemption coupon can be deleted. If discount replacement succeeds
+but the plan update fails, leave the subscription on its current plan with the
+new all-plan coupon and retry only after re-reading Stripe. If Stripe shows the
+paid target-plan invoice but Convex is behind, do not reverse Stripe or edit
+Convex. Redeliver the authoritative signed `invoice.paid` event and reconcile
+idempotently. A same-period direct downgrade is not a safe rollback because
+allowance grants are append-only.
 
 ## Create the Subscription Atomically
 

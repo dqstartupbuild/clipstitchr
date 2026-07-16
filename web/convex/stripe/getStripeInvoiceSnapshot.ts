@@ -1,5 +1,6 @@
 import type Stripe from "stripe";
 import { getPlanKeyForStripePrice } from "../../lib/clipstitchr/billing/getPlanKeyForStripePrice";
+import { getStripeInvoicePlanLinePriority } from "./getStripeInvoicePlanLinePriority";
 import { getStripeResourceId } from "./getStripeResourceId";
 import { toStripeIsoString } from "./toStripeIsoString";
 
@@ -18,6 +19,14 @@ export function getStripeInvoiceSnapshot(invoice: Stripe.Invoice) {
       : [];
   });
   const selected = [...planLines].sort((left, right) => {
+    const priorityDifference =
+      getStripeInvoicePlanLinePriority(right.line) -
+      getStripeInvoicePlanLinePriority(left.line);
+
+    if (priorityDifference !== 0) {
+      return priorityDifference;
+    }
+
     const leftPositive = left.line.amount > 0 ? 1 : 0;
     const rightPositive = right.line.amount > 0 ? 1 : 0;
 

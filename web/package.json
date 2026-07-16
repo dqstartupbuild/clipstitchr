@@ -19,6 +19,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1045.0",
     "@aws-sdk/s3-request-presigner": "^3.1045.0",
+    "@clerk/backend": "^3.11.6",
     "@clerk/nextjs": "^7.3.2",
     "@content-collections/core": "^0.15.0",
     "@content-collections/mdx": "^0.2.2",
@@ -50,6 +51,7 @@
     "@vitest/coverage-v8": "^4.1.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.4"

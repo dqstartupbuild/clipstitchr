@@ -101,6 +101,20 @@ current official API features without introducing another database model.
 
 ## Architecture Boundaries
 
+### Account service mail is a separate transactional channel
+
+Account creation, billing, payment, and creation-credit notices do not use the
+marketing-contact consent projection. They use a Clerk-subject-keyed account
+contact and a separate durable `accountEmailOperations` outbox, always send
+with `addToAudience: false`, and remain eligible independently of marketing
+consent. The account channel has its own exact enable flag and four allowlisted
+transactional template IDs. It still shares the official Loops SDK, deployment
+and team guards, signed webhook, retry policy, and eight-request-per-second
+provider pacing.
+
+See `docs/features/platform/account-billing-communications.md` for the event
+matrix, Clerk synchronization, idempotency keys, templates, and rollback gate.
+
 ### Convex is the product source of truth
 
 A successful public-tool form first commits the following product state in one

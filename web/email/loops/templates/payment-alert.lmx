@@ -1,0 +1,7 @@
+<Style backgroundColor="#181412" backgroundXPadding="16" backgroundYPadding="24" bodyColor="#251d19" bodyXPadding="28" bodyYPadding="28" bodyFontFamily="Arial" bodyFontCategory="sans-serif" borderColor="#4a352b" borderWidth="1" borderRadius="12" buttonBodyColor="#ddb498" buttonBodyXPadding="20" buttonBodyYPadding="12" buttonBorderColor="" buttonBorderWidth="0" buttonBorderRadius="8" buttonTextColor="#1c120e" buttonTextFormat="1" buttonTextFontSize="16" dividerColor="#4a352b" dividerBorderWidth="1" textBaseColor="#f5f0e9" textBaseFontSize="16" textBaseLineHeight="155" textBaseLetterSpacing="0" textLinkColor="#ddb498" heading1Color="#f5f0e9" heading1FontSize="26" heading1LineHeight="120" heading1LetterSpacing="0" heading2Color="#ddb498" heading2FontSize="21" heading2LineHeight="125" heading2LetterSpacing="0" heading3Color="" heading3FontSize="20" heading3LineHeight="125" heading3LetterSpacing="0" />
+<H1 paddingBottom="12">{data.headline}</H1>
+<Paragraph paddingBottom="12">Hi {data.firstName},</Paragraph>
+<Paragraph paddingBottom="16">{data.summary}</Paragraph>
+<Paragraph paddingBottom="20"><Strong>Take care of this by:</Strong> {data.graceEndsOn}</Paragraph>
+<Button href="{data.settingsUrl}" bgColor="#ddb498" textColor="#1c120e" borderRadius="8" align="left" notrack="true" paddingBottom="20">Open billing settings</Button>
+<Paragraph fontSize="14" lineHeight="150">If you already fixed this, no action is needed. Questions? Reply here or email <Link href="mailto:{data.supportEmail}">{data.supportEmail}</Link>.</Paragraph>

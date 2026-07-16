@@ -6,6 +6,7 @@ import { getStripeInvoiceFailureShouldApply } from "./getStripeInvoiceFailureSho
 import { getStripeInvoiceSnapshot } from "./getStripeInvoiceSnapshot";
 import { resolveStripeOwnerId } from "./resolveStripeOwnerId";
 import { writeEntitlementHistory } from "./writeEntitlementHistory";
+import { createPaymentFailureCommunication } from "../accountEmail/createPaymentFailureCommunication";
 
 export async function markEntitlementPaymentFailed(
   ctx: MutationCtx,
@@ -25,12 +26,28 @@ export async function markEntitlementPaymentFailed(
 
   if (
     !entitlement ||
-    !entitlement.latestPaidInvoiceId ||
     entitlement.stripeSubscriptionId !== snapshot.subscriptionId ||
     !getStripeInvoiceFailureShouldApply(
       entitlement.latestPaymentEventCreatedAt,
       event.created,
-    ) ||
+    )
+  ) {
+    return entitlement?._id;
+  }
+
+  const now = new Date(event.created * 1_000).toISOString();
+
+  if (!entitlement.latestPaidInvoiceId) {
+    await createPaymentFailureCommunication(ctx, {
+      eventId: event.id,
+      invoiceId: snapshot.invoiceId,
+      now,
+      ownerId,
+    });
+    return entitlement._id;
+  }
+
+  if (
     !(await getStripeEntitlementTransitionShouldApply(ctx, entitlement, {
       createdAt: event.created,
       eventId: event.id,
@@ -38,10 +55,9 @@ export async function markEntitlementPaymentFailed(
       state: "grace",
     }))
   ) {
-    return entitlement?._id;
+    return entitlement._id;
   }
 
-  const now = new Date(event.created * 1_000).toISOString();
   const graceEndsAt = getStripeGraceEndsAt(
     entitlement.graceEndsAt,
     event.created,
@@ -70,6 +86,13 @@ export async function markEntitlementPaymentFailed(
         ? "Stripe invoice finalization failed; 72-hour grace started"
         : "Stripe invoice payment failed; 72-hour grace started",
     state: "grace",
+  });
+  await createPaymentFailureCommunication(ctx, {
+    eventId: event.id,
+    graceEndsAt,
+    invoiceId: snapshot.invoiceId,
+    now,
+    ownerId,
   });
 
   return entitlement._id;

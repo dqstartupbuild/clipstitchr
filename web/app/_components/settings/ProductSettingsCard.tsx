@@ -1,12 +1,13 @@
 "use client";
 
-import { Archive, Edit3, Star } from "lucide-react";
+import { Archive, Edit3, Lock, Star } from "lucide-react";
 import { useState } from "react";
 import { ProductSettingsDetailsDialog } from "@/app/_components/settings/ProductSettingsDetailsDialog";
 import { ProductSettingsEditDialog } from "@/app/_components/settings/ProductSettingsEditDialog";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
+import type { ProductLimitDialogReason } from "@/lib/clipstitchr/types/ProductLimitDialogReason";
 import { getCliprHookStyleName } from "@/lib/clipstitchr/utils/getCliprHookStyleName";
 
 type ProductSettingsCardProps = {
@@ -15,9 +16,11 @@ type ProductSettingsCardProps = {
   isDefaulting: boolean;
   isDisabled: boolean;
   isDeleting: boolean;
+  isLocked?: boolean;
   isSaving: boolean;
   onDelete: (id: string) => Promise<void>;
   onSetDefault: (product: ProductProfile) => Promise<void>;
+  onShowProductPlanLimit?: (reason: ProductLimitDialogReason) => void;
   onUpdate: (id: string, input: ProductProfileCreateInput) => Promise<unknown>;
 };
 
@@ -27,9 +30,11 @@ export function ProductSettingsCard({
   isDefaulting,
   isDisabled,
   isDeleting,
+  isLocked = false,
   isSaving,
   onDelete,
   onSetDefault,
+  onShowProductPlanLimit = () => undefined,
   onUpdate,
 }: ProductSettingsCardProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -88,6 +93,12 @@ export function ProductSettingsCard({
                 Active product
               </span>
             ) : null}
+            {isLocked ? (
+              <span className="mt-1 flex items-center gap-1 text-xs font-bold text-text-tertiary">
+                <Lock aria-hidden className="h-3.5 w-3.5" />
+                Locked by your plan
+              </span>
+            ) : null}
           </button>
           <div
             className="flex shrink-0 gap-2"
@@ -95,21 +106,37 @@ export function ProductSettingsCard({
           >
             <IconButton
               label={
-                isDefault
+                isLocked
+                  ? `Why ${product.name} is locked`
+                  : isDefault
                   ? `${product.name} is active`
                   : isDefaulting
                     ? "Making product active"
                     : `Make ${product.name} active`
               }
               icon={
-                <Star
-                  aria-hidden
-                  className="h-4 w-4"
-                  fill={isDefault ? "currentColor" : "none"}
-                />
+                isLocked ? (
+                  <Lock aria-hidden className="h-4 w-4" />
+                ) : (
+                  <Star
+                    aria-hidden
+                    className="h-4 w-4"
+                    fill={isDefault ? "currentColor" : "none"}
+                  />
+                )
               }
               disabled={isDisabled || isDefault}
-              onClick={() => void onSetDefault(product)}
+              onClick={() => {
+                if (isLocked) {
+                  onShowProductPlanLimit({
+                    kind: "locked",
+                    productName: product.name,
+                  });
+                  return;
+                }
+
+                void onSetDefault(product);
+              }}
             />
             <IconButton
               label="Edit product"

@@ -3,10 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { markEntitlementPaymentFailed } from "./markEntitlementPaymentFailed";
 
 const mocks = vi.hoisted(() => ({
+  createPaymentFailureCommunication: vi.fn(),
   getStripeEntitlementSourceEvent: vi.fn(),
   getStripeInvoiceSnapshot: vi.fn(),
   resolveStripeOwnerId: vi.fn(),
   writeEntitlementHistory: vi.fn(),
+}));
+
+vi.mock("../accountEmail/createPaymentFailureCommunication", () => ({
+  createPaymentFailureCommunication: mocks.createPaymentFailureCommunication,
 }));
 
 vi.mock("./getStripeEntitlementSourceEvent", () => ({
@@ -80,6 +85,12 @@ describe("markEntitlementPaymentFailed", () => {
 
     expect(ctx.db.patch).not.toHaveBeenCalled();
     expect(mocks.writeEntitlementHistory).not.toHaveBeenCalled();
+    expect(mocks.createPaymentFailureCommunication).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({
+        invoiceId: "in_failed",
+      }),
+    );
   });
 
   it("does not use a previous subscription payment to grant grace", async () => {
@@ -171,6 +182,12 @@ describe("markEntitlementPaymentFailed", () => {
       expect.objectContaining({
         graceEndsAt: "2026-07-19T12:00:00.000Z",
         state: "grace",
+      }),
+    );
+    expect(mocks.createPaymentFailureCommunication).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({
+        graceEndsAt: "2026-07-19T12:00:00.000Z",
       }),
     );
   });

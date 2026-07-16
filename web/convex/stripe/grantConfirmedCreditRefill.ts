@@ -8,6 +8,8 @@ import { grantCreditRefill } from "../usage/grantCreditRefill";
 import { getStripeResourceId } from "./getStripeResourceId";
 import { getStripePaymentHasOpenHold } from "./getStripePaymentHasOpenHold";
 import { resolveStripeOwnerId } from "./resolveStripeOwnerId";
+import { creditRefillPolicy } from "../../lib/clipstitchr/billing/creditRefillPolicy";
+import { createRefillCommunication } from "../accountEmail/createRefillCommunication";
 
 export async function grantConfirmedCreditRefill(
   ctx: MutationCtx,
@@ -94,7 +96,7 @@ export async function grantConfirmedCreditRefill(
     );
   }
 
-  return await grantCreditRefill(ctx, {
+  const grantId = await grantCreditRefill(ctx, {
     eventId: event.id,
     now,
     ownerId,
@@ -107,4 +109,15 @@ export async function grantConfirmedCreditRefill(
     stripePaymentIntentId: paymentIntent.id,
     stripeSubscriptionId: purchaseStripeSubscriptionId,
   });
+  await createRefillCommunication(ctx, {
+    eventId: event.id,
+    expiresAt: new Date(
+      Date.parse(now) + creditRefillPolicy.expiresAfterMs,
+    ).toISOString(),
+    now,
+    ownerId,
+    paymentIntentId: paymentIntent.id,
+  });
+
+  return grantId;
 }

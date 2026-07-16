@@ -779,6 +779,24 @@ smoke confirms the exact From and reply-to values.
 
 ## Emergency Stop
 
+### Account transactional channel
+
+Account-created, subscription, payment, and credit service messages use the
+separate `LOOPS_ACCOUNT_EMAIL_ENABLED` gate and four exact transactional IDs.
+Keep that gate `false` until the `@followusai.com` sender and
+`support@followusai.com` reply-to pass a controlled inbox preview for all four
+source templates in `web/email/loops/templates`. Enabling this account gate
+does not enable the paused marketing Workflow channel.
+
+For near-real-time lifecycle sync, an optional Clerk production webhook can
+point to `https://<production-convex>.convex.site/webhooks/clerk`, subscribe
+only to `user.created`, `user.updated`, and `user.deleted`, and place its
+signing secret in Convex as `CLERK_WEBHOOK_SIGNING_SECRET`. Never expose that
+route without signature verification. Until the webhook is installed, the
+authenticated dashboard sync safely backfills account creation and email
+updates when a user loads the app, provided the Clerk token presented to
+Convex carries `email` and boolean `email_verified: true` claims.
+
 If anything looks wrong:
 
 1. Remove `PUBLIC_TOOL_GATE_ROLLOUT` or set its allocation to `0`.
