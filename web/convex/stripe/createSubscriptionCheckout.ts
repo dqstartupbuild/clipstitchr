@@ -14,14 +14,20 @@ import { subscriptionCheckoutReturnTargetValidator } from "../validators/subscri
 import { getStripeComponentClient } from "./getStripeComponentClient";
 import { assertStripeCustomerCanStartSubscriptionCheckout } from "./assertStripeCustomerCanStartSubscriptionCheckout";
 import { createStripeSubscriptionCheckoutSession } from "./createStripeSubscriptionCheckoutSession";
+import { expireStripeSubscriptionCheckoutSession } from "./expireStripeSubscriptionCheckoutSession";
+import { finishExpiringStripeSubscriptionCheckoutSession } from "./finishExpiringStripeSubscriptionCheckoutSession";
 
 export const createSubscriptionCheckout = action({
   args: {
     planKey: planKeyValidator,
+    replaceCheckoutIntentId: v.optional(v.string()),
     returnTarget: v.optional(subscriptionCheckoutReturnTargetValidator),
   },
   returns: v.object({ url: v.string() }),
-  handler: async (ctx, { planKey, returnTarget = "settings" }) => {
+  handler: async (
+    ctx,
+    { planKey, replaceCheckoutIntentId, returnTarget = "settings" },
+  ) => {
     const identity = await ctx.auth.getUserIdentity();
 
     if (!identity) {
@@ -84,16 +90,73 @@ export const createSubscriptionCheckout = action({
         throw new Error("The existing Checkout plan needs billing support.");
       }
 
-      if (claim.status === "created") {
+      await assertStripeCustomerCanStartSubscriptionCheckout(
+        stripe,
+        customer.customerId,
+      );
+
+      if (claim.status === "completed") {
+        await ctx.runMutation(
+          internal.billing.retireCompletedSubscriptionCheckoutSessions
+            .retireCompletedSubscriptionCheckoutSessions,
+          {
+            now: new Date().toISOString(),
+            ownerId: identity.subject,
+          },
+        );
+        continue;
+      }
+
+      if (claim.status === "expiring") {
+        const expirationCompleted =
+          await finishExpiringStripeSubscriptionCheckoutSession(ctx, stripe, {
+            ownerId: identity.subject,
+            stripeCheckoutSessionId: claim.stripeCheckoutSessionId,
+          });
+
+        if (!expirationCompleted) {
+          throw new Error(
+            "Another Checkout is closing now. Try again in a moment.",
+          );
+        }
+        continue;
+      }
+
+      if (claim.status === "created" || claim.status === "handedOff") {
         const existingCheckout = await stripe.checkout.sessions.retrieve(
           claim.stripeCheckoutSessionId,
         );
 
         if (
           claimedPlanKey === planKey &&
+          claim.returnTarget === returnTarget &&
+          replaceCheckoutIntentId !== claim.checkoutIntentId &&
           existingCheckout.status === "open" &&
           existingCheckout.url
         ) {
+          if (!claim.checkoutIntentId) {
+            throw new Error("The Checkout claim needs billing support.");
+          }
+
+          const returnConfirmed = await ctx.runMutation(
+            internal.billing.confirmSubscriptionCheckoutSessionReturn
+              .confirmSubscriptionCheckoutSessionReturn,
+            {
+              catalogKey: claimedPlanKey,
+              checkoutIntentId: claim.checkoutIntentId,
+              now: new Date().toISOString(),
+              ownerId: identity.subject,
+              returnTarget: claim.returnTarget,
+              stripeCheckoutSessionId: claim.stripeCheckoutSessionId,
+            },
+          );
+
+          if (!returnConfirmed) {
+            throw new Error(
+              "That Checkout changed while it was opening. Try again.",
+            );
+          }
+
           return { url: existingCheckout.url };
         }
 
@@ -103,29 +166,43 @@ export const createSubscriptionCheckout = action({
           );
         }
 
-        if (existingCheckout.status === "open") {
-          await stripe.checkout.sessions.expire(existingCheckout.id);
+        const replacesCanceledCheckout =
+          replaceCheckoutIntentId === claim.checkoutIntentId;
+
+        if (
+          claim.status === "handedOff" &&
+          existingCheckout.status === "open" &&
+          !replacesCanceledCheckout
+        ) {
+          throw new Error(
+            "Finish or cancel the Checkout already open before starting another plan.",
+          );
         }
 
-        await ctx.runMutation(
-          internal.billing.expireSubscriptionCheckoutSession
-            .expireSubscriptionCheckoutSession,
-          {
-            now: new Date().toISOString(),
+        const expirationCompleted =
+          await expireStripeSubscriptionCheckoutSession(ctx, stripe, {
+            allowHandedOff:
+              existingCheckout.status === "expired" || replacesCanceledCheckout,
+            checkoutStatus: existingCheckout.status,
             ownerId: identity.subject,
             stripeCheckoutSessionId: claim.stripeCheckoutSessionId,
-          },
-        );
+          });
+
+        if (!expirationCompleted) {
+          throw new Error(
+            "Another Checkout is already opening. Try again in a moment.",
+          );
+        }
         continue;
       }
 
       if (
-        claimedPlanKey !== planKey &&
+        (claimedPlanKey !== planKey || claim.returnTarget !== returnTarget) &&
         Date.parse(now) - Date.parse(claim.createdAt) <
           subscriptionCheckoutClaimStaleMs
       ) {
         throw new Error(
-          "Another plan Checkout is opening now. Try again in a moment.",
+          "Another Checkout is opening now. Try again in a moment.",
         );
       }
 
@@ -137,6 +214,7 @@ export const createSubscriptionCheckout = action({
       await assertStripeCatalogEntry(stripe, claimedCatalogEntry);
       const returnUrls = getSubscriptionCheckoutReturnUrls({
         appUrl,
+        checkoutIntentId: claim.checkoutIntentId,
         planKey: claimedPlanKey,
         returnTarget: claim.returnTarget,
       });
@@ -164,26 +242,49 @@ export const createSubscriptionCheckout = action({
         },
       );
 
-      if (claimedPlanKey === planKey) {
+      if (claimedPlanKey === planKey && claim.returnTarget === returnTarget) {
         if (!checkout.url) {
           throw new Error("Stripe did not return a hosted Checkout URL.");
+        }
+
+        const returnConfirmed = await ctx.runMutation(
+          internal.billing.confirmSubscriptionCheckoutSessionReturn
+            .confirmSubscriptionCheckoutSessionReturn,
+          {
+            catalogKey: claimedPlanKey,
+            checkoutIntentId: claim.checkoutIntentId,
+            now: new Date().toISOString(),
+            ownerId: identity.subject,
+            returnTarget: claim.returnTarget,
+            stripeCheckoutSessionId: checkout.id,
+          },
+        );
+
+        if (!returnConfirmed) {
+          throw new Error(
+            "That Checkout changed while it was opening. Try again.",
+          );
         }
 
         return { url: checkout.url };
       }
 
-      if (checkout.status === "open") {
-        await stripe.checkout.sessions.expire(checkout.id);
-      }
-      await ctx.runMutation(
-        internal.billing.expireSubscriptionCheckoutSession
-          .expireSubscriptionCheckoutSession,
+      const expirationCompleted = await expireStripeSubscriptionCheckoutSession(
+        ctx,
+        stripe,
         {
-          now: new Date().toISOString(),
+          allowHandedOff: false,
+          checkoutStatus: checkout.status,
           ownerId: identity.subject,
           stripeCheckoutSessionId: checkout.id,
         },
       );
+
+      if (!expirationCompleted) {
+        throw new Error(
+          "Another Checkout is already opening. Try again in a moment.",
+        );
+      }
     }
 
     throw new Error(

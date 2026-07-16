@@ -124,6 +124,11 @@ The following actions cost zero credits:
 Deleting an output does not return credits. A deliberate regeneration that
 creates a new output is a new billable operation.
 
+Editing an existing generated Swipe may omit its internal usage-reservation ID
+from the browser payload. The save mutation preserves the reservation already
+stored on that Swipe, so an ordinary edit is never charged again. If a caller
+explicitly supplies a different reservation ID, the save fails closed.
+
 ## Separate AI-Video Allowance
 
 The Clipr and Swapr allowance uses the same reservation lifecycle but a

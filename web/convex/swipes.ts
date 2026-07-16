@@ -16,6 +16,7 @@ import { swiprProductSourceTypeValidator } from "./validators/swiprProductSource
 import { swiprSlideValidator } from "./validators/swiprSlide";
 import { normalizeSwiprSwipeFields } from "../lib/clipstitchr/utils/normalizeSwiprSwipeFields";
 import { commitSwipeUsageReservation } from "./usage/commitSwipeUsageReservation";
+import { resolveSwipeUsageReservationId } from "./swipes/resolveSwipeUsageReservationId";
 
 const postedStatusValidator = v.union(
   v.literal("active"),
@@ -208,21 +209,18 @@ export const save = mutation({
       },
     );
 
-    if (
-      existingSwipe?.usageReservationId &&
-      existingSwipe.usageReservationId !== usageReservationId
-    ) {
-      throw new Error("Swipe already has a different usage reservation.");
-    }
-
+    const resolvedUsageReservationId = resolveSwipeUsageReservationId(
+      existingSwipe?.usageReservationId,
+      usageReservationId,
+    );
     const normalizedFields = normalizeSwiprSwipeFields(args);
     const committedUsageReservationId =
-      existingSwipe?.usageReservationId === usageReservationId
-        ? usageReservationId
+      existingSwipe?.usageReservationId === resolvedUsageReservationId
+        ? resolvedUsageReservationId
         : await commitSwipeUsageReservation(
             ctx,
             ownerId,
-            usageReservationId,
+            resolvedUsageReservationId,
             now,
             "user_action",
             {
@@ -352,21 +350,18 @@ export const saveFromAutomation = mutation({
         q.eq("ownerId", ownerId).eq("id", args.id),
       )
       .unique();
-    if (
-      existingSwipe?.usageReservationId &&
-      existingSwipe.usageReservationId !== usageReservationId
-    ) {
-      throw new Error("Swipe already has a different usage reservation.");
-    }
-
+    const resolvedUsageReservationId = resolveSwipeUsageReservationId(
+      existingSwipe?.usageReservationId,
+      usageReservationId,
+    );
     const normalizedFields = normalizeSwiprSwipeFields(args);
     const committedUsageReservationId =
-      existingSwipe?.usageReservationId === usageReservationId
-        ? usageReservationId
+      existingSwipe?.usageReservationId === resolvedUsageReservationId
+        ? resolvedUsageReservationId
         : await commitSwipeUsageReservation(
             ctx,
             ownerId,
-            usageReservationId,
+            resolvedUsageReservationId,
             args.updatedAt,
             "worker",
             {
@@ -484,21 +479,18 @@ export const saveFromProvider = mutation({
       );
     }
 
-    if (
-      existingSwipe?.usageReservationId &&
-      existingSwipe.usageReservationId !== usageReservationId
-    ) {
-      throw new Error("Swipe already has a different usage reservation.");
-    }
-
+    const resolvedUsageReservationId = resolveSwipeUsageReservationId(
+      existingSwipe?.usageReservationId,
+      usageReservationId,
+    );
     const normalizedFields = normalizeSwiprSwipeFields(args);
     const committedUsageReservationId =
-      existingSwipe?.usageReservationId === usageReservationId
-        ? usageReservationId
+      existingSwipe?.usageReservationId === resolvedUsageReservationId
+        ? resolvedUsageReservationId
         : await commitSwipeUsageReservation(
             ctx,
             ownerId,
-            usageReservationId,
+            resolvedUsageReservationId,
             args.updatedAt,
             "worker",
             {

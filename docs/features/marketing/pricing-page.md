@@ -29,6 +29,10 @@ that selection through account creation, and onboarding repeats it before
 opening Stripe-hosted Checkout. The public query value never supplies a Stripe
 Price ID.
 
+The comparison states the recurring terms before signup: plans renew monthly
+until canceled, customers cancel from Settings, and access continues through
+the end of the paid month.
+
 Starter centers Stitchr and Swipr while retaining a small monthly taste of
 Clipr and Swapr. Pro adds weekly generation room and daily drafts for one
 product. Agency raises the product limit to 10 and enables daily drafts for all

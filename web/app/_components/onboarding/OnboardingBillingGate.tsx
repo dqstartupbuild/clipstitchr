@@ -11,19 +11,20 @@ import { useBillingWorkspace } from "@/lib/clipstitchr/hooks/useBillingWorkspace
 
 type OnboardingBillingGateProps = {
   billingReturn?: SubscriptionCheckoutReturnStatus;
+  canceledCheckoutIntentId?: string;
   children: ReactNode;
   selectedPlanKey?: PlanKey;
 };
 
 export function OnboardingBillingGate({
   billingReturn,
+  canceledCheckoutIntentId,
   children,
   selectedPlanKey,
 }: OnboardingBillingGateProps) {
   const billing = useBillingWorkspace();
   const view = getOnboardingBillingView({
-    billingReviewRequired:
-      billing.entitlement?.billingReviewRequired === true,
+    billingReviewRequired: billing.entitlement?.billingReviewRequired === true,
     billingReturn,
     entitlementState: billing.entitlement?.state,
     isLoading: billing.isLoading,
@@ -31,7 +32,11 @@ export function OnboardingBillingGate({
   });
   const isStarting = billing.pendingAction === "checkout";
   const startCheckout = (planKey: PlanKey) => {
-    void billing.startPlan(planKey, "onboarding");
+    void billing.startPlan(
+      planKey,
+      "onboarding",
+      billingReturn === "canceled" ? canceledCheckoutIntentId : undefined,
+    );
   };
 
   if (view === "onboarding") {
@@ -60,7 +65,7 @@ export function OnboardingBillingGate({
             Stripe is sending the signed confirmation now. This page will open
             your product setup as soon as it arrives. You do not need to pay
             again or leave this page. If it is still here after a few minutes,
-            email {" "}
+            email{" "}
             <a
               className="font-bold text-text-primary"
               href="mailto:support@clipstitchr.com"
@@ -77,7 +82,7 @@ export function OnboardingBillingGate({
             Your billing needs a quick review
           </h2>
           <p className="mt-3 max-w-2xl">
-            New setup is paused while we confirm the payment state. Email {" "}
+            New setup is paused while we confirm the payment state. Email{" "}
             <a
               className="font-bold text-text-primary"
               href="mailto:support@clipstitchr.com"
@@ -98,6 +103,7 @@ export function OnboardingBillingGate({
       ) : null}
       {view === "checkout" && selectedPlanKey ? (
         <OnboardingPlanCheckout
+          canceledCheckoutIntentId={canceledCheckoutIntentId}
           error={billing.error}
           isCanceled={billingReturn === "canceled"}
           isStarting={isStarting}

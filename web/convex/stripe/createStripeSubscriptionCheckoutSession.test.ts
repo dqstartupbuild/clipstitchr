@@ -24,6 +24,9 @@ describe("createStripeSubscriptionCheckoutSession", () => {
 
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
+        consent_collection: {
+          terms_of_service: "required",
+        },
         customer: "cus_owner",
         line_items: [{ price: "price_pro", quantity: 1 }],
         metadata: expect.objectContaining({

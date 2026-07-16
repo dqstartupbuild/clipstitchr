@@ -170,15 +170,15 @@ successful save. Worker scratch directories are always removed.
 The provider worker requires its existing Convex, provider, and R2 credentials
 plus `APIFY_TOKEN`. Hook Lab-specific settings are:
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `HOOK_LAB_TIKTOK_ACTOR_ID` | `clockworks/tiktok-scraper` | Video-download-enabled TikTok Actor; smoke-test again when changing it |
-| `HOOK_LAB_INSTAGRAM_ACTOR_ID` | `apify/instagram-scraper` | Instagram Actor |
-| `HOOK_LAB_APIFY_MAX_TOTAL_CHARGE_USD` | `0.5` | Maximum Actor-run charge; code keeps it within Apify's supported `0.5` to `2` range |
-| `HOOK_LAB_IMPORTED_VIDEO_MAX_BYTES` | `104857600` | Imported video cap; code cannot exceed 100 MiB |
-| `HOOK_LAB_VIDEO_MAX_DURATION_SECONDS` | `180` | Imported duration cap; code cannot exceed 180 seconds |
-| `HOOK_LAB_TEXT_MODEL_ID` | shared `TEXT_WRITING_MODEL_ID` | Optional analysis/writing override |
-| `PROVIDER_WORKER_FFPROBE_PATH` | `ffprobe` | Duration inspection binary |
+| Variable                              | Default                        | Purpose                                                                             |
+| ------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------- |
+| `HOOK_LAB_TIKTOK_ACTOR_ID`            | `clockworks/tiktok-scraper`    | Video-download-enabled TikTok Actor; smoke-test again when changing it              |
+| `HOOK_LAB_INSTAGRAM_ACTOR_ID`         | `apify/instagram-scraper`      | Instagram Actor                                                                     |
+| `HOOK_LAB_APIFY_MAX_TOTAL_CHARGE_USD` | `0.5`                          | Maximum Actor-run charge; code keeps it within Apify's supported `0.5` to `2` range |
+| `HOOK_LAB_IMPORTED_VIDEO_MAX_BYTES`   | `104857600`                    | Imported video cap; code cannot exceed 100 MiB                                      |
+| `HOOK_LAB_VIDEO_MAX_DURATION_SECONDS` | `180`                          | Imported duration cap; code cannot exceed 180 seconds                               |
+| `HOOK_LAB_TEXT_MODEL_ID`              | shared `TEXT_WRITING_MODEL_ID` | Optional analysis/writing override                                                  |
+| `PROVIDER_WORKER_FFPROBE_PATH`        | `ffprobe`                      | Duration inspection binary                                                          |
 
 `PROVIDER_WORKER_TOOLS` does not need a new value when it already includes
 `stitchr`. The original provider and media rollout used image tag
@@ -263,7 +263,7 @@ payloads, or Idea/use/variant/Stitch/product/provider IDs. Lifecycle completion
 and failure events come from consent-aware live browser transitions, are
 claimed once per tab session, and are not queued or backfilled without consent.
 
-The July 12, 2026 Privacy Policy and Terms explain temporary Apify/AI
+The July 16, 2026 Privacy Policy and Terms explain temporary Apify/AI
 processing, the limited source data retained with an Idea, lawful-use
 responsibility, and the ban on identity or shot-for-shot cloning. Update both
 pages whenever providers, retention, or source handling changes.

@@ -19,6 +19,9 @@ export async function createStripeSubscriptionCheckoutSession(
       billing_address_collection: "auto",
       cancel_url: args.cancelUrl,
       client_reference_id: args.ownerId,
+      consent_collection: {
+        terms_of_service: "required",
+      },
       customer: args.customerId,
       line_items: [{ price: args.priceId, quantity: 1 }],
       metadata: {

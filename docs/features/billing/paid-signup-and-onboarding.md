@@ -15,12 +15,15 @@ The supported path is:
 4. Clerk creates the account and always returns the new session to
    `/dashboard/onboarding?plan=<plan>`.
 5. Onboarding repeats the selected plan, price, product limit, credits, and
-   combined Clipr plus Swapr allowance before payment.
+   combined Clipr plus Swapr allowance before payment. The pricing page and
+   onboarding also state that plans renew monthly until canceled and remain
+   active through the paid month after cancellation.
 6. The customer continues to Stripe-hosted Checkout. Before creating it, the
    server checks the authoritative Stripe customer and rejects a second session
    when a nonterminal subscription already exists. An atomic owner claim and a
    Stripe idempotency key also make simultaneous clicks resolve to one hosted
-   Checkout session.
+   Checkout session. Stripe requires the customer to accept the published Terms
+   of Use before payment can complete.
 7. Checkout returns to the same onboarding route for success or cancellation.
 8. A success redirect shows a visible confirmation state while Convex waits for
    Stripe's signed webhook.
@@ -58,6 +61,28 @@ It never accepts an arbitrary URL from the browser. The onboarding return URL
 is built from the canonical app URL and validated `PlanKey`, so open redirects
 and unrecognized plans cannot be inserted into Stripe sessions.
 
+An existing open Checkout session is reused only when both its plan and return
+target match the new request. Before any URL reaches the browser, Convex
+atomically marks that exact owner, plan, target, intent, and Stripe session as
+handed off. A request from another surface or for another plan cannot silently
+expire a session already handed to the browser. It asks the customer to finish
+or cancel the open Checkout instead.
+
+The Stripe cancellation link carries the server-created Checkout intent back to
+ClipStitchr. A retry from that canceled return may explicitly expire only that
+exact authenticated intent and create the newly selected plan. If Stripe
+expiration is interrupted, the claim stays in an `expiring` state and blocks a
+duplicate; the next request reconciles Stripe before continuing. This durable
+handoff state prevents ordinary background requests from expiring a URL being
+returned. An explicit canceled-intent retry deliberately invalidates that same
+Checkout in every tab, so another tab still holding it must use the replacement.
+A completed Checkout remains a local barrier until a fresh authoritative Stripe
+check proves that no live subscription remains; only then is its operational
+barrier retired.
+A completed session is never replaced while its payment is still syncing, and
+the authoritative Stripe subscription check still blocks duplicate
+subscriptions.
+
 ## Existing Account and Settings Behavior
 
 If a signed-in customer follows a pricing plan link, Clerk preserves the plan
@@ -93,6 +118,7 @@ web/
   app/(auth)/sign-up/[[...sign-up]]/page.tsx
   app/(auth)/sign-in/[[...sign-in]]/page.tsx
   app/_components/auth/authComponentAppearance.ts
+  app/_components/billing/BillingRenewalDisclosure.tsx
   app/_components/onboarding/OnboardingBillingGate.tsx
   app/_components/onboarding/OnboardingBillingShell.tsx
   app/_components/onboarding/OnboardingPlanCheckout.tsx
@@ -108,8 +134,14 @@ web/
   convex/stripe/createStripeSubscriptionCheckoutSession.ts
   convex/stripe/createPortalSession.ts
   convex/billing/claimSubscriptionCheckoutSession.ts
+  convex/billing/beginSubscriptionCheckoutSessionExpiration.ts
+  convex/billing/confirmSubscriptionCheckoutSessionReturn.ts
   convex/billing/expireSubscriptionCheckoutSession.ts
   convex/billing/recordCheckoutSession.ts
+  convex/billing/retireCompletedSubscriptionCheckoutSessions.ts
+  convex/stripe/expireStripeSubscriptionCheckoutSession.ts
+  convex/stripe/finishExpiringStripeSubscriptionCheckoutSession.ts
+  lib/clipstitchr/billing/getCheckoutIntentIdFromSearchParam.ts
   lib/clipstitchr/billing/getPlanKeyFromSearchParam.ts
   lib/clipstitchr/billing/getPlanSignInHref.ts
   lib/clipstitchr/billing/getPlanSignupHref.ts
@@ -123,9 +155,12 @@ web/
 
 - Unit tests cover canonical and invalid plan parsing, exact signup and return
   URLs, selected-plan signup copy, webhook-lag gating, canceled Checkout recovery,
-  simultaneous Checkout claim reuse, Stripe request idempotency, visible Checkout
-  errors, human entitlement labels, accessible billing tables, focused overflow
-  content, and Stripe portal parameters.
+  simultaneous same-target Checkout claim reuse, durable browser handoff,
+  exact canceled-intent replacement, interrupted expiration recovery,
+  completion barriers and post-claim Stripe rechecks, Stripe request
+  idempotency, Terms consent, renewal disclosure, visible Checkout errors, human
+  entitlement labels, accessible billing tables, focused overflow content, and
+  Stripe portal parameters.
 - Route tests prove that Clerk account creation replaces the former waitlist and
   preserves a selected plan.
 - Browser verification must cover pricing to signup, selected-plan Checkout,

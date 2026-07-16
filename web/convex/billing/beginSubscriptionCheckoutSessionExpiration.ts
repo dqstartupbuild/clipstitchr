@@ -1,14 +1,18 @@
 import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
 
-export const expireSubscriptionCheckoutSession = internalMutation({
+export const beginSubscriptionCheckoutSessionExpiration = internalMutation({
   args: {
+    allowHandedOff: v.boolean(),
     now: v.string(),
     ownerId: v.string(),
     stripeCheckoutSessionId: v.string(),
   },
   returns: v.boolean(),
-  handler: async (ctx, { now, ownerId, stripeCheckoutSessionId }) => {
+  handler: async (
+    ctx,
+    { allowHandedOff, now, ownerId, stripeCheckoutSessionId },
+  ) => {
     if (!Number.isFinite(Date.parse(now))) {
       throw new Error("Subscription Checkout requires a valid server time.");
     }
@@ -23,22 +27,15 @@ export const expireSubscriptionCheckoutSession = internalMutation({
     if (
       !session ||
       session.ownerId !== ownerId ||
-      session.mode !== "subscription"
+      session.mode !== "subscription" ||
+      (session.status !== "created" &&
+        !(session.status === "handedOff" && allowHandedOff))
     ) {
       return false;
     }
 
-    if (session.status === "expired") {
-      return true;
-    }
-
-    if (session.status !== "expiring") {
-      return false;
-    }
-
     await ctx.db.patch(session._id, {
-      handedOffAt: undefined,
-      status: "expired",
+      status: "expiring",
       updatedAt: now,
     });
 

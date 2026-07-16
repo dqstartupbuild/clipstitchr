@@ -25,25 +25,20 @@ describe("recordCheckoutSession", () => {
   it("attaches Stripe's session to the matching atomic claim", async () => {
     const patch = vi.fn();
     const insert = vi.fn();
-    const query = vi
-      .fn()
-      .mockReturnValueOnce({
-        withIndex: vi.fn(() => ({ unique: vi.fn(async () => null) })),
-      })
-      .mockReturnValueOnce({
-        withIndex: vi.fn(() => ({
-          unique: vi.fn(async () => ({
-            _id: "claim_1",
-            catalogKey: "pro",
-            checkoutIntentId: "intent_owner",
-            mode: "subscription",
-            ownerId: "owner_1",
-            returnTarget: "onboarding",
-            status: "creating",
-            stripeCheckoutSessionId: "pending:intent_owner",
-          })),
+    const query = vi.fn(() => ({
+      withIndex: vi.fn(() => ({
+        unique: vi.fn(async () => ({
+          _id: "claim_1",
+          catalogKey: "pro",
+          checkoutIntentId: "intent_owner",
+          mode: "subscription",
+          ownerId: "owner_1",
+          returnTarget: "onboarding",
+          status: "creating",
+          stripeCheckoutSessionId: "pending:intent_owner",
         })),
-      });
+      })),
+    }));
     const ctx = { db: { insert, patch, query } };
 
     await expect(
@@ -67,5 +62,43 @@ describe("recordCheckoutSession", () => {
       }),
     );
     expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("does not resurrect a Checkout after expiration has started", async () => {
+    const patch = vi.fn();
+    const ctx = {
+      db: {
+        insert: vi.fn(),
+        patch,
+        query: vi.fn(() => ({
+          withIndex: vi.fn(() => ({
+            unique: vi.fn(async () => ({
+              _id: "claim_1",
+              catalogKey: "pro",
+              checkoutIntentId: "intent_owner",
+              mode: "subscription",
+              ownerId: "owner_1",
+              returnTarget: "onboarding",
+              status: "expiring",
+              stripeCheckoutSessionId: "cs_owner",
+            })),
+          })),
+        })),
+      },
+    };
+
+    await expect(
+      (recordCheckoutSession as unknown as RecordHandler).handler(ctx, {
+        catalogKey: "pro",
+        checkoutIntentId: "intent_owner",
+        mode: "subscription",
+        now: "2026-07-16T12:00:01.000Z",
+        ownerId: "owner_1",
+        returnTarget: "onboarding",
+        stripeCheckoutSessionId: "cs_owner",
+        stripePriceId: "price_pro",
+      }),
+    ).rejects.toThrow("no longer returnable");
+    expect(patch).not.toHaveBeenCalled();
   });
 });

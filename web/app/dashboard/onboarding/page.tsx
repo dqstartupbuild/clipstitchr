@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { OnboardingBillingGate } from "@/app/_components/onboarding/OnboardingBillingGate";
 import { OnboardingPageClient } from "@/app/dashboard/onboarding/OnboardingPageClient";
 import { getPlanKeyFromSearchParam } from "@/lib/clipstitchr/billing/getPlanKeyFromSearchParam";
+import { getCheckoutIntentIdFromSearchParam } from "@/lib/clipstitchr/billing/getCheckoutIntentIdFromSearchParam";
 import { getSubscriptionCheckoutReturnStatus } from "@/lib/clipstitchr/billing/getSubscriptionCheckoutReturnStatus";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
@@ -17,6 +18,7 @@ export const metadata: Metadata = createPageMetadata({
 type OnboardingPageProps = {
   searchParams?: Promise<{
     billing?: string | string[];
+    checkout_intent?: string | string[];
     plan?: string | string[];
   }>;
 };
@@ -30,6 +32,9 @@ export default async function OnboardingPage({
     <OnboardingBillingGate
       billingReturn={getSubscriptionCheckoutReturnStatus(
         resolvedSearchParams.billing,
+      )}
+      canceledCheckoutIntentId={getCheckoutIntentIdFromSearchParam(
+        resolvedSearchParams.checkout_intent,
       )}
       selectedPlanKey={getPlanKeyFromSearchParam(resolvedSearchParams.plan)}
     >

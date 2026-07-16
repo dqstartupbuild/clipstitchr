@@ -10,7 +10,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function PrivacyPage() {
-  const lastUpdated = "July 15, 2026";
+  const lastUpdated = "July 16, 2026";
 
   return (
     <article className="legal-page">
@@ -82,6 +82,11 @@ export default function PrivacyPage() {
             </p>
             <ul>
               <li>Your name and email address</li>
+              <li>Your account and product details</li>
+              <li>
+                Billing details such as your billing address, subscription,
+                invoices, payment status, and transaction history
+              </li>
               <li>Feedback, questions, or other messages</li>
               <li>Course checklist progress and notes you choose to save</li>
               <li>
@@ -162,6 +167,20 @@ export default function PrivacyPage() {
               you explicitly request, and you can unsubscribe at any time.
             </p>
 
+            <h3>Payments and Billing</h3>
+            <p>
+              Stripe processes subscription and refill payments for ClipStitchr.
+              Stripe receives the payment details you enter at Checkout.
+              ClipStitchr does not store your full card number or card security
+              code.
+            </p>
+            <p>
+              We receive and store the Stripe customer, subscription, invoice,
+              payment, refund, and dispute status needed to start your plan,
+              show billing history, apply plan limits, prevent duplicate
+              credits, and help with billing problems.
+            </p>
+
             <h3>Information Collected Automatically</h3>
             <p>When you visit our website, standard hosting logs may record:</p>
             <ul>
@@ -175,7 +194,7 @@ export default function PrivacyPage() {
               visitor ID, your session, the page you landed on, where you came
               from, campaign links, ad click IDs, and events such as
               mailing-list sign-ups, public tool use, uploads, exports, AI
-              generation requests, or future purchases.
+              generation requests, or purchases.
             </p>
             <p>
               Public-tool analytics use only a fixed event name, tool key, tool
@@ -192,10 +211,10 @@ export default function PrivacyPage() {
             </p>
             <p>
               If marketing cookies are on, we may also send TikTok a hashed
-              version of your email or account ID when you join the waitlist or
-              sign in. Public tool mailing-list forms do not send your email to
-              TikTok. Hashing means TikTok does not receive the plain email or
-              ID from us.
+              version of your email or account ID when you create an account,
+              buy a plan, or sign in. Public tool mailing-list forms do not send
+              your email to TikTok. Hashing means TikTok does not receive the
+              plain email or ID from us.
             </p>
             <p>
               We use this to understand what is working and improve the site. We
@@ -227,9 +246,10 @@ export default function PrivacyPage() {
             <ul>
               <li>
                 <strong>Service providers:</strong> Third-party tools (e.g.,
-                hosting, storage, analytics, Apify, AI processing, and email
-                delivery when enabled) that help us run the features you
-                request, subject to their own privacy policies and terms.
+                hosting, storage, Stripe payment processing, analytics, Apify,
+                AI processing, and email delivery when enabled) that help us run
+                the features you request, subject to their own privacy policies
+                and terms.
               </li>
               <li>
                 <strong>Ad tools:</strong> If you allow marketing cookies, we
@@ -272,9 +292,9 @@ export default function PrivacyPage() {
             </p>
             <p>
               If you allow optional cookies, we use them to understand visits,
-              remember where visitors came from, measure sign-ups or future
-              purchases, and see which dashboard features people use most. If
-              you allow marketing cookies, we may load the TikTok Pixel and send
+              remember where visitors came from, measure sign-ups or purchases,
+              and see which dashboard features people use most. If you allow
+              marketing cookies, we may load the TikTok Pixel and send
               server-side TikTok events to help measure ads. TikTok may receive
               hashed contact or account details for matching when marketing
               cookies are on.
@@ -332,8 +352,11 @@ export default function PrivacyPage() {
           <section>
             <h2>Contact</h2>
             <p>
-              If you have questions about this Privacy Policy, you can reach us
-              through the contact information provided on our website.
+              If you have questions about this Privacy Policy, email us at{" "}
+              <a href="mailto:support@clipstitchr.com">
+                support@clipstitchr.com
+              </a>
+              .
             </p>
           </section>
         </div>

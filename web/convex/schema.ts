@@ -197,9 +197,13 @@ export default defineSchema({
     status: v.union(
       v.literal("creating"),
       v.literal("created"),
+      v.literal("handedOff"),
+      v.literal("expiring"),
       v.literal("completed"),
       v.literal("expired"),
+      v.literal("retired"),
     ),
+    handedOffAt: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
   })

@@ -53,7 +53,7 @@ describe("useBillingWorkspace", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubGlobal("window", {
-      location: { assign: mocks.locationAssign },
+      location: { assign: mocks.locationAssign, search: "" },
     });
     mocks.checkoutAction.mockResolvedValue({ url: "https://checkout.test" });
     mocks.portalAction.mockResolvedValue({ url: "https://portal.test" });
@@ -145,6 +145,25 @@ describe("useBillingWorkspace", () => {
       planKey: "pro",
     });
     expect(mocks.locationAssign).toHaveBeenCalledWith("https://checkout.test");
+  });
+
+  it("targets only the exact Checkout named by a canceled return", async () => {
+    const checkoutIntentId = "6bc7d459-5b0a-4d9f-a62f-389fdf2b4af9";
+    vi.stubGlobal("window", {
+      location: {
+        assign: mocks.locationAssign,
+        search: `?billing=canceled&checkout_intent=${checkoutIntentId}`,
+      },
+    });
+    const state = useBillingWorkspace();
+
+    await state.startPlan("agency", "onboarding");
+
+    expect(mocks.checkoutAction).toHaveBeenCalledWith({
+      planKey: "agency",
+      replaceCheckoutIntentId: checkoutIntentId,
+      returnTarget: "onboarding",
+    });
   });
 
   it("opens Stripe's dedicated subscription-update portal flow", async () => {

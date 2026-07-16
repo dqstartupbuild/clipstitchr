@@ -20,6 +20,7 @@ describe("onboarding billing components", () => {
   it("keeps a canceled pricing selection ready for secure Checkout", () => {
     const markup = renderToStaticMarkup(
       <OnboardingPlanCheckout
+        canceledCheckoutIntentId="6bc7d459-5b0a-4d9f-a62f-389fdf2b4af9"
         error={null}
         isCanceled
         isStarting={false}
@@ -32,7 +33,9 @@ describe("onboarding billing components", () => {
     expect(markup).toContain("Pro is selected");
     expect(markup).toContain("$99 per month");
     expect(markup).toContain("Continue to secure checkout");
-    expect(markup).toContain('href="/dashboard/onboarding"');
+    expect(markup).toContain(
+      'href="/dashboard/onboarding?billing=canceled&amp;checkout_intent=6bc7d459-5b0a-4d9f-a62f-389fdf2b4af9"',
+    );
     expect(markup).toContain("Change plan");
   });
 

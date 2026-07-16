@@ -52,6 +52,21 @@ describe("claimSubscriptionCheckoutSession", () => {
         withIndex: vi.fn(() => ({
           order: vi.fn(() => ({ first: vi.fn(async () => null) })),
         })),
+      })
+      .mockReturnValueOnce({
+        withIndex: vi.fn(() => ({
+          order: vi.fn(() => ({ first: vi.fn(async () => null) })),
+        })),
+      })
+      .mockReturnValueOnce({
+        withIndex: vi.fn(() => ({
+          order: vi.fn(() => ({ first: vi.fn(async () => null) })),
+        })),
+      })
+      .mockReturnValueOnce({
+        withIndex: vi.fn(() => ({
+          order: vi.fn(() => ({ first: vi.fn(async () => null) })),
+        })),
       });
     const ctx = {
       db: {
@@ -73,6 +88,98 @@ describe("claimSubscriptionCheckoutSession", () => {
     ).resolves.toMatchObject({
       checkoutIntentId: "intent_existing",
       status: "creating",
+    });
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("keeps an expiring Checkout discoverable instead of creating a duplicate", async () => {
+    const insert = vi.fn();
+    const expiring = {
+      _creationTime: 3,
+      catalogKey: "pro",
+      checkoutIntentId: "intent_existing",
+      createdAt: "2026-07-16T12:00:00.000Z",
+      mode: "subscription",
+      returnTarget: "onboarding",
+      status: "expiring",
+      stripeCheckoutSessionId: "cs_existing",
+    };
+    let queryCount = 0;
+    const ctx = {
+      db: {
+        insert,
+        query: vi.fn(() => {
+          queryCount += 1;
+          return {
+            withIndex: vi.fn(() => ({
+              order: vi.fn(() => ({
+                first: vi.fn(async () => (queryCount === 4 ? expiring : null)),
+              })),
+            })),
+          };
+        }),
+      },
+    };
+
+    await expect(
+      (claimSubscriptionCheckoutSession as unknown as ClaimHandler).handler(
+        ctx,
+        {
+          now: "2026-07-16T12:00:05.000Z",
+          ownerId: "owner_1",
+          planKey: "agency",
+          returnTarget: "settings",
+        },
+      ),
+    ).resolves.toMatchObject({
+      checkoutIntentId: "intent_existing",
+      status: "expiring",
+    });
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("keeps a completed Checkout as a subscription recheck barrier", async () => {
+    const insert = vi.fn();
+    const completed = {
+      _creationTime: 4,
+      catalogKey: "pro",
+      checkoutIntentId: "intent_completed",
+      createdAt: "2026-07-16T12:00:00.000Z",
+      mode: "subscription",
+      returnTarget: "onboarding",
+      status: "completed",
+      stripeCheckoutSessionId: "cs_completed",
+    };
+    let queryCount = 0;
+    const ctx = {
+      db: {
+        insert,
+        query: vi.fn(() => {
+          queryCount += 1;
+          return {
+            withIndex: vi.fn(() => ({
+              order: vi.fn(() => ({
+                first: vi.fn(async () => (queryCount === 5 ? completed : null)),
+              })),
+            })),
+          };
+        }),
+      },
+    };
+
+    await expect(
+      (claimSubscriptionCheckoutSession as unknown as ClaimHandler).handler(
+        ctx,
+        {
+          now: "2026-07-16T12:00:05.000Z",
+          ownerId: "owner_1",
+          planKey: "agency",
+          returnTarget: "settings",
+        },
+      ),
+    ).resolves.toMatchObject({
+      checkoutIntentId: "intent_completed",
+      status: "completed",
     });
     expect(insert).not.toHaveBeenCalled();
   });

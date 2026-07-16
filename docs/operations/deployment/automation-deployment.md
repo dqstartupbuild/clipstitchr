@@ -4,7 +4,7 @@
 
 Use Convex Cron for the daily automation scheduler, not Vercel Cron.
 
-Use Google Cloud Run Jobs for the media worker.
+Use Google Cloud Run Jobs for both the provider and media workers.
 
 Reasoning:
 
@@ -18,10 +18,10 @@ Reasoning:
   triggers cron jobs by making an HTTP `GET` request to a production deployment
   path from `vercel.json`. That is a worse fit for this planner because the work
   is not a public web request and the existing automation routes use `POST`.
-- The media worker needs FFmpeg, scratch disk, R2 access, and bounded CPU-heavy
-  execution. It should not run inside Vercel Functions or Convex functions.
-  Cloud Run Jobs match the existing `npm run media-worker -- --once` mode and
-  can be scheduled or invoked independently.
+- The provider and media workers need provider credentials, FFmpeg, scratch
+  disk, R2 access, or bounded CPU-heavy execution. They should not run inside
+  Vercel Functions or Convex functions. Cloud Run Jobs match their existing
+  bounded modes and can be invoked independently.
 
 Current scope:
 
@@ -66,7 +66,7 @@ npx convex env set AUTOMATION_GLOBAL_WINDOW_END_UTC "13:00"
 ```
 
 2. Keep the same `AUTOMATION_WORKER_SECRET` in Vercel. Convex dispatch actions
-use it when calling the worker-only Next.js automation routes.
+   use it when calling the worker-only Next.js automation routes.
 
 3. Deploy Convex:
 
@@ -76,7 +76,7 @@ npx convex deploy
 ```
 
 4. Confirm the cron definitions are visible in the Convex dashboard after
-deployment:
+   deployment:
 
 - `plan core daily automation`
 
@@ -106,9 +106,18 @@ unavailable. If Vercel Cron is used as a fallback, create a small authenticated
 `GET` route that calls the existing `POST /api/automation/plan` behavior or
 calls Convex directly; do not expose the planner without a secret check.
 
-## Media Worker Hosting
+## Worker Hosting
 
-Use Cloud Run Jobs for the first production worker.
+Use separate provider and media Cloud Run Jobs in production. The provider job
+handles provider-backed tools such as Swapr and Clipr. The media job handles
+media processing. A shared worker or backend change requires deploying both
+jobs unless the changed code can affect only one.
+
+The bootstrap walkthrough below shows the media-specific secret setup in
+detail. Build, deploy, and smoke-check the provider job with the exact retained
+production environment and secret bindings in the repository-root
+[`AGENTS.md`](../../../AGENTS.md). Do not enable automation after updating only
+the media job.
 
 Why this host:
 
@@ -152,12 +161,20 @@ gcloud artifacts repositories create clipstitchr \
 gcloud auth configure-docker "$REGION-docker.pkg.dev"
 ```
 
-3. Build and publish the worker image from the `web/` directory. The explicit
+3. Build and publish both worker images from the `web/` directory. The explicit
    platform matters on Apple Silicon Macs because Cloud Run requires a Linux
-   x86_64-compatible image:
+   x86_64-compatible image. The provider Dockerfile and full production
+   deployment shape are documented in the repository-root `AGENTS.md`:
 
 ```bash
 cd web
+docker build \
+  --platform linux/amd64 \
+  -f services/provider-worker/Dockerfile \
+  -t "$REGION-docker.pkg.dev/$PROJECT_ID/clipstitchr/provider-worker:latest" \
+  .
+docker push "$REGION-docker.pkg.dev/$PROJECT_ID/clipstitchr/provider-worker:latest"
+
 docker build \
   --platform linux/amd64 \
   -f services/media-worker/Dockerfile \
@@ -171,9 +188,12 @@ docker push "$REGION-docker.pkg.dev/$PROJECT_ID/clipstitchr/media-worker:latest"
    secret values directly into `gcloud run jobs deploy --set-env-vars`, because
    job configuration changes can appear in Google Cloud audit logs.
 
+`AUTOMATION_WORKER_SECRET` belongs in Convex and Vercel for the automation API
+boundary. The media Cloud Run Job authenticates with `MEDIA_WORKER_SECRET` and
+must not receive the automation secret.
+
 ```bash
 MEDIA_WORKER_SECRET="..."
-AUTOMATION_WORKER_SECRET="..."
 NEXT_PUBLIC_CONVEX_URL="https://your-convex-deployment.convex.cloud"
 R2_ACCOUNT_ID="..."
 R2_BUCKET_NAME="..."
@@ -195,7 +215,6 @@ create_or_update_secret() {
 }
 
 create_or_update_secret clipstitchr-media-worker-secret "$MEDIA_WORKER_SECRET"
-create_or_update_secret clipstitchr-automation-worker-secret "$AUTOMATION_WORKER_SECRET"
 create_or_update_secret clipstitchr-r2-account-id "$R2_ACCOUNT_ID"
 create_or_update_secret clipstitchr-r2-bucket-name "$R2_BUCKET_NAME"
 create_or_update_secret clipstitchr-r2-access-key-id "$R2_ACCESS_KEY_ID"
@@ -211,7 +230,6 @@ WORKER_SERVICE_ACCOUNT="$PROJECT_NUMBER-compute@developer.gserviceaccount.com"
 
 for secret in \
   clipstitchr-media-worker-secret \
-  clipstitchr-automation-worker-secret \
   clipstitchr-r2-account-id \
   clipstitchr-r2-bucket-name \
   clipstitchr-r2-access-key-id \
@@ -236,12 +254,17 @@ gcloud run jobs deploy clipstitchr-media-worker \
   --memory 4Gi \
   --task-timeout 30m \
   --set-env-vars NEXT_PUBLIC_CONVEX_URL="$NEXT_PUBLIC_CONVEX_URL" \
-  --set-secrets MEDIA_WORKER_SECRET=clipstitchr-media-worker-secret:latest,AUTOMATION_WORKER_SECRET=clipstitchr-automation-worker-secret:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest
+  --set-secrets MEDIA_WORKER_SECRET=clipstitchr-media-worker-secret:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest
 ```
 
-7. Smoke-test FFmpeg support:
+7. Smoke-test both worker images. The provider job must already be deployed
+   with the exact environment and Secret Manager bindings from `AGENTS.md`:
 
 ```bash
+gcloud run jobs execute clipstitchr-provider-worker \
+  --region "$REGION" \
+  --args="--check"
+
 gcloud run jobs execute clipstitchr-media-worker \
   --region "$REGION" \
   --args="--check"
@@ -267,9 +290,9 @@ gcloud run jobs add-iam-policy-binding clipstitchr-media-worker \
 ```
 
 10. Optionally schedule a slow external recovery sweep. The normal recovery path
-is Convex delayed dispatch, so this is only a disaster-recovery net. The Google
-Cloud documented path is Cloud Scheduler calling the Cloud Run Jobs run endpoint
-with OAuth:
+    is Convex delayed dispatch, so this is only a disaster-recovery net. The Google
+    Cloud documented path is Cloud Scheduler calling the Cloud Run Jobs run endpoint
+    with OAuth:
 
 ```bash
 gcloud scheduler jobs create http clipstitchr-media-worker-recovery-sweep \
@@ -365,9 +388,11 @@ the production Convex value from step 2.
 5. Update the Cloud Run worker secrets to production values. If the Secret
    Manager entries already exist, this adds new secret versions:
 
+The media job retains only its media-worker credential. Keep
+`AUTOMATION_WORKER_SECRET` in Convex and Vercel; do not bind it to Cloud Run.
+
 ```bash
 MEDIA_WORKER_SECRET="..."
-AUTOMATION_WORKER_SECRET="..."
 NEXT_PUBLIC_CONVEX_URL="https://your-production-convex-deployment.convex.cloud"
 R2_ACCOUNT_ID="..."
 R2_BUCKET_NAME="..."
@@ -389,7 +414,6 @@ create_or_update_secret() {
 }
 
 create_or_update_secret clipstitchr-media-worker-secret "$MEDIA_WORKER_SECRET"
-create_or_update_secret clipstitchr-automation-worker-secret "$AUTOMATION_WORKER_SECRET"
 create_or_update_secret clipstitchr-r2-account-id "$R2_ACCOUNT_ID"
 create_or_update_secret clipstitchr-r2-bucket-name "$R2_BUCKET_NAME"
 create_or_update_secret clipstitchr-r2-access-key-id "$R2_ACCESS_KEY_ID"
@@ -397,8 +421,11 @@ create_or_update_secret clipstitchr-r2-secret-access-key "$R2_SECRET_ACCESS_KEY"
 create_or_update_secret clipstitchr-replicate-api-token "$REPLICATE_API_TOKEN"
 ```
 
-6. Repoint the Cloud Run Job to production Convex while keeping the Secret
-   Manager references:
+6. Deploy both Cloud Run Jobs against production Convex while keeping their
+   existing Secret Manager references. Use the exact provider deployment
+   command in the repository-root `AGENTS.md`; it preserves the provider tool
+   list, model IDs, Apify and Pexels settings, and provider-only secrets. Then
+   deploy the media job:
 
 ```bash
 gcloud run jobs deploy clipstitchr-media-worker \
@@ -410,12 +437,16 @@ gcloud run jobs deploy clipstitchr-media-worker \
   --memory 4Gi \
   --task-timeout 30m \
   --set-env-vars NEXT_PUBLIC_CONVEX_URL="$NEXT_PUBLIC_CONVEX_URL" \
-  --set-secrets MEDIA_WORKER_SECRET=clipstitchr-media-worker-secret:latest,AUTOMATION_WORKER_SECRET=clipstitchr-automation-worker-secret:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest
+  --set-secrets MEDIA_WORKER_SECRET=clipstitchr-media-worker-secret:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest
 ```
 
-7. Smoke-test production worker access:
+7. Smoke-test production access for both workers:
 
 ```bash
+gcloud run jobs execute clipstitchr-provider-worker \
+  --region "$REGION" \
+  --args="--check"
+
 gcloud run jobs execute clipstitchr-media-worker \
   --region "$REGION" \
   --args="--check"

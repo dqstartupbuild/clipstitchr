@@ -23,28 +23,28 @@ The parts of content work builders keep putting off, bundled together:
 
 ## Credit Rules
 
-| Action | Credits |
-| --- | ---: |
-| Previewing and editing in Stitchr | Included |
-| 1 stitch created on Starter or Pro | 10 |
-| Stitches created on Agency | Unlimited; no creation-credit deduction |
-| 1 Swipr generation | 20 |
-| 1 standalone avatar photo/background/photo expansion | 25 |
-| 1 Clipr or Swapr video | Separate plan allowance |
-| Clipr's required scene photo | Included with the Clipr video |
+| Action                                               |                                 Credits |
+| ---------------------------------------------------- | --------------------------------------: |
+| Previewing and editing in Stitchr                    |                                Included |
+| 1 stitch created on Starter or Pro                   |                                      10 |
+| Stitches created on Agency                           | Unlimited; no creation-credit deduction |
+| 1 Swipr generation                                   |                                      20 |
+| 1 standalone avatar photo/background/photo expansion |                                      25 |
+| 1 Clipr or Swapr video                               |                 Separate plan allowance |
+| Clipr's required scene photo                         |           Included with the Clipr video |
 
 All plans include access to Stitchr, Swipr, Hook Lab, scoring, and the media
 library, plus a plan-specific Clipr and Swapr video allowance. Plans differ by
-creation credits, AI video generations, product limits, automation, speed,
-concurrency, and support. Storage is not a customer-facing pricing dimension.
+creation credits, AI video generations, product limits, automation, and active
+creation capacity. Storage is not a customer-facing pricing dimension.
 
 ## Plans
 
-| Plan | Price | Best For | Products | Creation Credits | Clipr + Swapr Videos |
-| --- | ---: | --- | ---: | ---: | ---: |
-| Starter | $39/month | Getting one product's content moving | 1 | 2,000/month | 3/month |
-| Pro | $99/month | Making fresh creative every week | 3 | 8,000/month | 10/month |
-| Agency | $399/month | Producing campaigns across a client roster | 10 | 20,000/month | 50/month |
+| Plan    |      Price | Best For                                   | Products | Creation Credits | Clipr + Swapr Videos |
+| ------- | ---------: | ------------------------------------------ | -------: | ---------------: | -------------------: |
+| Starter |  $39/month | Getting one product's content moving       |        1 |      2,000/month |              3/month |
+| Pro     |  $99/month | Making fresh creative every week           |        3 |      8,000/month |             10/month |
+| Agency  | $399/month | Producing campaigns across a client roster |       10 |     20,000/month |             50/month |
 
 ## Plan Details
 
@@ -65,7 +65,7 @@ Pro:
 - 8,000 monthly creation credits.
 - 10 combined Clipr or Swapr videos per month.
 - Daily drafts for 1 product.
-- Faster generation defaults.
+- 2 active creations at once.
 
 Agency:
 
@@ -75,17 +75,16 @@ Agency:
 - Unlimited stitches.
 - 50 combined Clipr or Swapr videos per month.
 - Daily drafts for all 10 products.
-- More jobs can run at once.
-- Priority support.
+- 4 active creations at once.
 
 ## Top-Ups
 
 Available only to active subscribers. Monthly credits are used first. Top-up
 credits roll over for 12 months while the subscription stays active.
 
-| Pack | Price | Credits | Example Output |
-| --- | ---: | ---: | ---: |
-| Refill | $29 | 2,000 | 200 stitches or 100 Swipr generations |
+| Pack   | Price | Credits |                        Example Output |
+| ------ | ----: | ------: | ------------------------------------: |
+| Refill |   $29 |   2,000 | 200 stitches or 100 Swipr generations |
 
 Refills do not increase the plan's Clipr and Swapr video allowance.
 

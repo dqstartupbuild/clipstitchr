@@ -16,34 +16,64 @@ export const claimSubscriptionCheckoutSession = internalMutation({
       throw new Error("Subscription Checkout requires a valid server time.");
     }
 
-    const [creating, created] = await Promise.all([
-      ctx.db
-        .query("billingCheckoutSessions")
-        .withIndex("by_owner_mode_status", (query) =>
-          query
-            .eq("ownerId", ownerId)
-            .eq("mode", "subscription")
-            .eq("status", "creating"),
-        )
-        .order("desc")
-        .first(),
-      ctx.db
-        .query("billingCheckoutSessions")
-        .withIndex("by_owner_mode_status", (query) =>
-          query
-            .eq("ownerId", ownerId)
-            .eq("mode", "subscription")
-            .eq("status", "created"),
-        )
-        .order("desc")
-        .first(),
-    ]);
-    const existing =
-      creating && created
-        ? creating._creationTime > created._creationTime
-          ? creating
-          : created
-        : (creating ?? created);
+    const [creating, handedOff, created, expiring, completed] =
+      await Promise.all([
+        ctx.db
+          .query("billingCheckoutSessions")
+          .withIndex("by_owner_mode_status", (query) =>
+            query
+              .eq("ownerId", ownerId)
+              .eq("mode", "subscription")
+              .eq("status", "creating"),
+          )
+          .order("desc")
+          .first(),
+        ctx.db
+          .query("billingCheckoutSessions")
+          .withIndex("by_owner_mode_status", (query) =>
+            query
+              .eq("ownerId", ownerId)
+              .eq("mode", "subscription")
+              .eq("status", "handedOff"),
+          )
+          .order("desc")
+          .first(),
+        ctx.db
+          .query("billingCheckoutSessions")
+          .withIndex("by_owner_mode_status", (query) =>
+            query
+              .eq("ownerId", ownerId)
+              .eq("mode", "subscription")
+              .eq("status", "created"),
+          )
+          .order("desc")
+          .first(),
+        ctx.db
+          .query("billingCheckoutSessions")
+          .withIndex("by_owner_mode_status", (query) =>
+            query
+              .eq("ownerId", ownerId)
+              .eq("mode", "subscription")
+              .eq("status", "expiring"),
+          )
+          .order("desc")
+          .first(),
+        ctx.db
+          .query("billingCheckoutSessions")
+          .withIndex("by_owner_mode_status", (query) =>
+            query
+              .eq("ownerId", ownerId)
+              .eq("mode", "subscription")
+              .eq("status", "completed"),
+          )
+          .order("desc")
+          .first(),
+      ]);
+    const existing = [creating, created, handedOff, expiring, completed]
+      .filter(
+        (session): session is NonNullable<typeof session> => session !== null,
+      )
+      .sort((left, right) => right._creationTime - left._creationTime)[0];
 
     if (existing) {
       return {

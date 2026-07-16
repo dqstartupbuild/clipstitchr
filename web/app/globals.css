@@ -581,6 +581,14 @@
   align-self: end;
 }
 
+.pricing-renewal-disclosure {
+  max-width: 48rem;
+  margin: 1.5rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
 .pricing-two-part {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(22rem, 1.08fr);
@@ -3935,8 +3943,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.dashboard-shell
-  :is(a, button, input, select, textarea):focus-visible {
+.dashboard-shell :is(a, button, input, select, textarea):focus-visible {
   outline: 2px solid var(--accent-dark);
   outline-offset: 3px;
 }
@@ -4168,13 +4175,7 @@
 }
 
 .dashboard-stitchr-callout {
-  clip-path: polygon(
-    0 0,
-    calc(100% - 1rem) 0,
-    100% 1rem,
-    100% 100%,
-    0 100%
-  );
+  clip-path: polygon(0 0, calc(100% - 1rem) 0, 100% 1rem, 100% 100%, 0 100%);
   border: 0;
   border-radius: 0;
   background: #211813;
@@ -4229,8 +4230,7 @@
   background: var(--surface-elevated);
 }
 
-.dashboard-shell
-  :is(input:not([type="range"]), select, textarea),
+.dashboard-shell :is(input:not([type="range"]), select, textarea),
 .dashboard-shell .ui-search-input,
 .dashboard-shell .ui-select-input {
   border-radius: 0.2rem;

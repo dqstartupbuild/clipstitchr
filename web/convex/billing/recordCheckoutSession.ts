@@ -26,25 +26,6 @@ export const recordCheckoutSession = internalMutation({
       now,
     },
   ) => {
-    const existing = await ctx.db
-      .query("billingCheckoutSessions")
-      .withIndex("by_stripe_session", (query) =>
-        query.eq("stripeCheckoutSessionId", stripeCheckoutSessionId),
-      )
-      .unique();
-
-    if (existing) {
-      if (
-        existing.ownerId !== ownerId ||
-        existing.catalogKey !== catalogKey ||
-        existing.mode !== mode
-      ) {
-        throw new Error("Checkout session ownership does not match.");
-      }
-
-      return existing._id;
-    }
-
     const claimed = checkoutIntentId
       ? await ctx.db
           .query("billingCheckoutSessions")
@@ -59,21 +40,54 @@ export const recordCheckoutSession = internalMutation({
         claimed.ownerId !== ownerId ||
         claimed.catalogKey !== catalogKey ||
         claimed.mode !== mode ||
-        (claimed.status !== "creating" &&
-          claimed.stripeCheckoutSessionId !== stripeCheckoutSessionId)
+        (mode === "subscription" &&
+          (claimed.returnTarget ?? "settings") !== (returnTarget ?? "settings"))
       ) {
         throw new Error("Checkout intent ownership does not match.");
       }
 
-      await ctx.db.patch(claimed._id, {
-        returnTarget: returnTarget ?? claimed.returnTarget,
-        status: claimed.status === "creating" ? "created" : claimed.status,
-        stripeCheckoutSessionId,
-        stripePriceId: stripePriceId ?? claimed.stripePriceId,
-        updatedAt: now,
-      });
+      if (claimed.status === "creating") {
+        await ctx.db.patch(claimed._id, {
+          returnTarget: returnTarget ?? claimed.returnTarget,
+          status: "created",
+          stripeCheckoutSessionId,
+          stripePriceId: stripePriceId ?? claimed.stripePriceId,
+          updatedAt: now,
+        });
 
-      return claimed._id;
+        return claimed._id;
+      }
+
+      if (
+        (claimed.status === "created" || claimed.status === "handedOff") &&
+        claimed.stripeCheckoutSessionId === stripeCheckoutSessionId
+      ) {
+        return claimed._id;
+      }
+
+      throw new Error("Checkout intent is no longer returnable.");
+    }
+
+    const existing = await ctx.db
+      .query("billingCheckoutSessions")
+      .withIndex("by_stripe_session", (query) =>
+        query.eq("stripeCheckoutSessionId", stripeCheckoutSessionId),
+      )
+      .unique();
+
+    if (existing) {
+      if (
+        existing.ownerId !== ownerId ||
+        existing.catalogKey !== catalogKey ||
+        existing.mode !== mode ||
+        (mode === "subscription" &&
+          existing.status !== "created" &&
+          existing.status !== "handedOff")
+      ) {
+        throw new Error("Checkout session ownership does not match.");
+      }
+
+      return existing._id;
     }
 
     return await ctx.db.insert("billingCheckoutSessions", {

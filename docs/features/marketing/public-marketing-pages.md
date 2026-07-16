@@ -61,7 +61,7 @@ and campaign proof followed by one direct close. CLI, Hook Lab, Clipr, Swapr,
 Swipr, scoring, and automation remain represented without repeating the same
 standalone heading-and-card section.
 
-The July 12, 2026 Privacy Policy and Terms also cover Hook Lab social sources.
+The July 16, 2026 Privacy Policy and Terms also cover Hook Lab social sources.
 They explain temporary Apify and AI video processing, the source link and
 attribution, text, private thumbnail, and Idea data that may be retained, the
 user's lawful-use responsibility, and the prohibition on identity or

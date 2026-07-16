@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import type { PlanKey } from "@/lib/clipstitchr/billing/types/PlanKey";
 import type { BillingPortalFlow } from "@/lib/clipstitchr/billing/types/BillingPortalFlow";
 import type { SubscriptionCheckoutReturnTarget } from "@/lib/clipstitchr/billing/types/SubscriptionCheckoutReturnTarget";
+import { getCanceledCheckoutIntentIdFromSearch } from "@/lib/clipstitchr/client/getCanceledCheckoutIntentIdFromSearch";
 
 type BillingAction = "checkout" | "portal" | "refill";
 
@@ -49,13 +50,20 @@ export function useBillingWorkspace() {
     async (
       planKey: PlanKey,
       returnTarget: SubscriptionCheckoutReturnTarget = "settings",
+      replaceCheckoutIntentId?: string,
     ) => {
       setError(null);
       setPendingBillingAction({ action: "checkout", planKey });
 
       try {
+        const canceledCheckoutIntentId =
+          replaceCheckoutIntentId ??
+          getCanceledCheckoutIntentIdFromSearch(window.location.search);
         const result = await createSubscriptionCheckout({
           planKey,
+          ...(canceledCheckoutIntentId
+            ? { replaceCheckoutIntentId: canceledCheckoutIntentId }
+            : {}),
           returnTarget,
         });
         openHostedUrl(result.url);
@@ -71,25 +79,25 @@ export function useBillingWorkspace() {
     [createSubscriptionCheckout, openHostedUrl],
   );
 
-  const manageBilling = useCallback(async (
-    flow: BillingPortalFlow = "home",
-    planKey?: PlanKey,
-  ) => {
-    setError(null);
-    setPendingBillingAction({ action: "portal", planKey });
+  const manageBilling = useCallback(
+    async (flow: BillingPortalFlow = "home", planKey?: PlanKey) => {
+      setError(null);
+      setPendingBillingAction({ action: "portal", planKey });
 
-    try {
-      const result = await createPortalSession({ flow });
-      openHostedUrl(result.url);
-    } catch (nextError) {
-      setError(
-        nextError instanceof Error
-          ? nextError.message
-          : "Unable to open billing settings.",
-      );
-      setPendingBillingAction(null);
-    }
-  }, [createPortalSession, openHostedUrl]);
+      try {
+        const result = await createPortalSession({ flow });
+        openHostedUrl(result.url);
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to open billing settings.",
+        );
+        setPendingBillingAction(null);
+      }
+    },
+    [createPortalSession, openHostedUrl],
+  );
 
   const buyRefill = useCallback(async () => {
     setError(null);

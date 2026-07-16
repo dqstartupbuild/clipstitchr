@@ -34,9 +34,17 @@ active subscription without billing review.
 
 Subscription Checkout also takes an atomic owner-scoped claim before creating
 the Stripe session. The claim ID is the Stripe idempotency key, so retries and
-simultaneous clicks cannot create parallel subscriptions. A different plan is
-blocked while the first claim is being created; an older open Checkout is
-expired before a replacement plan is opened.
+simultaneous clicks cannot create parallel subscriptions. Before returning an
+open URL, Convex atomically marks that exact plan, return target, intent, owner,
+and Stripe session as handed off. An ordinary request cannot silently expire a
+session already handed to the browser. A canceled return carries the exact
+server-created intent ID, and only that authenticated, rate-limited retry may
+start it over. While Stripe expiration is unresolved, the `expiring` claim stays
+discoverable and blocks a second session; the next retry reconciles Stripe
+before any replacement is created. A completed Checkout also stays claim-visible
+until a second authoritative Stripe subscription check either blocks the request
+or proves the old completion barrier can be retired. This closes the window in
+which a subscription completes after the first Stripe precheck.
 
 Paid creation has three more server-side protections before shared capacity is
 used:

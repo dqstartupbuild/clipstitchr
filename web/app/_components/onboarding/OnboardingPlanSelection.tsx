@@ -1,3 +1,4 @@
+import { BillingRenewalDisclosure } from "@/app/_components/billing/BillingRenewalDisclosure";
 import { Button } from "@/app/_components/ui/Button";
 import { planPolicies } from "@/lib/clipstitchr/billing/planPolicies";
 import type { PlanKey } from "@/lib/clipstitchr/billing/types/PlanKey";
@@ -32,6 +33,7 @@ export function OnboardingPlanSelection({
         You can change plans later in Settings. Upgrades apply after Stripe
         confirms payment, and downgrades begin at your next renewal.
       </p>
+      <BillingRenewalDisclosure className="mt-2 text-sm leading-6 text-text-secondary" />
       {error ? (
         <p
           className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
@@ -60,8 +62,8 @@ export function OnboardingPlanSelection({
                 </div>
                 <p className="mt-2 text-sm leading-6 text-text-secondary">
                   {policy.productLimit} product
-                  {policy.productLimit === 1 ? "" : "s"}, {" "}
-                  {policy.monthlyCreationCredits.toLocaleString()} credits, and {" "}
+                  {policy.productLimit === 1 ? "" : "s"},{" "}
+                  {policy.monthlyCreationCredits.toLocaleString()} credits, and{" "}
                   {policy.aiVideoLimit} Clipr or Swapr videos each month.
                 </p>
               </div>

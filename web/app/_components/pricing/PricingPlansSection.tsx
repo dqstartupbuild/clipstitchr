@@ -1,3 +1,4 @@
+import { BillingRenewalDisclosure } from "@/app/_components/billing/BillingRenewalDisclosure";
 import { PricingPlanCard } from "@/app/_components/pricing/PricingPlanCard";
 import { pricingPlans } from "@/lib/clipstitchr/pricing/pricingPlans";
 
@@ -24,6 +25,7 @@ export function PricingPlansSection() {
             <PricingPlanCard key={plan.key} plan={plan} index={index} />
           ))}
         </div>
+        <BillingRenewalDisclosure className="pricing-renewal-disclosure" />
       </div>
     </section>
   );

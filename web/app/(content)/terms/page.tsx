@@ -9,7 +9,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function TermsPage() {
-  const lastUpdated = "July 15, 2026";
+  const lastUpdated = "July 16, 2026";
 
   return (
     <article className="legal-page">
@@ -169,12 +169,12 @@ export default function TermsPage() {
               credits again. Agency includes unlimited stitch creation.
             </p>
             <p>
-              One Swipr generation uses 20 creation credits. A standalone
-              avatar photo, background, or photo expansion uses 25 creation
-              credits. Clipr and Swapr videos use the separate video allowance
-              included with the plan. A photo that Clipr must create as part of
-              its video process does not use standalone photo credits. Credits
-              or video allowances reserved for a failed generation are returned.
+              One Swipr generation uses 20 creation credits. A standalone avatar
+              photo, background, or photo expansion uses 25 creation credits.
+              Clipr and Swapr videos use the separate video allowance included
+              with the plan. A photo that Clipr must create as part of its video
+              process does not use standalone photo credits. Credits or video
+              allowances reserved for a failed generation are returned.
             </p>
             <p>
               Monthly credits are used before refill credits. Refill credits
@@ -267,8 +267,11 @@ export default function TermsPage() {
           <section>
             <h2>Contact</h2>
             <p>
-              If you have questions about these Terms of Use, you can reach us
-              through the contact information provided on our website.
+              If you have questions about these Terms of Use, email us at{" "}
+              <a href="mailto:support@clipstitchr.com">
+                support@clipstitchr.com
+              </a>
+              .
             </p>
           </section>
         </div>
