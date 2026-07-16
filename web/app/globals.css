@@ -3863,6 +3863,21 @@
   }
 }
 
+.product-plan-limit-theme {
+  color-scheme: dark;
+  --surface: #181412;
+  --surface-muted: #251d19;
+  --surface-elevated: #30251f;
+  --border: rgba(244, 226, 209, 0.15);
+  --accent: #ad7659;
+  --accent-dark: #ddb498;
+  --text-primary: #f5f0e9;
+  --text-secondary: #d2c7bd;
+  --text-tertiary: #a7998e;
+  --text-inverse: #160f0c;
+  --utility-bg-white: var(--surface-elevated);
+}
+
 .dashboard-shell {
   color-scheme: dark;
   --background: #100e0d;

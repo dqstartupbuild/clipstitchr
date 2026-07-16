@@ -33,7 +33,7 @@ export function ProductPlanLimitDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 px-4 py-6"
+      className="product-plan-limit-theme fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 px-4 py-6"
       onClick={onClose}
     >
       <div
@@ -70,7 +70,7 @@ export function ProductPlanLimitDialog({
           />
         </div>
         <Link
-          className="mt-5 inline-flex min-h-10 items-center justify-center rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="mt-5 inline-flex min-h-10 items-center justify-center rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-text-inverse transition-colors hover:bg-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           href="/dashboard/settings#plan-and-usage"
           onClick={onClose}
         >

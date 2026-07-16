@@ -43,6 +43,8 @@ describe("ProductPlanLimitDialog", () => {
     expect(markup).toContain("Bloomin is locked");
     expect(markup).toContain("This product is still saved");
     expect(markup).toContain("/dashboard/settings#plan-and-usage");
+    expect(markup).toContain("product-plan-limit-theme");
+    expect(markup).toContain("text-text-inverse");
   });
 
   it("explains why another product cannot be created", () => {

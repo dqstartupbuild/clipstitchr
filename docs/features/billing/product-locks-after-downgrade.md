@@ -13,7 +13,8 @@ short explanation with a link to **Settings -> Plan and usage**.
 The explanation behaves as a true modal: focus enters it when it opens, stays
 inside while it is visible, closes with Escape, and returns to the control that
 opened it. This keeps the same upgrade path usable by keyboard and assistive
-technology users.
+technology users. Its isolated theme variables keep the same warm dashboard
+palette even though the provider mounts the modal above the page shell.
 
 ## Which Products Stay Available
 
