@@ -27,7 +27,6 @@ export function PricingPlanCard({ index, plan }: PricingPlanCardProps) {
       <div className="pricing-ledger-capacity">
         <p>{plan.products}</p>
         <p>{plan.credits}</p>
-        <p>{plan.storage}</p>
       </div>
 
       <ul className="pricing-ledger-features">

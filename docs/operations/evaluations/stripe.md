@@ -225,6 +225,11 @@ Before production:
 
 Adopt when paid plans or paid AI credits are ready to implement.
 
+The implementation-ready decisions now live in
+`docs/architecture/plan-entitlements-stripe-and-worker-queues.md`. Follow that
+document instead of treating this earlier component evaluation as the billing
+specification.
+
 Stripe is the strongest "yes" among these two new evaluations because billing
 is already in the product scope and the app has a placeholder settings panel.
 The component should be used as Stripe synchronization and checkout plumbing,

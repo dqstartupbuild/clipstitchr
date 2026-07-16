@@ -6,7 +6,6 @@ export type PricingPlan = {
   bestFor: string;
   products: string;
   credits: string;
-  storage: string;
   features: string[];
   ctaLabel: string;
   ctaHref: string;

@@ -5,7 +5,9 @@
 Grow on short-form without becoming a content person.
 
 Pricing should sell relief from the parts of content work the user keeps
-avoiding. Credits are only the meter for extra generated material.
+avoiding. Creation credits meter frequent, lower-cost output. Clipr and Swapr
+videos have separate monthly generation allowances because they create
+materially higher provider cost.
 
 ## Main Offer
 
@@ -23,107 +25,109 @@ The parts of content work builders keep putting off, bundled together:
 
 | Action | Credits |
 | --- | ---: |
-| Stitchr ads from saved clips | Included |
-| Clip scores / video reads | Included |
-| 1 generated video | 25 |
-| 1 generated photo/avatar/background | 1 |
-| 10 Swipr text/caption/hashtag drafts | 1 |
+| Previewing and editing in Stitchr | Included |
+| 1 stitch created on Starter or Pro | 10 |
+| Stitches created on Agency | Unlimited; no creation-credit deduction |
+| 1 Swipr generation | 20 |
+| 1 standalone avatar photo/background/photo expansion | 25 |
+| 1 Clipr or Swapr video | Separate plan allowance |
+| Clipr's required scene photo | Included with the Clipr video |
 
-All plans include access to Stitchr, Clipr, Swapr, Swipr, avatar generation,
-scoring, templates, and the clip library. Plans differ by monthly credits,
-product limits, automation, storage, speed, and support.
+All plans include access to Stitchr, Swipr, Hook Lab, scoring, and the media
+library, plus a plan-specific Clipr and Swapr video allowance. Plans differ by
+creation credits, AI video generations, product limits, automation, speed,
+concurrency, and support. Storage is not a customer-facing pricing dimension.
 
 ## Plans
 
-| Plan | Price | Best For | Products | Credits |
-| --- | ---: | --- | ---: | ---: |
-| Starter | $39/month | Trying ClipStitchr with a few products | 3 | 50/month |
-| Pro | $99/month | Regular ads without regular editing days | 10 | 250/month |
-| Studio | $249/month | Teams with more products and more clips to keep moving | Unlimited | 750/month |
-| Agency | $499+/month | Multiple brands, onboarding, and custom support | Custom | Custom |
+| Plan | Price | Best For | Products | Creation Credits | Clipr + Swapr Videos |
+| --- | ---: | --- | ---: | ---: | ---: |
+| Starter | $39/month | Getting one product's content moving | 1 | 2,000/month | 3/month |
+| Pro | $99/month | Making fresh creative every week | 3 | 8,000/month | 10/month |
+| Agency | $399/month | Producing campaigns across a client roster | 10 | 20,000/month | 50/month |
 
 ## Plan Details
 
 Starter:
 
-- Included Stitchr ads from saved clips.
-- Included clip scores and video reads.
-- All creation tools included.
-- 3 products.
-- 50 monthly generation credits.
-- Small clip library included.
+- Stitchr and Swipr.
+- Hook Lab and clip scoring.
+- 1 product.
+- 2,000 monthly creation credits.
+- 3 combined Clipr or Swapr videos per month.
+- One media library.
 - Buy more credits anytime.
-- 10k Organic Views Challenge included.
 
 Pro:
 
 - Everything in Starter.
-- 10 products.
-- 250 monthly generation credits.
-- More room for clips.
+- 3 products.
+- 8,000 monthly creation credits.
+- 10 combined Clipr or Swapr videos per month.
 - Daily drafts for 1 product.
 - Faster generation defaults.
-- Stronger challenge reward.
-
-Studio:
-
-- Everything in Pro.
-- Unlimited products.
-- 750 monthly generation credits.
-- More saved media included.
-- Daily drafts across multiple products.
-- More jobs can run at once.
-- Priority support.
-- Strongest challenge reward.
 
 Agency:
 
-- Custom credits and storage.
-- Multi-brand workflows.
-- Custom daily draft limits.
-- Onboarding help.
+- Everything in Pro.
+- 10 products.
+- 20,000 monthly creation credits.
+- Unlimited stitches.
+- 50 combined Clipr or Swapr videos per month.
+- Daily drafts for all 10 products.
+- More jobs can run at once.
 - Priority support.
-- Custom challenge terms.
 
 ## Top-Ups
 
 Available only to active subscribers. Monthly credits are used first. Top-up
 credits roll over for 12 months while the subscription stays active.
 
-| Pack | Price | Credits | Video Equivalent |
+| Pack | Price | Credits | Example Output |
 | --- | ---: | ---: | ---: |
-| Refill | $29 | 150 | 6 videos |
-| Busy Week | $69 | 375 | 15 videos |
-| Long Month | $129 | 750 | 30 videos |
+| Refill | $29 | 2,000 | 200 stitches or 100 Swipr generations |
+
+Refills do not increase the plan's Clipr and Swapr video allowance.
+
+## Workspace Decision
+
+A future multi-brand workspace would be a separate client or brand environment
+with its own products, media, settings, and member access. It is not the same as
+a team seat. A seat is simply another person who can access an environment.
+Because the current product is scoped by product rather than by separate
+client-owned environments, workspaces and team seats are not promised in the
+current plans.
+
+## Clipr Photo Charging
+
+Every non-demo Clipr run creates one scene-specific avatar still before it
+creates the final video. That required still is bundled into the Clipr video
+allowance and never deducts creation credits separately.
+
+Standalone photo generation from the Avatar library costs 25 creation credits
+per successful photo. The same rate applies to standalone AI backgrounds and
+photo expansion. Failed provider jobs return the reserved credits. Clipr and
+Swapr video allowances are finalized only after a successful video output; a
+failed job returns the reserved generation.
 
 ## Storage
 
-Do not lead with storage. Say "clip library included."
+Do not charge for or lead with storage. Say "one media library."
 
-Detailed limits:
+Internal reasonable-use, upload, and retained-storage controls remain service
+safeguards. They are not customer-facing subscription entitlements or upgrade
+prompts.
 
-| Plan | Library Storage |
-| --- | ---: |
-| Starter | 25 GB |
-| Pro | 250 GB |
-| Studio | 500 GB |
-| Agency | Custom |
-
-## Guarantee
+## Promotional Challenge
 
 10k Organic Views Challenge:
 
 > Publish 30 ClipStitchr-made posts in 30 days. If they do not reach 10k total
 > organic views, we will help you keep going.
 
-Rewards:
-
-| Plan | If They Complete The Challenge But Miss 10k Views |
-| --- | --- |
-| Starter | Next month free + 150 credits |
-| Pro | Next month free + 500 credits + creative teardown |
-| Studio | Next month free + 750 credits + creative teardown |
-| Agency | Custom |
+Reward on every paid plan: one free month of the customer's then-current plan,
+applied to the next renewal. This is an account credit, not a cash refund of a
+previous charge.
 
 Terms:
 
@@ -135,6 +139,12 @@ Terms:
 - Must submit links or analytics screenshots.
 - Claim submitted within 7 days after the 30-day window ends.
 - One guarantee claim per customer.
+- Account must remain in good standing.
+
+The challenge is not promoted on the pricing page. Its complete terms live in
+the Terms of Use. Any future onboarding, checkout, email, or campaign mention
+must state the important conditions beside the claim and link directly to the
+complete terms.
 
 ## Pricing Page Copy
 
@@ -144,17 +154,11 @@ Headline:
 
 Subhead:
 
-> Stitchr, scoring, templates, and your clip library are included. Credits only
-> matter when ClipStitchr creates extra videos, visuals, or drafts because your
-> library is thin.
+> Stitchr, scoring, Hook Lab Ideas, and your clip library are included. Creation
+> credits cover everyday output, while each plan has a separate allowance for
+> Clipr and Swapr videos.
 
 Plan note:
 
-> All plans include every ClipStitchr tool. Choose based on how many products,
-> credits, daily drafts, and saved media you need.
-
-Guarantee block:
-
-> Try the 10k Organic Views Challenge. Publish 30 ClipStitchr-made posts in 30
-> days. If they do not reach 10k total organic views, your next month is on us,
-> with extra credits to keep testing.
+> Choose based on how often you create, how many products you manage, and how
+> much of the work you want ClipStitchr to prepare for you.

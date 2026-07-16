@@ -9,8 +9,8 @@ export function PricingHero() {
         <div className="pricing-hero-detail">
           <p>
             Stitchr, scoring, Hook Lab Ideas, and your clip library are
-            included. Credits only matter when ClipStitchr creates extra videos,
-            visuals, or drafts because your library is thin.
+            included. Creation credits cover everyday output, while each plan
+            has a separate allowance for Clipr and Swapr videos.
           </p>
           <PrimaryButtonLink href="#plans">Choose a plan</PrimaryButtonLink>
         </div>

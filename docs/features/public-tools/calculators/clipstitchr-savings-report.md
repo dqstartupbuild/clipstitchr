@@ -24,9 +24,8 @@ them as modeled differences rather than promises.
 
 `web/lib/clipstitchr/pricing/PricingPlan.ts` exposes `monthlyPriceUsd`, and
 `web/lib/clipstitchr/pricing/pricingPlans.ts` supplies exact values for Starter,
-Pro, and Studio. Agency remains `null` because its price is custom. The pricing
-page keeps its existing display strings while the calculator uses the matching
-numeric values.
+Pro, and Agency. The pricing page keeps its display strings while the calculator
+uses the matching numeric values.
 
 ## Files
 

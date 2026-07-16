@@ -8,8 +8,25 @@ describe("pricingPlans", () => {
     ).toEqual([
       ["starter", 39],
       ["pro", 99],
-      ["studio", 249],
-      ["agency", null],
+      ["agency", 399],
+    ]);
+  });
+
+  it("does not make storage a plan choice", () => {
+    expect(JSON.stringify(pricingPlans)).not.toContain("storage");
+    expect(pricingPlans).toHaveLength(3);
+  });
+
+  it("keeps product and generation limits explicit", () => {
+    expect(pricingPlans.map(({ products }) => products)).toEqual([
+      "1 product",
+      "3 products",
+      "10 products",
+    ]);
+    expect(pricingPlans.map(({ credits }) => credits)).toEqual([
+      "2,000 creation credits/month",
+      "8,000 creation credits/month",
+      "20,000 creation credits/month",
     ]);
   });
 });

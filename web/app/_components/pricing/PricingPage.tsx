@@ -1,5 +1,4 @@
 import { PricingCreditRulesSection } from "@/app/_components/pricing/PricingCreditRulesSection";
-import { PricingGuaranteeSection } from "@/app/_components/pricing/PricingGuaranteeSection";
 import { PricingHero } from "@/app/_components/pricing/PricingHero";
 import { PricingOfferStackSection } from "@/app/_components/pricing/PricingOfferStackSection";
 import { PricingPlansSection } from "@/app/_components/pricing/PricingPlansSection";
@@ -13,7 +12,6 @@ export function PricingPage() {
       <PricingPlansSection />
       <PricingCreditRulesSection />
       <PricingTopUpsSection />
-      <PricingGuaranteeSection />
     </>
   );
 }

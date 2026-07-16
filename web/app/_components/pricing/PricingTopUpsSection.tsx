@@ -7,12 +7,12 @@ export function PricingTopUpsSection() {
         <div className="pricing-topups-heading">
           <p className="marketing-eyebrow">Need more credits?</p>
           <h2 className="marketing-heading">
-            Top up when the library is thin and you need more material.
+            One simple refill when you need more material.
           </h2>
           <p>
-            Top-ups are available to active subscribers. Monthly credits are
-            used first, then top-up credits. Top-up credits roll over for 12
-            months while the subscription stays active.
+            Add 2,000 creation credits for $29. Monthly credits are used first,
+            and refill credits roll over for 12 months while your subscription
+            stays active. Refills do not add Clipr or Swapr videos.
           </p>
         </div>
         <div className="pricing-topup-list">
@@ -22,9 +22,7 @@ export function PricingTopUpsSection() {
               <h3>{pack.name}</h3>
               <strong>{pack.price}</strong>
               <p>{pack.credits}</p>
-              <small>
-                Roughly {pack.videoEquivalent} if used for generated videos.
-              </small>
+              <small>Enough for about {pack.usageExample}.</small>
             </article>
           ))}
         </div>

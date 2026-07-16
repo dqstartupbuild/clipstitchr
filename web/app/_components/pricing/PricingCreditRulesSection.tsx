@@ -7,11 +7,12 @@ export function PricingCreditRulesSection() {
         <div>
           <p className="marketing-eyebrow">How credits work</p>
           <h2 className="marketing-heading">
-            Credits are for generated extras, not ads from your saved clips.
+            Creation credits and AI videos have separate limits.
           </h2>
           <p className="pricing-body-copy">
-            Making ads from clips you already uploaded is included. Credits are
-            used when ClipStitchr creates new media or draft content for you.
+            Creation credits cover finished stitches, Swipr results, and
+            standalone photos. Clipr and Swapr videos use the separate monthly
+            video allowance shown on your plan.
           </p>
         </div>
         <div className="pricing-rate-table">

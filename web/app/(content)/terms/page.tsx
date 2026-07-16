@@ -154,6 +154,54 @@ export default function TermsPage() {
           </section>
 
           <section>
+            <h2>Plan, Credit, and Promotional Terms</h2>
+            <p>
+              The plan limits and prices shown when you subscribe are part of
+              your paid plan. Product limits, monthly creation credits, Clipr
+              and Swapr video allowances, and daily-draft access vary by plan.
+              Storage is not sold as a separate plan allowance.
+            </p>
+            <p>
+              Starter and Pro use 10 creation credits for each stitch that is
+              successfully created. This applies to batch creation, daily
+              drafts, Normal mode, and Longr mode. Creating 10 stitches uses 100
+              credits. Downloading or exporting an existing stitch does not use
+              credits again. Agency includes unlimited stitch creation.
+            </p>
+            <p>
+              One Swipr generation uses 20 creation credits. A standalone
+              avatar photo, background, or photo expansion uses 25 creation
+              credits. Clipr and Swapr videos use the separate video allowance
+              included with the plan. A photo that Clipr must create as part of
+              its video process does not use standalone photo credits. Credits
+              or video allowances reserved for a failed generation are returned.
+            </p>
+            <p>
+              Monthly credits are used before refill credits. Refill credits
+              remain available for 12 months while the paid subscription stays
+              active. Credit refills do not add Clipr or Swapr videos.
+            </p>
+            <h3>10k Organic Views Challenge</h3>
+            <p>
+              The 10k Organic Views Challenge is an optional promotional account
+              credit, not a promise that your posts will receive a particular
+              number of views. An eligible paid customer who publishes 30
+              ClipStitchr-made public posts in 30 consecutive days and receives
+              fewer than 10,000 total organic views may request one free month
+              of their then-current plan.
+            </p>
+            <p>
+              Eligible posts may be published on TikTok, Instagram Reels, or
+              YouTube Shorts. Paid boosting and paid distribution do not count.
+              The customer must submit public post links or platform analytics
+              screenshots within 7 days after the 30-day challenge period ends.
+              The account must remain in good standing. The free month applies
+              to the next renewal and is not a cash refund of an earlier charge.
+              The challenge may be claimed once per customer.
+            </p>
+          </section>
+
+          <section>
             <h2>Intellectual Property</h2>
             <p>
               Site content, brand assets, design elements, and documentation are

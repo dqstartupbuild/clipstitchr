@@ -223,6 +223,12 @@ or can get a narrow job table as part of the implementation.
 Adopt Workpool when the next backend task is moving paid provider work out of
 request-owned or browser-owned flows.
 
+Plan-aware queue ordering, generation slots, Cloud Run capacity, and rollout
+requirements are specified in
+`docs/architecture/plan-entitlements-stripe-and-worker-queues.md`. That
+architecture keeps ClipStitchr's durable queue and domain state authoritative
+whether or not Workpool is later adopted as execution infrastructure.
+
 It should come before the Agent component, because it addresses current
 reliability and cost-control problems. It can also support later RAG, LLM
 cache, or Agent workflows by providing bounded execution for provider calls.

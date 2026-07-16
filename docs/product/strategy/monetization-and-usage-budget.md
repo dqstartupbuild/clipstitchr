@@ -3,8 +3,14 @@
 This document defines the working economics for hypothetical paid ClipStitchr
 plans. It is a planning model, not a billing implementation. The current app
 enforces rate limits, but paid plans still need a durable credit ledger,
-subscription entitlement checks, stored-data quotas, invoices, overage handling,
-and admin tools.
+subscription entitlement checks, reasonable-use storage controls, invoices,
+overage handling, and admin tools.
+
+The implementation contract for those systems is
+`docs/architecture/plan-entitlements-stripe-and-worker-queues.md`. Use that
+document for the authoritative Stripe boundary, entitlement schema, usage
+reservations, plan enforcement, queue priority, concurrency, rollout, and test
+requirements.
 
 ## Pricing Strategy
 
@@ -14,9 +20,10 @@ Usage cost budget: 40% of subscription revenue. This budget should cover AI
 providers, R2 storage and operations, Convex, Vercel, payment fees, failed jobs,
 retries, and operational slack.
 
-The current highest monthly rate limits should be treated as the Studio hard
+The current highest monthly rate limits should be treated as the Agency hard
 ceiling. Lower plans should use the same enforcement machinery with smaller
-monthly credit, storage, and feature caps.
+monthly credit and feature caps. Storage controls protect the service but are
+not sold as plan entitlements.
 
 ## Product Positioning Context
 
@@ -33,25 +40,23 @@ The core paid value is:
 - less dependence on a traditional video editor for repetitive ad assembly
 - better organization of raw clips, generated clips, and finished stitches
 
-AI credits are part of the cost model because they create provider spend, but
-they should not be the headline value metric. Plans should lead with content
-library usefulness, daily drafts, and fewer editing days. AI features should be
-positioned as additional tools when the user needs more clips or avatar photos.
+Creation credits make frequent, lower-cost output tangible. Clipr and Swapr
+videos use a separate combined monthly allowance because they create materially
+higher provider spend. Plans should lead with finished output, daily drafts, and
+fewer editing days rather than presenting one universal AI balance.
 
-| Plan | Price | Positioning | Shared AI Credits | Retained Storage Cap |
-| --- | ---: | --- | ---: | ---: |
-| Starter | $39/month | Trying ClipStitchr with a few products. | 50 | 25 GB |
-| Pro | $99/month | Regular ads without regular editing days. | 250 | 250 GB |
-| Studio | $249/month | Teams with more products and more clips to keep moving. | 750 | 500 GB |
+| Plan | Price | Products | Creation Credits | Clipr + Swapr Videos |
+| --- | ---: | ---: | ---: | ---: |
+| Starter | $39/month | 1 | 2,000 | 3/month |
+| Pro | $99/month | 3 | 8,000 | 10/month |
+| Agency | $399/month | 10 | 20,000 | 50/month |
 
 Positioning:
 
-- Starter: for trying ClipStitchr, organizing a small clip library, and making
-  first finished ads.
+- Starter: for getting one product's content moving with Stitchr and Swipr.
 - Pro: the highlighted default plan for builders who need regular ads without
   regular editing days.
-- Studio: for agencies and teams that need more monthly room, larger libraries,
-  and faster queues.
+- Agency: for agencies and teams producing campaigns across up to 10 products.
 
 Marketing copy should avoid leading with AI limits. AI credits can appear in
 plan details, but the plan story should be about how much content work the user
@@ -63,46 +68,39 @@ no longer has to do by hand.
 | --- | ---: | ---: | ---: | ---: |
 | Starter | $39.00 | $15.60 | about $1.43 | about $14.17 |
 | Pro | $99.00 | $39.60 | about $3.17 | about $36.43 |
-| Studio | $249.00 | $99.60 | about $7.52 | about $92.08 |
+| Agency | $399.00 | $159.60 | about $11.87 | about $147.73 |
 
 Stripe estimates use 2.9% + $0.30 per successful domestic card transaction.
 
 ## Required Guardrail
 
-Plans must enforce a shared monthly AI credit ledger. Per-surface monthly rate
-limits are not enough by themselves. If a user maxes every AI surface
-independently, they can exceed the intended allowance:
+Plans must enforce two separate monthly ledgers:
 
-| Surface | Studio Monthly Cap | Credit Equivalent |
-| --- | ---: | ---: |
-| Upload metadata analysis | 10,000 analyses | 500 credits |
-| Avatar generated photos | 500 images | 500 credits |
-| AI photo outpaint/expand | 375 images | 375 credits |
-| Swapr video generation | 500 estimated seconds | 500 credits |
-| Total possible without a shared ledger |  | 1,875 credits |
+1. A creation-credit ledger for newly created stitches, Swipr generations, and
+   standalone photo operations.
+2. A combined successful-video counter for Clipr and Swapr.
 
-At the working value of $0.085/provider-cost per credit, 1,875 credits is
-$159.38/user/month in possible AI spend before R2, Convex, Vercel, payment fees,
-retries, and support. That is not covered by any of the three plans.
-
-Conclusion: paid usage must deduct from one shared monthly AI credit balance.
-The per-surface rate limits should remain as abuse, concurrency, and
-single-surface safety controls.
+Credit refills never increase the video counter. Agency bypasses creation-credit
+deduction for newly created stitches only; its Swipr and standalone photo work still
+uses creation credits. Per-surface limits remain necessary for abuse,
+concurrency, and single-provider safety.
 
 ## Credit Model
 
-Working credit value: $0.085/provider-cost per credit.
-
-This value is a planning assumption. Replace it with measured p50 and p95 cost
-per successful output after real Replicate and OpenAI invoices are available.
+Creation credits are presentation units, not a direct translation of provider
+dollars. Replace planning assumptions with measured p50 and p95 cost per
+successful output after real provider invoices are available.
 
 | Operation | Suggested Credit Cost | Notes |
 | --- | ---: | --- |
-| Upload metadata analysis | 0.05 credits | Cheap enrichment. Cap separately to prevent bulk abuse. |
-| Avatar generated photo | 1 credit/image | Backed by the selected `AVATAR_PHOTO_MODEL_ID` through Replicate. |
-| AI photo outpaint/expand | 1 credit/image | Backed by FLUX.1 Fill pro through Replicate. |
-| Swapr standard video | 1 credit/output second | Studio monthly cap currently maps to 500 estimated seconds. |
-| Swapr pro video, if exposed | 1.5-2 credits/output second | Use only if a higher-cost mode is added to the UI. |
+| Stitchr preview/edit | 0 credits | Charge only when a new stitch is successfully created. |
+| New stitch created | 10 credits | Applies equally to batch, daily-draft, Normal, and Longr creation. Agency stitches do not deduct credits. Exporting or downloading an existing stitch does not charge again. |
+| Swipr generation | 20 credits | One generated Swipr result. |
+| Standalone avatar photo | 25 credits/image | Applies to explicit generation from the Avatar library. |
+| Standalone background or photo expansion | 25 credits/image | Applies only to successful output. |
+| Clipr required scene still | 0 credits | Bundled into the Clipr video allowance. |
+| Clipr or Swapr video | 0 creation credits | Finalize one plan video only after successful output. |
+| Upload analysis and clip scoring | 0 credits | Keep included; cap separately to prevent bulk abuse. |
 | R2 upload/download/delete | 0 credits | Rate-limit for abuse and storage budget instead. |
 | Convex metadata writes | 0 credits | Rate-limit for backend churn instead. |
 
@@ -110,31 +108,36 @@ Example usage:
 
 | Plan | Example Monthly Usage |
 | --- | --- |
-| Starter | 50 generated photos, or 50 Swapr seconds, or 25 generated photos plus 25 Swapr seconds. |
-| Pro | 250 generated photos, or 250 Swapr seconds, or 125 generated photos plus 125 Swapr seconds. |
-| Studio | 750 generated photos, or 750 Swapr seconds, or 375 generated photos plus 375 Swapr seconds. |
+| Starter | Up to 200 stitches, 100 Swipr generations, 80 standalone photos, or a mixture, plus 3 Clipr/Swapr videos. |
+| Pro | Up to 800 stitches, 400 Swipr generations, 320 standalone photos, or a mixture, plus 10 Clipr/Swapr videos. |
+| Agency | Unlimited stitches plus up to 1,000 Swipr generations, 800 standalone photos, or a mixture, plus 50 Clipr/Swapr videos. |
 
-Metadata analysis is intentionally low-cost. For example, 1,000 upload analyses
-consume 50 credits.
+Clipr photo rule: one scene-specific still is required for each non-demo Clipr
+video. It is bundled into the video generation and must not deduct creation
+credits separately. Standalone Avatar-library generations cost 25 credits per
+successful photo. Failed photo jobs return reserved credits. Failed Clipr or
+Swapr jobs return the reserved video generation.
 
 ## Plan Limits
 
-These plan limits use the current Studio hard ceilings as the upper bound. They
+These plan limits use the current Agency hard ceilings as the upper bound. They
 are product limits, not just marketing claims.
 
-| Limit | Starter | Pro | Studio |
+| Limit | Starter | Pro | Agency |
 | --- | ---: | ---: | ---: |
-| Shared AI credits | 50/month | 250/month | 750/month |
+| Products | 1 | 3 | 10 |
+| Creation credits | 2,000/month | 8,000/month | 20,000/month |
+| Combined Clipr + Swapr videos | 3/month | 10/month | 50/month |
+| Products with daily drafts | 0 | 1 | 10 |
 | Upload metadata analyses | 1,000/month | 5,000/month | 10,000/month |
 | Avatar generated photos | 50/month | 250/month | 500/month |
 | AI photo outpaint/expand | 35/month | 185/month | 375/month |
-| Swapr video generation | 50 estimated sec/month | 250 estimated sec/month | 500 estimated sec/month |
+| Clipr + Swapr generation | 3 successful videos/month | 10 successful videos/month | 50 successful videos/month |
 | R2 uploads | 25 GB/month | 250 GB/month | 500 GB/month |
 | Retained storage | 25 GB | 250 GB | 500 GB |
 
-The per-feature caps protect single surfaces, but the shared credit cap is the
-real cost control. A Pro user should not be able to spend 250 credits on avatar
-photos and another 250 credits on Swapr in the same billing period.
+The per-feature caps protect single surfaces. The creation-credit ledger and
+combined AI-video counter are the actual plan controls.
 
 ## Generation Speed Positioning
 
@@ -147,9 +150,9 @@ Public positioning:
 
 | Plan | Public Speed Label | Product Promise |
 | --- | --- | --- |
-| Starter | Slow | Same review flow with fewer monthly credits and slower generation. |
-| Pro | Fast | Faster generation defaults and enough credits for regular solo use. |
-| Studio | Faster | Fastest defaults, highest limits, and future priority/concurrency room. |
+| Starter | Slow | Same review flow with fewer monthly generations and slower generation. |
+| Pro | Fast | Faster generation defaults and enough output for regular solo use. |
+| Agency | Faster | Fastest defaults, highest limits, and future priority/concurrency room. |
 
 Current implementation hooks:
 
@@ -157,7 +160,7 @@ Current implementation hooks:
 | --- | --- | --- | --- |
 | Starter | 1 image job at a time, `quality: "auto"` | `Quality 1080p`, Match Photo | Slowest path. Good for occasional use. |
 | Pro | 2 image jobs at a time, `quality: "medium"` | `Fast 720p`, Match Photo | Faster wall-clock time without changing the user-facing workflow. |
-| Studio | 4 image jobs at a time, `quality: "medium"` | `Fast 720p`, Match Photo | Fastest current avatar batch behavior; future queue priority belongs here. |
+| Agency | 4 image jobs at a time, `quality: "medium"` | `Fast 720p`, Match Photo | Fastest current avatar batch behavior; future queue priority belongs here. |
 
 The UI should avoid labels like "Final" for model modes. Use labels such as
 `Quality`, `Fast`, and `Faster` where a mode needs a name. This keeps plan
@@ -177,25 +180,17 @@ durations in the app. Match Photo keeps the faster 3-10 second path. A slower
 long-motion setting can be exposed later if users need 30-second reference
 motion.
 
-Until paid plans are implemented, the app can use the Studio/faster defaults as
+Until paid plans are implemented, the app can use the Agency/faster defaults as
 the global capability ceiling. When entitlements are added, each plan should map
 to the same speed-profile layer instead of duplicating settings across routes.
 
 ## Unit Economics
 
-The plan economics below assume every user spends their full shared credit
-allowance and uses typical storage/infra. They do not assume users can max every
-independent per-surface cap.
-
-| Plan | AI Credit Cost | Other Infra/Slack Budget | Stripe Fee | Estimated Total Cost | Gross Margin |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Starter | $4.25 | $9.92 | $1.43 | $15.60 | 60.0% |
-| Pro | $21.25 | $15.00 | $3.17 | $39.42 | 60.2% |
-| Studio | $42.50 | $49.00 | $7.52 | $99.02 | 60.2% |
-
-The Studio plan intentionally has more non-AI budget because heavier accounts
-are more likely to stress storage, backend usage, retries, support, and provider
-variance.
+The new creation-credit scale is not compatible with the old assumption that
+one credit equals $0.085 of provider cost. Validate the 3, 10, and 50 AI-video
+allowances plus realistic creation-credit mixes against invoices before billing
+launch. The maximum variable-cost budgets remain $15.60 for Starter, $39.60 for
+Pro, and $159.60 for Agency if the 60% gross-margin target is retained.
 
 ## Overage Pricing
 
@@ -203,12 +198,10 @@ If overages are offered, price them above expected marginal cost:
 
 | Overage | Suggested Price |
 | --- | ---: |
-| 100 AI credits | $25 |
-| 100 GB retained storage | $10-$15/month |
-| 100 GB extra monthly uploads | $10 |
+| 2,000 creation credits | $29 |
 
-At $0.085/provider-cost per credit, 100 AI credits cost about $8.50 before
-infra, payment fees, and failure slack. A $25 overage keeps margin healthy.
+Creation-credit refills do not add Clipr or Swapr videos. Any future video pack
+must be sold and costed separately.
 
 ## 100-User Scenarios
 
@@ -218,10 +211,10 @@ Example balanced cohort:
 | --- | ---: | ---: |
 | Starter | 40 | $1,560 |
 | Pro | 45 | $4,455 |
-| Studio | 15 | $3,735 |
-| Total | 100 | $9,750 |
+| Agency | 15 | $5,985 |
+| Total | 100 | $12,000 |
 
-At the modeled 40% cost budget, this cohort can support about $3,900/month in
+At the modeled 40% cost budget, this cohort can support about $4,800/month in
 variable costs while preserving 60% gross margin.
 
 If all 100 users are on Pro:
@@ -233,23 +226,23 @@ If all 100 users are on Pro:
 | Stripe domestic card fees | about $317/month |
 | Remaining usage/infra budget after Stripe | about $3,643/month |
 
-If all 100 users are on Studio:
+If all 100 users are on Agency:
 
 | Metric | Estimate |
 | --- | ---: |
-| Gross revenue | $24,900/month |
-| 40% cost budget | $9,960/month |
-| Stripe domestic card fees | about $752/month |
-| Remaining usage/infra budget after Stripe | about $9,208/month |
+| Gross revenue | $39,900/month |
+| 40% cost budget | $15,960/month |
+| Stripe domestic card fees | about $1,187/month |
+| Remaining usage/infra budget after Stripe | about $14,773/month |
 
-These scenarios are plausible only with the shared credit ledger and retained
-storage quotas. They are not safe if users can max every AI rate-limit surface
-independently.
+These scenarios are plausible only with the creation-credit ledger, combined
+AI-video counter, and retained-storage safeguards. They are not safe if users
+can max every provider surface independently.
 
 ## R2 Storage Risk
 
-R2 is cheap, but storage accumulates. The current Studio upload-byte limiter
-allows up to 500 GB uploaded per user per 30 days. If 100 Studio users each
+R2 is cheap, but storage accumulates. The current Agency safety ceiling
+allows up to 500 GB uploaded per user per 30 days. If 100 Agency users each
 upload and retain 500 GB, that is 50 TB stored.
 
 Using R2 Standard storage at $0.015/GB-month:
@@ -258,8 +251,8 @@ Using R2 Standard storage at $0.015/GB-month:
 | --- | ---: |
 | Starter 25 GB/user | $0.38/user |
 | Pro 250 GB/user | $3.75/user |
-| Studio 500 GB/user | $7.50/user |
-| 50 TB across 100 Studio users | about $750/month |
+| Agency 500 GB/user | $7.50/user |
+| 50 TB across 100 Agency users | about $750/month |
 
 R2 operations are usually less material at this usage level, but they still matter:
 Standard Class A operations are $4.50/million, Class B operations are
@@ -274,18 +267,20 @@ Recommended storage controls:
 - Consider warning at 80% of storage quota and blocking uploads at 100%.
 - Keep R2 Standard unless Infrequent Access retrieval economics are proven.
 
-## Current Studio Rate-Limit Mapping
+## Current Agency Rate-Limit Mapping
 
-These limits are abuse and concurrency controls. Studio should map to the
+These limits are abuse and concurrency controls. Agency should map to the
 current hard ceilings, while Starter and Pro should enforce lower monthly
-entitlements through the shared credit and quota ledger.
+entitlements through the creation-credit ledger, AI-video counter, and quota
+controls.
 
-| Surface | Studio Monthly Budget |
+| Surface | Agency Monthly Budget |
 | --- | ---: |
 | Upload metadata analysis | 10,000 analyses/30 days |
 | Avatar generated photos | 500 images/30 days |
 | AI photo outpaint/expand | 375 images/30 days |
-| Swapr video generation | 500 estimated output seconds/30 days |
+| Combined Clipr + Swapr generation | 50 successful videos/30 days |
+| Generated video duration | 500 estimated output seconds/30 days |
 | R2 uploads | 500 GB/30 days |
 
 Hourly and daily limits are still required. Monthly limits protect worst-case

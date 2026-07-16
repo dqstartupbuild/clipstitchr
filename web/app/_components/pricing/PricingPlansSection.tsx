@@ -8,16 +8,15 @@ export function PricingPlansSection() {
         <div className="pricing-plans-intro">
           <h2 className="marketing-heading">Compare the plans.</h2>
           <p>
-            Choose based on how many products, credits, daily drafts, and saved
-            media you need. Pro is the main plan for builders who need regular
-            ads without regular editing days.
+            Choose based on how often you create, how many products you manage,
+            and how much of the work you want ClipStitchr to prepare for you.
           </p>
         </div>
         <div className="pricing-ledger">
           <div className="pricing-ledger-head" aria-hidden="true">
             <span>Plan</span>
             <span>Monthly</span>
-            <span>Capacity</span>
+            <span>Output</span>
             <span>What changes</span>
             <span>Choose</span>
           </div>

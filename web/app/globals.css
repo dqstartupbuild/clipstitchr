@@ -451,8 +451,7 @@
 
 .pricing-plans,
 .pricing-credits,
-.pricing-topups,
-.pricing-challenge {
+.pricing-topups {
   padding: 7rem 1.5rem;
 }
 
@@ -592,8 +591,7 @@
   background: #211914;
 }
 
-.pricing-credits h2,
-.pricing-challenge h2 {
+.pricing-credits h2 {
   max-width: 48rem;
   margin: 1.2rem 0 0;
   color: var(--text-primary);
@@ -713,56 +711,6 @@
   line-height: 1.5;
 }
 
-.pricing-challenge {
-  background: #4b2e23;
-}
-
-.pricing-challenge .marketing-eyebrow {
-  color: #e2bfa8;
-}
-
-.pricing-challenge-copy {
-  padding-top: 2.2rem;
-}
-
-.pricing-challenge-copy p {
-  margin: 0 0 1rem;
-  color: #ead9cf;
-  font-size: 1rem;
-  line-height: 1.72;
-}
-
-.pricing-challenge-copy small {
-  display: block;
-  margin-top: 1.4rem;
-  color: #d3b3a0;
-  line-height: 1.6;
-}
-
-.pricing-challenge-rewards {
-  display: grid;
-  margin-top: 4rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.5rem;
-}
-
-.pricing-challenge-rewards div {
-  min-height: 8.5rem;
-  padding: 1.2rem;
-  background: rgba(24, 14, 10, 0.26);
-}
-
-.pricing-challenge-rewards strong {
-  color: #fff7f1;
-}
-
-.pricing-challenge-rewards p {
-  margin: 0.8rem 0 0;
-  color: #dfc7b8;
-  font-size: 0.78rem;
-  line-height: 1.55;
-}
-
 @media (max-width: 1000px) {
   .pricing-ledger-head {
     display: none;
@@ -807,8 +755,7 @@
   .pricing-included,
   .pricing-plans,
   .pricing-credits,
-  .pricing-topups,
-  .pricing-challenge {
+  .pricing-topups {
     padding-block: 5rem;
   }
 
@@ -820,8 +767,7 @@
   }
 
   .pricing-included-list,
-  .pricing-topup-list,
-  .pricing-challenge-rewards {
+  .pricing-topup-list {
     grid-template-columns: 1fr;
   }
 
@@ -842,8 +788,7 @@
     padding-left: 2.1rem;
   }
 
-  .pricing-rate-table,
-  .pricing-challenge-copy {
+  .pricing-rate-table {
     margin-top: 2.5rem;
   }
 
