@@ -5,21 +5,37 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { Button } from "@/app/_components/ui/Button";
+import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { PostBridgeAnalyticsResultsSection } from "@/app/dashboard/analytics/PostBridgeAnalyticsResultsSection";
 import { PostBridgeAnalyticsStatsGrid } from "@/app/dashboard/analytics/PostBridgeAnalyticsStatsGrid";
+import { PostBridgeAnalyticsSyncStatus } from "@/app/dashboard/analytics/PostBridgeAnalyticsSyncStatus";
 import { PostBridgeAnalyticsTimeRangeFilter } from "@/app/dashboard/analytics/PostBridgeAnalyticsTimeRangeFilter";
 import { fetchPostBridgeAnalytics } from "@/lib/clipstitchr/client/fetchPostBridgeAnalytics";
 import { syncPostBridgeAnalytics } from "@/lib/clipstitchr/client/syncPostBridgeAnalytics";
+import { postBridgeListPageSize } from "@/lib/clipstitchr/constants/postBridgeListPageSize";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
+import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { PostBridgeAnalytics } from "@/lib/clipstitchr/types/PostBridgeAnalytics";
+import type { PostBridgeAnalyticsLoadResult } from "@/lib/clipstitchr/types/PostBridgeAnalyticsLoadResult";
 import type { PostBridgeAnalyticsTimeRange } from "@/lib/clipstitchr/types/PostBridgeAnalyticsTimeRange";
 import { defaultPostBridgeAnalyticsTimeRange } from "@/lib/clipstitchr/utils/defaultPostBridgeAnalyticsTimeRange";
 import { filterPostBridgeAnalyticsByTimeRange } from "@/lib/clipstitchr/utils/filterPostBridgeAnalyticsByTimeRange";
 import { getPostBridgeAnalyticsTotals } from "@/lib/clipstitchr/utils/getPostBridgeAnalyticsTotals";
 
+const emptySyncStatus = {
+  lastSyncedAt: null,
+  stale: false,
+  syncTriggered: false,
+};
+
 export function PostBridgeAnalyticsPageClient() {
   const products = useDashboardProduct();
   const [analytics, setAnalytics] = useState<PostBridgeAnalytics[]>([]);
+  const [syncStatus, setSyncStatus] = useState<{
+    lastSyncedAt: string | null;
+    stale: boolean;
+    syncTriggered: boolean;
+  }>(emptySyncStatus);
   const [timeRange, setTimeRange] = useState<PostBridgeAnalyticsTimeRange>(
     defaultPostBridgeAnalyticsTimeRange,
   );
@@ -34,11 +50,32 @@ export function PostBridgeAnalyticsPageClient() {
     () => getPostBridgeAnalyticsTotals(filteredAnalytics),
     [filteredAnalytics],
   );
+  const pagination = usePagination(filteredAnalytics, {
+    pageSize: postBridgeListPageSize,
+  });
+  const { resetPage } = pagination;
   const activeProductId = products.activeProduct?.id;
+
+  useEffect(() => {
+    resetPage();
+  }, [activeProductId, resetPage, timeRange]);
+
+  const applyLoadResult = useCallback(
+    (result: PostBridgeAnalyticsLoadResult) => {
+      setAnalytics(result.analytics);
+      setSyncStatus({
+        lastSyncedAt: result.lastSyncedAt,
+        stale: result.stale,
+        syncTriggered: result.syncTriggered,
+      });
+    },
+    [],
+  );
 
   const loadDashboard = useCallback(async () => {
     if (!activeProductId) {
       setAnalytics([]);
+      setSyncStatus(emptySyncStatus);
       setError(null);
       setIsLoading(false);
       return;
@@ -46,10 +83,11 @@ export function PostBridgeAnalyticsPageClient() {
 
     setIsLoading(true);
     setAnalytics([]);
+    setSyncStatus(emptySyncStatus);
     setError(null);
 
     try {
-      setAnalytics(
+      applyLoadResult(
         await fetchPostBridgeAnalytics({ productId: activeProductId }),
       );
     } catch (nextError) {
@@ -61,7 +99,7 @@ export function PostBridgeAnalyticsPageClient() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeProductId]);
+  }, [activeProductId, applyLoadResult]);
 
   useEffect(() => {
     let isActive = true;
@@ -70,6 +108,7 @@ export function PostBridgeAnalyticsPageClient() {
       try {
         setIsLoading(true);
         setAnalytics([]);
+        setSyncStatus(emptySyncStatus);
         setError(null);
 
         if (!activeProductId) {
@@ -77,7 +116,7 @@ export function PostBridgeAnalyticsPageClient() {
           return;
         }
 
-        const nextAnalytics = await fetchPostBridgeAnalytics({
+        const result = await fetchPostBridgeAnalytics({
           productId: activeProductId,
         });
 
@@ -85,7 +124,7 @@ export function PostBridgeAnalyticsPageClient() {
           return;
         }
 
-        setAnalytics(nextAnalytics);
+        applyLoadResult(result);
       } catch (nextError) {
         if (!isActive) {
           return;
@@ -108,7 +147,7 @@ export function PostBridgeAnalyticsPageClient() {
     return () => {
       isActive = false;
     };
-  }, [activeProductId]);
+  }, [activeProductId, applyLoadResult]);
 
   const handleSync = async () => {
     if (!activeProductId) {
@@ -120,7 +159,7 @@ export function PostBridgeAnalyticsPageClient() {
     setError(null);
 
     try {
-      setAnalytics(
+      applyLoadResult(
         await syncPostBridgeAnalytics({ productId: activeProductId }),
       );
     } catch (nextError) {
@@ -175,14 +214,35 @@ export function PostBridgeAnalyticsPageClient() {
             onChange={setTimeRange}
             value={timeRange}
           />
-          <p className="text-sm font-semibold text-text-secondary">
-            {filteredAnalytics.length} posts with results
-          </p>
+          <div className="flex flex-col gap-1 sm:items-end">
+            <p className="text-sm font-semibold text-text-secondary">
+              {filteredAnalytics.length} posts with results
+            </p>
+            <PostBridgeAnalyticsSyncStatus
+              lastSyncedAt={syncStatus.lastSyncedAt}
+              stale={syncStatus.stale}
+              syncTriggered={syncStatus.syncTriggered || isSyncing}
+            />
+          </div>
         </div>
 
         <PostBridgeAnalyticsStatsGrid totals={totals} />
 
-        <PostBridgeAnalyticsResultsSection analytics={filteredAnalytics} />
+        <PostBridgeAnalyticsResultsSection analytics={pagination.pageItems} />
+
+        {pagination.totalPages > 1 ? (
+          <PaginationControls
+            canGoNext={pagination.canGoNext}
+            canGoPrevious={pagination.canGoPrevious}
+            currentPage={pagination.currentPage}
+            totalItems={pagination.totalItems}
+            totalPages={pagination.totalPages}
+            visibleEnd={pagination.visibleEnd}
+            visibleStart={pagination.visibleStart}
+            onNext={pagination.goToNextPage}
+            onPrevious={pagination.goToPreviousPage}
+          />
+        ) : null}
       </div>
     </DashboardShell>
   );

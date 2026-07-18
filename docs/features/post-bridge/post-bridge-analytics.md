@@ -22,10 +22,46 @@ Analytics defaults to `Last 30 days`. The user can filter the page by:
 ClipStitchr stores a local product mapping when it schedules a Post Bridge post.
 Analytics uses that mapping to fetch Post Bridge post-result IDs for the active
 product, then asks Post Bridge for analytics rows matching those result IDs.
+Both lookups chunk IDs into groups of 100 per Post Bridge request and dedupe by
+row ID, so products with more than 100 posts no longer truncate silently.
 After that product filter, the page filters visible stats and results locally by
 each row's `platform_created_at` value. Rows without a valid platform-created
 date remain visible in `All time`, but they are excluded from date-limited
 ranges because ClipStitchr cannot safely place them in time.
+
+## Sync On Load
+
+Post Bridge only stores analytics snapshots; each row carries a
+`last_synced_at` timestamp. There is no cron or background sync — snapshots
+refresh when a user loads the page or clicks `Sync analytics`.
+
+`GET /api/post-bridge/analytics` compares the latest `last_synced_at` across the
+rows it is about to return against a 15-minute staleness threshold
+(`postBridgeAnalyticsStaleThresholdMs`). When post results exist and the
+snapshot is missing or older than that, the route tries to consume the
+`postBridgeAnalyticsSync` rate limit and, when allowed, calls Post Bridge's
+`/v1/analytics/sync` and waits briefly before re-reading: it polls a probe set
+(the first 100 post-result IDs) every 2 seconds, up to 4 polls, stopping early
+once the probe's latest `last_synced_at` advances past the pre-sync value
+(`waitForPostBridgeAnalyticsSync`). When the sync bucket is exhausted, the load
+path skips the sync gracefully and still returns the stale snapshot — it never
+answers `429`.
+
+The response always includes `analytics`, `lastSyncedAt` (ISO string or null),
+`stale`, and `syncTriggered`. The page surfaces this next to the results count:
+`Last synced {date}` for fresh snapshots, `Syncing latest metrics…` while a
+sync was triggered, and an amber `Metrics may be outdated — automatic sync is
+temporarily rate-limited.` warning when the snapshot is stale and the sync was
+skipped. The manual `Sync analytics` button (`POST
+/api/post-bridge/analytics/sync`) keeps its explicit `429` behavior, uses the
+same wait/poll before re-reading, and returns the same enriched shape.
+
+## Pagination
+
+Stat cards and totals are computed over the full filtered set, but the Results
+list renders 10 rows per page (`postBridgeListPageSize`) through the shared
+`usePagination` hook and `PaginationControls`. Changing the time range or the
+active product resets the list to page 1.
 
 ## Visible Metrics
 
@@ -56,9 +92,16 @@ hours` and `Last 12 months` with the same behavior.
 - `web/app/dashboard/analytics/PostBridgeAnalyticsResultsSection.tsx`
 - `web/app/dashboard/analytics/PostBridgeAnalyticsResultRow.tsx`
 - `web/app/dashboard/analytics/PostBridgeAnalyticsMetricCell.tsx`
+- `web/app/dashboard/analytics/PostBridgeAnalyticsSyncStatus.tsx`
 - `web/convex/postBridgePostProductMappings.ts`
+- `web/lib/clipstitchr/constants/postBridgeAnalyticsStaleThresholdMs.ts`
+- `web/lib/clipstitchr/constants/postBridgeListPageSize.ts`
 - `web/lib/clipstitchr/server/postBridge/filterPostBridgeAnalyticsByPostResultIds.ts`
+- `web/lib/clipstitchr/server/postBridge/getLatestPostBridgeAnalyticsSyncedAtMs.ts`
+- `web/lib/clipstitchr/server/postBridge/listPostBridgeAnalytics.ts`
 - `web/lib/clipstitchr/server/postBridge/listPostBridgePostResults.ts`
+- `web/lib/clipstitchr/server/postBridge/waitForPostBridgeAnalyticsSync.ts`
+- `web/lib/clipstitchr/types/PostBridgeAnalyticsLoadResult.ts`
 - `web/lib/clipstitchr/types/PostBridgeAnalyticsTimeRange.ts`
 - `web/lib/clipstitchr/types/PostBridgeAnalyticsTimeRangeOption.ts`
 - `web/lib/clipstitchr/utils/filterPostBridgeAnalyticsByTimeRange.ts`

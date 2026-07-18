@@ -1,7 +1,12 @@
+"use client";
+
 import { RefreshCw } from "lucide-react";
 import { ScheduledPostCard } from "@/app/_components/schedule/ScheduledPostCard";
 import { ScheduledPostsSummary } from "@/app/_components/schedule/ScheduledPostsSummary";
 import { Button } from "@/app/_components/ui/Button";
+import { PaginationControls } from "@/app/_components/ui/PaginationControls";
+import { postBridgeListPageSize } from "@/lib/clipstitchr/constants/postBridgeListPageSize";
+import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { PostBridgePost } from "@/lib/clipstitchr/types/PostBridgePost";
 import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
 
@@ -31,6 +36,9 @@ export function ScheduledPostsPanel({
     );
 
     return rightTime - leftTime;
+  });
+  const pagination = usePagination(orderedPosts, {
+    pageSize: postBridgeListPageSize,
   });
 
   return (
@@ -67,8 +75,8 @@ export function ScheduledPostsPanel({
             <p className="p-4 text-sm font-semibold text-text-secondary">
               Loading scheduled content...
             </p>
-          ) : orderedPosts.length ? (
-            orderedPosts.map((post) => (
+          ) : pagination.pageItems.length ? (
+            pagination.pageItems.map((post) => (
               <ScheduledPostCard
                 key={post.id}
                 accounts={accounts}
@@ -81,6 +89,21 @@ export function ScheduledPostsPanel({
             </p>
           )}
         </div>
+        {pagination.totalPages > 1 ? (
+          <div className="px-4 pb-4">
+            <PaginationControls
+              canGoNext={pagination.canGoNext}
+              canGoPrevious={pagination.canGoPrevious}
+              currentPage={pagination.currentPage}
+              totalItems={pagination.totalItems}
+              totalPages={pagination.totalPages}
+              visibleEnd={pagination.visibleEnd}
+              visibleStart={pagination.visibleStart}
+              onNext={pagination.goToNextPage}
+              onPrevious={pagination.goToPreviousPage}
+            />
+          </div>
+        ) : null}
       </section>
     </div>
   );

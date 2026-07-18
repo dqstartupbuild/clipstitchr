@@ -1,6 +1,6 @@
 import { createPostBridgeProductUrl } from "@/lib/clipstitchr/client/createPostBridgeProductUrl";
 import { readPostBridgeClientErrorMessage } from "@/lib/clipstitchr/client/readPostBridgeClientErrorMessage";
-import type { PostBridgeAnalytics } from "@/lib/clipstitchr/types/PostBridgeAnalytics";
+import type { PostBridgeAnalyticsLoadResult } from "@/lib/clipstitchr/types/PostBridgeAnalyticsLoadResult";
 
 type SyncPostBridgeAnalyticsOptions = {
   productId?: string;
@@ -25,6 +25,5 @@ export async function syncPostBridgeAnalytics({
     );
   }
 
-  return ((await response.json()) as { analytics: PostBridgeAnalytics[] })
-    .analytics;
+  return (await response.json()) as PostBridgeAnalyticsLoadResult;
 }

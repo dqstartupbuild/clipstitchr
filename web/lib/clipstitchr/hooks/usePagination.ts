@@ -40,12 +40,16 @@ export function usePagination<T>(items: T[], { pageSize }: UsePaginationOptions)
       }).currentPage,
     );
   }, [items.length, pageSize, pagination.currentPage]);
+  const resetPage = useCallback(() => {
+    setCurrentPage(1);
+  }, []);
 
   return {
     ...pagination,
     goToNextPage,
     goToPreviousPage,
     pageItems,
+    resetPage,
     totalItems: items.length,
   };
 }

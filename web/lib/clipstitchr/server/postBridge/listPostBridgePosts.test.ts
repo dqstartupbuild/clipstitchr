@@ -105,19 +105,18 @@ describe("listPostBridgePosts", () => {
 
   it("stops when a page only contains duplicate posts", async () => {
     requestPostBridgeMock
+      .mockResolvedValueOnce(createFullPage(0, "cursor_2"))
       .mockResolvedValueOnce({
-        data: [createPost("post_1")],
-        next_cursor: "cursor_2",
-      })
-      .mockResolvedValueOnce({
-        data: [createPost("post_1")],
+        data: Array.from({ length: 100 }, (_, index) =>
+          createPost(`post_${index}`),
+        ),
         next_cursor: "cursor_3",
       });
 
     const posts = await listPostBridgePosts("pb_key");
 
     expect(requestPostBridgeMock).toHaveBeenCalledTimes(2);
-    expect(posts.map((post) => post.id)).toEqual(["post_1"]);
+    expect(posts).toHaveLength(100);
   });
 
   it("caps pagination at five pages", async () => {
