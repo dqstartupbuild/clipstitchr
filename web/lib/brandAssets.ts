@@ -18,6 +18,7 @@ export const brandAssets = {
   icon256: versionedAsset("/brand/v2/icon-256.png"),
   icon512: versionedAsset("/brand/v2/icon-512.png"),
   icon1024: versionedAsset("/brand/v2/icon-1024.png"),
+  bimiLogo: "/brand/v2/bimi-logo.svg",
   maskableIcon192: versionedAsset("/brand/v2/icon-maskable-192.png"),
   maskableIcon512: versionedAsset("/brand/v2/icon-maskable-512.png"),
   appleTouchIcon: versionedAsset("/brand/v2/apple-touch-icon-180.png"),
