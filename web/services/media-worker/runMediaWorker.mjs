@@ -20,6 +20,7 @@ import { selectUploadNormalizationLayout } from "./selectUploadNormalizationLayo
 import { processHookLabVariantFinalization } from "./processHookLabVariantFinalization.mjs";
 import { deleteHookLabMediaJobTemporaryObjects } from "./deleteHookLabMediaJobTemporaryObjects.mjs";
 import { failHookLabMediaJob } from "./failHookLabMediaJob.mjs";
+import { mediaWorkerQueueApiReference } from "./mediaWorkerQueueApiReference.mjs";
 
 const execFileAsync = promisify(execFile);
 const api = anyApi;
@@ -1642,7 +1643,7 @@ async function claimNextJob({ client, config }) {
   const lockedUntil = new Date(now.getTime() + config.lockMs).toISOString();
 
   const claimed = await client.mutation(
-    api.workerQueue.claimNextWorkerQueueEntry,
+    mediaWorkerQueueApiReference,
     {
       worker: "media",
       secret: config.mediaWorkerSecret,

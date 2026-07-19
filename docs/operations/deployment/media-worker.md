@@ -7,6 +7,15 @@ It runs `npm run media-worker`, claims queued `mediaJobs` records from Convex,
 downloads source media from R2, processes files with FFmpeg, uploads outputs
 and posters back to R2, and completes the final Convex records.
 
+The worker claims durable jobs through
+`workerQueue/claimNextWorkerQueueEntry:claimNextWorkerQueueEntry`. Keep that
+nested Convex reference in
+`web/services/media-worker/mediaWorkerQueueApiReference.mjs` and cover it with
+the adjacent contract test. Convex maps files inside `convex/workerQueue/` to
+slash-delimited function paths. The legacy
+`workerQueue:claimNextWorkerQueueEntry` path does not resolve and makes a Cloud
+Run execution exit before it can claim queued media work.
+
 Hook Lab adds `hook-lab-variant-finalization`. It creates a normalized reusable
 opening clip and an editable ready-to-review Stitch from provider-generated
 media, then records Idea/use/variant lineage.
