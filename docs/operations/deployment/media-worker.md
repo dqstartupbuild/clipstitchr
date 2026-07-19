@@ -362,22 +362,22 @@ Current Cloud Run targets:
 ## Sources
 
 - Cloudflare Containers pricing:
-  https://developers.cloudflare.com/containers/pricing/
+  <https://developers.cloudflare.com/containers/pricing/>
 - Cloudflare Containers lifecycle:
-  https://developers.cloudflare.com/containers/architecture/
+  <https://developers.cloudflare.com/containers/architecture/>
 - Cloudflare Containers environment variables:
-  https://developers.cloudflare.com/containers/platform-details/environment-variables/
+  <https://developers.cloudflare.com/containers/platform-details/environment-variables/>
 - Cloudflare Containers env vars and secrets:
-  https://developers.cloudflare.com/containers/examples/env-vars-and-secrets/
+  <https://developers.cloudflare.com/containers/examples/env-vars-and-secrets/>
 - Cloudflare Workers limits:
-  https://developers.cloudflare.com/workers/platform/limits/
+  <https://developers.cloudflare.com/workers/platform/limits/>
 - Render free-service limitations:
-  https://render.com/docs/free
+  <https://render.com/docs/free>
 - Render background workers:
-  https://render.com/docs/background-workers
+  <https://render.com/docs/background-workers>
 - Google Cloud Run overview:
-  https://docs.cloud.google.com/run/docs/overview/what-is-cloud-run
+  <https://docs.cloud.google.com/run/docs/overview/what-is-cloud-run>
 - Google Cloud Run pricing:
-  https://cloud.google.com/run/pricing
+  <https://cloud.google.com/run/pricing>
 - Oracle Cloud Always Free resources:
-  https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm
+  <https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm>
