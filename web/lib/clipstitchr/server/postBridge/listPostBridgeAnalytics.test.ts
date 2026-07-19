@@ -45,14 +45,36 @@ describe("listPostBridgeAnalytics", () => {
   it("requests analytics without post result filters when no ids are given", async () => {
     requestPostBridgeMock.mockResolvedValue({
       data: [createAnalytics("analytics_1")],
+      meta: { total: 1 },
     });
 
     const analytics = await listPostBridgeAnalytics("pb_key");
 
     expect(requestPostBridgeMock).toHaveBeenCalledOnce();
     expect(readQuery(0).getAll("post_result_id")).toEqual([]);
+    expect(readQuery(0).get("offset")).toBe("0");
     expect(readQuery(0).get("timeframe")).toBe("all");
     expect(analytics.map((item) => item.id)).toEqual(["analytics_1"]);
+  });
+
+  it("loads all analytics pages before calculating totals", async () => {
+    requestPostBridgeMock
+      .mockResolvedValueOnce({
+        data: Array.from({ length: 100 }, (_, index) =>
+          createAnalytics(`analytics_${index}`),
+        ),
+        meta: { total: 101 },
+      })
+      .mockResolvedValueOnce({
+        data: [createAnalytics("analytics_100")],
+        meta: { total: 101 },
+      });
+
+    const analytics = await listPostBridgeAnalytics("pb_key");
+
+    expect(requestPostBridgeMock).toHaveBeenCalledTimes(2);
+    expect(readQuery(1).get("offset")).toBe("100");
+    expect(analytics).toHaveLength(101);
   });
 
   it("chunks post result ids into groups of 100 and dedupes by id", async () => {

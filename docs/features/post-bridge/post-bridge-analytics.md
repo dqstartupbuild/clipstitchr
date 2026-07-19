@@ -22,8 +22,10 @@ Analytics defaults to `Last 30 days`. The user can filter the page by:
 ClipStitchr stores a local product mapping when it schedules a Post Bridge post.
 Analytics uses that mapping to fetch Post Bridge post-result IDs for the active
 product, then asks Post Bridge for analytics rows matching those result IDs.
-Both lookups chunk IDs into groups of 100 per Post Bridge request and dedupe by
-row ID, so products with more than 100 posts no longer truncate silently.
+Both lookups chunk IDs into groups of 100 per Post Bridge request. Every chunk
+then follows Post Bridge's `offset`, `limit`, and `meta.total` pagination until
+all matching rows have been loaded. Results are deduped by row ID, so neither a
+large product nor a post with many platform results truncates silently.
 After that product filter, the page filters visible stats and results locally by
 each row's `platform_created_at` value. Rows without a valid platform-created
 date remain visible in `All time`, but they are excluded from date-limited
@@ -60,8 +62,9 @@ same wait/poll before re-reading, and returns the same enriched shape.
 
 Stat cards and totals are computed over the full filtered set, but the Results
 list renders 10 rows per page (`postBridgeListPageSize`) through the shared
-`usePagination` hook and `PaginationControls`. Changing the time range or the
-active product resets the list to page 1.
+`usePagination` hook and `PaginationControls`. Results are sorted by
+`platform_created_at`, newest first, before local pagination. Changing the time
+range or the active product resets the list to page 1.
 
 ## Visible Metrics
 
@@ -79,9 +82,11 @@ post` link when Post Bridge provides a share URL.
 
 ## Source References
 
-Post Bridge's `/v1/analytics` API supports `timeframe` values of `7d`, `30d`,
-`90d`, and `all`. ClipStitchr filters locally so it can also support `Last 24
-hours` and `Last 12 months` with the same behavior.
+Post Bridge's
+[API reference](https://api.post-bridge.com/reference#tag/Analytics/GET/v1/analytics)
+documents `offset` and `limit` pagination with `meta.total`, plus `timeframe`
+values of `7d`, `30d`, `90d`, and `all`. ClipStitchr filters locally so it can
+also support `Last 24 hours` and `Last 12 months` with the same behavior.
 
 ## File Tree
 
@@ -98,6 +103,7 @@ hours` and `Last 12 months` with the same behavior.
 - `web/lib/clipstitchr/constants/postBridgeListPageSize.ts`
 - `web/lib/clipstitchr/server/postBridge/filterPostBridgeAnalyticsByPostResultIds.ts`
 - `web/lib/clipstitchr/server/postBridge/getLatestPostBridgeAnalyticsSyncedAtMs.ts`
+- `web/lib/clipstitchr/server/postBridge/listAllPostBridgePages.ts`
 - `web/lib/clipstitchr/server/postBridge/listPostBridgeAnalytics.ts`
 - `web/lib/clipstitchr/server/postBridge/listPostBridgePostResults.ts`
 - `web/lib/clipstitchr/server/postBridge/waitForPostBridgeAnalyticsSync.ts`
@@ -111,3 +117,4 @@ hours` and `Last 12 months` with the same behavior.
 - `web/lib/clipstitchr/utils/getPostBridgeAnalyticsTotals.ts`
 - `web/lib/clipstitchr/utils/postBridgeAnalyticsTimeRangeOptions.ts`
 - `web/lib/clipstitchr/utils/defaultPostBridgeAnalyticsTimeRange.ts`
+- `web/lib/clipstitchr/utils/sortPostBridgeAnalyticsNewestFirst.ts`

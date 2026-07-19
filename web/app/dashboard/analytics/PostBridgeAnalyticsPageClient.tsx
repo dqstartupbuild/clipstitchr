@@ -21,6 +21,7 @@ import type { PostBridgeAnalyticsTimeRange } from "@/lib/clipstitchr/types/PostB
 import { defaultPostBridgeAnalyticsTimeRange } from "@/lib/clipstitchr/utils/defaultPostBridgeAnalyticsTimeRange";
 import { filterPostBridgeAnalyticsByTimeRange } from "@/lib/clipstitchr/utils/filterPostBridgeAnalyticsByTimeRange";
 import { getPostBridgeAnalyticsTotals } from "@/lib/clipstitchr/utils/getPostBridgeAnalyticsTotals";
+import { sortPostBridgeAnalyticsNewestFirst } from "@/lib/clipstitchr/utils/sortPostBridgeAnalyticsNewestFirst";
 
 const emptySyncStatus = {
   lastSyncedAt: null,
@@ -50,7 +51,11 @@ export function PostBridgeAnalyticsPageClient() {
     () => getPostBridgeAnalyticsTotals(filteredAnalytics),
     [filteredAnalytics],
   );
-  const pagination = usePagination(filteredAnalytics, {
+  const orderedAnalytics = useMemo(
+    () => sortPostBridgeAnalyticsNewestFirst(filteredAnalytics),
+    [filteredAnalytics],
+  );
+  const pagination = usePagination(orderedAnalytics, {
     pageSize: postBridgeListPageSize,
   });
   const { resetPage } = pagination;

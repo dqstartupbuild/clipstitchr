@@ -1,12 +1,8 @@
-import { requestPostBridge } from "@/lib/clipstitchr/server/postBridge/requestPostBridge";
 import { filterSupportedPostBridgeAnalytics } from "@/lib/clipstitchr/server/postBridge/filterSupportedPostBridgeAnalytics";
+import { listAllPostBridgePages } from "@/lib/clipstitchr/server/postBridge/listAllPostBridgePages";
 import type { PostBridgeAnalytics } from "@/lib/clipstitchr/types/PostBridgeAnalytics";
 
 const postBridgeAnalyticsPageSize = 100;
-
-type ListPostBridgeAnalyticsResponse = {
-  data: PostBridgeAnalytics[];
-};
 
 export async function listPostBridgeAnalytics(
   apiKey: string,
@@ -18,15 +14,16 @@ export async function listPostBridgeAnalytics(
 
   if (uniquePostResultIds.length === 0) {
     const query = new URLSearchParams({
-      limit: String(postBridgeAnalyticsPageSize),
       timeframe: "all",
     });
-    const response = await requestPostBridge<ListPostBridgeAnalyticsResponse>(
-      "/v1/analytics",
-      { apiKey, query },
-    );
+    const analytics = await listAllPostBridgePages<PostBridgeAnalytics>({
+      apiKey,
+      pageSize: postBridgeAnalyticsPageSize,
+      path: "/v1/analytics",
+      query,
+    });
 
-    return filterSupportedPostBridgeAnalytics(response.data);
+    return filterSupportedPostBridgeAnalytics(analytics);
   }
 
   const analytics: PostBridgeAnalytics[] = [];
@@ -41,7 +38,6 @@ export async function listPostBridgeAnalytics(
       start + postBridgeAnalyticsPageSize,
     );
     const query = new URLSearchParams({
-      limit: String(postBridgeAnalyticsPageSize),
       timeframe: "all",
     });
 
@@ -49,12 +45,14 @@ export async function listPostBridgeAnalytics(
       query.append("post_result_id", postResultId);
     }
 
-    const response = await requestPostBridge<ListPostBridgeAnalyticsResponse>(
-      "/v1/analytics",
-      { apiKey, query },
+    analytics.push(
+      ...(await listAllPostBridgePages<PostBridgeAnalytics>({
+        apiKey,
+        pageSize: postBridgeAnalyticsPageSize,
+        path: "/v1/analytics",
+        query,
+      })),
     );
-
-    analytics.push(...response.data);
   }
 
   const dedupedAnalytics = Array.from(

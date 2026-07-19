@@ -1,11 +1,7 @@
-import { requestPostBridge } from "@/lib/clipstitchr/server/postBridge/requestPostBridge";
+import { listAllPostBridgePages } from "@/lib/clipstitchr/server/postBridge/listAllPostBridgePages";
 import type { PostBridgePostResult } from "@/lib/clipstitchr/types/PostBridgePostResult";
 
 const postBridgePostResultsPageSize = 100;
-
-type ListPostBridgePostResultsResponse = {
-  data: PostBridgePostResult[];
-};
 
 export async function listPostBridgePostResults(
   apiKey: string,
@@ -29,21 +25,20 @@ export async function listPostBridgePostResults(
       start,
       start + postBridgePostResultsPageSize,
     );
-    const query = new URLSearchParams({
-      limit: String(postBridgePostResultsPageSize),
-    });
+    const query = new URLSearchParams();
 
     for (const postId of chunk) {
       query.append("post_id", postId);
     }
 
-    const response =
-      await requestPostBridge<ListPostBridgePostResultsResponse>(
-        "/v1/post-results",
-        { apiKey, query },
-      );
-
-    postResults.push(...response.data);
+    postResults.push(
+      ...(await listAllPostBridgePages<PostBridgePostResult>({
+        apiKey,
+        pageSize: postBridgePostResultsPageSize,
+        path: "/v1/post-results",
+        query,
+      })),
+    );
   }
 
   return Array.from(

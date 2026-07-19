@@ -40,6 +40,7 @@ describe("listPostBridgePostResults", () => {
   it("requests a single chunk for up to 100 unique post ids", async () => {
     requestPostBridgeMock.mockResolvedValue({
       data: [createPostResult("result_1")],
+      meta: { total: 1 },
     });
 
     const results = await listPostBridgePostResults("pb_key", [
@@ -54,7 +55,28 @@ describe("listPostBridgePostResults", () => {
       query: expect.any(URLSearchParams),
     });
     expect(readQuery(0).getAll("post_id")).toEqual(["post_1", "post_2"]);
+    expect(readQuery(0).get("offset")).toBe("0");
     expect(results).toEqual([createPostResult("result_1")]);
+  });
+
+  it("loads every result page within a filtered post-id chunk", async () => {
+    requestPostBridgeMock
+      .mockResolvedValueOnce({
+        data: Array.from({ length: 100 }, (_, index) =>
+          createPostResult(`result_${index}`, "post_1"),
+        ),
+        meta: { total: 101 },
+      })
+      .mockResolvedValueOnce({
+        data: [createPostResult("result_100", "post_1")],
+        meta: { total: 101 },
+      });
+
+    const results = await listPostBridgePostResults("pb_key", ["post_1"]);
+
+    expect(requestPostBridgeMock).toHaveBeenCalledTimes(2);
+    expect(readQuery(1).get("offset")).toBe("100");
+    expect(results).toHaveLength(101);
   });
 
   it("chunks post ids into groups of 100 and dedupes results by id", async () => {

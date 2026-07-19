@@ -11,7 +11,7 @@ vi.mock(
   "@/lib/clipstitchr/server/postBridge/createSupportedPostBridgePlatformQuery",
   () => ({
     createSupportedPostBridgePlatformQuery: vi.fn(
-      () => new URLSearchParams({ limit: "100" }),
+      () => new URLSearchParams({ limit: "100", platform: "tiktok" }),
     ),
   }),
 );
@@ -31,12 +31,20 @@ function createPost(id: string): PostBridgePost {
   };
 }
 
-function createFullPage(startIndex: number, cursor: string | null) {
+function createPage(startIndex: number, length: number, total: number) {
   return {
-    data: Array.from({ length: 100 }, (_, index) =>
+    data: Array.from({ length }, (_, index) =>
       createPost(`post_${startIndex + index}`),
     ),
-    ...(cursor ? { next_cursor: cursor } : {}),
+    meta: {
+      limit: 100,
+      next:
+        startIndex + length < total
+          ? `/v1/posts?offset=${startIndex + length}&limit=100`
+          : null,
+      offset: startIndex,
+      total,
+    },
   };
 }
 
@@ -50,86 +58,46 @@ describe("listPostBridgePosts", () => {
     vi.clearAllMocks();
   });
 
-  it("requests a single page when the response has no cursor", async () => {
-    requestPostBridgeMock.mockResolvedValue({
-      data: [createPost("post_1")],
-    });
+  it("requests a single offset page when all posts fit", async () => {
+    requestPostBridgeMock.mockResolvedValue(createPage(0, 1, 1));
 
     const posts = await listPostBridgePosts("pb_key");
 
     expect(requestPostBridgeMock).toHaveBeenCalledOnce();
-    expect(posts.map((post) => post.id)).toEqual(["post_1"]);
+    expect(readQuery(0).get("offset")).toBe("0");
+    expect(readQuery(0).get("limit")).toBe("100");
+    expect(readQuery(0).getAll("platform")).toEqual(["tiktok"]);
+    expect(posts.map((post) => post.id)).toEqual(["post_0"]);
   });
 
-  it("follows next_cursor until a short page", async () => {
-    requestPostBridgeMock
-      .mockResolvedValueOnce(createFullPage(0, "cursor_2"))
-      .mockResolvedValueOnce({
-        data: [createPost("post_100")],
-        next_cursor: "cursor_3",
-      });
-
-    const posts = await listPostBridgePosts("pb_key");
-
-    expect(requestPostBridgeMock).toHaveBeenCalledTimes(2);
-    expect(readQuery(0).get("cursor")).toBeNull();
-    expect(readQuery(1).get("cursor")).toBe("cursor_2");
-    expect(posts).toHaveLength(101);
-  });
-
-  it("supports camelCase cursor fields", async () => {
-    requestPostBridgeMock
-      .mockResolvedValueOnce({
-        data: Array.from({ length: 100 }, (_, index) =>
-          createPost(`post_${index}`),
-        ),
-        nextCursor: "cursor_2",
-      })
-      .mockResolvedValueOnce({ data: [] });
-
-    const posts = await listPostBridgePosts("pb_key");
-
-    expect(requestPostBridgeMock).toHaveBeenCalledTimes(2);
-    expect(readQuery(1).get("cursor")).toBe("cursor_2");
-    expect(posts).toHaveLength(100);
-  });
-
-  it("stops when the cursor repeats", async () => {
-    requestPostBridgeMock.mockResolvedValue(createFullPage(0, "cursor_1"));
-
-    const posts = await listPostBridgePosts("pb_key");
-
-    expect(requestPostBridgeMock).toHaveBeenCalledTimes(2);
-    expect(posts).toHaveLength(100);
-  });
-
-  it("stops when a page only contains duplicate posts", async () => {
-    requestPostBridgeMock
-      .mockResolvedValueOnce(createFullPage(0, "cursor_2"))
-      .mockResolvedValueOnce({
-        data: Array.from({ length: 100 }, (_, index) =>
-          createPost(`post_${index}`),
-        ),
-        next_cursor: "cursor_3",
-      });
-
-    const posts = await listPostBridgePosts("pb_key");
-
-    expect(requestPostBridgeMock).toHaveBeenCalledTimes(2);
-    expect(posts).toHaveLength(100);
-  });
-
-  it("caps pagination at five pages", async () => {
+  it("loads every offset page without a fixed post cap", async () => {
     requestPostBridgeMock.mockImplementation(async (_path, options) => {
-      const cursor = options?.query?.get("cursor");
-      const pageIndex = cursor ? Number(cursor.split("_")[1]) : 0;
+      const offset = Number(options?.query?.get("offset") ?? 0);
+      const total = 601;
 
-      return createFullPage(pageIndex * 100, `cursor_${pageIndex + 1}`);
+      return createPage(offset, Math.min(100, total - offset), total);
     });
 
     const posts = await listPostBridgePosts("pb_key");
 
-    expect(requestPostBridgeMock).toHaveBeenCalledTimes(5);
-    expect(posts).toHaveLength(500);
+    expect(requestPostBridgeMock).toHaveBeenCalledTimes(7);
+    expect(readQuery(5).get("offset")).toBe("500");
+    expect(readQuery(6).get("offset")).toBe("600");
+    expect(posts).toHaveLength(601);
+    expect(posts.at(-1)?.id).toBe("post_600");
+  });
+
+  it("dedupes overlapping posts and stops if a page makes no progress", async () => {
+    requestPostBridgeMock
+      .mockResolvedValueOnce(createPage(0, 100, 300))
+      .mockResolvedValueOnce({
+        ...createPage(0, 100, 300),
+        meta: { limit: 100, next: null, offset: 100, total: 300 },
+      });
+
+    const posts = await listPostBridgePosts("pb_key");
+
+    expect(requestPostBridgeMock).toHaveBeenCalledTimes(2);
+    expect(posts).toHaveLength(100);
   });
 });
