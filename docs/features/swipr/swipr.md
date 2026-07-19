@@ -407,6 +407,10 @@ Required protections:
 - Pexels pack add/remove account actions and account-only photo removals
   consume existing Convex metadata-update limits before changing account-pack
   rows or user-specific photo exclusion rows.
+- The Library Pexels catalog reads bounded pack summaries, and opening a pack
+  reads only that pack's bounded compact photo cards. These authenticated,
+  indexed, cached reads do not receive a write-backed rate bucket. Cover
+  downloads retain the existing signed-R2 limits.
 - Batch draft generation consumes counted text-generation quota before the
   writing provider is called.
 - Automatic Swipr is protected by the Swipr automation daily/global budget

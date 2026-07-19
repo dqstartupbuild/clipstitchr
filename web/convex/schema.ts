@@ -678,10 +678,7 @@ export default defineSchema({
     ownerId: v.string(),
     communicationKey: v.string(),
     templateKey: accountEmailTemplateKeyValidator,
-    dataVariables: v.record(
-      v.string(),
-      v.union(v.string(), v.number()),
-    ),
+    dataVariables: v.record(v.string(), v.union(v.string(), v.number())),
     status: emailProviderOperationStatusValidator,
     acceptanceStatus: emailProviderAcceptanceStatusValidator,
     deliveryStatus: emailDeliveryStatusValidator,
@@ -1018,11 +1015,7 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
-    .index("by_owner_archived_created", [
-      "ownerId",
-      "archivedAt",
-      "createdAt",
-    ])
+    .index("by_owner_archived_created", ["ownerId", "archivedAt", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
   productCards: defineTable({
     ownerId: v.string(),
@@ -1471,6 +1464,20 @@ export default defineSchema({
     ])
     .index("by_source_pexels_photo", ["source", "pexelsPhotoId"])
     .index("by_background_id", ["id"]),
+  swiprPexelsPackSummaries: defineTable({
+    libraryQuery: v.string(),
+    libraryQueryKey: v.string(),
+    photoCount: v.number(),
+    covers: v.array(
+      v.object({
+        backgroundId: v.string(),
+        imageObject: r2ObjectValidator,
+      }),
+    ),
+    updatedAt: v.string(),
+  })
+    .index("by_library_query_key", ["libraryQueryKey"])
+    .index("by_updated", ["updatedAt"]),
   swiprLibraryPackAccounts: defineTable({
     ownerId: v.string(),
     libraryQuery: v.string(),

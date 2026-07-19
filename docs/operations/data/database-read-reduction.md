@@ -25,9 +25,15 @@ large documents wherever possible.
 - Initial media library pages load 24 rows.
 - Swipr UI background queries use smaller visible-list caps, while provider
   worker pack lookups keep the larger automation cap.
-- The Pexels Library All tab reads global Pexels compact cards, not full
-  background documents, so every current pack can be discovered while keeping
-  the payload slim.
+- The Pexels Library All tab reads one `swiprPexelsPackSummaries` row per pack
+  instead of every Pexels background card. A summary stores the pack name,
+  exact count, and at most four cover references.
+- The Pexels Library tab does not load the account Swipr background list.
+  Opening one pack subscribes only to that pack's bounded compact background
+  records, and closing the dialog stops that subscription.
+- Pack cover blobs are requested only when their cards approach the viewport.
+  The R2 object references carried by the summary avoid a background lookup
+  before signing the cover download.
 - Saved Swipes hydrate the exact compact background cards referenced by their
   visible Swipe records so older photos are not treated as missing just because
   they are outside the recent background list window.
@@ -53,6 +59,7 @@ Compact tables are maintained synchronously at source-table write points:
 - `stitchCards` from `stitches`
 - `swipeCards` from `swipes`
 - `swiprBackgroundCards` from `swiprBackgrounds`
+- `swiprPexelsPackSummaries` from global Pexels `swiprBackgroundCards`
 - `productCards` from `products`
 - `cliprJobSummaries` from `cliprJobs`
 - `workerJobSummaries` from `providerJobs` and `mediaJobs`
@@ -90,6 +97,7 @@ npx convex run readModelBackfills:backfillVideoClipCards '{"secret":"<RATE_LIMIT
 npx convex run readModelBackfills:backfillStitchCards '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 npx convex run readModelBackfills:backfillSwipeCards '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 npx convex run readModelBackfills:backfillSwiprBackgroundCards '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
+npx convex run readModelBackfills:backfillPexelsPackSummaries '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 npx convex run readModelBackfills:backfillProductCards '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 npx convex run readModelBackfills:backfillCliprJobSummaries '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 npx convex run readModelBackfills:backfillProviderWorkerJobSummaries '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
@@ -101,6 +109,11 @@ npx convex run readModelBackfills:backfillAutomationTaskSummaries '{"secret":"<R
 Append `--prod` when running against production.
 
 Use each response's `continueCursor` as the next `paginationOpts.cursor`.
+
+Run `backfillSwiprBackgroundCards` to completion before
+`backfillPexelsPackSummaries`. The first backfill normalizes legacy pack keys
+on compact background cards; the second derives exact pack counts and cover
+references from those cards.
 
 If the library counters show UGC or Demo clips but the matching tab is empty,
 the aggregate counts are newer than the compact card read model. Run

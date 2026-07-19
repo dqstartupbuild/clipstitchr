@@ -1,6 +1,8 @@
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprBackgroundSource } from "@/lib/clipstitchr/types/SwiprBackgroundSource";
+import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 
 export type SaveSwiprBackgroundOptions = {
   blob: Blob;
@@ -32,7 +34,7 @@ export type SaveSwiprSwipeInput = Omit<
 
 export type SwiprLibraryValue = {
   backgrounds: SwiprBackgroundAsset[];
-  globalPexelsBackgrounds: SwiprBackgroundAsset[];
+  globalPexelsPacks: SwiprLibraryPack[];
   postedSwipes: SwiprSwipe[];
   swipes: SwiprSwipe[];
   isLoading: boolean;
@@ -43,7 +45,10 @@ export type SwiprLibraryValue = {
   saveBackground: (
     options: SaveSwiprBackgroundOptions,
   ) => Promise<SwiprBackgroundAsset>;
-  loadBackgroundBlob: (id: string) => Promise<Blob>;
+  loadBackgroundBlob: (
+    id: string,
+    imageObject?: R2ObjectReference,
+  ) => Promise<Blob>;
   loadBackgroundAsset: (
     id: string,
   ) => Promise<(SwiprBackgroundAsset & { blob: Blob }) | null>;

@@ -136,17 +136,17 @@ export function SwiprPageClient() {
   const activeSwiprMode = isEditingSavedSwipe ? "manual" : swiprMode;
   const hasEditSwipeRecord = Boolean(
     editingSwipeId &&
-      (savedSwipeSnapshot?.id === editingSwipeId ||
-        swiprLibrary.swipes.some((swipe) => swipe.id === editingSwipeId)),
+    (savedSwipeSnapshot?.id === editingSwipeId ||
+      swiprLibrary.swipes.some((swipe) => swipe.id === editingSwipeId)),
   );
   const isEditSwipeMissing = Boolean(
     editingSwipeId && swiprLibrary.isLoading === false && !hasEditSwipeRecord,
   );
   const isEditSwipeLoading = Boolean(
     editingSwipeId &&
-      !isEditSwipeMissing &&
-      editingSwipeId !== loadedSwipeId &&
-      savedSwipeSnapshot?.id !== editingSwipeId,
+    !isEditSwipeMissing &&
+    editingSwipeId !== loadedSwipeId &&
+    savedSwipeSnapshot?.id !== editingSwipeId,
   );
   const activeSlideBackgroundAsset = activeSlide?.backgroundId
     ? swiprLibrary.backgrounds.find(
@@ -213,8 +213,7 @@ export function SwiprPageClient() {
     [swiprLibrary.backgrounds],
   );
   const visiblePexelsPhotos = useMemo(
-    () =>
-      pexelsPhotos.filter((photo) => !importedPexelsPhotoIds.has(photo.id)),
+    () => pexelsPhotos.filter((photo) => !importedPexelsPhotoIds.has(photo.id)),
     [importedPexelsPhotoIds, pexelsPhotos],
   );
 
@@ -237,11 +236,7 @@ export function SwiprPageClient() {
         blob,
       };
     },
-    [
-      loadLibraryBackgroundAsset,
-      loadLibraryBackgroundBlob,
-      swiprBackgrounds,
-    ],
+    [loadLibraryBackgroundAsset, loadLibraryBackgroundBlob, swiprBackgrounds],
   );
 
   const assignSavedBackgroundsToSlides = useCallback(
@@ -281,7 +276,8 @@ export function SwiprPageClient() {
           ? currentSlides
           : createSwiprSlides(SWIPR_MIN_SLIDE_COUNT);
         const targetSlideId =
-          activeSlideId && nextSlides.some((slide) => slide.id === activeSlideId)
+          activeSlideId &&
+          nextSlides.some((slide) => slide.id === activeSlideId)
             ? activeSlideId
             : (nextSlides[0]?.id ?? null);
 
@@ -380,7 +376,9 @@ export function SwiprPageClient() {
             ...savedBackground,
             blob: loadedPhoto.blob,
           });
-          setAutoTextMessage(`Added avatar photo to slide ${activeSlideIndex + 1}.`);
+          setAutoTextMessage(
+            `Added avatar photo to slide ${activeSlideIndex + 1}.`,
+          );
         })
         .catch((error) => {
           setBackgroundError(
@@ -417,10 +415,10 @@ export function SwiprPageClient() {
       perPage: PEXELS_SEARCH_PER_PAGE,
       query: pexelsQuery,
     })
-      .then((photos) => {
+      .then(({ hasMore, photos }) => {
         setPexelsPhotos(photos);
         setPexelsPage(nextPage);
-        setHasMorePexelsPhotos(photos.length === PEXELS_SEARCH_PER_PAGE);
+        setHasMorePexelsPhotos(hasMore);
         setPexelsError(
           photos.some((photo) => !importedPexelsPhotoIds.has(photo.id))
             ? null
@@ -451,10 +449,8 @@ export function SwiprPageClient() {
       perPage: PEXELS_SEARCH_PER_PAGE,
       query: pexelsQuery,
     })
-      .then((photos) => {
-        const existingPhotoIds = new Set(
-          pexelsPhotos.map((photo) => photo.id),
-        );
+      .then(({ hasMore, photos }) => {
+        const existingPhotoIds = new Set(pexelsPhotos.map((photo) => photo.id));
         const nextPhotos = [
           ...pexelsPhotos,
           ...photos.filter((photo) => !existingPhotoIds.has(photo.id)),
@@ -463,8 +459,7 @@ export function SwiprPageClient() {
         setPexelsPhotos(nextPhotos);
         setPexelsPage(nextPage);
         setHasMorePexelsPhotos(
-          photos.length === PEXELS_SEARCH_PER_PAGE &&
-            nextPhotos.length < SWIPR_PEXELS_IMPORT_LIMIT,
+          hasMore && nextPhotos.length < SWIPR_PEXELS_IMPORT_LIMIT,
         );
       })
       .catch((error) => {
@@ -504,7 +499,9 @@ export function SwiprPageClient() {
             ...savedBackground,
             blob,
           });
-          setAutoTextMessage(`Added Pexels photo to slide ${activeSlideIndex + 1}.`);
+          setAutoTextMessage(
+            `Added Pexels photo to slide ${activeSlideIndex + 1}.`,
+          );
         })
         .catch((error) => {
           setPexelsError(
@@ -578,7 +575,9 @@ export function SwiprPageClient() {
             ...savedBackground,
             blob,
           });
-          setAutoTextMessage(`Added saved photo to slide ${activeSlideIndex + 1}.`);
+          setAutoTextMessage(
+            `Added saved photo to slide ${activeSlideIndex + 1}.`,
+          );
         })
         .catch((error) => {
           setBackgroundError(
@@ -624,8 +623,9 @@ export function SwiprPageClient() {
         }
 
         return (
-          nextSlides[Math.max(0, Math.min(removedSlideIndex, nextSlides.length - 1))]
-            ?.id ?? null
+          nextSlides[
+            Math.max(0, Math.min(removedSlideIndex, nextSlides.length - 1))
+          ]?.id ?? null
         );
       });
 
@@ -714,10 +714,7 @@ export function SwiprPageClient() {
         slide.id === activeSlide.id
           ? {
               ...slide,
-              textOverlay: clampTextOverlay(
-                textOverlay,
-                SWIPR_STATIC_DURATION,
-              ),
+              textOverlay: clampTextOverlay(textOverlay, SWIPR_STATIC_DURATION),
             }
           : slide,
       ),
@@ -774,9 +771,7 @@ export function SwiprPageClient() {
 
   const handleGenerateAutoText = () => {
     if (!selectedSavedProductId) {
-      setAutoTextMessage(
-        "Create or choose a product before generating text.",
-      );
+      setAutoTextMessage("Create or choose a product before generating text.");
       return;
     }
 
@@ -855,7 +850,10 @@ export function SwiprPageClient() {
     }));
     const fallbackBackgroundId = slidesForSave[0]?.backgroundId;
 
-    if (!fallbackBackgroundId || slidesForSave.some((slide) => !slide.backgroundId)) {
+    if (
+      !fallbackBackgroundId ||
+      slidesForSave.some((slide) => !slide.backgroundId)
+    ) {
       setSaveMessage("Choose a photo for every slide before saving.");
       return;
     }
@@ -1140,7 +1138,9 @@ export function SwiprPageClient() {
                       isAiDisabled={!selectedSavedProduct}
                       activeSlideIndex={activeSlideIndex}
                       onGenerationPromptChange={setGenerationPrompt}
-                      onGenerateAiBackground={() => void generateAiBackgrounds()}
+                      onGenerateAiBackground={() =>
+                        void generateAiBackgrounds()
+                      }
                       onUploadBackground={handleUploadBackgrounds}
                     />
                     <SwiprAvatarPhotoPanel
@@ -1194,7 +1194,9 @@ export function SwiprPageClient() {
                     )}
                     slides={slides}
                     activeSlideId={activeSlide?.id ?? null}
-                    onCopyActivePhotoToAllSlides={handleCopyActivePhotoToAllSlides}
+                    onCopyActivePhotoToAllSlides={
+                      handleCopyActivePhotoToAllSlides
+                    }
                     onRemoveSlide={handleRemoveSlide}
                     onSelectSlide={setActiveSlideId}
                   />
@@ -1225,7 +1227,7 @@ export function SwiprPageClient() {
                   </section>
                 </div>
               ) : null}
-              </div>
+            </div>
           </Panel>
         </WorkflowLayout>
       </div>

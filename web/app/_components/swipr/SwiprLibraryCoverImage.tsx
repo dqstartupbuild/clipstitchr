@@ -3,23 +3,35 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
+import { useIsNearViewport } from "@/lib/clipstitchr/hooks/useIsNearViewport";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 
 type SwiprLibraryCoverImageProps = {
   backgroundId: string;
-  onLoadBackgroundBlob: (id: string) => Promise<Blob>;
+  imageObject?: R2ObjectReference;
+  onLoadBackgroundBlob: (
+    id: string,
+    imageObject?: R2ObjectReference,
+  ) => Promise<Blob>;
 };
 
 export function SwiprLibraryCoverImage({
   backgroundId,
+  imageObject,
   onLoadBackgroundBlob,
 }: SwiprLibraryCoverImageProps) {
   const [url, setUrl] = useState<string | null>(null);
+  const { elementRef, isNearViewport } = useIsNearViewport();
 
   useEffect(() => {
+    if (!isNearViewport) {
+      return;
+    }
+
     let objectUrl: string | null = null;
     let isCancelled = false;
 
-    void onLoadBackgroundBlob(backgroundId)
+    void onLoadBackgroundBlob(backgroundId, imageObject)
       .then((blob) => {
         if (isCancelled) {
           return;
@@ -41,16 +53,18 @@ export function SwiprLibraryCoverImage({
         URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [backgroundId, onLoadBackgroundBlob]);
+  }, [backgroundId, imageObject, isNearViewport, onLoadBackgroundBlob]);
 
-  return url ? (
-    <img
-      alt=""
-      className="h-full w-full object-cover"
-      loading="lazy"
-      src={url}
-    />
-  ) : (
-    <div className="h-full w-full bg-surface-muted" />
+  return (
+    <div ref={elementRef} className="h-full w-full bg-surface-muted">
+      {url ? (
+        <img
+          alt=""
+          className="h-full w-full object-cover"
+          loading="lazy"
+          src={url}
+        />
+      ) : null}
+    </div>
   );
 }

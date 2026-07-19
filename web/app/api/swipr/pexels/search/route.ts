@@ -42,10 +42,18 @@ export async function POST(request: Request) {
       secret: getRateLimitApiSecret(),
     });
 
+    const photos = await searchPexelsPhotoResults({ page, perPage, query });
+    const existingPhotoIds = new Set(
+      await convex.query(api.swiprBackgrounds.getExistingPexelsPhotoIds, {
+        photoIds: photos.map((photo) => photo.id),
+      }),
+    );
+
     return Response.json({
+      hasMore: photos.length === perPage,
       page,
       perPage,
-      photos: await searchPexelsPhotoResults({ page, perPage, query }),
+      photos: photos.filter((photo) => !existingPhotoIds.has(photo.id)),
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

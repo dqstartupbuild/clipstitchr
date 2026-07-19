@@ -11,35 +11,37 @@ import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { importPexelsPhotosToSwiprLibrary } from "@/lib/clipstitchr/client/importPexelsPhotosToSwiprLibrary";
 import { searchPexelsPhotos } from "@/lib/clipstitchr/client/searchPexelsPhotos";
 import { SWIPR_PEXELS_IMPORT_LIMIT } from "@/lib/clipstitchr/constants/swiprPexelsImportLimit";
+import { usePexelsLibraryPackBackgrounds } from "@/lib/clipstitchr/hooks/usePexelsLibraryPackBackgrounds";
 import type { PexelsLibraryFilter } from "@/lib/clipstitchr/types/PexelsLibraryFilter";
 import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResult";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { RenameSwiprLibraryPackResult } from "@/lib/clipstitchr/types/SwiprLibraryValue";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
+import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 import { filterPexelsLibraryPacksBySearchQuery } from "@/lib/clipstitchr/utils/filterPexelsLibraryPacksBySearchQuery";
-import { getImportedPexelsPhotoIds } from "@/lib/clipstitchr/utils/getImportedPexelsPhotoIds";
 import { getPexelsLibraryPackKeys } from "@/lib/clipstitchr/utils/getPexelsLibraryPackKeys";
-import { getSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getSwiprLibraryPacks";
 import { normalizeSwiprLibraryQueryKey } from "@/lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 
 const PEXELS_SEARCH_PER_PAGE = 12;
 
 type PexelsLibraryTabSectionProps = {
-  allBackgrounds: SwiprBackgroundAsset[];
   isLoading: boolean;
-  mineBackgrounds: SwiprBackgroundAsset[];
+  packs: SwiprLibraryPack[];
   searchQuery: string;
   onAddPackToAccount: (
     packName: string,
   ) => Promise<RenameSwiprLibraryPackResult>;
-  onLoadBackgroundBlob: (id: string) => Promise<Blob>;
+  onLoadBackgroundBlob: (
+    id: string,
+    imageObject?: R2ObjectReference,
+  ) => Promise<Blob>;
   onRemovePackFromAccount: (packName: string) => Promise<number>;
   onRemovePhotoFromPack: (background: SwiprBackgroundAsset) => Promise<void>;
 };
 
 export function PexelsLibraryTabSection({
-  allBackgrounds,
   isLoading,
-  mineBackgrounds,
+  packs,
   searchQuery,
   onAddPackToAccount,
   onLoadBackgroundBlob,
@@ -58,13 +60,23 @@ export function PexelsLibraryTabSection({
   const [savingPackName, setSavingPackName] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const allPacks = useMemo(
-    () => getSwiprLibraryPacks(allBackgrounds),
-    [allBackgrounds],
-  );
   const minePacks = useMemo(
-    () => getSwiprLibraryPacks(mineBackgrounds),
-    [mineBackgrounds],
+    () =>
+      packs
+        .filter((pack) => pack.isInAccount)
+        .map((pack) => {
+          const covers = pack.accountCovers ?? pack.covers;
+
+          return {
+            ...pack,
+            count: pack.accountCount ?? pack.count,
+            coverBackgroundIds:
+              covers?.map((cover) => cover.backgroundId) ??
+              pack.coverBackgroundIds,
+            covers,
+          };
+        }),
+    [packs],
   );
   const minePackKeys = useMemo(
     () => getPexelsLibraryPackKeys(minePacks),
@@ -73,30 +85,24 @@ export function PexelsLibraryTabSection({
   const filteredPacks = useMemo(
     () =>
       filterPexelsLibraryPacksBySearchQuery(
-        filter === "all" ? allPacks : minePacks,
+        filter === "all" ? packs : minePacks,
         searchQuery,
       ),
-    [allPacks, filter, minePacks, searchQuery],
+    [filter, minePacks, packs, searchQuery],
   );
-  const viewingPacks = filter === "mine" ? minePacks : allPacks;
+  const viewingPacks = filter === "mine" ? minePacks : packs;
   const viewingPack =
     viewingPacks.find((pack) => pack.name === viewingPackName) ??
-    allPacks.find((pack) => pack.name === viewingPackName) ??
+    packs.find((pack) => pack.name === viewingPackName) ??
     null;
   const viewingPackIsMine = viewingPack
     ? minePackKeys.has(normalizeSwiprLibraryQueryKey(viewingPack.name))
     : false;
-  const viewingBackgrounds =
-    filter === "mine" && viewingPackIsMine ? mineBackgrounds : allBackgrounds;
-  const importedPexelsPhotoIds = useMemo(
-    () => getImportedPexelsPhotoIds(allBackgrounds),
-    [allBackgrounds],
+  const viewingPackBackgrounds = usePexelsLibraryPackBackgrounds(
+    viewingPack?.name ?? null,
+    filter === "mine" && viewingPackIsMine,
   );
-  const visiblePexelsPhotos = useMemo(
-    () =>
-      pexelsPhotos.filter((photo) => !importedPexelsPhotoIds.has(photo.id)),
-    [importedPexelsPhotoIds, pexelsPhotos],
-  );
+  const visiblePexelsPhotos = pexelsPhotos;
 
   const handlePexelsQueryChange = (query: string) => {
     setPexelsQuery(query);
@@ -115,14 +121,12 @@ export function PexelsLibraryTabSection({
       perPage: PEXELS_SEARCH_PER_PAGE,
       query: pexelsQuery,
     })
-      .then((photos) => {
+      .then(({ hasMore, photos }) => {
         setPexelsPhotos(photos);
         setPexelsPage(1);
-        setHasMorePexelsPhotos(photos.length === PEXELS_SEARCH_PER_PAGE);
+        setHasMorePexelsPhotos(hasMore);
         setError(
-          photos.some((photo) => !importedPexelsPhotoIds.has(photo.id))
-            ? null
-            : "No new photos found. Try loading more.",
+          photos.length ? null : "No new photos found. Try loading more.",
         );
       })
       .catch((nextError) => {
@@ -151,10 +155,8 @@ export function PexelsLibraryTabSection({
       perPage: PEXELS_SEARCH_PER_PAGE,
       query: pexelsQuery,
     })
-      .then((photos) => {
-        const existingPhotoIds = new Set(
-          pexelsPhotos.map((photo) => photo.id),
-        );
+      .then(({ hasMore, photos }) => {
+        const existingPhotoIds = new Set(pexelsPhotos.map((photo) => photo.id));
         const nextPhotos = [
           ...pexelsPhotos,
           ...photos.filter((photo) => !existingPhotoIds.has(photo.id)),
@@ -163,8 +165,7 @@ export function PexelsLibraryTabSection({
         setPexelsPhotos(nextPhotos);
         setPexelsPage(nextPage);
         setHasMorePexelsPhotos(
-          photos.length === PEXELS_SEARCH_PER_PAGE &&
-            nextPhotos.length < SWIPR_PEXELS_IMPORT_LIMIT,
+          hasMore && nextPhotos.length < SWIPR_PEXELS_IMPORT_LIMIT,
         );
       })
       .catch((nextError) => {
@@ -227,7 +228,9 @@ export function PexelsLibraryTabSection({
       })
       .catch((nextError) => {
         setError(
-          nextError instanceof Error ? nextError.message : "Unable to add pack.",
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to add pack.",
         );
       })
       .finally(() => setSavingPackName(null));
@@ -366,7 +369,7 @@ export function PexelsLibraryTabSection({
           </span>
         </div>
         <PexelsLibraryFilterTabs
-          counts={{ all: allPacks.length, mine: minePacks.length }}
+          counts={{ all: packs.length, mine: minePacks.length }}
           value={filter}
           onChange={setFilter}
         />
@@ -407,7 +410,8 @@ export function PexelsLibraryTabSection({
       {viewingPack ? (
         <SwiprLibraryPackDialog
           key={`${filter}-${viewingPack.name}`}
-          backgrounds={viewingBackgrounds}
+          backgrounds={viewingPackBackgrounds.backgrounds}
+          isLoading={viewingPackBackgrounds.isLoading}
           isMine={viewingPackIsMine}
           isSaving={savingPackName === viewingPack.name}
           pack={viewingPack}

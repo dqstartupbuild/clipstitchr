@@ -5,6 +5,7 @@ import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { logConvexTransactionMetrics } from "./logConvexTransactionMetrics";
 import { rateLimiter } from "./rateLimiter";
+import { upsertPexelsPackSummary } from "./upsertPexelsPackSummary";
 import { upsertSwiprBackgroundCard } from "./upsertSwiprBackgroundCard";
 import { assetTagsValidator } from "./validators/assetTags";
 import { r2ObjectValidator } from "./validators/r2Object";
@@ -19,7 +20,7 @@ const BACKGROUND_DETAILS_MAX_LENGTH = 3000;
 const BACKGROUND_LIBRARY_QUERY_MAX_LENGTH = 120;
 const LIBRARY_PACK_ACCOUNT_LIMIT = 100;
 const GLOBAL_PEXELS_BACKGROUND_LOOKUP_LIMIT = 500;
-const GLOBAL_PEXELS_LIBRARY_LIST_LIMIT = 2000;
+const GLOBAL_PEXELS_PACK_SUMMARY_LIMIT = 250;
 const SWIPR_REFERENCED_BACKGROUND_LOOKUP_LIMIT = 100;
 const SWIPR_LIBRARY_OWNED_BACKGROUND_LIMIT = 72;
 const SWIPR_LIBRARY_PACK_ACCOUNT_LIMIT = 12;
@@ -298,22 +299,114 @@ export const list = query({
   },
 });
 
-export const listGlobalPexels = query({
+export const listGlobalPexelsPackSummaries = query({
   args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const backgrounds = await getGlobalPexelsPackBackgrounds(
+    const [summaries, ownerLibraryPackAccountKeys, photoExclusions] =
+      await Promise.all([
+        ctx.db
+          .query("swiprPexelsPackSummaries")
+          .withIndex("by_updated")
+          .order("desc")
+          .take(GLOBAL_PEXELS_PACK_SUMMARY_LIMIT),
+        getOwnerLibraryPackAccountKeys(ctx, ownerId),
+        ctx.db
+          .query("swiprLibraryPackPhotoExclusions")
+          .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+          .take(LIBRARY_PACK_EXCLUSION_DELETE_LIMIT),
+      ]);
+    const excludedIdsByPackKey = new Map<string, Set<string>>();
+
+    for (const exclusion of photoExclusions) {
+      const excludedIds =
+        excludedIdsByPackKey.get(exclusion.libraryQueryKey) ??
+        new Set<string>();
+
+      excludedIds.add(exclusion.backgroundId);
+      excludedIdsByPackKey.set(exclusion.libraryQueryKey, excludedIds);
+    }
+
+    await logConvexTransactionMetrics(
       ctx,
-      GLOBAL_PEXELS_LIBRARY_LIST_LIMIT,
+      "swiprBackgrounds.listGlobalPexelsPackSummaries",
     );
 
-    const backgroundCards = backgrounds.map((background) => ({
-      ...background,
-      isOwnedByCurrentUser: background.uploadedByOwnerId === ownerId,
-    }));
-    await logConvexTransactionMetrics(ctx, "swiprBackgrounds.listGlobalPexels");
+    return summaries.map((summary) => {
+      const isInAccount = ownerLibraryPackAccountKeys.has(
+        summary.libraryQueryKey,
+      );
+      const excludedIds = excludedIdsByPackKey.get(summary.libraryQueryKey);
 
-    return backgroundCards;
+      return {
+        ...summary,
+        accountCovers:
+          isInAccount && excludedIds
+            ? summary.covers.filter(
+                (cover) => !excludedIds.has(cover.backgroundId),
+              )
+            : summary.covers,
+        accountPhotoCount:
+          isInAccount && excludedIds
+            ? Math.max(0, summary.photoCount - excludedIds.size)
+            : summary.photoCount,
+        isInAccount,
+      };
+    });
+  },
+});
+
+export const listGlobalPexelsPack = query({
+  args: {
+    applyAccountExclusions: v.boolean(),
+    libraryQuery: v.string(),
+  },
+  handler: async (ctx, { applyAccountExclusions, libraryQuery }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const libraryQueryKey = normalizeSwiprLibraryQueryKey(libraryQuery);
+
+    if (!libraryQueryKey) {
+      return [];
+    }
+
+    const [pack, ownerLibraryPackAccountKeys, excludedBackgroundIds] =
+      await Promise.all([
+        getGlobalPexelsPackByQueryKey(
+          ctx,
+          libraryQueryKey,
+          LIBRARY_QUERY_BACKGROUND_LOOKUP_LIMIT,
+        ),
+        getOwnerLibraryPackAccountKeys(ctx, ownerId),
+        applyAccountExclusions
+          ? getOwnerLibraryPackPhotoExclusionBackgroundIdsForQueryKeys(
+              ctx,
+              ownerId,
+              [libraryQueryKey],
+            )
+          : Promise.resolve(new Set<string>()),
+      ]);
+
+    if (
+      applyAccountExclusions &&
+      !ownerLibraryPackAccountKeys.has(libraryQueryKey)
+    ) {
+      return [];
+    }
+
+    await logConvexTransactionMetrics(
+      ctx,
+      "swiprBackgrounds.listGlobalPexelsPack",
+    );
+
+    return pack.backgrounds
+      .filter(
+        (background) =>
+          !applyAccountExclusions || !excludedBackgroundIds.has(background.id),
+      )
+      .map((background) => ({
+        ...background,
+        isOwnedByCurrentUser: background.uploadedByOwnerId === ownerId,
+      }));
   },
 });
 
@@ -611,6 +704,7 @@ export const save = mutation({
       backgroundFields,
     );
     await upsertSwiprBackgroundCard(ctx, backgroundFields);
+    await upsertPexelsPackSummary(ctx, backgroundFields);
 
     if (args.source === "pexels" && args.libraryQuery) {
       await ensureOwnerLibraryPackAccount(ctx, ownerId, args.libraryQuery);
@@ -676,6 +770,7 @@ export const saveFromProvider = mutation({
 
     if (insertedBackground) {
       await upsertSwiprBackgroundCard(ctx, insertedBackground);
+      await upsertPexelsPackSummary(ctx, insertedBackground);
     }
 
     if (args.source === "pexels" && args.libraryQuery) {

@@ -19,6 +19,7 @@ export function getSwiprLibraryPacks(
       ({
         count: 0,
         coverBackgroundIds: [],
+        covers: [],
         name: background.libraryQuery,
       } satisfies SwiprLibraryPack);
 
@@ -26,6 +27,10 @@ export function getSwiprLibraryPacks(
 
     if (pack.coverBackgroundIds.length < 4) {
       pack.coverBackgroundIds.push(background.id);
+      pack.covers?.push({
+        backgroundId: background.id,
+        imageObject: background.imageObject,
+      });
     }
 
     packsByName.set(packKey, pack);

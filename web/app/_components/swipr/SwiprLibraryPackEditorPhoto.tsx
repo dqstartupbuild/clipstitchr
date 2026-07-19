@@ -4,12 +4,16 @@ import { X } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
 import { SwiprLibraryCoverImage } from "@/app/_components/swipr/SwiprLibraryCoverImage";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 
 type SwiprLibraryPackEditorPhotoProps = {
   background: SwiprBackgroundAsset;
   canRemove: boolean;
   isSaving: boolean;
-  onLoadBackgroundBlob: (id: string) => Promise<Blob>;
+  onLoadBackgroundBlob: (
+    id: string,
+    imageObject?: R2ObjectReference,
+  ) => Promise<Blob>;
   onRemove: (background: SwiprBackgroundAsset) => void;
 };
 
@@ -25,6 +29,7 @@ export function SwiprLibraryPackEditorPhoto({
       <div className="aspect-[9/16] bg-surface-muted">
         <SwiprLibraryCoverImage
           backgroundId={background.id}
+          imageObject={background.imageObject}
           onLoadBackgroundBlob={onLoadBackgroundBlob}
         />
       </div>

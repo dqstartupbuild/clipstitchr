@@ -121,8 +121,9 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
     };
     const products = productState.products ?? [];
     const activeProduct =
-      products.find((product) => product.id === productState.defaultProductId) ??
-      products[0];
+      products.find(
+        (product) => product.id === productState.defaultProductId,
+      ) ?? products[0];
 
     return {
       activeProduct,
@@ -190,7 +191,9 @@ class TestCustomEvent<T = unknown> extends Event {
   }
 }
 
-function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile {
+function createProduct(
+  overrides: Partial<ProductProfile> = {},
+): ProductProfile {
   return {
     audienceDetails: "Creators",
     createdAt: "2026-05-20T00:00:00.000Z",
@@ -226,7 +229,9 @@ function createClip(
 
 function createWindow(search = "") {
   mocks.listeners.clear();
-  const initialUrl = new URL(`https://clipstitchr.test/dashboard/library${search}`);
+  const initialUrl = new URL(
+    `https://clipstitchr.test/dashboard/library${search}`,
+  );
   const testWindow: TestWindow = {
     addEventListener: vi.fn((type: string, listener: EventListener) => {
       const listeners = mocks.listeners.get(type) ?? [];
@@ -282,10 +287,7 @@ function collectElements(element: unknown): ElementLike[] {
 
   const elementLike = element as ElementLike;
 
-  return [
-    elementLike,
-    ...collectElements(elementLike.props?.children),
-  ];
+  return [elementLike, ...collectElements(elementLike.props?.children)];
 }
 
 function renderLibraryPage({
@@ -297,9 +299,7 @@ function renderLibraryPage({
 } = {}) {
   const testWindow = createWindow(search);
   mocks.stateValues = [...stateValues];
-  const initialTab = getLibraryTabFromSearchParams(
-    new URLSearchParams(search),
-  );
+  const initialTab = getLibraryTabFromSearchParams(new URLSearchParams(search));
 
   return {
     elements: collectElements(LibraryPageClient({ initialTab })),
@@ -330,11 +330,15 @@ describe("LibraryPageClient", () => {
     mocks.templateTabProps = null;
     const ugcClip = createClip("ugc_1", "ugc");
     const cliprClip = createClip("clipr_1", "ugc", {
-      cliprMetadata: { prompt: "Hook" } as unknown as VideoClipMetadata["cliprMetadata"],
+      cliprMetadata: {
+        prompt: "Hook",
+      } as unknown as VideoClipMetadata["cliprMetadata"],
       name: "Clipr hook",
     });
     const postedCliprClip = createClip("posted_clipr_1", "ugc", {
-      cliprMetadata: { prompt: "Posted Hook" } as unknown as VideoClipMetadata["cliprMetadata"],
+      cliprMetadata: {
+        prompt: "Posted Hook",
+      } as unknown as VideoClipMetadata["cliprMetadata"],
       createdAt: "2026-05-21T00:00:00.000Z",
       isPosted: true,
       name: "Posted Clipr hook",
@@ -464,12 +468,11 @@ describe("LibraryPageClient", () => {
       addLibraryPackToAccount: vi.fn(),
       backgrounds: [{ id: "background_1", name: "Background" }],
       error: null,
-      globalPexelsBackgrounds: [
+      globalPexelsPacks: [
         {
-          id: "background_pexels",
-          libraryQuery: "desk setup",
-          name: "Desk setup",
-          source: "pexels",
+          count: 12,
+          coverBackgroundIds: ["background_pexels"],
+          name: "desk setup",
         },
       ],
       isLoading: false,
@@ -542,10 +545,7 @@ describe("LibraryPageClient", () => {
       loadClip: mocks.library.loadClip,
       saveGeneratedPhotos: mocks.photoLibrary.saveGeneratedPhotos,
     });
-    expect(mocks.useStitchrHookPlans).toHaveBeenCalledWith(
-      "product_1",
-      false,
-    );
+    expect(mocks.useStitchrHookPlans).toHaveBeenCalledWith("product_1", false);
     expect(uploadPanel?.props).toEqual(
       expect.objectContaining({
         canUploadVideo: true,
@@ -555,9 +555,7 @@ describe("LibraryPageClient", () => {
     );
     expect(ugcSection?.props?.totalCount).toBe(30);
     expect(ugcSection?.props?.clips).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: "clipr_1" }),
-      ]),
+      expect.arrayContaining([expect.objectContaining({ id: "clipr_1" })]),
     );
     expect(findByProp(elements, "id", "clips")).toBeUndefined();
     expect(findByProp(elements, "id", "demo-videos")).toBeUndefined();
@@ -571,9 +569,11 @@ describe("LibraryPageClient", () => {
         ) => Promise<boolean>
       )(createClip("ugc_2", "ugc"), { avatarName: "Ava" }),
     ).resolves.toBe(true);
-    (uploadPanel?.props?.onAssetTypeChange as (assetType: UploadAssetType) => void)(
-      "demo",
-    );
+    (
+      uploadPanel?.props?.onAssetTypeChange as (
+        assetType: UploadAssetType,
+      ) => void
+    )("demo");
 
     expect(testWindow.history.replaceState).toHaveBeenCalledWith(
       null,
@@ -585,13 +585,12 @@ describe("LibraryPageClient", () => {
   it("renders the Pexels library tab with global and account packs", () => {
     const { elements } = renderLibraryPage({ search: "?tab=pexels" });
     const pexelsSection = elements.find(
-      (element) => "allBackgrounds" in (element.props ?? {}),
+      (element) => "packs" in (element.props ?? {}),
     );
 
     expect(pexelsSection?.props).toEqual(
       expect.objectContaining({
-        allBackgrounds: mocks.swiprLibrary.globalPexelsBackgrounds,
-        mineBackgrounds: mocks.swiprLibrary.backgrounds,
+        packs: mocks.swiprLibrary.globalPexelsPacks,
         onAddPackToAccount: mocks.swiprLibrary.addLibraryPackToAccount,
         onLoadBackgroundBlob: mocks.swiprLibrary.loadBackgroundBlob,
         onRemovePackFromAccount:

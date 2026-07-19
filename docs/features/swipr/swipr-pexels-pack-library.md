@@ -29,8 +29,9 @@ automation settings.
 7. Users can add a global pack to Mine for Swipr batch generation and
    automation.
 8. Users can click any pack card to view its photos in a dialog. The dialog
-   shows 12 photos per page, supports previous and next page controls, and
-   closes when the user taps outside it or uses the close button.
+   loads only that selected pack, shows 12 photos per page, supports previous
+   and next page controls, and closes when the user taps outside it or uses
+   the close button.
 9. Users can remove a pack from Mine. This only removes the pack from that
    user's account and never deletes the shared global pack.
 10. Users can remove individual photos from their own account copy of a pack.
@@ -62,6 +63,18 @@ used for global Pexels pack images.
 - Normalized pack key.
 - Created timestamp.
 
+`swiprPexelsPackSummaries` stores one compact row per global pack:
+
+- Normalized display name and lookup key.
+- Exact global photo count.
+- At most four background IDs plus R2 object references for covers.
+- Updated timestamp.
+
+Pexels imports update the matching summary in the same Convex mutation that
+creates the compact background card. Existing data is populated with
+`readModelBackfills.backfillPexelsPackSummaries` after the Swipr background
+card backfill has completed.
+
 The saved background record includes:
 
 - Importing owner ID from Convex auth.
@@ -78,6 +91,27 @@ The saved background record includes:
 Saved Swipes remain fully editable. Draft generation stores the same slide
 records as manual Swipr saves, so users can reopen a generated draft and change
 each slide's photo and text.
+
+## Library Read Behavior
+
+Opening `/dashboard/library?tab=pexels` subscribes to at most 250 compact pack
+summaries plus the current account's bounded pack-membership and photo-exclusion
+rows. It does not subscribe to the global per-photo background list or the
+account Swipr background list.
+
+Each pack summary supplies its global count and four possible covers. Mine
+counts subtract the current account's photo exclusions without changing the
+global All count. Cover blobs begin loading only when the pack card approaches
+the viewport.
+
+Opening a pack starts `swiprBackgrounds.listGlobalPexelsPack` for that one
+normalized pack key. The query returns at most 120 compact background cards and
+applies account exclusions only in Mine. The existing dialog paginates those
+bounded results 12 at a time. Closing the dialog skips the query again.
+
+Swipr manual/batch, saved Swipe hydration, Settings pack selection, server
+draft generation, and automation keep their existing owner-scoped and indexed
+background queries. They do not depend on the Library summary read model.
 
 Product automation settings can also reuse Mine packs. In Settings, the user
 can pick which account-added Pexels packs Swipr automation should use for the
@@ -194,6 +228,10 @@ is the source of truth.
 - `web/app/dashboard/library/LibraryPageClient.tsx`
 - `web/app/dashboard/swipr/SwiprPageClient.tsx`
 - `web/lib/clipstitchr/utils/getSwiprLibraryPacks.ts`
+- `web/convex/upsertPexelsPackSummary.ts`
+- `web/convex/syncPexelsPackSummary.ts`
+- `web/lib/clipstitchr/backend/createSwiprLibraryPackFromConvexSummary.ts`
+- `web/lib/clipstitchr/hooks/useIsNearViewport.ts`
 - `web/lib/clipstitchr/utils/getImportedPexelsPhotoIds.ts`
 - `web/lib/clipstitchr/utils/getSwiprLibraryQueryForImport.ts`
 - `web/lib/clipstitchr/server/createSwiprBatchTextGeneration.ts`
@@ -218,6 +256,14 @@ Draft generation creates provider-writing and Convex write cost. The draft
 route consumes `cliprHookScript` and `cliprProviderSpendGlobal` with `count`
 equal to the fixed Swipr batch count of 10 before calling the writing provider.
 Each saved draft then uses the existing `swipes.save` write limits.
+
+Pexels catalog and selected-pack reads do not have a separate rate bucket
+because they are authenticated, bounded, indexed, read-only Convex queries and
+Convex caches identical query results. Cover downloads still use the existing
+rate-limited R2 signed-URL flow. Pexels search remains rate-limited before the
+provider call and now checks only the returned page's photo IDs against the
+indexed compact background table instead of loading the global photo catalog
+to detect duplicates.
 
 ## Maintenance Notes
 

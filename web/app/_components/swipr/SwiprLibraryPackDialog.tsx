@@ -9,21 +9,27 @@ import { swiprLibraryPackPageSize } from "@/lib/clipstitchr/constants/swiprLibra
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import { getSwiprLibraryBackgroundsByPackName } from "@/lib/clipstitchr/utils/getSwiprLibraryBackgroundsByPackName";
 
 type SwiprLibraryPackDialogProps = {
   backgrounds: SwiprBackgroundAsset[];
+  isLoading?: boolean;
   isMine: boolean;
   isSaving: boolean;
   pack: SwiprLibraryPack;
   onDismiss: () => void;
-  onLoadBackgroundBlob: (id: string) => Promise<Blob>;
+  onLoadBackgroundBlob: (
+    id: string,
+    imageObject?: R2ObjectReference,
+  ) => Promise<Blob>;
   onRemovePack: (packName: string) => Promise<void>;
   onRemovePhoto: (background: SwiprBackgroundAsset) => Promise<void>;
 };
 
 export function SwiprLibraryPackDialog({
   backgrounds,
+  isLoading = false,
   isMine,
   isSaving,
   pack,
@@ -64,7 +70,9 @@ export function SwiprLibraryPackDialog({
               {pack.name}
             </h2>
             <p className="mt-1 text-sm font-semibold text-text-tertiary tabular-nums">
-              {packBackgrounds.length} photos
+              {isLoading
+                ? "Loading photos."
+                : `${packBackgrounds.length} photos`}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -91,7 +99,11 @@ export function SwiprLibraryPackDialog({
           </div>
         </div>
         <div className="min-h-0 overflow-y-auto p-4 sm:p-5">
-          {packBackgrounds.length ? (
+          {isLoading ? (
+            <p className="rounded-lg border border-border bg-surface-muted px-3 py-4 text-sm font-semibold text-text-secondary text-pretty">
+              Loading this pack.
+            </p>
+          ) : packBackgrounds.length ? (
             <>
               <SwiprLibraryPackPhotoList
                 backgrounds={pagination.pageItems}

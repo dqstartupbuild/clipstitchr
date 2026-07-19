@@ -262,7 +262,9 @@ vi.mock("@/lib/clipstitchr/client/searchPexelsPhotos", () => ({
   searchPexelsPhotos: mocks.searchPexelsPhotos,
 }));
 
-function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile {
+function createProduct(
+  overrides: Partial<ProductProfile> = {},
+): ProductProfile {
   return {
     audienceDetails: "Founders",
     createdAt: "2026-01-01T00:00:00.000Z",
@@ -437,7 +439,9 @@ describe("SwiprPageClient", () => {
       undefined,
     );
     mocks.swiprLibraryState.removeLibraryPack.mockResolvedValue(1);
-    mocks.swiprLibraryState.saveBackground.mockResolvedValue(createBackground());
+    mocks.swiprLibraryState.saveBackground.mockResolvedValue(
+      createBackground(),
+    );
     mocks.swiprLibraryState.saveSwipe.mockResolvedValue({
       backgroundId: "background_1",
       createdAt: "2026-01-01T00:00:00.000Z",
@@ -482,7 +486,10 @@ describe("SwiprPageClient", () => {
     mocks.loadPexelsPhotoBlob.mockResolvedValue(
       new Blob(["pexels"], { type: "image/jpeg" }),
     );
-    mocks.searchPexelsPhotos.mockResolvedValue([]);
+    mocks.searchPexelsPhotos.mockResolvedValue({
+      hasMore: false,
+      photos: [],
+    });
     mocks.searchParams = new URLSearchParams();
     mocks.batchControlsProps = null;
     mocks.backgroundPanelProps = null;
@@ -560,8 +567,9 @@ describe("SwiprPageClient", () => {
     });
 
     renderToStaticMarkup(<SwiprPageClient />);
-    (mocks.batchControlsProps as { onGenerateDrafts: () => void })
-      .onGenerateDrafts();
+    (
+      mocks.batchControlsProps as { onGenerateDrafts: () => void }
+    ).onGenerateDrafts();
 
     expect(mocks.generateSwiprDrafts).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -757,7 +765,10 @@ describe("SwiprPageClient", () => {
   it("searches Pexels and saves selected photos to the active slide", async () => {
     const pexelsPhoto = createPexelsPhoto({ id: 123 });
 
-    mocks.searchPexelsPhotos.mockResolvedValueOnce([pexelsPhoto]);
+    mocks.searchPexelsPhotos.mockResolvedValueOnce({
+      hasMore: false,
+      photos: [pexelsPhoto],
+    });
     queueSwiprState({
       hasMorePexelsPhotos: true,
       pexelsQuery: "desk setup",
@@ -850,8 +861,7 @@ describe("SwiprPageClient", () => {
     expect(
       mocks.stateSetters.some((setter) =>
         setter.mock.calls.some(
-          (call) =>
-            call[0] === "Create or choose a product before saving.",
+          (call) => call[0] === "Create or choose a product before saving.",
         ),
       ),
     ).toBe(true);

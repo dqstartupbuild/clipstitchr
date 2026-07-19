@@ -61,6 +61,11 @@ search/import, imported pack browsing, pack editing, and account pack selection.
 The Pexels tab has All/Mine filters: All shows global imported packs, and Mine
 shows packs the current user imported or added for Swipr.
 
+The Pexels tab reads one compact summary per pack. It does not load every
+Pexels background or the account Swipr background list on entry. A selected
+pack's bounded compact backgrounds load only while its dialog is open, and
+cover images load only as their cards approach the viewport.
+
 ## Data Loading
 
 The dashboard providers still share one library context. The route-aware hooks
@@ -68,8 +73,9 @@ load the data needed by `/dashboard/library`:
 
 - `useClipLibraryState` loads UGC, Demo, Swaps, Stitches, posted Stitches, and
   library counts.
-- `useSwiprLibraryState` loads account Swipr backgrounds, global Pexels packs,
-  active Swipes, and posted Swipes.
+- `useSwiprLibraryState` loads only global Pexels pack summaries on the Pexels
+  tab. Account Swipr backgrounds, active Swipes, and posted Swipes remain
+  route- and tab-scoped to their actual consumers.
 - `usePhotoLibraryState` loads avatar documents, photo documents, and avatar
   preferences.
 

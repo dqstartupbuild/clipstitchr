@@ -1,4 +1,4 @@
-import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResult";
+import type { PexelsSearchResult } from "@/lib/clipstitchr/types/PexelsSearchResult";
 
 type SearchPexelsPhotosOptions = {
   page?: number;
@@ -27,5 +27,5 @@ export async function searchPexelsPhotos({
     throw new Error(body?.message ?? "Unable to search Pexels.");
   }
 
-  return ((await response.json()) as { photos: PexelsPhotoResult[] }).photos;
+  return (await response.json()) as PexelsSearchResult;
 }

@@ -7,11 +7,13 @@ import { upsertAutomationRunSummary } from "./upsertAutomationRunSummary";
 import { upsertAutomationTaskSummary } from "./upsertAutomationTaskSummary";
 import { upsertCliprJobSummary } from "./upsertCliprJobSummary";
 import { upsertProductCard } from "./upsertProductCard";
+import { syncPexelsPackSummary } from "./syncPexelsPackSummary";
 import { upsertStitchCard } from "./upsertStitchCard";
 import { upsertSwipeCard } from "./upsertSwipeCard";
 import { upsertSwiprBackgroundCard } from "./upsertSwiprBackgroundCard";
 import { upsertVideoClipCard } from "./upsertVideoClipCard";
 import { upsertWorkerJobSummary } from "./upsertWorkerJobSummary";
+import { normalizeSwiprLibraryQueryKey } from "../lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 
 export const backfillBlogPostCards = mutation({
   args: {
@@ -121,6 +123,41 @@ export const backfillSwiprBackgroundCards = mutation({
       continueCursor: page.continueCursor,
       isDone: page.isDone,
       processed: page.page.length,
+    };
+  },
+});
+
+export const backfillPexelsPackSummaries = mutation({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    secret: v.string(),
+  },
+  handler: async (ctx, { paginationOpts, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const page = await ctx.db
+      .query("swiprBackgroundCards")
+      .withIndex("by_source_created", (q) => q.eq("source", "pexels"))
+      .paginate(paginationOpts);
+    const libraryQueryKeys = new Set(
+      page.page
+        .map(
+          (background) =>
+            background.libraryQueryKey ??
+            normalizeSwiprLibraryQueryKey(background.libraryQuery),
+        )
+        .filter((key): key is string => Boolean(key)),
+    );
+
+    for (const libraryQueryKey of libraryQueryKeys) {
+      await syncPexelsPackSummary(ctx, libraryQueryKey);
+    }
+
+    return {
+      continueCursor: page.continueCursor,
+      isDone: page.isDone,
+      processed: page.page.length,
+      summariesSynced: libraryQueryKeys.size,
     };
   },
 });

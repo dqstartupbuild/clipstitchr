@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 const mocks = vi.hoisted(() => {
   const convex = {
     mutation: vi.fn(),
+    query: vi.fn(),
   };
 
   return {
@@ -21,13 +22,17 @@ vi.mock("@/convex/_generated/api", () => ({
     rateLimits: {
       consumePexelsSearch: "rateLimits.consumePexelsSearch",
     },
+    swiprBackgrounds: {
+      getExistingPexelsPhotoIds: "swiprBackgrounds.getExistingPexelsPhotoIds",
+    },
   },
 }));
 
 vi.mock(
   "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient",
   () => ({
-    createAuthenticatedConvexHttpClient: mocks.createAuthenticatedConvexHttpClient,
+    createAuthenticatedConvexHttpClient:
+      mocks.createAuthenticatedConvexHttpClient,
   }),
 );
 
@@ -80,6 +85,7 @@ describe("POST /api/swipr/pexels/search", () => {
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex-token");
     mocks.convex.mutation.mockResolvedValue(null);
+    mocks.convex.query.mockResolvedValue([]);
     mocks.searchPexelsPhotoResults.mockResolvedValue([createPhoto(101)]);
   });
 
@@ -98,6 +104,7 @@ describe("POST /api/swipr/pexels/search", () => {
     );
 
     await expect(response.json()).resolves.toEqual({
+      hasMore: false,
       page: 2,
       perPage: 12,
       photos: [createPhoto(101)],
@@ -111,6 +118,27 @@ describe("POST /api/swipr/pexels/search", () => {
       page: 2,
       perPage: 12,
       query: "desk setup",
+    });
+    expect(mocks.convex.query).toHaveBeenCalledWith(
+      api.swiprBackgrounds.getExistingPexelsPhotoIds,
+      { photoIds: [101] },
+    );
+  });
+
+  it("removes photos that already exist in a saved pack", async () => {
+    mocks.searchPexelsPhotoResults.mockResolvedValue([
+      createPhoto(101),
+      createPhoto(102),
+    ]);
+    mocks.convex.query.mockResolvedValue([101]);
+
+    const response = await POST(createRequest({ query: "desk setup" }));
+
+    await expect(response.json()).resolves.toEqual({
+      hasMore: false,
+      page: 1,
+      perPage: 12,
+      photos: [createPhoto(102)],
     });
   });
 

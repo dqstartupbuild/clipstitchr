@@ -163,7 +163,9 @@ describe("client API wrappers", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/clipr/jobs",
       expect.objectContaining({
-        body: expect.stringContaining('"avatarSceneOutfit":"black workout set"'),
+        body: expect.stringContaining(
+          '"avatarSceneOutfit":"black workout set"',
+        ),
       }),
     );
     expect(fetchMock).toHaveBeenCalledWith(
@@ -280,7 +282,9 @@ describe("client API wrappers", () => {
           },
         }),
       )
-      .mockResolvedValueOnce(createJsonResponse({ message: "No background" }, 500));
+      .mockResolvedValueOnce(
+        createJsonResponse({ message: "No background" }, 500),
+      );
 
     await expect(
       generateSwiprBackgroundWithAi({
@@ -326,7 +330,9 @@ describe("client API wrappers", () => {
           providerPredictionId: "prediction_1",
         }),
       )
-      .mockResolvedValueOnce(createJsonResponse({ message: "Import failed" }, 400))
+      .mockResolvedValueOnce(
+        createJsonResponse({ message: "Import failed" }, 400),
+      )
       .mockResolvedValueOnce(createJsonResponse({}, 500));
 
     await expect(
@@ -414,8 +420,12 @@ describe("client API wrappers", () => {
     };
 
     fetchMock
-      .mockResolvedValueOnce(createJsonResponse({ page: 2, photos: [photo] }))
-      .mockResolvedValueOnce(createJsonResponse({ message: "Search failed" }, 400));
+      .mockResolvedValueOnce(
+        createJsonResponse({ hasMore: true, page: 2, photos: [photo] }),
+      )
+      .mockResolvedValueOnce(
+        createJsonResponse({ message: "Search failed" }, 400),
+      );
 
     await expect(
       searchPexelsPhotos({
@@ -423,10 +433,10 @@ describe("client API wrappers", () => {
         perPage: 12,
         query: "desk setup",
       }),
-    ).resolves.toEqual([photo]);
-    await expect(
-      searchPexelsPhotos({ page: 1, query: "bad" }),
-    ).rejects.toThrow("Search failed");
+    ).resolves.toEqual({ hasMore: true, page: 2, photos: [photo] });
+    await expect(searchPexelsPhotos({ page: 1, query: "bad" })).rejects.toThrow(
+      "Search failed",
+    );
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/swipr/pexels/search",
@@ -459,9 +469,13 @@ describe("client API wrappers", () => {
       .mockResolvedValueOnce(createJsonResponse({ ok: true }))
       .mockResolvedValueOnce(new Response(null, { status: 200 }))
       .mockResolvedValueOnce(new Response(null, { status: 500 }))
-      .mockResolvedValueOnce(createJsonResponse({ expiresIn: 60, url: "r2-url" }))
+      .mockResolvedValueOnce(
+        createJsonResponse({ expiresIn: 60, url: "r2-url" }),
+      )
       .mockResolvedValueOnce(createBlobResponse(new Blob(["video"])))
-      .mockResolvedValueOnce(createJsonResponse({ expiresIn: 60, url: "music-url" }))
+      .mockResolvedValueOnce(
+        createJsonResponse({ expiresIn: 60, url: "music-url" }),
+      )
       .mockResolvedValueOnce(
         createBlobResponse(new Blob(["audio"], { type: "audio/wav" })),
       )
@@ -471,7 +485,9 @@ describe("client API wrappers", () => {
       .mockResolvedValueOnce(
         createBlobResponse(new Blob(["background"], { type: "image/jpeg" })),
       )
-      .mockResolvedValueOnce(createJsonResponse({ expiresIn: 60, url: "direct" }))
+      .mockResolvedValueOnce(
+        createJsonResponse({ expiresIn: 60, url: "direct" }),
+      )
       .mockResolvedValueOnce(createJsonResponse({ expiresIn: 60, url: "bad" }))
       .mockResolvedValueOnce(new Response(null, { status: 404 }));
 
@@ -533,9 +549,9 @@ describe("client API wrappers", () => {
     await expect(downloadMusicTrackBlobFromR2("track_1")).resolves.toEqual(
       expect.objectContaining({ type: "audio/wav" }),
     );
-    await expect(downloadSwiprBackgroundBlobFromR2("background_1")).resolves.toEqual(
-      expect.objectContaining({ type: "image/jpeg" }),
-    );
+    await expect(
+      downloadSwiprBackgroundBlobFromR2("background_1"),
+    ).resolves.toEqual(expect.objectContaining({ type: "image/jpeg" }));
     await expect(createR2DownloadUrl(r2Object)).resolves.toEqual({
       expiresIn: 60,
       url: "direct",
@@ -545,13 +561,11 @@ describe("client API wrappers", () => {
         ...r2Object,
         key: "users/user_123/clips/failing-video.mp4",
       }),
-    ).rejects.toThrow(
-      "Unable to download media from R2.",
-    );
+    ).rejects.toThrow("Unable to download media from R2.");
 
-    await expect(readR2JsonResponse(createJsonResponse({ ok: true }))).resolves.toEqual(
-      { ok: true },
-    );
+    await expect(
+      readR2JsonResponse(createJsonResponse({ ok: true })),
+    ).resolves.toEqual({ ok: true });
     await expect(
       readR2JsonResponse(createJsonResponse({ error: "Denied" }, 403)),
     ).rejects.toThrow("Denied");
@@ -564,11 +578,15 @@ describe("client API wrappers", () => {
     const audioObject = createR2Object("audio/mpeg");
 
     fetchMock
-      .mockResolvedValueOnce(createJsonResponse({ expiresIn: 60, url: "music-url" }))
+      .mockResolvedValueOnce(
+        createJsonResponse({ expiresIn: 60, url: "music-url" }),
+      )
       .mockResolvedValueOnce(
         createBlobResponse(new Blob(["audio"], { type: "audio/wav" })),
       )
-      .mockResolvedValueOnce(createJsonResponse({ expiresIn: 60, url: "direct" }))
+      .mockResolvedValueOnce(
+        createJsonResponse({ expiresIn: 60, url: "direct" }),
+      )
       .mockResolvedValueOnce(
         createBlobResponse(new Blob(["audio"], { type: "audio/mpeg" })),
       );

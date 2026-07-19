@@ -69,8 +69,7 @@ const videoLibraryContent: Record<
       "Upload or generate hooks, reactions, b-roll, or creator footage to pair with demos.",
     sectionId: "ugc-clips",
     searchEmptyTitle: "No matching Hook/UGC clips",
-    searchEmptyDescription:
-      "No saved Hook/UGC clips match that title or tag.",
+    searchEmptyDescription: "No saved Hook/UGC clips match that title or tag.",
   },
   demo: {
     title: "Product demos",
@@ -79,8 +78,7 @@ const videoLibraryContent: Record<
       "Upload product walkthroughs or screen recordings to use after Hook/UGC clips.",
     sectionId: "demo-videos",
     searchEmptyTitle: "No matching demo videos",
-    searchEmptyDescription:
-      "No saved demo videos match that title or tag.",
+    searchEmptyDescription: "No saved demo videos match that title or tag.",
   },
   swaps: {
     title: "Swaps",
@@ -89,8 +87,7 @@ const videoLibraryContent: Record<
       "Create new Hook/UGC clips when your library needs more material.",
     sectionId: "swaps",
     searchEmptyTitle: "No matching swaps",
-    searchEmptyDescription:
-      "No saved Swapr outputs match that title or tag.",
+    searchEmptyDescription: "No saved Swapr outputs match that title or tag.",
   },
 };
 
@@ -130,10 +127,7 @@ export function LibraryPageClient({
     () => filterClipsBySearchQuery(library.videoGroups.demo.clips, searchQuery),
     [library.videoGroups.demo.clips, searchQuery],
   );
-  const demoClips = useMemo(
-    () => allDemoClips,
-    [allDemoClips],
-  );
+  const demoClips = useMemo(() => allDemoClips, [allDemoClips]);
   const swapClips = useMemo(
     () =>
       filterClipsBySearchQuery(library.videoGroups.swapr.clips, searchQuery),
@@ -274,24 +268,24 @@ export function LibraryPageClient({
           : "Search library";
   const selectedVideoSection =
     selectedTab === "ugc"
+      ? {
+          clips: ugcClips,
+          content: videoLibraryContent.ugc,
+          group: library.videoGroups.ugc,
+        }
+      : selectedTab === "demo"
         ? {
-            clips: ugcClips,
-            content: videoLibraryContent.ugc,
-            group: library.videoGroups.ugc,
+            clips: demoClips,
+            content: videoLibraryContent.demo,
+            group: library.videoGroups.demo,
           }
-        : selectedTab === "demo"
+        : selectedTab === "swaps"
           ? {
-              clips: demoClips,
-              content: videoLibraryContent.demo,
-              group: library.videoGroups.demo,
+              clips: swapClips,
+              content: videoLibraryContent.swaps,
+              group: library.videoGroups.swapr,
             }
-          : selectedTab === "swaps"
-            ? {
-                clips: swapClips,
-                content: videoLibraryContent.swaps,
-                group: library.videoGroups.swapr,
-              }
-            : null;
+          : null;
   const selectedStitchHasMoreItems =
     stitchStatusFilter === "posted"
       ? library.hasMorePostedStitches
@@ -330,10 +324,8 @@ export function LibraryPageClient({
     dispatchLibraryTabChangeEvent(nextTab);
   }, []);
   const handleCreateAvatarFromClip = useCallback(
-    async (
-      clip: VideoClipMetadata,
-      options: CreateAvatarFromUgcClipOptions,
-    ) => Boolean(await avatarCreator.generate(clip, options)),
+    async (clip: VideoClipMetadata, options: CreateAvatarFromUgcClipOptions) =>
+      Boolean(await avatarCreator.generate(clip, options)),
     [avatarCreator],
   );
 
@@ -358,7 +350,11 @@ export function LibraryPageClient({
 
       const assetType = (event.detail as { assetType?: unknown }).assetType;
 
-      if (assetType === "ugc" || assetType === "demo" || assetType === "photo") {
+      if (
+        assetType === "ugc" ||
+        assetType === "demo" ||
+        assetType === "photo"
+      ) {
         handleTabChange(getLibraryTabFromAssetType(assetType));
       }
     };
@@ -418,9 +414,7 @@ export function LibraryPageClient({
           <div
             className={[
               "grid w-full gap-3 sm:items-end",
-              canSortSelectedTab
-                ? "sm:grid-cols-2 lg:max-w-xl"
-                : "lg:max-w-sm",
+              canSortSelectedTab ? "sm:grid-cols-2 lg:max-w-xl" : "lg:max-w-sm",
             ].join(" ")}
           >
             {canSortSelectedTab ? (
@@ -429,7 +423,9 @@ export function LibraryPageClient({
                 options={sortOptions}
                 value={library.sortOrder}
                 onChange={(event) =>
-                  library.setSortOrder(event.target.value as ClipLibrarySortOrder)
+                  library.setSortOrder(
+                    event.target.value as ClipLibrarySortOrder,
+                  )
                 }
               />
             ) : null}
@@ -458,14 +454,14 @@ export function LibraryPageClient({
                 ? selectedVideoSection.content.searchEmptyTitle
                 : hasDemoProductFilter
                   ? "No demos for this product"
-                : selectedVideoSection.content.emptyTitle
+                  : selectedVideoSection.content.emptyTitle
             }
             emptyDescription={
               hasSearchQuery
                 ? selectedVideoSection.content.searchEmptyDescription
                 : hasDemoProductFilter
                   ? "No saved demo videos are linked to that product."
-                : selectedVideoSection.content.emptyDescription
+                  : selectedVideoSection.content.emptyDescription
             }
             hasMoreItems={selectedVideoSection.group.hasMoreItems}
             isLoadingMoreItems={selectedVideoSection.group.isLoadingMoreItems}
@@ -500,7 +496,9 @@ export function LibraryPageClient({
             savingIdeaStitchId={hookLabIdeaCreator.savingStitchId}
             stitches={stitches}
             totalCount={
-              hasSearchQuery ? undefined : stitchStatusCounts[stitchStatusFilter]
+              hasSearchQuery
+                ? undefined
+                : stitchStatusCounts[stitchStatusFilter]
             }
             emptyTitle={
               hasSearchQuery
@@ -565,7 +563,7 @@ export function LibraryPageClient({
                 ? "No saved Swipes match that search."
                 : swipeStatusFilter === "posted"
                   ? "Mark saved Swipes as posted after they go live."
-                : undefined
+                  : undefined
             }
             statusCounts={swipeStatusCounts}
             statusFilter={swipeStatusFilter}
@@ -579,9 +577,8 @@ export function LibraryPageClient({
         ) : null}
         {selectedTab === "pexels" ? (
           <PexelsLibraryTabSection
-            allBackgrounds={swiprLibrary.globalPexelsBackgrounds}
+            packs={swiprLibrary.globalPexelsPacks}
             isLoading={swiprLibrary.isLoading}
-            mineBackgrounds={swiprLibrary.backgrounds}
             searchQuery={searchQuery}
             onAddPackToAccount={swiprLibrary.addLibraryPackToAccount}
             onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}

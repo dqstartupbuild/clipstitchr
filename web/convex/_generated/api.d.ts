@@ -124,6 +124,7 @@ import type * as createAutomationTaskSummaryFields from "../createAutomationTask
 import type * as createCliprJobSummaryFields from "../createCliprJobSummaryFields.js";
 import type * as createCompletedRunNotification from "../createCompletedRunNotification.js";
 import type * as createNotification from "../createNotification.js";
+import type * as createPexelsPackSummaryCover from "../createPexelsPackSummaryCover.js";
 import type * as createProductCardFields from "../createProductCardFields.js";
 import type * as createQuickEditSuggestionsFromMetadata from "../createQuickEditSuggestionsFromMetadata.js";
 import type * as createSoundTrackSnapshot from "../createSoundTrackSnapshot.js";
@@ -415,6 +416,7 @@ import type * as stripe_writeEntitlementHistory from "../stripe/writeEntitlement
 import type * as swipes from "../swipes.js";
 import type * as swipes_resolveSwipeUsageReservationId from "../swipes/resolveSwipeUsageReservationId.js";
 import type * as swiprBackgrounds from "../swiprBackgrounds.js";
+import type * as syncPexelsPackSummary from "../syncPexelsPackSummary.js";
 import type * as toolLeads_enrollEmailNative from "../toolLeads/enrollEmailNative.js";
 import type * as toolLeads_getEmailNativeSourceForWorkflowKey from "../toolLeads/getEmailNativeSourceForWorkflowKey.js";
 import type * as toolLeads_getEmailNativeWorkflowKeyForSource from "../toolLeads/getEmailNativeWorkflowKeyForSource.js";
@@ -427,6 +429,7 @@ import type * as toolLeads_validateToolLeadCaptureEnvelope from "../toolLeads/va
 import type * as upsertAutomationRunSummary from "../upsertAutomationRunSummary.js";
 import type * as upsertAutomationTaskSummary from "../upsertAutomationTaskSummary.js";
 import type * as upsertCliprJobSummary from "../upsertCliprJobSummary.js";
+import type * as upsertPexelsPackSummary from "../upsertPexelsPackSummary.js";
 import type * as upsertProductCard from "../upsertProductCard.js";
 import type * as upsertStitchCard from "../upsertStitchCard.js";
 import type * as upsertSwipeCard from "../upsertSwipeCard.js";
@@ -758,6 +761,7 @@ declare const fullApi: ApiFromModules<{
   createCliprJobSummaryFields: typeof createCliprJobSummaryFields;
   createCompletedRunNotification: typeof createCompletedRunNotification;
   createNotification: typeof createNotification;
+  createPexelsPackSummaryCover: typeof createPexelsPackSummaryCover;
   createProductCardFields: typeof createProductCardFields;
   createQuickEditSuggestionsFromMetadata: typeof createQuickEditSuggestionsFromMetadata;
   createSoundTrackSnapshot: typeof createSoundTrackSnapshot;
@@ -1049,6 +1053,7 @@ declare const fullApi: ApiFromModules<{
   swipes: typeof swipes;
   "swipes/resolveSwipeUsageReservationId": typeof swipes_resolveSwipeUsageReservationId;
   swiprBackgrounds: typeof swiprBackgrounds;
+  syncPexelsPackSummary: typeof syncPexelsPackSummary;
   "toolLeads/enrollEmailNative": typeof toolLeads_enrollEmailNative;
   "toolLeads/getEmailNativeSourceForWorkflowKey": typeof toolLeads_getEmailNativeSourceForWorkflowKey;
   "toolLeads/getEmailNativeWorkflowKeyForSource": typeof toolLeads_getEmailNativeWorkflowKeyForSource;
@@ -1061,6 +1066,7 @@ declare const fullApi: ApiFromModules<{
   upsertAutomationRunSummary: typeof upsertAutomationRunSummary;
   upsertAutomationTaskSummary: typeof upsertAutomationTaskSummary;
   upsertCliprJobSummary: typeof upsertCliprJobSummary;
+  upsertPexelsPackSummary: typeof upsertPexelsPackSummary;
   upsertProductCard: typeof upsertProductCard;
   upsertStitchCard: typeof upsertStitchCard;
   upsertSwipeCard: typeof upsertSwipeCard;

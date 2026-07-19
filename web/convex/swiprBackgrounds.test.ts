@@ -4,7 +4,8 @@ import {
   get,
   list,
   listByIds,
-  listGlobalPexels,
+  listGlobalPexelsPack,
+  listGlobalPexelsPackSummaries,
   removeFromLibraryPack,
   removeLibraryPack,
   removeLibraryPackFromAccount,
@@ -42,10 +43,12 @@ function getHandler<Args, Result>(convexFunction: unknown) {
   return (convexFunction as ConvexFunction<Args, Result>).handler;
 }
 
-function createQueryChain(options: {
-  collect?: unknown[];
-  unique?: unknown;
-} = {}) {
+function createQueryChain(
+  options: {
+    collect?: unknown[];
+    unique?: unknown;
+  } = {},
+) {
   const indexQuery = {
     eq: vi.fn(() => indexQuery),
   };
@@ -154,12 +157,12 @@ describe("convex swiprBackgrounds", () => {
     await expect(getHandler(list)(ctx, {})).resolves.toStrictEqual([
       { ...ownedBackground, isOwnedByCurrentUser: true },
     ]);
-    await expect(
-      getHandler(get)(ctx, { id: "background_1" }),
-    ).resolves.toEqual({
-      ...ownedBackground,
-      isOwnedByCurrentUser: true,
-    });
+    await expect(getHandler(get)(ctx, { id: "background_1" })).resolves.toEqual(
+      {
+        ...ownedBackground,
+        isOwnedByCurrentUser: true,
+      },
+    );
     expect(backgroundQueryChain.withIndex).toHaveBeenCalledWith(
       "by_uploaded_owner_created",
       expect.any(Function),
@@ -221,9 +224,103 @@ describe("convex swiprBackgrounds", () => {
     await expect(getHandler(list)(ctx, {})).resolves.toStrictEqual([
       { ...backgrounds[0], isOwnedByCurrentUser: false },
     ]);
-    await expect(getHandler(listGlobalPexels)(ctx, {})).resolves.toStrictEqual([
-      { ...backgrounds[0], isOwnedByCurrentUser: false },
-      { ...backgrounds[1], isOwnedByCurrentUser: false },
+  });
+
+  it("lists one compact summary per Pexels pack", async () => {
+    const summary = {
+      _id: "summary_1",
+      covers: [
+        {
+          backgroundId: "background_1",
+          imageObject: {
+            contentType: "image/jpeg",
+            key: "pexels/background_1.jpg",
+            size: 10,
+          },
+        },
+        {
+          backgroundId: "background_2",
+          imageObject: {
+            contentType: "image/jpeg",
+            key: "pexels/background_2.jpg",
+            size: 10,
+          },
+        },
+      ],
+      libraryQuery: "Desk Setup",
+      libraryQueryKey: "desk setup",
+      photoCount: 12,
+      updatedAt: "2026-05-20T00:00:00.000Z",
+    };
+    const ctx = {
+      db: {
+        query: vi.fn((tableName: string) => {
+          if (tableName === "swiprPexelsPackSummaries") {
+            return createQueryChain({ collect: [summary] });
+          }
+
+          if (tableName === "swiprLibraryPackAccounts") {
+            return createQueryChain({
+              collect: [createPackAccount()],
+            });
+          }
+
+          return createQueryChain({
+            collect: [
+              {
+                backgroundId: "background_1",
+                libraryQueryKey: "desk setup",
+              },
+            ],
+          });
+        }),
+      },
+    };
+
+    await expect(
+      getHandler(listGlobalPexelsPackSummaries)(ctx, {}),
+    ).resolves.toStrictEqual([
+      {
+        ...summary,
+        accountCovers: [summary.covers[1]],
+        accountPhotoCount: 11,
+        isInAccount: true,
+      },
+    ]);
+  });
+
+  it("loads only the selected global Pexels pack on demand", async () => {
+    const backgrounds = [
+      createBackground({ id: "background_1" }),
+      createBackground({ id: "background_2" }),
+    ];
+    const ctx = {
+      db: {
+        query: vi.fn((tableName: string) => {
+          if (tableName === "swiprBackgroundCards") {
+            return createQueryChain({ collect: backgrounds });
+          }
+
+          if (tableName === "swiprLibraryPackAccounts") {
+            return createQueryChain({
+              collect: [createPackAccount()],
+            });
+          }
+
+          return createQueryChain({
+            collect: [{ backgroundId: "background_1" }],
+          });
+        }),
+      },
+    };
+
+    await expect(
+      getHandler(listGlobalPexelsPack)(ctx, {
+        applyAccountExclusions: true,
+        libraryQuery: "Desk Setup",
+      }),
+    ).resolves.toStrictEqual([
+      { ...backgrounds[1], isOwnedByCurrentUser: true },
     ]);
   });
 
@@ -322,10 +419,6 @@ describe("convex swiprBackgrounds", () => {
     await expect(getHandler(list)(ctx, {})).resolves.toStrictEqual([
       { ...backgrounds[1], isOwnedByCurrentUser: false },
     ]);
-    await expect(getHandler(listGlobalPexels)(ctx, {})).resolves.toStrictEqual([
-      { ...backgrounds[0], isOwnedByCurrentUser: false },
-      { ...backgrounds[1], isOwnedByCurrentUser: false },
-    ]);
   });
 
   it("normalizes and saves a new background", async () => {
@@ -336,7 +429,9 @@ describe("convex swiprBackgrounds", () => {
       },
     };
 
-    await expect(getHandler(save)(ctx, createSaveArgs())).resolves.toBe("doc_1");
+    await expect(getHandler(save)(ctx, createSaveArgs())).resolves.toBe(
+      "doc_1",
+    );
     expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
       ctx,
       "convexRecordSave",

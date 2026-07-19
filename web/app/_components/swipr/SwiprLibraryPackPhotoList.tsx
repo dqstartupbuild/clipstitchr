@@ -2,12 +2,16 @@
 
 import { SwiprLibraryPackEditorPhoto } from "@/app/_components/swipr/SwiprLibraryPackEditorPhoto";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 
 type SwiprLibraryPackPhotoListProps = {
   backgrounds: SwiprBackgroundAsset[];
   canRemove: boolean;
   isSaving: boolean;
-  onLoadBackgroundBlob: (id: string) => Promise<Blob>;
+  onLoadBackgroundBlob: (
+    id: string,
+    imageObject?: R2ObjectReference,
+  ) => Promise<Blob>;
   onRemovePhoto: (background: SwiprBackgroundAsset) => void;
 };
 

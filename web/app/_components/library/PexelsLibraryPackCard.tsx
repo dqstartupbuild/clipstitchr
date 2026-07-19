@@ -3,6 +3,7 @@
 import { Check, Eye, Plus, X } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
 import { SwiprLibraryCoverImage } from "@/app/_components/swipr/SwiprLibraryCoverImage";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 
 type PexelsLibraryPackCardProps = {
@@ -10,7 +11,10 @@ type PexelsLibraryPackCardProps = {
   isSaving: boolean;
   pack: SwiprLibraryPack;
   onAdd: (name: string) => void;
-  onLoadBackgroundBlob: (id: string) => Promise<Blob>;
+  onLoadBackgroundBlob: (
+    id: string,
+    imageObject?: R2ObjectReference,
+  ) => Promise<Blob>;
   onRemove: (name: string) => void | Promise<void>;
   onView: (name: string) => void;
 };
@@ -34,12 +38,14 @@ export function PexelsLibraryPackCard({
         <div className="grid aspect-[4/3] grid-cols-2 grid-rows-2 bg-surface-muted">
           {Array.from({ length: 4 }).map((_, index) => {
             const backgroundId = pack.coverBackgroundIds[index];
+            const cover = pack.covers?.[index];
 
             return (
               <div key={index} className="overflow-hidden bg-surface-muted">
                 {backgroundId ? (
                   <SwiprLibraryCoverImage
                     backgroundId={backgroundId}
+                    imageObject={cover?.imageObject}
                     onLoadBackgroundBlob={onLoadBackgroundBlob}
                   />
                 ) : null}

@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => {
     convexQuery: vi.fn(),
     createId: vi.fn(),
     createSwiprBackgroundAssetFromConvexDocument: vi.fn(),
+    createSwiprLibraryPackFromConvexSummary: vi.fn(),
     createSwiprSwipeFromConvexDocument: vi.fn(),
     deleteObjectsFromR2: vi.fn(),
     downloadCachedR2ImageBlobs: vi.fn(),
@@ -91,10 +92,12 @@ vi.mock("@/convex/_generated/api", () => ({
       get: "swiprBackgrounds.get",
       list: "swiprBackgrounds.list",
       listByIds: "swiprBackgrounds.listByIds",
-      listGlobalPexels: "swiprBackgrounds.listGlobalPexels",
+      listGlobalPexelsPackSummaries:
+        "swiprBackgrounds.listGlobalPexelsPackSummaries",
       removeFromLibraryPack: "swiprBackgrounds.removeFromLibraryPack",
       removeLibraryPack: "swiprBackgrounds.removeLibraryPack",
-      removeLibraryPackFromAccount: "swiprBackgrounds.removeLibraryPackFromAccount",
+      removeLibraryPackFromAccount:
+        "swiprBackgrounds.removeLibraryPackFromAccount",
       renameLibraryPack: "swiprBackgrounds.renameLibraryPack",
       save: "swiprBackgrounds.save",
     },
@@ -110,12 +113,16 @@ vi.mock(
 );
 
 vi.mock(
-  "@/lib/clipstitchr/backend/createSwiprSwipeFromConvexDocument",
+  "@/lib/clipstitchr/backend/createSwiprLibraryPackFromConvexSummary",
   () => ({
-    createSwiprSwipeFromConvexDocument:
-      mocks.createSwiprSwipeFromConvexDocument,
+    createSwiprLibraryPackFromConvexSummary:
+      mocks.createSwiprLibraryPackFromConvexSummary,
   }),
 );
+
+vi.mock("@/lib/clipstitchr/backend/createSwiprSwipeFromConvexDocument", () => ({
+  createSwiprSwipeFromConvexDocument: mocks.createSwiprSwipeFromConvexDocument,
+}));
 
 vi.mock("@/lib/clipstitchr/client/analyzeSwiprBackground", () => ({
   analyzeSwiprBackground: mocks.analyzeSwiprBackground,
@@ -124,8 +131,7 @@ vi.mock("@/lib/clipstitchr/client/analyzeSwiprBackground", () => ({
 vi.mock(
   "@/lib/clipstitchr/client/r2/downloadSwiprBackgroundBlobFromR2",
   () => ({
-    downloadSwiprBackgroundBlobFromR2:
-      mocks.downloadSwiprBackgroundBlobFromR2,
+    downloadSwiprBackgroundBlobFromR2: mocks.downloadSwiprBackgroundBlobFromR2,
   }),
 );
 
@@ -145,12 +151,9 @@ vi.mock("@/lib/clipstitchr/client/r2/uploadBlobsToR2", () => ({
   uploadBlobsToR2: mocks.uploadBlobsToR2,
 }));
 
-vi.mock(
-  "@/lib/clipstitchr/client/r2/uploadSwiprBackgroundBlobToR2",
-  () => ({
-    uploadSwiprBackgroundBlobToR2: mocks.uploadSwiprBackgroundBlobToR2,
-  }),
-);
+vi.mock("@/lib/clipstitchr/client/r2/uploadSwiprBackgroundBlobToR2", () => ({
+  uploadSwiprBackgroundBlobToR2: mocks.uploadSwiprBackgroundBlobToR2,
+}));
 
 vi.mock("@/lib/clipstitchr/media/getImageDimensions", () => ({
   getImageDimensions: mocks.getImageDimensions,
@@ -238,13 +241,12 @@ describe("useSwiprLibraryState", () => {
         return [createBackgroundDocument()];
       }
 
-      if (queryId === "swiprBackgrounds.listGlobalPexels") {
+      if (queryId === "swiprBackgrounds.listGlobalPexelsPackSummaries") {
         return [
-          createBackgroundDocument({
-            id: "background_pexels",
+          {
             libraryQuery: "desk setup",
-            source: "pexels",
-          }),
+            photoCount: 12,
+          },
         ];
       }
 
@@ -265,6 +267,11 @@ describe("useSwiprLibraryState", () => {
     mocks.createSwiprBackgroundAssetFromConvexDocument.mockReturnValue({
       id: "background_1",
       name: "Mapped background",
+    });
+    mocks.createSwiprLibraryPackFromConvexSummary.mockReturnValue({
+      count: 12,
+      coverBackgroundIds: [],
+      name: "desk setup",
     });
     mocks.createSwiprSwipeFromConvexDocument.mockReturnValue({
       id: "swipe_1",
@@ -313,12 +320,12 @@ describe("useSwiprLibraryState", () => {
     const state = useSwiprLibraryState();
 
     expect(state.swipes).toEqual([{ id: "swipe_1", name: "Mapped swipe" }]);
-    expect(state.globalPexelsBackgrounds).toEqual([]);
+    expect(state.globalPexelsPacks).toEqual([]);
     expect(state.postedSwipes).toEqual([]);
     expect(state.isLoading).toBe(false);
     expect(mocks.useQuery).toHaveBeenCalledWith("swiprBackgrounds.list", {});
     expect(mocks.useQuery).toHaveBeenCalledWith(
-      "swiprBackgrounds.listGlobalPexels",
+      "swiprBackgrounds.listGlobalPexelsPackSummaries",
       "skip",
     );
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", {
@@ -332,18 +339,21 @@ describe("useSwiprLibraryState", () => {
     });
   });
 
-  it("loads global Pexels backgrounds only on the Pexels Library tab", () => {
+  it("loads only Pexels pack summaries on the Pexels Library tab", () => {
     mocks.useActiveLibraryTab.mockReturnValue("pexels");
 
     const state = useSwiprLibraryState();
 
-    expect(state.globalPexelsBackgrounds).toEqual([
-      { id: "background_1", name: "Mapped background" },
+    expect(state.globalPexelsPacks).toEqual([
+      { count: 12, coverBackgroundIds: [], name: "desk setup" },
     ]);
     expect(state.swipes).toEqual([]);
-    expect(mocks.useQuery).toHaveBeenCalledWith("swiprBackgrounds.list", {});
     expect(mocks.useQuery).toHaveBeenCalledWith(
-      "swiprBackgrounds.listGlobalPexels",
+      "swiprBackgrounds.list",
+      "skip",
+    );
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      "swiprBackgrounds.listGlobalPexelsPackSummaries",
       {},
     );
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", "skip");
@@ -367,7 +377,7 @@ describe("useSwiprLibraryState", () => {
       "skip",
     );
     expect(mocks.useQuery).toHaveBeenCalledWith(
-      "swiprBackgrounds.listGlobalPexels",
+      "swiprBackgrounds.listGlobalPexelsPackSummaries",
       "skip",
     );
     expect(mocks.useQuery).toHaveBeenCalledWith(
@@ -447,7 +457,9 @@ describe("useSwiprLibraryState", () => {
   });
 
   it("continues queued background downloads after a rejected download", async () => {
-    mocks.downloadBlobFromR2.mockRejectedValueOnce(new Error("download failed"));
+    mocks.downloadBlobFromR2.mockRejectedValueOnce(
+      new Error("download failed"),
+    );
     mocks.downloadSwiprBackgroundBlobFromR2.mockResolvedValueOnce(
       new Blob(["second"], { type: "image/jpeg" }),
     );
@@ -580,13 +592,13 @@ describe("useSwiprLibraryState", () => {
       count: 2,
       libraryQuery: "Desk Setup",
     });
-    getMutation("swiprBackgrounds.removeLibraryPackFromAccount").mockResolvedValue({
+    getMutation(
+      "swiprBackgrounds.removeLibraryPackFromAccount",
+    ).mockResolvedValue({
       count: 1,
     });
 
-    await expect(
-      state.addLibraryPackToAccount("desk setup"),
-    ).resolves.toEqual({
+    await expect(state.addLibraryPackToAccount("desk setup")).resolves.toEqual({
       count: 2,
       libraryQuery: "Desk Setup",
     });
@@ -764,7 +776,9 @@ describe("useSwiprLibraryState", () => {
     useSwiprLibraryState();
     await Promise.resolve();
 
-    expect(mocks.createSwiprBackgroundAssetFromConvexDocument).toHaveBeenCalledWith(
+    expect(
+      mocks.createSwiprBackgroundAssetFromConvexDocument,
+    ).toHaveBeenCalledWith(
       expect.objectContaining({ id: "background_1" }),
       undefined,
     );

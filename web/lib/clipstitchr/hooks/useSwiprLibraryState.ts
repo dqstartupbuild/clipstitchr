@@ -5,6 +5,7 @@ import { useConvex, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { usePathname } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { createSwiprBackgroundAssetFromConvexDocument } from "@/lib/clipstitchr/backend/createSwiprBackgroundAssetFromConvexDocument";
+import { createSwiprLibraryPackFromConvexSummary } from "@/lib/clipstitchr/backend/createSwiprLibraryPackFromConvexSummary";
 import { createSwiprSwipeFromConvexDocument } from "@/lib/clipstitchr/backend/createSwiprSwipeFromConvexDocument";
 import { analyzeSwiprBackground } from "@/lib/clipstitchr/client/analyzeSwiprBackground";
 import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
@@ -39,7 +40,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const shouldLoadBackgrounds =
     isAuthenticated &&
     (isLibraryRoute
-      ? activeLibraryTab === "pexels" || activeLibraryTab === "swipes"
+      ? activeLibraryTab === "swipes"
       : isSettingsRoute || isSwiprRoute || isUploadsRoute);
   const shouldLoadSwipes =
     isAuthenticated &&
@@ -56,8 +57,8 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     api.swiprBackgrounds.list,
     shouldLoadBackgrounds ? {} : "skip",
   );
-  const globalPexelsBackgroundDocuments = useQuery(
-    api.swiprBackgrounds.listGlobalPexels,
+  const globalPexelsPackSummaryDocuments = useQuery(
+    api.swiprBackgrounds.listGlobalPexelsPackSummaries,
     shouldLoadGlobalPexelsBackgrounds ? {} : "skip",
   );
   const swipeDocuments = useQuery(
@@ -94,18 +95,17 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const [backgroundBlobsById, setBackgroundBlobsById] = useState(
     () => new Map<string, Blob>(),
   );
-  const backgroundDownloadPromisesRef = useRef(new Map<string, Promise<Blob>>());
+  const backgroundDownloadPromisesRef = useRef(
+    new Map<string, Promise<Blob>>(),
+  );
   const backgroundDownloadQueueRef = useRef(Promise.resolve());
   const swipePosterBlobCacheRef = useRef(new Map<string, Blob>());
-  const globalPexelsBackgrounds = useMemo(
+  const globalPexelsPacks = useMemo(
     () =>
-      globalPexelsBackgroundDocuments?.map((background) =>
-        createSwiprBackgroundAssetFromConvexDocument(
-          background,
-          backgroundBlobsById.get(background.id),
-        ),
+      globalPexelsPackSummaryDocuments?.map(
+        createSwiprLibraryPackFromConvexSummary,
       ) ?? [],
-    [backgroundBlobsById, globalPexelsBackgroundDocuments],
+    [globalPexelsPackSummaryDocuments],
   );
   const [isSavingBackground, setIsSavingBackground] = useState(false);
   const [isSavingSwipe, setIsSavingSwipe] = useState(false);
@@ -172,61 +172,66 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     setError(null);
   }, []);
 
-  const loadBackgroundBlob = useCallback(async (id: string) => {
-    const cachedBlob = backgroundBlobCacheRef.current.get(id);
+  const loadBackgroundBlob = useCallback(
+    async (id: string, imageObject?: R2ObjectReference) => {
+      const cachedBlob = backgroundBlobCacheRef.current.get(id);
 
-    if (cachedBlob) {
-      return cachedBlob;
-    }
+      if (cachedBlob) {
+        return cachedBlob;
+      }
 
-    const pendingDownload = backgroundDownloadPromisesRef.current.get(id);
+      const pendingDownload = backgroundDownloadPromisesRef.current.get(id);
 
-    if (pendingDownload) {
-      return pendingDownload;
-    }
+      if (pendingDownload) {
+        return pendingDownload;
+      }
 
-    const backgroundObject =
-      mergedBackgroundDocuments?.find((background) => background.id === id)
-        ?.imageObject ??
-      globalPexelsBackgroundDocuments?.find((background) => background.id === id)
-        ?.imageObject;
-    const downloadBackground = () =>
-      backgroundObject
-        ? downloadBlobFromR2(backgroundObject)
-        : downloadSwiprBackgroundBlobFromR2(id);
-    const download = backgroundDownloadQueueRef.current.then(
-      downloadBackground,
-      downloadBackground,
-    );
-
-    backgroundDownloadQueueRef.current = download.then(
-      () => undefined,
-      () => undefined,
-    );
-    backgroundDownloadPromisesRef.current.set(id, download);
-
-    try {
-      const blob = await download;
-
-      backgroundBlobCacheRef.current.set(id, blob);
-      setBackgroundBlobsById((currentBlobsById) => {
-        const nextBlobsById = new Map(currentBlobsById);
-
-        nextBlobsById.set(id, blob);
-
-        return nextBlobsById;
-      });
-      setBackgrounds((currentBackgrounds) =>
-        currentBackgrounds.map((background) =>
-          background.id === id ? { ...background, blob } : background,
-        ),
+      const backgroundObject =
+        imageObject ??
+        mergedBackgroundDocuments?.find((background) => background.id === id)
+          ?.imageObject ??
+        globalPexelsPackSummaryDocuments
+          ?.flatMap((summary) => summary.covers)
+          .find((cover) => cover.backgroundId === id)?.imageObject;
+      const downloadBackground = () =>
+        backgroundObject
+          ? downloadBlobFromR2(backgroundObject)
+          : downloadSwiprBackgroundBlobFromR2(id);
+      const download = backgroundDownloadQueueRef.current.then(
+        downloadBackground,
+        downloadBackground,
       );
 
-      return blob;
-    } finally {
-      backgroundDownloadPromisesRef.current.delete(id);
-    }
-  }, [globalPexelsBackgroundDocuments, mergedBackgroundDocuments]);
+      backgroundDownloadQueueRef.current = download.then(
+        () => undefined,
+        () => undefined,
+      );
+      backgroundDownloadPromisesRef.current.set(id, download);
+
+      try {
+        const blob = await download;
+
+        backgroundBlobCacheRef.current.set(id, blob);
+        setBackgroundBlobsById((currentBlobsById) => {
+          const nextBlobsById = new Map(currentBlobsById);
+
+          nextBlobsById.set(id, blob);
+
+          return nextBlobsById;
+        });
+        setBackgrounds((currentBackgrounds) =>
+          currentBackgrounds.map((background) =>
+            background.id === id ? { ...background, blob } : background,
+          ),
+        );
+
+        return blob;
+      } finally {
+        backgroundDownloadPromisesRef.current.delete(id);
+      }
+    },
+    [globalPexelsPackSummaryDocuments, mergedBackgroundDocuments],
+  );
 
   const loadBackgroundAsset = useCallback(
     async (id: string) => {
@@ -239,7 +244,8 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
       }
 
       const blob =
-        backgroundBlobCacheRef.current.get(id) ?? (await loadBackgroundBlob(id));
+        backgroundBlobCacheRef.current.get(id) ??
+        (await loadBackgroundBlob(id));
       const backgroundAsset = createSwiprBackgroundAssetFromConvexDocument(
         backgroundDocument,
         blob,
@@ -537,11 +543,15 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
       setError(null);
 
       try {
-        const swipeDocument = allSwipeDocuments.find((swipe) => swipe.id === id);
+        const swipeDocument = allSwipeDocuments.find(
+          (swipe) => swipe.id === id,
+        );
 
         if (swipeDocument?.posterObject) {
           await deleteObjectsFromR2([swipeDocument.posterObject]);
-          swipePosterBlobCacheRef.current.delete(swipeDocument.posterObject.key);
+          swipePosterBlobCacheRef.current.delete(
+            swipeDocument.posterObject.key,
+          );
         }
 
         await removeSwipeMutation({ id });
@@ -646,13 +656,13 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   return {
     backgrounds,
     postedSwipes,
-    globalPexelsBackgrounds,
+    globalPexelsPacks,
     swipes,
     isLoading:
       isAuthLoading ||
       (shouldLoadBackgrounds && backgroundDocuments === undefined) ||
       (shouldLoadGlobalPexelsBackgrounds &&
-        globalPexelsBackgroundDocuments === undefined) ||
+        globalPexelsPackSummaryDocuments === undefined) ||
       (shouldLoadReferencedSwipeBackgrounds &&
         referencedBackgroundDocuments === undefined) ||
       (shouldLoadSwipes && swipeDocuments === undefined) ||

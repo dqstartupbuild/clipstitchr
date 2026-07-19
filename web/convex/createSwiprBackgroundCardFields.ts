@@ -1,5 +1,6 @@
 import type { Doc } from "./_generated/dataModel";
 import { getSwiprBackgroundCardSearchText } from "./getSwiprBackgroundCardSearchText";
+import { normalizeSwiprLibraryQueryKey } from "../lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 
 export type SwiprBackgroundCardFieldSource = {
   createdAt: string;
@@ -31,7 +32,9 @@ export function createSwiprBackgroundCardFields(
     description: background.description,
     searchText: getSwiprBackgroundCardSearchText(background),
     libraryQuery: background.libraryQuery,
-    libraryQueryKey: background.libraryQueryKey,
+    libraryQueryKey:
+      background.libraryQueryKey ??
+      normalizeSwiprLibraryQueryKey(background.libraryQuery),
     pexelsPhotoId: background.pexelsPhotoId,
     source: background.source,
     imageObject: background.imageObject,
