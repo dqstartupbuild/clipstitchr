@@ -1,12 +1,12 @@
 import { v } from "convex/values";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
+import { addPostBridgePostToSwipe } from "./addPostBridgePostToSwipe";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
 import { deleteSwipeCard } from "./deleteSwipeCard";
 import { getSwipeNotificationCopy } from "./getSwipeNotificationCopy";
-import { upsertPostBridgePostProductMapping } from "./postBridgePostProductMappings";
 import { rateLimiter } from "./rateLimiter";
 import { upsertSwipeCard } from "./upsertSwipeCard";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
@@ -145,6 +145,24 @@ export const get = query({
     return await ctx.db
       .query("swipes")
       .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+  },
+});
+
+export const getForProvider = query({
+  args: {
+    id: v.string(),
+    ownerId: v.string(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { id, ownerId, secret }) => {
+    assertProviderWorkerSecret(secret);
+
+    return await ctx.db
+      .query("swipes")
+      .withIndex("by_owner_id", (query) =>
+        query.eq("ownerId", ownerId).eq("id", id),
+      )
       .unique();
   },
 });
@@ -593,47 +611,20 @@ export const addPostBridgePost = mutation({
   },
   handler: async (ctx, { id, post }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const now = new Date().toISOString();
+    await addPostBridgePostToSwipe(ctx, ownerId, id, post);
+  },
+});
 
-    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
-      key: ownerId,
-      throws: true,
-    });
-
-    const swipe = await ctx.db
-      .query("swipes")
-      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
-      .unique();
-
-    if (!swipe) {
-      throw new Error("Swipe not found.");
-    }
-
-    await ctx.db.patch(swipe._id, {
-      isPosted: true,
-      postBridgePosts: [
-        ...(swipe.postBridgePosts ?? []).filter(
-          (existingPost) => existingPost.postId !== post.postId,
-        ),
-        post,
-      ],
-      postedAt: swipe.postedAt ?? now,
-      updatedAt: now,
-    });
-    const updatedSwipe = await ctx.db.get(swipe._id);
-
-    if (updatedSwipe) {
-      await Promise.all([
-        upsertPostBridgePostProductMapping(ctx, {
-          ownerId,
-          post,
-          productId: updatedSwipe.productSourceId,
-          sourceId: updatedSwipe.id,
-          sourceType: "swipe",
-        }),
-        upsertSwipeCard(ctx, updatedSwipe),
-      ]);
-    }
+export const addPostBridgePostFromProvider = mutation({
+  args: {
+    id: v.string(),
+    ownerId: v.string(),
+    post: postBridgePostReferenceValidator,
+    secret: v.string(),
+  },
+  handler: async (ctx, { id, ownerId, post, secret }) => {
+    assertProviderWorkerSecret(secret);
+    await addPostBridgePostToSwipe(ctx, ownerId, id, post);
   },
 });
 

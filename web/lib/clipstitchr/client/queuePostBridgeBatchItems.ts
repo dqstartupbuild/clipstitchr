@@ -1,7 +1,10 @@
-import { schedulePostBridgePost } from "@/lib/clipstitchr/client/schedulePostBridgePost";
+import { submitPostBridgeBatch } from "@/lib/clipstitchr/client/submitPostBridgeBatch";
+import { uploadPostBridgeBatchMediaFile } from "@/lib/clipstitchr/client/uploadPostBridgeBatchMediaFile";
+import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
 import type { PostBridgeBatchQueueItem } from "@/lib/clipstitchr/types/PostBridgeBatchQueueItem";
 import type { PostBridgePlatform } from "@/lib/clipstitchr/types/PostBridgePlatform";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
+import { shufflePostBridgeBatchEntries } from "@/lib/clipstitchr/utils/shufflePostBridgeBatchEntries";
 
 type QueuePostBridgeBatchItemsOptions = {
   captions: string[];
@@ -11,7 +14,6 @@ type QueuePostBridgeBatchItemsOptions = {
   socialAccountIds: number[];
   onCompletedCountChange: (count: number) => void;
   onProgressChange: (progress: number) => void;
-  startIndex?: number;
 };
 
 export async function queuePostBridgeBatchItems({
@@ -22,34 +24,63 @@ export async function queuePostBridgeBatchItems({
   socialAccountIds,
   onCompletedCountChange,
   onProgressChange,
-  startIndex = 0,
 }: QueuePostBridgeBatchItemsOptions) {
-  for (let index = startIndex; index < items.length; index += 1) {
-    const item = items[index];
+  const entries = shufflePostBridgeBatchEntries(
+    items.map((item, index) => ({
+      caption: captions[index] ?? "",
+      item,
+    })),
+  );
+  const preparedItems = [];
+  const temporaryObjects = [];
 
-    onCompletedCountChange(index);
-    const renderResult = await item.renderMedia({
-      musicTrack,
-      onProgress: (itemProgress) =>
-        onProgressChange((index + itemProgress * 0.8) / items.length),
-      platforms,
-    });
+  try {
+    for (let index = 0; index < entries.length; index += 1) {
+      const { caption, item } = entries[index];
 
-    if (!renderResult.mediaFiles.length) {
-      throw new Error(`Draft ${index + 1} has no media to queue.`);
+      onCompletedCountChange(index);
+      const renderResult = await item.renderMedia({
+        musicTrack,
+        onProgress: (itemProgress) =>
+          onProgressChange((index + itemProgress * 0.7) / entries.length),
+        platforms,
+      });
+
+      if (!renderResult.mediaFiles.length) {
+        throw new Error(`Draft ${index + 1} has no media to queue.`);
+      }
+
+      const mediaFiles = [];
+
+      for (const mediaFile of renderResult.mediaFiles) {
+        const preparedMedia = await uploadPostBridgeBatchMediaFile({
+          mediaFile,
+          sourceId: item.id,
+        });
+
+        mediaFiles.push(preparedMedia);
+        temporaryObjects.push(preparedMedia.sourceObject);
+      }
+
+      preparedItems.push({
+        caption,
+        hasAudio: Boolean(musicTrack) || renderResult.hasAudio,
+        sourceId: item.id,
+        sourceType: item.sourceType,
+        title: item.title,
+        mediaFiles,
+      });
+      onCompletedCountChange(index + 1);
+      onProgressChange((index + 0.9) / entries.length);
     }
 
-    await schedulePostBridgePost({
-      caption: captions[index] ?? "",
-      hasAudio: Boolean(musicTrack) || renderResult.hasAudio,
-      mediaFiles: renderResult.mediaFiles,
+    await submitPostBridgeBatch({
+      items: preparedItems,
       socialAccountIds,
-      sourceId: item.id,
-      sourceType: item.sourceType,
-      title: item.title,
-      useQueue: true,
     });
-    onCompletedCountChange(index + 1);
-    onProgressChange((index + 1) / items.length);
+    onProgressChange(1);
+  } catch (error) {
+    await deleteObjectsFromR2(temporaryObjects).catch(() => undefined);
+    throw error;
   }
 }

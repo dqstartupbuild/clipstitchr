@@ -11,7 +11,7 @@ API source reference: `https://api.post-bridge.com/reference#description/introdu
 Saved Stitches and Swipes show a `Schedule post` action in their card menu.
 Their Library sections also expose `Queue selected` while selection mode is
 active, letting users add several saved Stitches or Swipes to the Post Bridge
-queue in one sequential run.
+queue in one background batch.
 Users add their own Post Bridge API key in Account settings. The key is tested
 against Post Bridge, encrypted server-side, and stored in Convex with only the
 last four characters shown back to the browser. The Settings page's Post Bridge
@@ -34,12 +34,12 @@ date picker.
 Bulk queue opens one batch dialog for all selected items. The dialog preselects
 product-linked Post Bridge accounts when defaults exist, while the user can
 change accounts, edit each numbered caption, and use the Swipe sound controls
-before confirming once. If an item fails, completed items remain complete and
-the dialog can continue from the first unfinished item. Connected accounts are
-loaded once for the selected product. Library updates caused by completed items
-do not reset the dialog, so progress remains visible and the queue action stays
-locked until the batch genuinely completes or fails. A synchronous guard also
-blocks a second batch if the action is pressed more than once.
+before confirming once. ClipStitchr randomizes the selected posts, prepares
+their temporary media, and submits one durable provider-worker job. Once the
+dialog confirms that scheduling started, the user can leave the page while the
+worker uploads and schedules each post. Connected accounts are loaded once for
+the selected product, and a synchronous guard blocks a second submission if the
+action is pressed more than once.
 
 Stitches use the same browser export path as downloads. If the saved stitch has
 an existing rendered video, that video is used. Otherwise the browser renders
@@ -125,6 +125,23 @@ Bridge:
    and stores a local product mapping for the returned Post Bridge post ID.
 12. Captures a consent-gated PostHog server event.
 
+`POST /api/post-bridge/batches` handles bulk queue submissions:
+
+1. Confirms the user is signed in and accepts no more than 20 selected posts.
+2. Validates every saved source and temporary R2 object belongs to that user.
+3. Consumes the full batch's post-create count and upload-byte limits before
+   durable work is created.
+4. Stores the already-randomized item order in one `post-bridge-batch` provider
+   job and launches the provider worker.
+5. Returns `202` as soon as the durable job exists.
+
+The provider worker loads that snapshot, verifies the connected accounts once,
+uploads each temporary media object to Post Bridge, creates each queue post,
+and saves its returned reference onto the source Stitch or Swipe. It records
+each completed source on the provider job, so a worker retry skips completed
+items and continues in the same randomized order. Temporary R2 objects are
+deleted after their post is recorded.
+
 The Post Bridge API uses bearer-token authentication. Because each request uses
 the saved user's key, account lists, posts, analytics, media uploads, and
 scheduled posts are scoped to that user's Post Bridge account.
@@ -138,13 +155,12 @@ limit. Provider `429` retry and backoff remains a fallback.
 Manual Swipe sounds use the existing sound picker. TikTok sound search and import
 routes are separately authenticated and rate-limited before Apify and R2 work.
 
-Dashboard bulk queue is intentionally sequential. After one confirmation, each
-item uses the same browser media rendering, temporary R2 upload, Post Bridge
-media upload, and `POST /api/post-bridge/schedule` flow, then moves to the next
-item only after the previous one succeeds. A continued run skips items already
-completed in that dialog. Reactive source changes do not reload connected
-accounts during the run, which prevents unnecessary Post Bridge read requests
-and keeps account-read `429` responses from being amplified by the batch size.
+Dashboard bulk queue randomizes selected items before preparation instead of
+using the Library's newest-first order. Browser rendering and temporary R2
+uploads finish before the durable batch is accepted. Post Bridge media uploads
+and post creation then run sequentially in the provider worker, where the user
+does not need to keep the page open. Worker retries skip source IDs already
+recorded as complete and preserve the submitted random order.
 
 ## Analytics
 
@@ -200,6 +216,7 @@ posted post status counts.
 - `web/app/api/post-bridge/settings/route.ts`
 - `web/app/api/post-bridge/media/upload/route.ts`
 - `web/app/api/post-bridge/schedule/route.ts`
+- `web/app/api/post-bridge/batches/route.ts`
 - `web/app/api/post-bridge/accounts/route.ts`
 - `web/app/api/post-bridge/posts/route.ts`
 - `web/app/api/post-bridge/analytics/route.ts`
@@ -218,6 +235,8 @@ posted post status counts.
 - `web/lib/clipstitchr/utils/getLibraryBatchScheduleStatusMessage.ts`
 - `web/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia.ts`
 - `web/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia.ts`
+- `web/lib/clipstitchr/client/queuePostBridgeBatchItems.ts`
+- `web/services/provider-worker/processPostBridgeBatch.ts`
 - `web/lib/clipstitchr/server/postBridge/`
 - `web/convex/postBridgeSettings.ts`
 - `web/convex/products.ts`
@@ -230,12 +249,14 @@ posted post status counts.
 Required:
 
 - `POST_BRIDGE_API_KEY_ENCRYPTION_SECRET` encrypts user-supplied Post Bridge API
-  keys before they are stored.
+  keys before they are stored. It must also be available to the provider worker
+  so background batches can decrypt the owning user's saved key.
+- `RATE_LIMIT_API_SECRET` must be available to Next.js, Convex, and the provider
+  worker because Post Bridge provider pacing is enforced from both server
+  execution paths.
+- Production `PROVIDER_WORKER_TOOLS` must include `post-bridge`.
 
 Optional:
 
 - `POST_BRIDGE_API_BASE_URL` defaults to `https://api.post-bridge.com`.
 - `POST_BRIDGE_MAX_MEDIA_BYTES` defaults to 250 MB.
-
-Rate limiting also requires `RATE_LIMIT_API_SECRET`, which is already used by
-other protected backend routes.

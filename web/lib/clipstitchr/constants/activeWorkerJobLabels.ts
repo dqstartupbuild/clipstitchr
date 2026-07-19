@@ -4,6 +4,7 @@ export const activeWorkerJobLabels: Record<string, string> = {
   "stitchr-batch": "Stitchr Batch",
   "manual-clipr": "Clipr generation",
   "manual-swapr": "Swapr generation",
+  "post-bridge-batch": "Post scheduling",
   "stitchr-draft-finalization": "Stitch drafts",
   "stitchr-longr-export": "Stitch export",
   "swapr-finalization": "Swapr finalization",

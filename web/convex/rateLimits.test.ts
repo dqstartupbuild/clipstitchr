@@ -199,6 +199,51 @@ describe("convex rateLimits", () => {
       mutation: rateLimits.consumePostBridgeMediaUpload,
     },
     {
+      args: {
+        idempotencyKey: "batch_1",
+        itemCount: 3,
+        mediaSizeBytes: 1024.2,
+        secret: "secret",
+      },
+      expected: [
+        {
+          count: 3,
+          key: "owner_123",
+          name: "postBridgeSchedule",
+          throws: true,
+        },
+        {
+          count: 3,
+          key: "owner_123",
+          name: "postBridgeScheduleHourly",
+          throws: true,
+        },
+        {
+          count: 3,
+          key: "owner_123",
+          name: "postBridgeScheduleDaily",
+          throws: true,
+        },
+        {
+          count: 3,
+          name: "postBridgeScheduleGlobalDaily",
+          throws: true,
+        },
+        {
+          count: 1025,
+          key: "owner_123",
+          name: "postBridgeUploadBytesDaily",
+          throws: true,
+        },
+        {
+          count: 1025,
+          name: "postBridgeUploadBytesGlobalDaily",
+          throws: true,
+        },
+      ],
+      mutation: rateLimits.consumePostBridgeBatch,
+    },
+    {
       args: { secret: "secret" },
       expected: [
         {

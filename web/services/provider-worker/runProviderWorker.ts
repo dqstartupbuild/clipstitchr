@@ -33,6 +33,7 @@ import { processManualCliprDemo } from "./processManualCliprDemo";
 import { processManualSwiprDraft } from "./processManualSwiprDraft";
 import { processSwiprBackgroundGeneration } from "./processSwiprBackgroundGeneration";
 import { processSwaprPhotoExpansion } from "./processSwaprPhotoExpansion";
+import { processPostBridgeBatch } from "./processPostBridgeBatch";
 import { PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS } from "./providerWorkerClaimableProviderJobs";
 import { providerWorkerQueueApiReference } from "./providerWorkerQueueApiReference";
 import { PROVIDER_TOOLS, type ProviderTool } from "./providerWorkerTools";
@@ -42,6 +43,7 @@ import { createStitchScoreOutputText } from "@/lib/clipstitchr/server/createStit
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
 import { createQuickEditDetectorCandidates } from "@/lib/clipstitchr/server/createQuickEditDetectorCandidates";
 import { readHookLabTextBlueprints } from "@/lib/clipstitchr/server/readHookLabTextBlueprints";
+import { parsePostBridgeBatchJobInput } from "@/lib/clipstitchr/server/postBridge/parsePostBridgeBatchJobInput";
 import { createStitchScoreDetectorCandidates } from "@/lib/clipstitchr/server/createStitchScoreDetectorCandidates";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
 import { getAvatarPhotoGenerationModelId } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationModelId";
@@ -163,6 +165,7 @@ type ProviderJob = {
   inputSnapshotJson: string;
   jobType: string;
   mediaJobIds: string[];
+  outputAssetIds: string[];
   ownerId: string;
   planKeySnapshot: PlanKey;
   providerJobIds: string[];
@@ -459,7 +462,9 @@ function getConfig(): ProviderWorkerConfig {
 
   return {
     automationTools: new Set(
-      Array.from(providerTools).filter(getIsAutomationToolEnabled),
+      Array.from(providerTools)
+        .filter((tool) => tool !== "post-bridge")
+        .filter(getIsAutomationToolEnabled),
     ),
     convexUrl: getRequiredEnv("NEXT_PUBLIC_CONVEX_URL"),
     lockMs: Number(process.env.PROVIDER_WORKER_LOCK_MS || LOCK_MS),
@@ -3456,6 +3461,15 @@ async function processProviderJob({
     return;
   }
 
+  if (job.jobType === "post-bridge-batch") {
+    await processPostBridgeBatch({
+      client,
+      job,
+      providerWorkerSecret: config.providerWorkerSecret,
+    });
+    return;
+  }
+
   throw new Error(`Unsupported provider job type: ${job.jobType}.`);
 }
 
@@ -3606,6 +3620,16 @@ async function failProviderJob({
       });
     }
     return;
+  }
+
+  if (job.jobType === "post-bridge-batch") {
+    const input = parsePostBridgeBatchJobInput(job.inputSnapshotJson);
+
+    await deleteR2Objects(
+      input.items.flatMap((item) =>
+        item.mediaFiles.map(({ sourceObject }) => sourceObject.key),
+      ),
+    ).catch(() => undefined);
   }
 
   await Promise.all([

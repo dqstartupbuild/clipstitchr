@@ -17,4 +17,5 @@ export const providerJobTypeValidator = v.union(
   v.literal("swapr-photo-expansion"),
   v.literal("hook-lab-idea-analysis"),
   v.literal("hook-lab-idea-use"),
+  v.literal("post-bridge-batch"),
 );

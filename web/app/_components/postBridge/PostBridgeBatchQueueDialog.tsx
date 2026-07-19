@@ -47,7 +47,6 @@ export function PostBridgeBatchQueueDialog({
     () => accounts.filter((account) => selectedAccountIdSet.has(account.id)).map((account) => account.platform),
     [accounts, selectedAccountIdSet],
   );
-  const remainingCount = items.length - completedCount;
   const accountProductId = items[0]?.productId;
 
   useEffect(() => {
@@ -94,8 +93,6 @@ export function PostBridgeBatchQueueDialog({
 
     isQueueSubmissionLocked.current = true;
     setError(null);
-    let completedBeforeFailure = completedCount;
-
     try {
       if (!selectedAccountIds.length) {
         throw new Error("Choose at least one account.");
@@ -108,13 +105,11 @@ export function PostBridgeBatchQueueDialog({
         items,
         musicTrack: selectedMusicTrack,
         onCompletedCountChange: (count) => {
-          completedBeforeFailure = count;
           setCompletedCount(count);
         },
         onProgressChange: setProgress,
         platforms: selectedPlatforms,
         socialAccountIds: selectedAccountIds,
-        startIndex: completedCount,
       });
 
       setStatus("complete");
@@ -123,11 +118,9 @@ export function PostBridgeBatchQueueDialog({
     } catch (nextError) {
       setStatus("idle");
       const message = nextError instanceof Error ? nextError.message : "Unable to queue these posts.";
-      setError(
-        completedBeforeFailure > 0
-          ? `${message} ${completedBeforeFailure} already added. Continue to finish the rest.`
-          : message,
-      );
+      setCompletedCount(0);
+      setProgress(0);
+      setError(message);
     } finally {
       isQueueSubmissionLocked.current = false;
     }
@@ -140,7 +133,7 @@ export function PostBridgeBatchQueueDialog({
           <div>
             <p className="text-sm font-semibold text-accent-dark">{items.length} selected</p>
             <h2 id="post-bridge-batch-dialog-title" className="mt-1 text-xl font-bold text-text-primary">Add selected posts to queue</h2>
-            <p className="mt-1 text-sm font-semibold text-text-secondary">Choose once, then we’ll add each post to your queue.</p>
+            <p className="mt-1 text-sm font-semibold text-text-secondary">We’ll prepare the posts, then finish scheduling them in the background.</p>
           </div>
           <IconButton type="button" label="Close batch queue dialog" disabled={isBusy} icon={<X aria-hidden className="h-4 w-4" />} onClick={onClose} />
         </div>
@@ -151,9 +144,9 @@ export function PostBridgeBatchQueueDialog({
           </div>
           <PostBridgeBatchCaptionEditor activeIndex={activeCaptionIndex} captions={captions} disabled={isBusy} titles={items.map((item) => item.title)} onActiveIndexChange={setActiveCaptionIndex} onCaptionChange={handleCaptionChange} />
           {allowMusic ? <div className="grid gap-3"><PostBridgeSoundModePicker disabled={isBusy} value={soundMode} onChange={setSoundMode} />{soundMode === "manual" ? <div className="flex flex-wrap items-center gap-3"><MusicSelectorButton disabled={isBusy} label={musicTrack ? "Change sound" : "Add sound"} selectedTrackId={musicTrack?.id} source="swipr" onSelectTrack={setMusicTrack} />{musicTrack ? <button type="button" className="text-sm font-semibold text-text-secondary underline-offset-4 hover:text-accent hover:underline" disabled={isBusy} onClick={() => setMusicTrack(null)}>Remove sound</button> : null}</div> : null}</div> : null}
-          {status === "queueing" || status === "complete" ? <div className="grid gap-2" role="status" aria-live="polite"><p className="text-sm font-semibold text-text-secondary">{status === "complete" ? `Added ${items.length} posts to your queue.` : `Adding post ${Math.min(completedCount + 1, items.length)} of ${items.length} to your queue...`}</p><ProgressBar value={progress} /></div> : null}
+          {status === "queueing" || status === "complete" ? <div className="grid gap-2" role="status" aria-live="polite"><p className="text-sm font-semibold text-text-secondary">{status === "complete" ? `Scheduling started for ${items.length} posts. You can leave this page.` : `Preparing post ${Math.min(completedCount + 1, items.length)} of ${items.length}...`}</p><ProgressBar value={progress} /></div> : null}
           {error ? <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" role="alert">{error}</p> : null}
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="secondary" disabled={isBusy} onClick={onClose}>Cancel</Button><Button type="button" isLoading={isBusy} disabled={status === "complete" || !accounts.length || !selectedAccountIds.length} onClick={() => void handleQueue()}>{completedCount > 0 ? `Continue with ${remainingCount}` : `Add ${items.length} to queue`}</Button></div>
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="secondary" disabled={isBusy} onClick={onClose}>Cancel</Button><Button type="button" isLoading={isBusy} disabled={status === "complete" || !accounts.length || !selectedAccountIds.length} onClick={() => void handleQueue()}>Add {items.length} to queue</Button></div>
         </div>
       </div>
     </div>

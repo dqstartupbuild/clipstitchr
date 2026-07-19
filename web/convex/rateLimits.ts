@@ -269,6 +269,67 @@ export const consumePostBridgeMediaUpload = mutation({
   },
 });
 
+export const consumePostBridgeBatch = mutation({
+  args: {
+    idempotencyKey: v.string(),
+    itemCount: v.number(),
+    mediaSizeBytes: v.number(),
+    secret: v.string(),
+  },
+  handler: async (
+    ctx,
+    { idempotencyKey, itemCount, mediaSizeBytes, secret },
+  ) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const existingJob = await ctx.db
+      .query("providerJobs")
+      .withIndex("by_idempotency_key", (query) =>
+        query.eq("idempotencyKey", idempotencyKey),
+      )
+      .unique();
+
+    if (existingJob?.ownerId === ownerId) {
+      return { alreadyReserved: true };
+    }
+
+    const scheduleCount = getPositiveCount(itemCount, "Batch item count");
+    const uploadBytes = getPositiveCount(mediaSizeBytes, "Media size");
+
+    await rateLimiter.limit(ctx, "postBridgeSchedule", {
+      count: scheduleCount,
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "postBridgeScheduleHourly", {
+      count: scheduleCount,
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "postBridgeScheduleDaily", {
+      count: scheduleCount,
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "postBridgeScheduleGlobalDaily", {
+      count: scheduleCount,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "postBridgeUploadBytesDaily", {
+      count: uploadBytes,
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "postBridgeUploadBytesGlobalDaily", {
+      count: uploadBytes,
+      throws: true,
+    });
+
+    return { alreadyReserved: false };
+  },
+});
+
 export const consumePostBridgeAnalyticsSync = mutation({
   args: {
     secret: v.string(),
