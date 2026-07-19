@@ -1,8 +1,8 @@
 # Stitchr Batch
 
-Stitchr Batch is the default Stitchr tab. It lets a signed-in user queue a
-daily Stitchr batch from the Stitchr page at any time. It is separate from
-scheduled Stitchr automation.
+Stitchr Batch is the default Stitchr tab. It lets a signed-in user queue a new
+Stitchr batch from the Stitchr page whenever they need one. It is separate
+from scheduled Stitchr automation.
 
 `Batch` is the in-app mode name and implementation term. Public copy should use
 pain-led language such as "make several drafts" or "stop rebuilding the same
@@ -10,7 +10,10 @@ ad" unless it is directly explaining the UI label.
 
 ## What It Does
 
-- Queues up to 10 Stitch drafts for the user's browser-local batch date.
+- Queues 10 Stitch drafts per run when plan credits are available.
+- Can run repeatedly on the same day. Each button press creates a distinct run.
+- Reuses the best available Hook/UGC and Demo pairs after unique combinations
+  run out, so one eligible clip of each kind can fill the requested batch.
 - Works even when scheduled automation is turned off in Settings.
 - Uses its own Stitchr Batch pair history so recent Hook/UGC and Demo pairings are
   avoided when better options exist.
@@ -36,13 +39,13 @@ ad" unless it is directly explaining the UI label.
 3. The **Start from an idea** picker stays available in Batch mode. **Start
    fresh** is the default. Selecting a setup Idea in Batch mode does not switch
    the page into manual editing.
-4. The Batch panel shows the current daily limit, text style controls, and a
+4. The Batch panel shows the per-run batch size, text style controls, and a
    generation button.
 5. When the user generates a batch, the client posts to
    `/api/stitchr/batch/generate`.
 6. The API route authenticates the user, reads the selected Batch text style
-   and browser time zone, asks Convex to plan the daily Stitchr batch for that
-   local date, and schedules a delayed provider-worker fallback.
+   and browser time zone, gives the run a unique key, asks Convex to plan the
+   Stitchr batch, and schedules a delayed provider-worker fallback.
 7. The route plans hooks in the foreground when the batch needs generated text,
    then directly dispatches the provider Cloud Run job through Convex.
 8. Finished drafts appear in the user's library after the existing provider and
@@ -90,7 +93,8 @@ batch in this order:
 
 1. Prefer pairs where both clips are unused in the current batch.
 2. If needed, use pairs where one clip has not been used in the current batch.
-3. Reuse pieces only when the library does not have enough variety.
+3. Use every remaining unique pair before repeating an exact pair.
+4. Cycle through the ranked pairs until the requested batch size is filled.
 
 Each completed Batch draft updates Batch pair history with the Hook/UGC clip, Demo
 clip, batch date, and last-used time. This keeps future user-triggered batches
@@ -101,19 +105,20 @@ available.
 
 Stitchr Batch uses separate Convex rate limits from scheduled automation:
 
-- 10 Stitchr outputs per user per browser-local batch date.
+- 10 Stitchr outputs per run.
+- 100 Stitchr Batch outputs per user per browser-local date.
 - 1,000 Stitchr outputs globally per day.
 
 The browser sends its IANA time zone in the Batch API request. The API uses
 that time zone to compute the batch date, falling back to UTC only when the time
 zone is missing or invalid. The per-user planning and final-save buckets are
 keyed by owner and batch date so a late-night batch does not consume the next
-local day's Batch run.
+local day's safety allowance.
 
-The scheduled automation planner still respects the daily generation window.
-The Stitchr Batch tab does not; a signed-in user can press the batch button at
-any time until their local daily Stitchr batch has already been queued or
-completed.
+The scheduled automation planner still respects its daily generation window.
+The Stitchr Batch tab does not. A signed-in user can press the batch button
+again after a run is queued or completed, subject to plan credits and the
+separate abuse ceiling.
 
 The API route converts Convex rate-limit errors into HTTP `429` responses with
 retry timing. The current limits and verification notes are tracked in
@@ -137,8 +142,8 @@ The JSON response includes `providerDispatchStatus`:
 - `dispatched` means the direct provider dispatch call succeeded.
 - `fallback_scheduled` means direct dispatch failed but the delayed fallback
   remains queued.
-- `skipped` means Convex returned no active task IDs, such as an already
-  completed daily batch.
+- `skipped` means Convex returned no active task IDs, such as when no plan
+  credits could be reserved.
 
 ## Relevant Code
 
@@ -222,7 +227,7 @@ web/services/provider-worker/createStitchrTemplateTextOverlay.ts
 
 ## Maintenance Notes
 
-- Keep the daily limit in
+- Keep the per-run output count and daily abuse ceilings in
   `web/lib/clipstitchr/constants/stitchrBatchGenerationLimits.ts` so the
   UI, Convex planner, and rate limiter stay aligned.
 - If the Batch API route changes its rate-limit behavior, update

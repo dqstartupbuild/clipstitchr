@@ -492,7 +492,7 @@ describe("StitchrPageClient", () => {
     expect(mocks.batchPanelProps).toEqual(
       expect.objectContaining({
         backgroundColorChoice: "any",
-        dailyLimit: 10,
+        batchSize: 10,
         isDisabled: false,
         mode: "batch",
         strokeColorChoice: "any",

@@ -148,5 +148,13 @@ export function selectStitchrPairs(
     selectedDemoClipIds.add(nextPair.candidate.demoClipId);
   }
 
+  if (scoredPairs.length === 0) {
+    return selectedPairs;
+  }
+
+  while (selectedPairs.length < cappedLimit) {
+    selectedPairs.push(scoredPairs[selectedPairs.length % scoredPairs.length]);
+  }
+
   return selectedPairs;
 }

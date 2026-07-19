@@ -102,6 +102,7 @@ describe("enqueueWorkerQueueEntry inherited slots", () => {
     expect(mocks.validateWorkerQueueUsageReservations).toHaveBeenCalledWith(
       ctx,
       {
+        handoffGenerationSlotId: undefined,
         now,
         ownerId: existing.ownerId,
         queueEntryId: "provider:provider_job:provider_job_1",

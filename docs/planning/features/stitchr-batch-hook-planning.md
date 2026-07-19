@@ -117,9 +117,10 @@ preferences remain available from the same page.
 - Worker fallback only runs for tasks without a usable saved plan.
 - Idea-recipe and legacy-Template batches do not run or rate-limit the hook
   planner.
-- A repeat request for an already-running daily batch does not create a second
-  batch. It returns the active task IDs, relaunches the provider worker for
-  queued/text tasks, and relaunches the media worker for media-stage tasks.
+- A retry carrying the same run key does not create a second batch. It returns
+  the active task IDs, relaunches the provider worker for queued/text tasks,
+  and relaunches the media worker for media-stage tasks. A new button press
+  receives a new run key and can create another batch on the same day.
 - A task marked completed without an output stitch ID is treated as inconsistent,
   repaired back to provider work, and relaunched instead of blocking the day as
   completed.

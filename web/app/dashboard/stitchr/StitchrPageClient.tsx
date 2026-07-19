@@ -15,7 +15,7 @@ import { StitchrLongrTimelineStrip } from "@/app/_components/stitchr/StitchrLong
 import { StitchrSocialCaptionPanel } from "@/app/_components/stitchr/StitchrSocialCaptionPanel";
 import { StitchTemplatePicker } from "@/app/_components/stitchr/StitchTemplatePicker";
 import { generateStitchrBatch } from "@/lib/clipstitchr/client/generateStitchrBatch";
-import { STITCHR_BATCH_DAILY_LIMIT } from "@/lib/clipstitchr/constants/stitchrBatchGenerationLimits";
+import { STITCHR_BATCH_OUTPUT_COUNT } from "@/lib/clipstitchr/constants/stitchrBatchGenerationLimits";
 import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
 import { defaultAutomationStitchrColorChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
@@ -1394,7 +1394,7 @@ export function StitchrPageClient() {
           return;
         }
 
-        setBatchMessage("No Stitch drafts were queued today.");
+        setBatchMessage("No Stitch drafts were queued.");
       })
       .catch((error) => {
         setBatchMessage(
@@ -1963,7 +1963,7 @@ export function StitchrPageClient() {
         {hasStitchrInputs && mode === "batch" ? (
           <StitchrBatchPanel
             backgroundColorChoice={batchTextBackgroundColorChoice}
-            dailyLimit={STITCHR_BATCH_DAILY_LIMIT}
+            batchSize={STITCHR_BATCH_OUTPUT_COUNT}
             hookPlans={visibleBatchHookPlans}
             isDisabled={isGeneratingBatch}
             isGenerating={isGeneratingBatch}

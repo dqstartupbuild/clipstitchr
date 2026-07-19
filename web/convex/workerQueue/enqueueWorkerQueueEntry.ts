@@ -57,6 +57,10 @@ export async function enqueueWorkerQueueEntry(
 
   if (linkedUsageReservationIds.length > 0) {
     await validateWorkerQueueUsageReservations(ctx, {
+      handoffGenerationSlotId:
+        args.sourceKind === "media_job" && args.worker === "media"
+          ? inheritedSlot?.slotId
+          : undefined,
       now: args.now,
       ownerId: args.ownerId,
       queueEntryId,

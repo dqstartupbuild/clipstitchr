@@ -19,7 +19,7 @@ import { getStitchRecipeByIdeaOrTemplate } from "./getStitchRecipeByIdeaOrTempla
 import { getHookLabPromptBlueprints } from "./hookLabIdeas/getHookLabPromptBlueprints";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
-import { STITCHR_BATCH_DAILY_LIMIT } from "../lib/clipstitchr/constants/stitchrBatchGenerationLimits";
+import { STITCHR_BATCH_OUTPUT_COUNT } from "../lib/clipstitchr/constants/stitchrBatchGenerationLimits";
 import { TEXT_OVERLAY_STYLES } from "../lib/clipstitchr/constants/textOverlayStyles";
 import { getStitchrBatchRateLimitKey } from "../lib/clipstitchr/server/stitchr/getStitchrBatchRateLimitKey";
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
@@ -31,17 +31,12 @@ import { tryReserveCreationCreditsForAutomation } from "./usage/tryReserveCreati
 import { enqueueWorkerQueueEntry } from "./workerQueue/enqueueWorkerQueueEntry";
 import { getGenerationRequiredForAutomationTask } from "./workerQueue/getGenerationRequiredForAutomationTask";
 
-const STITCHR_BATCH_EXISTING_TASK_SCAN_LIMIT = STITCHR_BATCH_DAILY_LIMIT + 20;
+const STITCHR_BATCH_EXISTING_TASK_SCAN_LIMIT = STITCHR_BATCH_OUTPUT_COUNT + 20;
 const STITCHR_BATCH_HISTORY_SCAN_LIMIT = 1000;
 const STITCHR_BATCH_SOURCE_CLIP_SCAN_LIMIT = 240;
 
-function createTaskId(
-  ownerId: string,
-  batchDate: string,
-  index: number,
-  productId: string,
-) {
-  return `stitchr-batch:${ownerId}:${productId}:${batchDate}:${index}`;
+function createTaskId(runId: string, index: number) {
+  return `${runId}:${index}`;
 }
 
 function createDefaultTrimRange(duration: number) {
@@ -140,6 +135,7 @@ export const plan = mutation({
     secret: v.string(),
     ownerId: v.string(),
     batchDate: v.string(),
+    runKey: v.string(),
     now: v.string(),
     productId: v.string(),
     providerLaunchDelayMs: v.optional(v.number()),
@@ -158,6 +154,7 @@ export const plan = mutation({
       secret,
       ownerId,
       batchDate,
+      runKey,
       now,
       productId,
       providerLaunchDelayMs,
@@ -183,7 +180,12 @@ export const plan = mutation({
       product.id,
     );
 
-    const runId = createStitchrBatchRunId(ownerId, batchDate, product.id);
+    const runId = createStitchrBatchRunId(
+      ownerId,
+      batchDate,
+      product.id,
+      runKey,
+    );
     const existingTasks = await ctx.db
       .query("automationTasks")
       .withIndex("by_run", (q) => q.eq("runId", runId))
@@ -293,8 +295,8 @@ export const plan = mutation({
         hookPlanningTaskIds: status === "running" ? hookPlanningTaskIds : [],
         message:
           status === "running"
-            ? "Today's Stitchr batch is already running, so I nudged it to keep going."
-            : `Today's Stitchr batch is already ${status}.`,
+            ? "This Stitchr batch is already running, so I nudged it to keep going."
+            : `This Stitchr batch is already ${status}.`,
       };
     }
 
@@ -399,8 +401,8 @@ export const plan = mutation({
     );
     const selectedPairs = selectStitchrPairs(
       candidates,
-      STITCHR_BATCH_DAILY_LIMIT,
-      `${ownerId}:${product.id}:${batchDate}:stitchr-batch`,
+      STITCHR_BATCH_OUTPUT_COUNT,
+      `${ownerId}:${product.id}:${batchDate}:${runKey}:stitchr-batch`,
       Date.parse(now),
     );
 
@@ -453,7 +455,7 @@ export const plan = mutation({
         continue;
       }
 
-      const taskId = createTaskId(ownerId, batchDate, index + 1, product.id);
+      const taskId = createTaskId(runId, index + 1);
       const idempotencyKey = `${taskId}:${ugc.id}:${demo.id}`;
       const existingTask = await ctx.db
         .query("automationTasks")
@@ -484,7 +486,7 @@ export const plan = mutation({
         templateTextOverlay?.styleId ??
         resolveAutomationStitchrTextStyleId(
           selectedStitchrTextStyleChoice,
-          `${ownerId}:${product.id}:${batchDate}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}`,
+          `${ownerId}:${product.id}:${batchDate}:${runKey}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}`,
         );
       const stitchrTextStyle = TEXT_OVERLAY_STYLES.find(
         (style) => style.id === stitchrTextStyleId,
@@ -493,14 +495,14 @@ export const plan = mutation({
         templateTextOverlay?.color ??
         resolveAutomationStitchrColor(
           selectedStitchrTextColorChoice,
-          `${ownerId}:${product.id}:${batchDate}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:text`,
+          `${ownerId}:${product.id}:${batchDate}:${runKey}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:text`,
         );
       const stitchrTextBackgroundColor =
         templateTextOverlay?.backgroundColor ??
         (stitchrTextStyle?.backgroundColor
           ? resolveAutomationStitchrColor(
               selectedStitchrTextBackgroundColorChoice,
-              `${ownerId}:${product.id}:${batchDate}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:background`,
+              `${ownerId}:${product.id}:${batchDate}:${runKey}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:background`,
             )
           : undefined);
       const stitchrTextStrokeColor =
@@ -508,7 +510,7 @@ export const plan = mutation({
         (stitchrTextStyle?.strokeColor
           ? resolveAutomationStitchrColor(
               selectedStitchrTextStrokeColorChoice,
-              `${ownerId}:${product.id}:${batchDate}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:stroke`,
+              `${ownerId}:${product.id}:${batchDate}:${runKey}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:stroke`,
             )
           : undefined);
       const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(

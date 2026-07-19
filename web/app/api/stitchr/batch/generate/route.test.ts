@@ -190,6 +190,7 @@ describe("POST /api/stitchr/batch/generate", () => {
         secret: "automation-secret",
         ownerId: "user_123",
         providerLaunchDelayMs: 60000,
+        runKey: expect.any(String),
       }),
     );
     expect(mocks.convex.action).toHaveBeenCalledWith(
@@ -206,7 +207,7 @@ describe("POST /api/stitchr/batch/generate", () => {
       if (name === api.stitchrBatch.plan) {
         return Promise.resolve({
           hookPlanningTaskIds: [],
-          message: "Today's Stitchr batch is already completed.",
+          message: "This Stitchr batch is already completed.",
           runId: "stitchr-batch:user_123:2026-06-17",
           status: "completed",
           taskIds: [],

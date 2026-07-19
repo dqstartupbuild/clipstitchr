@@ -85,7 +85,14 @@ function createCtx(resultsByTable: Record<string, QueryResult[]> = {}) {
   return {
     db: {
       get: vi.fn(async (_id: string) => createTask({ _id })),
-      insert: vi.fn(async () => "inserted_doc"),
+      insert: vi.fn(
+        async (table: string, value: unknown) => {
+          void table;
+          void value;
+
+          return "inserted_doc";
+        },
+      ),
       patch: vi.fn(async () => undefined),
       query: vi.fn((table: string) => {
         const queue = queues.get(table);
@@ -185,6 +192,7 @@ async function planBatch(
     now,
     ownerId: "user_123",
     productId: "product_1",
+    runKey: "run_1",
     ...overrides,
     secret: "automation-secret",
   });
@@ -306,7 +314,7 @@ describe("stitchrBatch.plan existing runs", () => {
     expect(mocks.requestWorkerLaunch).not.toHaveBeenCalled();
   });
 
-  it("keys the user quota by the local batch date when planning a new run", async () => {
+  it("fills a new run and keys its user quota by the local batch date", async () => {
     const product = createProduct();
     const ctx = createCtx({
       automationTasks: [{ take: [] }, { unique: null }],
@@ -325,6 +333,7 @@ describe("stitchrBatch.plan existing runs", () => {
       ownerId: "user_123",
       productId: "product_1",
       providerLaunchDelayMs: 60000,
+      runKey: "run_2",
       secret: "automation-secret",
     });
 
@@ -332,11 +341,14 @@ describe("stitchrBatch.plan existing runs", () => {
       expect.anything(),
       "stitchrBatchDaily",
       expect.objectContaining({
-        count: 1,
+        count: 10,
         key: "user_123:2026-06-22",
         throws: true,
       }),
     );
+    expect(
+      ctx.db.insert.mock.calls.filter(([table]) => table === "automationTasks"),
+    ).toHaveLength(10);
     expect(mocks.requestWorkerLaunch).toHaveBeenCalledWith(
       expect.objectContaining({
         delayMs: 60000,

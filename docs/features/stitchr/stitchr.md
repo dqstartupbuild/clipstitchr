@@ -51,13 +51,14 @@ attention first, show the product immediately after.
 2. Normalize every video to 9:16 before it enters the library.
 3. Save generated posters so clips are recognizable at a glance.
 4. Store non-destructive default trims on each clip.
-5. Stitchr opens on the Batch tab by default. Batch mode queues the signed-in
-   user's daily Stitchr batch from the Stitchr page at any time, creating up to
-   10 editable Stitch drafts through the provider and media workers.
+5. Stitchr opens on the Batch tab by default. Batch mode queues a new run from
+   the Stitchr page at any time, creating 10 editable Stitch drafts through the
+   provider and media workers. A user can run it repeatedly on the same day.
 6. Batch mode uses its own Stitchr Batch pair history when choosing Hook/UGC and Demo
    pairs. It prefers unused or older pairs, tracks when each pair was last used,
    and spreads a batch across different Hook/UGC and Demo clips before reusing
-   pieces.
+   pieces. When unique pairs run out, it repeats ranked pairs until the batch
+   is full.
 7. Switch to Normal mode to select up to 20 Hook/UGC clips and one demo clip inside
    Stitchr. Hook/UGC and demo selection both use the active product, so clips
    from another product stay out of the picker. When upload analysis has scored

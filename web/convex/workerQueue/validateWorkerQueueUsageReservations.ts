@@ -3,6 +3,7 @@ import type { MutationCtx } from "../_generated/server";
 export async function validateWorkerQueueUsageReservations(
   ctx: MutationCtx,
   args: {
+    handoffGenerationSlotId?: string;
     now: string;
     ownerId: string;
     queueEntryId: string;
@@ -16,6 +17,23 @@ export async function validateWorkerQueueUsageReservations(
         query.eq("reservationId", reservationId),
       )
       .unique();
+    const linkedQueueEntry =
+      reservation?.workerQueueEntryId &&
+      reservation.workerQueueEntryId !== args.queueEntryId &&
+      args.handoffGenerationSlotId
+        ? await ctx.db
+            .query("workerQueueEntries")
+            .withIndex("by_queue_entry", (query) =>
+              query.eq("queueEntryId", reservation.workerQueueEntryId!),
+            )
+            .unique()
+        : null;
+    const isProviderToMediaHandoff =
+      linkedQueueEntry?.ownerId === args.ownerId &&
+      linkedQueueEntry.worker === "provider" &&
+      linkedQueueEntry.generationSlotId === args.handoffGenerationSlotId &&
+      (linkedQueueEntry.status === "running" ||
+        linkedQueueEntry.status === "completed");
 
     if (
       !reservation ||
@@ -23,7 +41,8 @@ export async function validateWorkerQueueUsageReservations(
       reservation.state !== "reserved" ||
       reservation.reservationKind === "browser" ||
       (reservation.workerQueueEntryId !== undefined &&
-        reservation.workerQueueEntryId !== args.queueEntryId) ||
+        reservation.workerQueueEntryId !== args.queueEntryId &&
+        !isProviderToMediaHandoff) ||
       (reservation.workerQueueEntryId === undefined &&
         reservation.workerQueueLinkedAt !== undefined)
     ) {
@@ -33,7 +52,8 @@ export async function validateWorkerQueueUsageReservations(
     if (
       reservation.reservationKind === undefined ||
       reservation.workerQueueLinkedAt === undefined ||
-      reservation.workerQueueEntryId === undefined
+      reservation.workerQueueEntryId === undefined ||
+      isProviderToMediaHandoff
     ) {
       await ctx.db.patch(reservation._id, {
         reservationKind: "worker",

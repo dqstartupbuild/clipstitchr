@@ -174,12 +174,14 @@ export async function POST(request?: Request) {
     }
 
     const batchDate = getStitchrBatchDate(now, input.timeZone);
+    const runKey = crypto.randomUUID();
     const result = (await convex.mutation(api.stitchrBatch.plan, {
       secret: getAutomationWorkerSecret(),
       ownerId: userId,
       batchDate,
       now,
       productId,
+      runKey,
       providerLaunchDelayMs: stitchrBatchProviderFallbackLaunchDelayMs,
       ...(input.stitchrTextBackgroundColorChoice
         ? {

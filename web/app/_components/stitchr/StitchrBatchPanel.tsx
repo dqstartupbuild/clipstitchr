@@ -15,7 +15,7 @@ import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 
 type StitchrBatchPanelProps = {
   backgroundColorChoice: AutomationStitchrColorChoice;
-  dailyLimit: number;
+  batchSize: number;
   description?: string;
   generateButtonLabel?: string;
   hookPlans?: StitchrHookPlan[];
@@ -43,7 +43,7 @@ type StitchrBatchPanelProps = {
 
 export function StitchrBatchPanel({
   backgroundColorChoice,
-  dailyLimit,
+  batchSize,
   description,
   generateButtonLabel,
   hookPlans = [],
@@ -79,7 +79,7 @@ export function StitchrBatchPanel({
             </h2>
             <p className="mt-1 max-w-2xl text-sm text-text-secondary">
               {description ??
-                `Creates up to ${dailyLimit} fresh Stitches from Hook/UGC and demo clips.`}
+                `Creates ${batchSize} fresh Stitches. If you have fewer clips, Stitchr reuses them to fill the batch.`}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -99,7 +99,7 @@ export function StitchrBatchPanel({
               icon={<Scissors aria-hidden className="h-4 w-4" />}
               onClick={onGenerate}
             >
-              {generateButtonLabel ?? `Generate ${dailyLimit} Stitches`}
+              {generateButtonLabel ?? `Generate ${batchSize} Stitches`}
             </Button>
           </div>
         </div>

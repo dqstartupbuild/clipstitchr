@@ -553,6 +553,13 @@ reservation. Convex transaction serialization closes both race orders: a
 cancel that wins first makes enqueue reject the released reservation, while an
 enqueue that wins first makes public cancellation reject the queue-linked row.
 
+The provider-to-media transition is the only queue-ownership transfer. Convex
+permits it only when the prior queue is a provider queue for the same owner and
+the new media queue inherits that provider queue's exact active generation
+slot. The reservation linkage moves to the media queue atomically with enqueue,
+so finalization failure can release usage while unrelated queues still fail
+closed.
+
 Browser-only slot release also requires the server-issued `browser:`
 idempotency prefix and rejects worker-queue slot provenance. A client cannot
 release provider or media capacity by guessing a slot ID.

@@ -4,12 +4,21 @@ import { validateWorkerQueueUsageReservations } from "./validateWorkerQueueUsage
 function createContext(reservation: Record<string, unknown>) {
   const indexQuery = { eq: vi.fn() };
   indexQuery.eq.mockReturnValue(indexQuery);
-  const query = {
+  const reservationQuery = {
     unique: vi.fn(async () => reservation),
     withIndex: vi.fn(
       (_name: string, applyIndex: (value: typeof indexQuery) => unknown) => {
         applyIndex(indexQuery);
-        return query;
+        return reservationQuery;
+      },
+    ),
+  };
+  const queueEntryQuery = {
+    unique: vi.fn(async () => null),
+    withIndex: vi.fn(
+      (_name: string, applyIndex: (value: typeof indexQuery) => unknown) => {
+        applyIndex(indexQuery);
+        return queueEntryQuery;
       },
     ),
   };
@@ -17,8 +26,11 @@ function createContext(reservation: Record<string, unknown>) {
   return {
     db: {
       patch: vi.fn(),
-      query: vi.fn(() => query),
+      query: vi.fn((table: string) =>
+        table === "usageReservations" ? reservationQuery : queueEntryQuery,
+      ),
     },
+    queueEntryQuery,
   };
 }
 
@@ -66,6 +78,70 @@ describe("validateWorkerQueueUsageReservations", () => {
       reservationIds: ["reservation_1"],
     });
 
+    expect(ctx.db.patch).not.toHaveBeenCalled();
+  });
+
+  it("transfers a reservation during its provider-to-media handoff", async () => {
+    const providerQueueEntryId = "provider:provider_job:provider_job_1";
+    const mediaQueueEntryId = "media:media_job:media_job_1";
+    const generationSlotId = "generation:provider:provider_job_1";
+    const ctx = createContext({
+      _id: "reservation_doc_1",
+      ownerId: "owner_1",
+      reservationKind: "worker",
+      state: "reserved",
+      workerQueueEntryId: providerQueueEntryId,
+      workerQueueLinkedAt: now,
+    });
+    ctx.queueEntryQuery.unique.mockResolvedValue({
+      generationSlotId,
+      ownerId: "owner_1",
+      queueEntryId: providerQueueEntryId,
+      status: "running",
+      worker: "provider",
+    });
+
+    await validateWorkerQueueUsageReservations(ctx as never, {
+      handoffGenerationSlotId: generationSlotId,
+      now,
+      ownerId: "owner_1",
+      queueEntryId: mediaQueueEntryId,
+      reservationIds: ["reservation_1"],
+    });
+
+    expect(ctx.db.patch).toHaveBeenCalledWith("reservation_doc_1", {
+      reservationKind: "worker",
+      updatedAt: now,
+      workerQueueEntryId: mediaQueueEntryId,
+      workerQueueLinkedAt: now,
+    });
+  });
+
+  it("rejects a handoff from a provider queue using another slot", async () => {
+    const ctx = createContext({
+      _id: "reservation_doc_1",
+      ownerId: "owner_1",
+      reservationKind: "worker",
+      state: "reserved",
+      workerQueueEntryId: "provider:provider_job:provider_job_1",
+      workerQueueLinkedAt: now,
+    });
+    ctx.queueEntryQuery.unique.mockResolvedValue({
+      generationSlotId: "generation:provider:other_job",
+      ownerId: "owner_1",
+      status: "running",
+      worker: "provider",
+    });
+
+    await expect(
+      validateWorkerQueueUsageReservations(ctx as never, {
+        handoffGenerationSlotId: "generation:provider:provider_job_1",
+        now,
+        ownerId: "owner_1",
+        queueEntryId: "media:media_job:media_job_1",
+        reservationIds: ["reservation_1"],
+      }),
+    ).rejects.toThrow("usage reservation is invalid");
     expect(ctx.db.patch).not.toHaveBeenCalled();
   });
 

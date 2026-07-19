@@ -91,4 +91,22 @@ describe("automation Stitchr pair scoring", () => {
     expect(ugcIds).toHaveLength(2);
     expect(demoIds).toHaveLength(2);
   });
+
+  it("fills the requested batch by reusing the best available pairs", () => {
+    const pairs = selectStitchrPairs(
+      [candidate({ ugcClipId: "ugc_1", demoClipId: "demo_1" })],
+      10,
+      "owner_1:2026-05-31:stitchr",
+      nowMs,
+    );
+
+    expect(pairs).toHaveLength(10);
+    expect(
+      pairs.every(
+        (pair) =>
+          pair.candidate.ugcClipId === "ugc_1" &&
+          pair.candidate.demoClipId === "demo_1",
+      ),
+    ).toBe(true);
+  });
 });

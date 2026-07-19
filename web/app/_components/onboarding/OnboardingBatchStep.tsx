@@ -6,7 +6,7 @@ import { Panel } from "@/app/_components/ui/Panel";
 import { OnboardingStepHeader } from "@/app/_components/onboarding/OnboardingStepHeader";
 import { defaultAutomationStitchrColorChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
-import { STITCHR_BATCH_DAILY_LIMIT } from "@/lib/clipstitchr/constants/stitchrBatchGenerationLimits";
+import { STITCHR_BATCH_OUTPUT_COUNT } from "@/lib/clipstitchr/constants/stitchrBatchGenerationLimits";
 import type { GenerateStitchrBatchOptions } from "@/lib/clipstitchr/client/generateStitchrBatch";
 import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
@@ -67,7 +67,7 @@ export function OnboardingBatchStep({
       </Panel>
       <StitchrBatchPanel
         backgroundColorChoice={backgroundColorChoice}
-        dailyLimit={STITCHR_BATCH_DAILY_LIMIT}
+        batchSize={STITCHR_BATCH_OUTPUT_COUNT}
         description="Creates a batch of finished stitches from the clips you just added."
         generateButtonLabel="Create batch"
         isDisabled={isDisabled}
