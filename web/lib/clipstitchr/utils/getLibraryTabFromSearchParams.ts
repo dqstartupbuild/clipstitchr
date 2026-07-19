@@ -13,7 +13,6 @@ export function getLibraryTabFromSearchParams(
     case "pexels":
     case "stitches":
     case "avatars":
-    case "templates":
       return tab;
     case "all":
     case "clips":

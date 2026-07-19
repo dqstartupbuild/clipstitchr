@@ -10,8 +10,6 @@ import { getAutomationGenerationCount } from "../lib/clipstitchr/utils/getAutoma
 import { getAutomationCliprGenerationMode } from "../lib/clipstitchr/utils/getAutomationCliprGenerationMode";
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
-import { normalizeAutomationStitchrTemplateAllocations } from "../lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations";
-import { getStitchRecipeByIdeaOrTemplate } from "./getStitchRecipeByIdeaOrTemplate";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
 import { getSwiprCallToActionStyle } from "../lib/clipstitchr/utils/getSwiprCallToActionStyle";
 import { normalizeSwiprCreativeContext } from "../lib/clipstitchr/utils/normalizeSwiprCreativeContext";
@@ -20,7 +18,6 @@ import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForP
 import { rateLimiter } from "./rateLimiter";
 import { automationGenerationCountValidator } from "./validators/automationGenerationCount";
 import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
-import { automationStitchrTemplateAllocationValidator } from "./validators/automationStitchrTemplateAllocation";
 import { automationStitchrTextStyleChoiceValidator } from "./validators/automationStitchrTextStyleChoice";
 import { automationToolValidator } from "./validators/automationTool";
 import { automationCliprGenerationModeValidator } from "./validators/automationCliprGenerationMode";
@@ -70,11 +67,6 @@ export const get = query({
           stitchrTextStrokeColorChoice: getAutomationStitchrColorChoice(
             preferences.stitchrTextStrokeColorChoice,
           ),
-          stitchrTemplateAllocations:
-            normalizeAutomationStitchrTemplateAllocations(
-              preferences.stitchrTemplateAllocations,
-              preferences.stitchrGenerationCount,
-            ),
           swiprGenerationCount: getAutomationGenerationCount(
             preferences.swiprGenerationCount,
           ),
@@ -118,9 +110,6 @@ export const save = mutation({
     stitchrTextColorChoice: v.optional(v.string()),
     stitchrTextBackgroundColorChoice: v.optional(v.string()),
     stitchrTextStrokeColorChoice: v.optional(v.string()),
-    stitchrTemplateAllocations: v.optional(
-      v.array(automationStitchrTemplateAllocationValidator),
-    ),
     swiprGenerationCount: v.optional(automationGenerationCountValidator),
     swiprCallToActionStyle: v.optional(swiprCallToActionStyleValidator),
     swiprCreativeContext: v.optional(v.string()),
@@ -170,43 +159,6 @@ export const save = mutation({
     const stitchrGenerationCount = getAutomationGenerationCount(
       args.stitchrGenerationCount ?? defaultAutomationGenerationCount,
     );
-    const requestedStitchrTemplateAllocations =
-      normalizeAutomationStitchrTemplateAllocations(
-        args.stitchrTemplateAllocations,
-        stitchrGenerationCount,
-      );
-    const requestedTemplateIds = new Set(
-      requestedStitchrTemplateAllocations.map(
-        (allocation) => allocation.templateId,
-      ),
-    );
-    const ownedStitchTemplateIds = requestedTemplateIds.size
-      ? new Set<string>()
-      : undefined;
-
-    if (ownedStitchTemplateIds) {
-      for (const templateId of requestedTemplateIds) {
-        const template = await getStitchRecipeByIdeaOrTemplate(
-          ctx,
-          ownerId,
-          templateId,
-        );
-
-        if (template) {
-          ownedStitchTemplateIds.add(template.id);
-        }
-      }
-    }
-
-    if (
-      ownedStitchTemplateIds &&
-      [...requestedTemplateIds].some(
-        (templateId) => !ownedStitchTemplateIds.has(templateId),
-      )
-    ) {
-      throw new Error("Choose templates from your account.");
-    }
-
     const preferences = {
       ownerId,
       productId: args.productId,
@@ -228,11 +180,6 @@ export const save = mutation({
       stitchrTextStrokeColorChoice: getAutomationStitchrColorChoice(
         args.stitchrTextStrokeColorChoice ??
           defaultAutomationStitchrColorChoice,
-      ),
-      stitchrTemplateAllocations: normalizeAutomationStitchrTemplateAllocations(
-        requestedStitchrTemplateAllocations,
-        stitchrGenerationCount,
-        ownedStitchTemplateIds,
       ),
       swiprGenerationCount: getAutomationGenerationCount(
         args.swiprGenerationCount ?? defaultAutomationGenerationCount,

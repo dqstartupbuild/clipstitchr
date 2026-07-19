@@ -217,7 +217,6 @@ describe("stitchrBatch.plan existing runs", () => {
 
     expect(result).toEqual(
       expect.objectContaining({
-        hookPlanningTaskIds: ["task_1"],
         status: "running",
         taskIds: ["task_1"],
       }),
@@ -243,7 +242,6 @@ describe("stitchrBatch.plan existing runs", () => {
 
     expect(result).toEqual(
       expect.objectContaining({
-        hookPlanningTaskIds: [],
         status: "running",
         taskIds: ["task_2"],
       }),
@@ -269,7 +267,6 @@ describe("stitchrBatch.plan existing runs", () => {
 
     expect(result).toEqual(
       expect.objectContaining({
-        hookPlanningTaskIds: ["task_3"],
         status: "running",
         taskIds: ["task_3"],
       }),
@@ -306,7 +303,6 @@ describe("stitchrBatch.plan existing runs", () => {
 
     expect(result).toEqual(
       expect.objectContaining({
-        hookPlanningTaskIds: [],
         status: "completed",
         taskIds: [],
       }),

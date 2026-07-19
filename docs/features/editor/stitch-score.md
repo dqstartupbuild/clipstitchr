@@ -24,8 +24,8 @@ reviews the saved stitch and returns:
 
 The score is guidance, not a performance guarantee. It helps the user decide
 what to trim, cut, crop, or use first before they spend time on the wrong fix.
-Score analysis does not suggest new text overlays. Hook Lab owns hook and
-overlay writing so generated copy can keep learning from user feedback.
+Score analysis does not suggest new text overlays. Stitchr text generation is a
+separate action.
 
 ## Behavior
 

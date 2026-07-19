@@ -20,11 +20,6 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("@/convex/_generated/api", () => ({
   api: {
-    hookLabIdeas: {
-      listPromptMemory: {
-        listPromptMemory: "hookLabIdeas.listPromptMemory",
-      },
-    },
     products: {
       get: "products.get",
     },
@@ -86,22 +81,13 @@ describe("POST /api/clipr/text", () => {
     vi.clearAllMocks();
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex-token");
-    mocks.convex.query.mockImplementation(async (reference) =>
-      reference === "hookLabIdeas.listPromptMemory" ? [] : createProduct(),
-    );
+    mocks.convex.query.mockResolvedValue(createProduct());
     mocks.convex.mutation.mockResolvedValue(null);
     mocks.createCliprTextGeneration.mockResolvedValue({
       caption: "This is where the launch changes",
       description: "Long post description",
       filledHook: "Stop wasting launch time",
       hashtags: ["#launchkit", "#ugc", "#demo"],
-      hookVariants: [
-        {
-          angle: "Pain callout",
-          reason: "Matches the creator reaction.",
-          text: "Stop wasting launch time",
-        },
-      ],
       overlayText: "Launch faster",
       script: "Full script",
       slides: [{ text: "Slide one" }],
@@ -148,13 +134,6 @@ describe("POST /api/clipr/text", () => {
       description: "Long post description",
       hashtags: ["#launchkit", "#ugc", "#demo"],
       hook: "Stop wasting launch time",
-      hookVariants: [
-        {
-          angle: "Pain callout",
-          reason: "Matches the creator reaction.",
-          text: "Stop wasting launch time",
-        },
-      ],
       overlayText: "Launch faster",
       script: "Full script",
       slides: [{ text: "Slide one" }],

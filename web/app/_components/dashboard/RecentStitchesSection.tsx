@@ -15,14 +15,12 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 
 type RecentStitchesSectionProps = {
   demoClips: VideoClipMetadata[];
-  savingIdeaStitchId?: string | null;
   stitches: Stitch[];
   onDelete: (id: string) => void | Promise<void>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onPostBridgeScheduled?: () => void | Promise<void>;
-  onSaveIdea?: (stitch: Stitch) => void | Promise<unknown>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
@@ -61,14 +59,12 @@ type RecentStitchesSectionProps = {
 
 export function RecentStitchesSection({
   demoClips,
-  savingIdeaStitchId = null,
   stitches,
   onDelete,
   onLoadClip,
   onLoadPoster,
   onLoadVideo,
   onPostBridgeScheduled,
-  onSaveIdea,
   onScore,
   onApplyQuickEdit,
   onResetQuickEdit,
@@ -101,13 +97,11 @@ export function RecentStitchesSection({
               key={stitch.id}
               stitch={stitch}
               demoClips={demoClips}
-              isSavingIdea={savingIdeaStitchId === stitch.id}
               onDelete={onDelete}
               onLoadClip={onLoadClip}
               onLoadPoster={onLoadPoster}
               onLoadVideo={onLoadVideo}
               onPostBridgeScheduled={onPostBridgeScheduled}
-              onSaveIdea={onSaveIdea}
               onScore={onScore}
               onApplyQuickEdit={onApplyQuickEdit}
               onResetQuickEdit={onResetQuickEdit}
@@ -125,7 +119,7 @@ export function RecentStitchesSection({
       ) : (
         <DashboardEmptyState
           title="No Stitches yet"
-          description="Create your first Stitch after you have at least one Hook/UGC clip and one product demo."
+          description="Create your first Stitch after you have at least one UGC clip and one product demo."
         />
       )}
     </section>

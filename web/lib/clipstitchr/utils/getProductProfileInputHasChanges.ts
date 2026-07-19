@@ -1,7 +1,6 @@
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
 import { createProductProfileInputFromProduct } from "@/lib/clipstitchr/utils/createProductProfileInputFromProduct";
-import { normalizeProductHookExamples } from "@/lib/clipstitchr/utils/normalizeProductHookExamples";
 import { normalizeProductPainPoints } from "@/lib/clipstitchr/utils/normalizeProductPainPoints";
 import { normalizeProductProfileOptionalText } from "@/lib/clipstitchr/utils/normalizeProductProfileOptionalText";
 
@@ -29,16 +28,6 @@ export function getProductProfileInputHasChanges({
     normalizeProductProfileOptionalText(input.preferredCliprHookStyleKey) !==
       normalizeProductProfileOptionalText(
         currentInput.preferredCliprHookStyleKey,
-      ) ||
-    normalizeProductHookExamples(input.winningHookExamples).join("\n") !==
-      normalizeProductHookExamples(currentInput.winningHookExamples).join("\n") ||
-    normalizeProductHookExamples(input.rejectedHookExamples).join("\n") !==
-      normalizeProductHookExamples(currentInput.rejectedHookExamples).join(
-        "\n",
-      ) ||
-    normalizeProductProfileOptionalText(input.hookGenerationGoal) !==
-      normalizeProductProfileOptionalText(currentInput.hookGenerationGoal) ||
-    normalizeProductProfileOptionalText(input.hookEdgeLevel) !==
-      normalizeProductProfileOptionalText(currentInput.hookEdgeLevel)
+      )
   );
 }

@@ -13,7 +13,6 @@ import { SequencePreviewPanel } from "@/app/_components/stitchr/SequencePreviewP
 import { StitchrAutoTextPanel } from "@/app/_components/stitchr/StitchrAutoTextPanel";
 import { StitchrLongrTimelineStrip } from "@/app/_components/stitchr/StitchrLongrTimelineStrip";
 import { StitchrSocialCaptionPanel } from "@/app/_components/stitchr/StitchrSocialCaptionPanel";
-import { StitchTemplatePicker } from "@/app/_components/stitchr/StitchTemplatePicker";
 import { generateStitchrBatch } from "@/lib/clipstitchr/client/generateStitchrBatch";
 import { STITCHR_BATCH_OUTPUT_COUNT } from "@/lib/clipstitchr/constants/stitchrBatchGenerationLimits";
 import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
@@ -23,18 +22,13 @@ import { defaultAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/const
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
-import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useStitchr } from "@/lib/clipstitchr/hooks/useStitchr";
-import { useStitchrHookPlans } from "@/lib/clipstitchr/hooks/useStitchrHookPlans";
 import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import type { StitchrLongrSelection } from "@/lib/clipstitchr/types/StitchrLongrSelection";
 import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
-import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
-import type { StitchTemplate } from "@/lib/clipstitchr/types/StitchTemplate";
-import type { StitchrHookVariant } from "@/lib/clipstitchr/types/StitchrHookVariant";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -52,7 +46,6 @@ import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyText
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
 import { getStitchrSocialCaptionForUgcId } from "@/lib/clipstitchr/utils/getStitchrSocialCaptionForUgcId";
-import { getStitchrHookPlanMatchesClipPair } from "@/lib/clipstitchr/utils/getStitchrHookPlanMatchesClipPair";
 import { getStitchrTextOverlaysForUgcId } from "@/lib/clipstitchr/utils/getStitchrTextOverlaysForUgcId";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoClipMetadataById";
@@ -64,17 +57,6 @@ import { WorkflowStepList } from "@/app/_components/workflow/WorkflowStepList";
 export function StitchrPageClient() {
   const library = useClipLibrary();
   const products = useDashboardProduct();
-  const stitchTemplates = useStitchTemplates();
-  const hookPlans = useStitchrHookPlans(products.activeProductId ?? undefined);
-  const {
-    accept: acceptHookPlan,
-    attachStitch: attachHookPlanStitch,
-    plans: hookPlanList,
-    reject: rejectHookPlan,
-    saveManualGeneration: saveManualHookGeneration,
-    savingPlanId: savingHookPlanId,
-    selectOption: selectHookPlanOption,
-  } = hookPlans;
   const stitchrState = useStitchr({
     loadClip: library.loadClip,
     onCreated: library.refresh,
@@ -87,10 +69,6 @@ export function StitchrPageClient() {
   const [ugcPlaybackRate, setUgcPlaybackRate] = useState<VideoPlaybackRate>(1);
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
-  const [selectedTemplateId, setSelectedTemplateId] = useState(
-    () => getSearchParamValue("templateId") ?? "",
-  );
-  const [appliedTemplateId, setAppliedTemplateId] = useState("");
   const [batchTextStyleChoice, setBatchTextStyleChoice] =
     useState<AutomationStitchrTextStyleChoice>(
       defaultAutomationStitchrTextStyleChoice,
@@ -120,16 +98,6 @@ export function StitchrPageClient() {
   >();
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
   const [autoTextMessage, setAutoTextMessage] = useState<string | null>(null);
-  const [autoTextHookVariantState, setAutoTextHookVariantState] = useState<{
-    contextKey: string;
-    hookPlanId?: string;
-    hookVariants: StitchrHookVariant[];
-    selectedHook: string;
-  }>({
-    contextKey: "",
-    hookVariants: [],
-    selectedHook: "",
-  });
   const [ugcTrimRangesByClipId, setUgcTrimRangesByClipId] = useState<
     Record<string, VideoTrimRange>
   >({});
@@ -139,10 +107,10 @@ export function StitchrPageClient() {
   const [loadedLongrClipsById, setLoadedLongrClipsById] = useState<
     Record<string, VideoClip>
   >({});
-  const [templateUgcClips, setTemplateUgcClips] = useState<VideoClipMetadata[]>(
+  const [reusedUgcClips, setReusedUgcClips] = useState<VideoClipMetadata[]>(
     [],
   );
-  const [templateDemoClips, setTemplateDemoClips] = useState<
+  const [reusedDemoClips, setReusedDemoClips] = useState<
     VideoClipMetadata[]
   >([]);
   const loadClip = library.loadClip;
@@ -172,15 +140,15 @@ export function StitchrPageClient() {
   } = library.videoGroups.demo;
   const loadStitch = library.loadStitch;
   const demoClips = useMemo(
-    () => mergeVideoClipMetadataById([...templateDemoClips, ...libraryDemoClips]),
-    [libraryDemoClips, templateDemoClips],
+    () => mergeVideoClipMetadataById([...reusedDemoClips, ...libraryDemoClips]),
+    [libraryDemoClips, reusedDemoClips],
   );
   const ugcClips = useMemo(
     () => {
       const clipsById = new Map<string, VideoClipMetadata>();
 
       for (const clip of [
-        ...templateUgcClips,
+        ...reusedUgcClips,
         ...plainUgcClips,
         ...cliprClips,
         ...swaprClips,
@@ -190,7 +158,7 @@ export function StitchrPageClient() {
 
       return [...clipsById.values()];
     },
-    [cliprClips, plainUgcClips, swaprClips, templateUgcClips],
+    [cliprClips, plainUgcClips, swaprClips, reusedUgcClips],
   );
   const hasMoreStitchrClips =
     hasMorePlainUgcClips ||
@@ -251,9 +219,6 @@ export function StitchrPageClient() {
   );
   const [isGeneratingBatch, setIsGeneratingBatch] = useState(false);
   const [batchMessage, setBatchMessage] = useState<string | null>(null);
-  const [activeBatchHookTaskIds, setActiveBatchHookTaskIds] = useState<
-    string[]
-  >([]);
   const activeSelectedUgcIds = useMemo(() => {
     const validUgcIds = new Set(ugcClips.map((clip) => clip.id));
 
@@ -452,122 +417,21 @@ export function StitchrPageClient() {
   );
   const activeAutoTextProductId =
     products.activeProductId ?? "";
-  const activeAutoTextProductName = products.activeProduct?.name;
-  const hookVariantContextKey =
-    mode === "longr"
-      ? selectedLongrMetadata.map((clip) => clip.id).join("|")
-      : [activeUgcMetadata?.id ?? "", selectedDemoMetadata?.id ?? ""].join("|");
-  const autoTextHookPlansForActivePair = useMemo(
-    () =>
-      mode === "normal"
-        ? hookPlanList.filter((plan) =>
-            getStitchrHookPlanMatchesClipPair(plan, {
-              demoClipId: selectedDemoMetadata?.id,
-              productId: activeAutoTextProductId,
-              ugcClipId: activeUgcMetadata?.id,
-            }),
-          )
-        : [],
-    [
-      activeAutoTextProductId,
-      activeUgcMetadata?.id,
-      hookPlanList,
-      mode,
-      selectedDemoMetadata?.id,
-    ],
-  );
-  const savedAutoTextHookPlan = autoTextHookPlansForActivePair[0];
-  const visibleBatchHookPlans = useMemo(
-    () => {
-      if (!activeBatchHookTaskIds.length) {
-        return [];
-      }
+  const applyReusedStitch = useCallback(
+    async (reuseStitchId: string) => {
+      const reusedStitch = await loadStitch(reuseStitchId);
 
-      const activeTaskIds = new Set(activeBatchHookTaskIds);
-
-      return hookPlanList
-        .filter(
-          (plan) =>
-            plan.source !== "manual" &&
-            plan.hookOptions.length &&
-            Boolean(plan.automationTaskId) &&
-            activeTaskIds.has(plan.automationTaskId ?? ""),
-        )
-        .slice(0, 6);
-    },
-    [activeBatchHookTaskIds, hookPlanList],
-  );
-  const hasCurrentAutoTextHookState =
-    autoTextHookVariantState.contextKey === hookVariantContextKey &&
-    autoTextHookVariantState.hookVariants.length > 0;
-  const visibleAutoTextHookPlanId = hasCurrentAutoTextHookState
-    ? autoTextHookVariantState.hookPlanId
-    : savedAutoTextHookPlan?.id;
-  const visibleAutoTextHookVariants = useMemo(
-    () =>
-      hasCurrentAutoTextHookState
-        ? autoTextHookVariantState.hookVariants
-        : (savedAutoTextHookPlan?.hookOptions ?? []),
-    [
-      autoTextHookVariantState.hookVariants,
-      hasCurrentAutoTextHookState,
-      savedAutoTextHookPlan?.hookOptions,
-    ],
-  );
-  const visibleAutoTextSelectedHook = hasCurrentAutoTextHookState
-    ? autoTextHookVariantState.selectedHook
-    : (savedAutoTextHookPlan?.selectedHook ?? "");
-  const attachVisibleAutoTextHookPlanToStitches = useCallback(
-    async (createdStitches: Stitch[] | undefined) => {
-      if (!visibleAutoTextHookPlanId || !createdStitches?.length) {
-        return;
-      }
-
-      const plan = hookPlanList.find(
-        (hookPlan) => hookPlan.id === visibleAutoTextHookPlanId,
-      );
-      const ugcClipId = plan?.ugcClipId ?? activeUgcMetadata?.id;
-      const demoClipId = plan?.demoClipId ?? selectedDemoMetadata?.id;
-      const matchingStitch = createdStitches.find(
-        (createdStitch) =>
-          createdStitch.ugcClipId === ugcClipId &&
-          createdStitch.demoClipId === demoClipId,
-      );
-
-      if (!matchingStitch) {
-        return;
-      }
-
-      try {
-        await attachHookPlanStitch(visibleAutoTextHookPlanId, matchingStitch.id);
-      } catch {
-        setAutoTextMessage("Stitch saved, but its hooks did not link.");
-      }
-    },
-    [
-      activeUgcMetadata?.id,
-      attachHookPlanStitch,
-      hookPlanList,
-      selectedDemoMetadata?.id,
-      visibleAutoTextHookPlanId,
-    ],
-  );
-
-  const applyTemplateStitch = useCallback(
-    async (templateStitchId: string) => {
-      const templateStitch = await loadStitch(templateStitchId);
-
-      if (!templateStitch) {
+      if (!reusedStitch) {
         setAutoTextMessage("Unable to load that saved setup.");
         return;
       }
 
       const sourceIds = [
         ...new Set(
-          templateStitch.mode === "longr" &&
-            templateStitch.sequenceSegments?.length
-            ? templateStitch.sequenceSegments.map((segment) => segment.clipId)
-            : [templateStitch.ugcClipId, templateStitch.demoClipId],
+          reusedStitch.mode === "longr" &&
+            reusedStitch.sequenceSegments?.length
+            ? reusedStitch.sequenceSegments.map((segment) => segment.clipId)
+            : [reusedStitch.ugcClipId, reusedStitch.demoClipId],
         ),
       ];
       const loadedSourceClips = (
@@ -579,15 +443,15 @@ export function StitchrPageClient() {
       const loadedDemoClips = loadedSourceClips.filter(
         (clip) => clip.clipType === "demo",
       );
-      const templateTextOverlays = getTextOverlayList(
-        templateStitch.textOverlays,
-        templateStitch.textOverlay,
+      const savedTextOverlays = getTextOverlayList(
+        reusedStitch.textOverlays,
+        reusedStitch.textOverlay,
       );
 
-      setTemplateUgcClips((currentClips) =>
+      setReusedUgcClips((currentClips) =>
         mergeVideoClipMetadataById([...loadedUgcClips, ...currentClips]),
       );
-      setTemplateDemoClips((currentClips) =>
+      setReusedDemoClips((currentClips) =>
         mergeVideoClipMetadataById([...loadedDemoClips, ...currentClips]),
       );
       setLoadedLongrClipsById((currentClips) => {
@@ -600,17 +464,17 @@ export function StitchrPageClient() {
         return nextClips;
       });
       setSelectedMusicTrack(null);
-      setIncludeDemoAudio(templateStitch.includeDemoAudio ?? false);
-      setIncludeUgcAudio(templateStitch.includeUgcAudio ?? false);
-      setDemoPlaybackRate(templateStitch.demoPlaybackRate ?? 1);
-      setUgcPlaybackRate(templateStitch.ugcPlaybackRate ?? 1);
+      setIncludeDemoAudio(reusedStitch.includeDemoAudio ?? false);
+      setIncludeUgcAudio(reusedStitch.includeUgcAudio ?? false);
+      setDemoPlaybackRate(reusedStitch.demoPlaybackRate ?? 1);
+      setUgcPlaybackRate(reusedStitch.ugcPlaybackRate ?? 1);
       setDemoProductFilterId("all");
 
       if (
-        templateStitch.mode === "longr" &&
-        templateStitch.sequenceSegments?.length
+        reusedStitch.mode === "longr" &&
+        reusedStitch.sequenceSegments?.length
       ) {
-        const orderedSegments = [...templateStitch.sequenceSegments].sort(
+        const orderedSegments = [...reusedStitch.sequenceSegments].sort(
           (left, right) => left.order - right.order,
         );
         const ugcIds = orderedSegments
@@ -661,217 +525,64 @@ export function StitchrPageClient() {
           ...demoTrimRanges,
         }));
         setUgcPlaybackRate(
-          firstUgcPlaybackRate ?? templateStitch.ugcPlaybackRate ?? 1,
+          firstUgcPlaybackRate ?? reusedStitch.ugcPlaybackRate ?? 1,
         );
         setDemoPlaybackRate(
-          firstDemoPlaybackRate ?? templateStitch.demoPlaybackRate ?? 1,
+          firstDemoPlaybackRate ?? reusedStitch.demoPlaybackRate ?? 1,
         );
         setTextOverlaysByUgcId({});
         setReusedTextOverlays(null);
-        setLongrTextOverlays(cloneTextOverlays(templateTextOverlays));
+        setLongrTextOverlays(cloneTextOverlays(savedTextOverlays));
         setSocialCaptionByUgcId({});
         setReusedSocialCaption(null);
-        setLongrSocialCaption(templateStitch.socialCaption ?? "");
+        setLongrSocialCaption(reusedStitch.socialCaption ?? "");
         return;
       }
 
       setMode("normal");
-      setSelectedUgcIds([templateStitch.ugcClipId]);
-      setActivePreviewUgcId(templateStitch.ugcClipId);
-      setSelectedDemoId(templateStitch.demoClipId);
-      setSelectedDemoIds([templateStitch.demoClipId]);
+      setSelectedUgcIds([reusedStitch.ugcClipId]);
+      setActivePreviewUgcId(reusedStitch.ugcClipId);
+      setSelectedDemoId(reusedStitch.demoClipId);
+      setSelectedDemoIds([reusedStitch.demoClipId]);
       setLongrTimelineClipIds([
-        templateStitch.ugcClipId,
-        templateStitch.demoClipId,
+        reusedStitch.ugcClipId,
+        reusedStitch.demoClipId,
       ]);
       setUgcTrimRangesByClipId((trimRanges) => ({
         ...trimRanges,
-        ...(templateStitch.ugcTrimRange
-          ? { [templateStitch.ugcClipId]: templateStitch.ugcTrimRange }
+        ...(reusedStitch.ugcTrimRange
+          ? { [reusedStitch.ugcClipId]: reusedStitch.ugcTrimRange }
           : {}),
       }));
       setDemoTrimRangesByClipId((trimRanges) => ({
         ...trimRanges,
-        ...(templateStitch.demoTrimRange
-          ? { [templateStitch.demoClipId]: templateStitch.demoTrimRange }
+        ...(reusedStitch.demoTrimRange
+          ? { [reusedStitch.demoClipId]: reusedStitch.demoTrimRange }
           : {}),
       }));
       setTextOverlaysByUgcId({});
-      setReusedTextOverlays(cloneTextOverlays(templateTextOverlays));
+      setReusedTextOverlays(cloneTextOverlays(savedTextOverlays));
       setLongrTextOverlays([]);
       setSocialCaptionByUgcId({});
-      setReusedSocialCaption(templateStitch.socialCaption ?? null);
+      setReusedSocialCaption(reusedStitch.socialCaption ?? null);
       setLongrSocialCaption("");
     },
     [loadClip, loadStitch],
   );
-  const applyStitchTemplate = useCallback(
-    async (template: StitchTemplate) => {
-      const sourceIds = [
-        ...new Set(
-          template.mode === "longr" && template.sequenceSegments?.length
-            ? template.sequenceSegments.map((segment) => segment.clipId)
-            : [template.ugcClipId, template.demoClipId],
-        ),
-      ];
-      const loadedSourceClips = (
-        await Promise.all(sourceIds.map((id) => loadClip(id)))
-      ).filter((clip): clip is VideoClip => Boolean(clip));
-      const loadedUgcClips = loadedSourceClips.filter(
-        (clip) => clip.clipType !== "demo",
-      );
-      const loadedDemoClips = loadedSourceClips.filter(
-        (clip) => clip.clipType === "demo",
-      );
-      const templateTextOverlays = getTextOverlayList(
-        template.textOverlays,
-        template.textOverlay,
-      );
-
-      if (loadedSourceClips.length !== sourceIds.length) {
-        setAutoTextMessage("Some clips from that saved setup are missing.");
-      }
-
-      setTemplateUgcClips((currentClips) =>
-        mergeVideoClipMetadataById([...loadedUgcClips, ...currentClips]),
-      );
-      setTemplateDemoClips((currentClips) =>
-        mergeVideoClipMetadataById([...loadedDemoClips, ...currentClips]),
-      );
-      setLoadedLongrClipsById((currentClips) => {
-        const nextClips = { ...currentClips };
-
-        for (const clip of loadedSourceClips) {
-          nextClips[clip.id] = clip;
-        }
-
-        return nextClips;
-      });
-      setSelectedMusicTrack(null);
-      setIncludeDemoAudio(template.includeDemoAudio ?? false);
-      setIncludeUgcAudio(template.includeUgcAudio ?? false);
-      setDemoPlaybackRate(template.demoPlaybackRate ?? 1);
-      setUgcPlaybackRate(template.ugcPlaybackRate ?? 1);
-      setDemoProductFilterId("all");
-
-      if (template.mode === "longr" && template.sequenceSegments?.length) {
-        const orderedSegments = [...template.sequenceSegments].sort(
-          (left, right) => left.order - right.order,
-        );
-        const ugcIds = orderedSegments
-          .filter((segment) => segment.clipType !== "demo")
-          .map((segment) => segment.clipId);
-        const demoIds = orderedSegments
-          .filter((segment) => segment.clipType === "demo")
-          .map((segment) => segment.clipId);
-        const ugcTrimRanges = orderedSegments
-          .filter((segment) => segment.clipType !== "demo")
-          .reduce<Record<string, VideoTrimRange>>(
-            (trimRanges, segment) => ({
-              ...trimRanges,
-              [segment.clipId]: segment.trimRange,
-            }),
-            {},
-          );
-        const demoTrimRanges = orderedSegments
-          .filter((segment) => segment.clipType === "demo")
-          .reduce<Record<string, VideoTrimRange>>(
-            (trimRanges, segment) => ({
-              ...trimRanges,
-              [segment.clipId]: segment.trimRange,
-            }),
-            {},
-          );
-        const firstUgcPlaybackRate = orderedSegments.find(
-          (segment) => segment.clipType !== "demo" && segment.playbackRate,
-        )?.playbackRate;
-        const firstDemoPlaybackRate = orderedSegments.find(
-          (segment) => segment.clipType === "demo" && segment.playbackRate,
-        )?.playbackRate;
-
-        setMode("longr");
-        setSelectedUgcIds(ugcIds.slice(0, maxStitchrUgcSelectionCount));
-        setActivePreviewUgcId(ugcIds[0]);
-        setSelectedDemoId(demoIds[0] ?? null);
-        setSelectedDemoIds(demoIds);
-        setLongrTimelineClipIds(
-          orderedSegments.map((segment) => segment.clipId),
-        );
-        setUgcTrimRangesByClipId((trimRanges) => ({
-          ...trimRanges,
-          ...ugcTrimRanges,
-        }));
-        setDemoTrimRangesByClipId((trimRanges) => ({
-          ...trimRanges,
-          ...demoTrimRanges,
-        }));
-        setUgcPlaybackRate(firstUgcPlaybackRate ?? template.ugcPlaybackRate ?? 1);
-        setDemoPlaybackRate(
-          firstDemoPlaybackRate ?? template.demoPlaybackRate ?? 1,
-        );
-        setTextOverlaysByUgcId({});
-        setReusedTextOverlays(null);
-        setLongrTextOverlays(cloneTextOverlays(templateTextOverlays));
-        setSocialCaptionByUgcId({});
-        setReusedSocialCaption(null);
-        setLongrSocialCaption(template.socialCaption ?? "");
-        return;
-      }
-
-      setMode("normal");
-      setSelectedUgcIds([template.ugcClipId]);
-      setActivePreviewUgcId(template.ugcClipId);
-      setSelectedDemoId(template.demoClipId);
-      setSelectedDemoIds([template.demoClipId]);
-      setLongrTimelineClipIds([template.ugcClipId, template.demoClipId]);
-      setUgcTrimRangesByClipId((trimRanges) => ({
-        ...trimRanges,
-        ...(template.ugcTrimRange
-          ? { [template.ugcClipId]: template.ugcTrimRange }
-          : {}),
-      }));
-      setDemoTrimRangesByClipId((trimRanges) => ({
-        ...trimRanges,
-        ...(template.demoTrimRange
-          ? { [template.demoClipId]: template.demoTrimRange }
-          : {}),
-      }));
-      setTextOverlaysByUgcId({});
-      setReusedTextOverlays(cloneTextOverlays(templateTextOverlays));
-      setLongrTextOverlays([]);
-      setSocialCaptionByUgcId({});
-      setReusedSocialCaption(template.socialCaption ?? null);
-      setLongrSocialCaption("");
-    },
-    [loadClip],
-  );
-
-  const applyTemplateStitchRef = useRef(applyTemplateStitch);
+  const applyReusedStitchRef = useRef(applyReusedStitch);
 
   useEffect(() => {
     const syncSelectionFromUrl = () => {
-      const templateStitchId = getSearchParamValue("templateStitchId");
-      const templateId = getSearchParamValue("templateId");
+      const reuseStitchId = getSearchParamValue("reuseStitchId");
       const initialUgcId = getSearchParamValue("ugcId");
       const initialDemoId = getSearchParamValue("demoId");
 
-      if (templateStitchId) {
+      if (reuseStitchId) {
         setMode("normal");
-        setSelectedTemplateId("");
-        setAppliedTemplateId("");
-        void applyTemplateStitchRef.current(templateStitchId);
+        void applyReusedStitchRef.current(reuseStitchId);
         return;
       }
 
-      if (templateId) {
-        setMode("normal");
-        setSelectedTemplateId(templateId);
-        setAppliedTemplateId("");
-        return;
-      }
-
-      setSelectedTemplateId("");
-      setAppliedTemplateId("");
       setReusedTextOverlays(null);
       setReusedSocialCaption(null);
 
@@ -901,48 +612,8 @@ export function StitchrPageClient() {
   }, []);
 
   useEffect(() => {
-    applyTemplateStitchRef.current = applyTemplateStitch;
-  }, [applyTemplateStitch]);
-
-  useEffect(() => {
-    if (
-      mode === "batch" ||
-      !selectedTemplateId ||
-      selectedTemplateId === appliedTemplateId ||
-      stitchTemplates.isLoading
-    ) {
-      return;
-    }
-
-    const selectedTemplate = stitchTemplates.templates.find(
-      (template) => template.id === selectedTemplateId,
-    );
-
-    if (!selectedTemplate) {
-      void Promise.resolve().then(() => {
-        setAutoTextMessage("Unable to find that saved setup Idea.");
-        setAppliedTemplateId(selectedTemplateId);
-      });
-      return;
-    }
-
-    const applyTimeoutId = window.setTimeout(() => {
-      void applyStitchTemplate(selectedTemplate).then(() => {
-        setAppliedTemplateId(selectedTemplate.id);
-      });
-    }, 0);
-
-    return () => {
-      window.clearTimeout(applyTimeoutId);
-    };
-  }, [
-    appliedTemplateId,
-    applyStitchTemplate,
-    mode,
-    selectedTemplateId,
-    stitchTemplates.isLoading,
-    stitchTemplates.templates,
-  ]);
+    applyReusedStitchRef.current = applyReusedStitch;
+  }, [applyReusedStitch]);
 
   useEffect(() => {
     if (mode !== "longr" || !selectedLongrMetadata.length) {
@@ -1353,9 +1024,7 @@ export function StitchrPageClient() {
           musicTrack: selectedMusicTrack,
           ugcPlaybackRate,
         },
-      ).then((createdStitches) => {
-        void attachVisibleAutoTextHookPlanToStitches(createdStitches);
-      });
+      );
     }
   };
 
@@ -1367,7 +1036,6 @@ export function StitchrPageClient() {
 
     setIsGeneratingBatch(true);
     setBatchMessage(null);
-    setActiveBatchHookTaskIds([]);
 
     void generateStitchrBatch({
       productId: products.activeProductId,
@@ -1376,11 +1044,9 @@ export function StitchrPageClient() {
       stitchrTextColorChoice: batchTextColorChoice,
       stitchrTextStrokeColorChoice: batchTextStrokeColorChoice,
       stitchrTextStyleChoice: batchTextStyleChoice,
-      templateId: selectedTemplateId || undefined,
     })
       .then((result) => {
         if (result.count > 0) {
-          setActiveBatchHookTaskIds(result.taskIds);
           setBatchMessage(
             result.message ??
               `Queued ${result.count} Stitch drafts. ` +
@@ -1409,48 +1075,9 @@ export function StitchrPageClient() {
     batchTextColorChoice,
     batchTextStrokeColorChoice,
     batchTextStyleChoice,
-    selectedTemplateId,
     selectedMusicTrack?.id,
     products.activeProductId,
   ]);
-  const handleSelectBatchHookVariant = useCallback(
-    (planId: string, hookText: string) => {
-      void selectHookPlanOption(planId, hookText)
-        .then(() => setBatchMessage("Hook switched."))
-        .catch((error) => {
-          setBatchMessage(
-            error instanceof Error
-              ? error.message
-              : "Unable to switch that hook.",
-          );
-        });
-    },
-    [selectHookPlanOption],
-  );
-  const handleAcceptBatchHookVariant = useCallback(
-    (planId: string, hookText: string) => {
-      void acceptHookPlan(planId, hookText)
-        .then(() => setBatchMessage("Hook accepted."))
-        .catch((error) => {
-          setBatchMessage(
-            error instanceof Error ? error.message : "Unable to accept that hook.",
-          );
-        });
-    },
-    [acceptHookPlan],
-  );
-  const handleRejectBatchHookVariant = useCallback(
-    (planId: string, hookText: string) => {
-      void rejectHookPlan(planId, hookText)
-        .then(() => setBatchMessage("Hook rejected."))
-        .catch((error) => {
-          setBatchMessage(
-            error instanceof Error ? error.message : "Unable to reject that hook.",
-          );
-        });
-    },
-    [rejectHookPlan],
-  );
 
   const handleGenerateAutoText = useCallback(() => {
     if (!activeAutoTextProductId) {
@@ -1464,17 +1091,12 @@ export function StitchrPageClient() {
     }
 
     if (mode !== "longr" && !activeUgcMetadata) {
-      setAutoTextMessage("Select a Hook/UGC clip before generating text.");
+      setAutoTextMessage("Select a UGC clip before generating text.");
       return;
     }
 
     setIsGeneratingAutoText(true);
     setAutoTextMessage(null);
-    setAutoTextHookVariantState({
-      contextKey: hookVariantContextKey,
-      hookVariants: [],
-      selectedHook: "",
-    });
 
     const stitchrClipContexts =
       mode === "longr"
@@ -1490,58 +1112,15 @@ export function StitchrPageClient() {
       purpose: "stitchr",
       stitchrClipContexts,
       })
-      .then(async (text) => {
-        const selectedHook = text.overlayText || text.hook;
-        const hookOptions =
-          text.hookVariants?.length
-            ? text.hookVariants
-            : selectedHook
-              ? [
-                  {
-                    angle: "Best fit",
-                    reason: "Matches the selected clips.",
-                    text: selectedHook,
-                  },
-                ]
-              : [];
-        let savedHookPlanId: string | undefined;
-
-        if (hookOptions.length) {
-          try {
-            savedHookPlanId = await saveManualHookGeneration({
-              caption: text.caption,
-              demoClipId:
-                mode === "normal" ? selectedDemoMetadata?.id : undefined,
-              demoClipName:
-                mode === "normal" ? selectedDemoMetadata?.name : undefined,
-              hashtags: text.hashtags ?? [],
-              hookOptions,
-              productId: activeAutoTextProductId,
-              productName: activeAutoTextProductName,
-              selectedHook,
-              socialCaption: text.socialCaption,
-              ugcClipId: mode === "normal" ? activeUgcMetadata?.id : undefined,
-              ugcClipName:
-                mode === "normal" ? activeUgcMetadata?.name : undefined,
-            });
-          } catch {
-            savedHookPlanId = undefined;
-          }
-        }
-
-        setAutoTextHookVariantState({
-          contextKey: hookVariantContextKey,
-          hookPlanId: savedHookPlanId,
-          hookVariants: hookOptions,
-          selectedHook,
-        });
+      .then((text) => {
+        const generatedText = text.overlayText || text.hook;
         const baseOverlay =
           previewTextOverlays[0] ?? createDefaultTextOverlay(totalDuration, 0);
         const nextTextOverlays = clampTextOverlays(
           [
             {
               ...baseOverlay,
-              text: selectedHook,
+              text: generatedText,
             },
             ...previewTextOverlays.slice(1),
           ],
@@ -1551,11 +1130,7 @@ export function StitchrPageClient() {
         if (mode === "longr") {
           setLongrTextOverlays(nextTextOverlays);
           setLongrSocialCaption(text.socialCaption || "");
-          setAutoTextMessage(
-            savedHookPlanId
-              ? "Text, caption, and hook options generated."
-              : "Text generated, but those hooks did not save.",
-          );
+          setAutoTextMessage("Text and caption generated.");
           return;
         }
 
@@ -1572,11 +1147,7 @@ export function StitchrPageClient() {
         ) {
           setReusedTextOverlays(nextTextOverlays);
           setReusedSocialCaption(text.socialCaption || "");
-          setAutoTextMessage(
-            savedHookPlanId
-              ? "Text, caption, and hook options generated."
-              : "Text generated, but those hooks did not save.",
-          );
+          setAutoTextMessage("Text and caption generated.");
           return;
         }
 
@@ -1588,11 +1159,7 @@ export function StitchrPageClient() {
           ...captions,
           [activeUgcMetadata.id]: text.socialCaption || "",
         }));
-        setAutoTextMessage(
-          savedHookPlanId
-            ? "Text, caption, and hook options generated."
-            : "Text generated, but those hooks did not save.",
-        );
+        setAutoTextMessage("Text and caption generated.");
       })
       .catch((error) => {
         setAutoTextMessage(
@@ -1603,184 +1170,17 @@ export function StitchrPageClient() {
   }, [
     activeAutoTextProductId,
     activeUgcMetadata,
-    hookVariantContextKey,
     mode,
     previewTextOverlays,
-    activeAutoTextProductName,
     reusedTextOverlays,
-    saveManualHookGeneration,
     selectedDemoMetadata,
     selectedLongrMetadata,
     textOverlaysByUgcId,
     totalDuration,
   ]);
 
-  const handleApplyAutoTextHookVariant = useCallback(
-    (hookText: string) => {
-      if (!totalDuration) {
-        return;
-      }
-
-      setAutoTextHookVariantState({
-        contextKey: hookVariantContextKey,
-        hookPlanId: visibleAutoTextHookPlanId,
-        hookVariants: visibleAutoTextHookVariants,
-        selectedHook: hookText,
-      });
-
-      if (visibleAutoTextHookPlanId) {
-        void selectHookPlanOption(visibleAutoTextHookPlanId, hookText)
-          .catch((error) => {
-            setAutoTextMessage(
-              error instanceof Error
-                ? error.message
-                : "Unable to switch that hook.",
-            );
-          });
-      }
-
-      const baseOverlay =
-        previewTextOverlays[0] ?? createDefaultTextOverlay(totalDuration, 0);
-      const nextTextOverlays = clampTextOverlays(
-        [
-          {
-            ...baseOverlay,
-            text: hookText,
-          },
-          ...previewTextOverlays.slice(1),
-        ],
-        totalDuration,
-      );
-
-      if (mode === "longr") {
-        setLongrTextOverlays(nextTextOverlays);
-        setAutoTextMessage("Hook applied.");
-        return;
-      }
-
-      if (!activeUgcMetadata) {
-        return;
-      }
-
-      if (
-        reusedTextOverlays !== null &&
-        !Object.prototype.hasOwnProperty.call(
-          textOverlaysByUgcId,
-          activeUgcMetadata.id,
-        )
-      ) {
-        setReusedTextOverlays(nextTextOverlays);
-        setAutoTextMessage("Hook applied.");
-        return;
-      }
-
-      setTextOverlaysByUgcId((overlays) => ({
-        ...overlays,
-        [activeUgcMetadata.id]: nextTextOverlays,
-      }));
-      setAutoTextMessage("Hook applied.");
-    },
-    [
-      activeUgcMetadata,
-      hookVariantContextKey,
-      mode,
-      previewTextOverlays,
-      reusedTextOverlays,
-      selectHookPlanOption,
-      textOverlaysByUgcId,
-      totalDuration,
-      visibleAutoTextHookPlanId,
-      visibleAutoTextHookVariants,
-    ],
-  );
-  const handleAcceptAutoTextHookVariant = useCallback(
-    (hookText: string) => {
-      if (!visibleAutoTextHookPlanId) {
-        setAutoTextMessage("Generate hooks before saving one.");
-        return;
-      }
-
-      void acceptHookPlan(visibleAutoTextHookPlanId, hookText)
-        .then(() => {
-          setAutoTextHookVariantState({
-            contextKey: hookVariantContextKey,
-            hookPlanId: visibleAutoTextHookPlanId,
-            hookVariants: visibleAutoTextHookVariants.map((variant) =>
-              variant.text === hookText
-                ? {
-                    ...variant,
-                    acceptedAt: new Date().toISOString(),
-                    feedbackStatus: "accepted" as const,
-                    rejectedAt: undefined,
-                    rejectionReason: undefined,
-                  }
-                : variant,
-            ),
-            selectedHook: hookText,
-          });
-          setAutoTextMessage("Saved as a winner.");
-        })
-        .catch((error) => {
-          setAutoTextMessage(
-            error instanceof Error ? error.message : "Unable to save that hook.",
-          );
-        });
-    },
-    [
-      acceptHookPlan,
-      hookVariantContextKey,
-      visibleAutoTextHookPlanId,
-      visibleAutoTextHookVariants,
-    ],
-  );
-  const handleRejectAutoTextHookVariant = useCallback(
-    (hookText: string) => {
-      if (!visibleAutoTextHookPlanId) {
-        setAutoTextMessage("Generate hooks before avoiding one.");
-        return;
-      }
-
-      void rejectHookPlan(visibleAutoTextHookPlanId, hookText)
-        .then(() => {
-          setAutoTextHookVariantState({
-            contextKey: hookVariantContextKey,
-            hookPlanId: visibleAutoTextHookPlanId,
-            hookVariants: visibleAutoTextHookVariants.map((variant) =>
-              variant.text === hookText
-                ? {
-                    ...variant,
-                    acceptedAt: undefined,
-                    feedbackStatus: "rejected" as const,
-                    rejectedAt: new Date().toISOString(),
-                  }
-                : variant,
-            ),
-            selectedHook: hookText,
-          });
-          setAutoTextMessage("Added to the avoid list.");
-        })
-        .catch((error) => {
-          setAutoTextMessage(
-            error instanceof Error
-              ? error.message
-              : "Unable to update that hook.",
-          );
-        });
-    },
-    [
-      hookVariantContextKey,
-      rejectHookPlan,
-      visibleAutoTextHookPlanId,
-      visibleAutoTextHookVariants,
-    ],
-  );
-
   const handleActiveUgcChange = useCallback((id: string) => {
     setActivePreviewUgcId(id);
-  }, []);
-  const handleTemplateChange = useCallback((templateId: string) => {
-    setSelectedTemplateId(templateId);
-    setAppliedTemplateId("");
   }, []);
   const handleDemoProductFilterChange = useCallback((productId: string) => {
     setDemoProductFilterId(productId);
@@ -1917,7 +1317,7 @@ export function StitchrPageClient() {
     {
       label: "Pick clips",
       description:
-        mode === "longr" ? "Build the sequence." : "Choose Hook/UGC and a demo.",
+        mode === "longr" ? "Build the sequence." : "Choose UGC and a demo.",
       status: hasPickedStitchrClips ? "complete" : "current",
     },
     {
@@ -1951,12 +1351,6 @@ export function StitchrPageClient() {
     <StitchrShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <StitchrHeader />
-        <StitchTemplatePicker
-          isLoading={stitchTemplates.isLoading}
-          selectedTemplateId={selectedTemplateId}
-          templates={stitchTemplates.templates}
-          onTemplateChange={handleTemplateChange}
-        />
         {library.error ? (
           <DashboardAlert variant="error">{library.error}</DashboardAlert>
         ) : null}
@@ -1964,25 +1358,20 @@ export function StitchrPageClient() {
           <StitchrBatchPanel
             backgroundColorChoice={batchTextBackgroundColorChoice}
             batchSize={STITCHR_BATCH_OUTPUT_COUNT}
-            hookPlans={visibleBatchHookPlans}
             isDisabled={isGeneratingBatch}
             isGenerating={isGeneratingBatch}
             message={batchMessage}
             mode={mode}
             selectedSoundTrack={selectedMusicTrack}
-            savingHookPlanId={savingHookPlanId}
             strokeColorChoice={batchTextStrokeColorChoice}
             textColorChoice={batchTextColorChoice}
             textStyleChoice={batchTextStyleChoice}
-            onAcceptHookVariant={handleAcceptBatchHookVariant}
             onBackgroundColorChoiceChange={setBatchTextBackgroundColorChoice}
             onGenerate={handleGenerateBatch}
             onModeChange={handleModeChange}
             onSelectSoundTrack={(track) => {
               setSelectedMusicTrack(track);
             }}
-            onRejectHookVariant={handleRejectBatchHookVariant}
-            onSelectHookVariant={handleSelectBatchHookVariant}
             onStrokeColorChoiceChange={setBatchTextStrokeColorChoice}
             onTextColorChoiceChange={setBatchTextColorChoice}
             onTextStyleChoiceChange={setBatchTextStyleChoice}
@@ -2077,23 +1466,11 @@ export function StitchrPageClient() {
                 />
               ) : null}
               <StitchrAutoTextPanel
-                hookPlanId={visibleAutoTextHookPlanId}
-                hookVariants={visibleAutoTextHookVariants}
                 products={activeProducts}
                 selectedProductId={activeAutoTextProductId}
                 isGenerating={isGeneratingAutoText}
-                isSavingHookPlan={
-                  Boolean(
-                    visibleAutoTextHookPlanId &&
-                      savingHookPlanId === visibleAutoTextHookPlanId,
-                  )
-                }
                 message={autoTextMessage}
-                selectedHook={visibleAutoTextSelectedHook}
-                onAcceptHookVariant={handleAcceptAutoTextHookVariant}
-                onApplyHookVariant={handleApplyAutoTextHookVariant}
                 onProductChange={() => undefined}
-                onRejectHookVariant={handleRejectAutoTextHookVariant}
                 onGenerate={handleGenerateAutoText}
               />
               {mode === "longr" || activeUgcMetadata ? (

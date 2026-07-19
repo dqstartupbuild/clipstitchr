@@ -77,7 +77,7 @@ numbers used in the fifty-tool mapping.
 
 | Priority | Tool | Primary searcher | Why it fits ClipStitchr | Suggested conversion |
 |---|---|---|---|---|
-| 1 | App Hook Generator | App founders, App marketers | Solves an immediate app-ad ideation problem and leads directly into Hook Lab and Stitchr. | Show three complete hooks, unlock all eight, then offer paid signup. |
+| 1 | App Hook Generator | App founders, App marketers | Solves an immediate app-ad ideation problem and leads directly into Stitchr. | Show three complete hooks, unlock all eight, then offer paid signup. |
 | 2 | Ad Variant Calculator | App founders, App marketers | Makes the production potential of existing hooks, UGC clips, demos, and calls to action visible. | Show the calculation immediately, then offer a paid workflow for producing the variants. |
 | 3 | Product Demo Readiness Checker | App founders | Helps founders prepare the demo footage required by ClipStitchr's core workflow. | Show the verdict and largest blocker, then unlock the detailed remediation report. |
 | 4 | Hook Strength Grader for App Ads | App founders, App marketers | Captures high-intent visitors actively improving an app ad. | Show the score and key fix, then unlock the full breakdown. |
@@ -96,7 +96,7 @@ numbers used in the fifty-tool mapping.
 ### Recommended Launch Sequence
 
 1. Launch the **Ad Variant Calculator** first because it is tightly aligned, useful without an upload, and comparatively simple to build.
-2. Launch the **App Hook Generator** second as the main searchable ideation tool and Hook Lab bridge.
+2. Launch the **App Hook Generator** second as the main searchable ideation tool and Stitchr bridge.
 3. Launch the **Product Demo Readiness Checker** third to attract founders preparing real footage.
 4. Launch the **Hook Strength Grader for App Ads** fourth to expand the app-hook keyword cluster.
 5. Launch the **UGC Ad Brief Builder for Apps** fifth to capture founders before footage is produced.
@@ -138,14 +138,14 @@ optional companion offers. The authoritative mapping lives in
 
 | # | Lead magnet | Best audience | Conversion bridge | Effort |
 |---|---|---|---|---|
-| 11 | App Hook Generator | Founders, Marketers | Show three complete hooks, unlock all eight, then show how Hook Lab and Stitchr turn them into ads. | Medium |
+| 11 | App Hook Generator | Founders, Marketers | Show three complete hooks, unlock all eight, then show how Stitchr turns footage into ads. | Medium |
 | 12 | Hook Strength Grader | All audiences | Scores clarity, curiosity, specificity, and fit; ClipStitchr becomes the next step for using the improved hook. | Medium |
 | 13 | Hook Rewrite Tool | Founders, Creators | Produces several clearer versions and introduces batch creative testing. | Medium |
-| 14 | 50 Proven Hook Structures | All audiences | A categorized swipe file that leads naturally into Hook Lab Ideas. | Low |
+| 14 | Public Post Breakdown Checklist | All audiences | A research worksheet that leads naturally into Hook Lab post analysis. | Low |
 | 15 | Hook-to-Visual Matchmaker | Founders, Creators | Recommends what viewers should see during each hook, then points toward creating the video. | Medium |
 | 16 | UGC Opening-Line Prompt Cards | Creators | Helps creators record multiple usable openings that clients can later stitch with demos. | Low |
 | 17 | App Category Hook Packs | Founders, Agencies | Offers focused packs for fitness, finance, productivity, dating, education, and other app categories. | Low |
-| 18 | Competitor Hook Research Worksheet | Founders, Marketers | Captures patterns without encouraging direct copying, then transitions into saving reusable Ideas. | Low |
+| 18 | Competitor Post Research Worksheet | Founders, Marketers | Captures public metrics and a timestamped breakdown, then transitions into Hook Lab analysis. | Low |
 | 19 | Hook Testing Matrix | Marketers, Agencies | Combines hooks, UGC clips, demos, and calls to action into testable variants, where batch stitching helps. | Low |
 | 20 | “Why Did This Ad Work?” Breakdown Template | All audiences | Teaches users to identify the hook, visual beat, proof, demo, and payoff, then reuse the underlying structure. | Low |
 

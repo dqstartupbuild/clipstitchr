@@ -7,13 +7,11 @@ import { SettingsAccountSection } from "@/app/_components/settings/SettingsAccou
 import { SettingsProductSection } from "@/app/_components/settings/SettingsProductSection";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { useAutomationPreferences } from "@/lib/clipstitchr/hooks/useAutomationPreferences";
-import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import { getAccountSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getAccountSwiprLibraryPacks";
 
 export function SettingsPageClient() {
   const products = useDashboardProduct();
-  const stitchTemplates = useStitchTemplates();
   const swiprLibrary = useSwiprLibrary();
   const automation = useAutomationPreferences(products.activeProduct?.id);
   const swiprPacks = useMemo(
@@ -38,16 +36,13 @@ export function SettingsPageClient() {
           automationPreferences={automation.preferences}
           defaultingProductId={products.defaultingProductId}
           deletingProductId={products.deletingProductId}
-          isAutomationLoading={
-            automation.isLoading || stitchTemplates.isLoading
-          }
+          isAutomationLoading={automation.isLoading}
           isAutomationSaving={automation.isSaving}
           isProductActionDisabled={products.isSaving}
           lockedProductIds={products.lockedProductIds}
           products={products.products}
           restoringProductId={products.restoringProductId}
           savingProductId={products.savingProductId}
-          stitchTemplates={stitchTemplates.templates}
           swiprPacks={swiprPacks}
           onDeleteProduct={products.deleteProduct}
           onSaveAutomation={automation.savePreferences}

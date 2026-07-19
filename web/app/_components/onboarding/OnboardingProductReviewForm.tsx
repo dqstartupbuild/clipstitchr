@@ -3,18 +3,13 @@
 import { ArrowRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { OnboardingStepHeader } from "@/app/_components/onboarding/OnboardingStepHeader";
-import { ProductHookMemoryFields } from "@/app/_components/hooks/ProductHookMemoryFields";
 import { ProductHookStyleSelect } from "@/app/_components/settings/ProductHookStyleSelect";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
-import type { HookEdgeLevel } from "@/lib/clipstitchr/types/HookEdgeLevel";
-import type { HookGenerationGoal } from "@/lib/clipstitchr/types/HookGenerationGoal";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
-import { formatProductHookExamplesText } from "@/lib/clipstitchr/utils/formatProductHookExamplesText";
 import { formatProductPainPointsText } from "@/lib/clipstitchr/utils/formatProductPainPointsText";
 import { getProductProfileInputHasChanges } from "@/lib/clipstitchr/utils/getProductProfileInputHasChanges";
-import { parseProductHookExamplesText } from "@/lib/clipstitchr/utils/parseProductHookExamplesText";
 import { parseProductPainPointsText } from "@/lib/clipstitchr/utils/parseProductPainPointsText";
 
 type OnboardingProductReviewFormProps = {
@@ -49,14 +44,6 @@ export function OnboardingProductReviewForm({
   const [preferredCliprHookStyleKey, setPreferredCliprHookStyleKey] = useState(
     product.preferredCliprHookStyleKey ?? "",
   );
-  const [rejectedHookExamplesText, setRejectedHookExamplesText] = useState(
-    formatProductHookExamplesText(product.rejectedHookExamples),
-  );
-  const [hookGenerationGoal, setHookGenerationGoal] =
-    useState<HookGenerationGoal>(product.hookGenerationGoal ?? "views");
-  const [hookEdgeLevel, setHookEdgeLevel] = useState<HookEdgeLevel>(
-    product.hookEdgeLevel ?? "punchy",
-  );
   const input = useMemo<ProductProfileCreateInput>(
     () => ({
       name,
@@ -67,25 +54,15 @@ export function OnboardingProductReviewForm({
       inferredProblem,
       inferredPainPoints: parseProductPainPointsText(painPointsText),
       preferredCliprHookStyleKey: preferredCliprHookStyleKey || undefined,
-      winningHookExamples: product.winningHookExamples,
-      rejectedHookExamples: parseProductHookExamplesText(
-        rejectedHookExamplesText,
-      ),
-      hookGenerationGoal,
-      hookEdgeLevel,
     }),
     [
       audienceDetails,
       emotionalNarrative,
-      hookEdgeLevel,
-      hookGenerationGoal,
       inferredProblem,
       name,
       painPointsText,
       preferredCliprHookStyleKey,
-      product.winningHookExamples,
       productDetails,
-      rejectedHookExamplesText,
       websiteUrl,
     ],
   );
@@ -139,14 +116,6 @@ export function OnboardingProductReviewForm({
         <ProductHookStyleSelect
           value={preferredCliprHookStyleKey}
           onChange={setPreferredCliprHookStyleKey}
-        />
-        <ProductHookMemoryFields
-          hookEdgeLevel={hookEdgeLevel}
-          hookGenerationGoal={hookGenerationGoal}
-          rejectedHookExamplesText={rejectedHookExamplesText}
-          onHookEdgeLevelChange={setHookEdgeLevel}
-          onHookGenerationGoalChange={setHookGenerationGoal}
-          onRejectedHookExamplesTextChange={setRejectedHookExamplesText}
         />
         <div className="grid gap-4 lg:grid-cols-2">
           <label className="block">

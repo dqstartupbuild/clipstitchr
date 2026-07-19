@@ -11,18 +11,14 @@ import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySec
 import { AvatarLibraryTabSection } from "@/app/_components/library/AvatarLibraryTabSection";
 import { LibraryTabs } from "@/app/_components/library/LibraryTabs";
 import { PexelsLibraryTabSection } from "@/app/_components/library/PexelsLibraryTabSection";
-import { TemplateLibraryTabSection } from "@/app/_components/library/TemplateLibraryTabSection";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { SHOW_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/showUploadControlsEventName";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCreateAvatarFromUgcClip } from "@/lib/clipstitchr/hooks/useCreateAvatarFromUgcClip";
-import { useCreateHookLabIdeaFromStitch } from "@/lib/clipstitchr/hooks/useCreateHookLabIdeaFromStitch";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
-import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
-import { useStitchrHookPlans } from "@/lib/clipstitchr/hooks/useStitchrHookPlans";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
@@ -63,19 +59,19 @@ const videoLibraryContent: Record<
   }
 > = {
   ugc: {
-    title: "Hook/UGC clips",
-    emptyTitle: "No Hook/UGC clips yet",
+    title: "UGC clips",
+    emptyTitle: "No UGC clips yet",
     emptyDescription:
-      "Upload or generate hooks, reactions, b-roll, or creator footage to pair with demos.",
+      "Upload or generate reactions, b-roll, or creator footage to pair with demos.",
     sectionId: "ugc-clips",
-    searchEmptyTitle: "No matching Hook/UGC clips",
-    searchEmptyDescription: "No saved Hook/UGC clips match that title or tag.",
+    searchEmptyTitle: "No matching UGC clips",
+    searchEmptyDescription: "No saved UGC clips match that title or tag.",
   },
   demo: {
     title: "Product demos",
     emptyTitle: "No demo videos yet",
     emptyDescription:
-      "Upload product walkthroughs or screen recordings to use after Hook/UGC clips.",
+      "Upload product walkthroughs or screen recordings to use after UGC clips.",
     sectionId: "demo-videos",
     searchEmptyTitle: "No matching demo videos",
     searchEmptyDescription: "No saved demo videos match that title or tag.",
@@ -84,7 +80,7 @@ const videoLibraryContent: Record<
     title: "Swaps",
     emptyTitle: "No swaps yet",
     emptyDescription:
-      "Create new Hook/UGC clips when your library needs more material.",
+      "Create new UGC clips when your library needs more material.",
     sectionId: "swaps",
     searchEmptyTitle: "No matching swaps",
     searchEmptyDescription: "No saved Swapr outputs match that title or tag.",
@@ -104,21 +100,13 @@ export function LibraryPageClient({
     loadClip: library.loadClip,
     saveGeneratedPhotos: photoLibrary.saveGeneratedPhotos,
   });
-  const hookLabIdeaCreator = useCreateHookLabIdeaFromStitch();
   const [selectedTab, setSelectedTab] = useState<LibraryTab>(initialTab);
-  const stitchTemplates = useStitchTemplates(
-    selectedTab === "stitches" || selectedTab === "templates",
-  );
   const [searchQuery, setSearchQuery] = useState("");
   const [stitchStatusFilter, setStitchStatusFilter] =
     useState<StitchLibraryStatusFilter>("active");
   const [swipeStatusFilter, setSwipeStatusFilter] =
     useState<LibraryPostedStatusFilter>("active");
   const activeProductId = products.activeProductId ?? "";
-  const hookPlans = useStitchrHookPlans(
-    activeProductId || undefined,
-    selectedTab === "stitches",
-  );
   const ugcClips = useMemo(
     () => filterClipsBySearchQuery(library.videoGroups.ugc.clips, searchQuery),
     [library.videoGroups.ugc.clips, searchQuery],
@@ -234,10 +222,7 @@ export function LibraryPageClient({
   const error =
     library.error ??
     swiprLibrary.error ??
-    products.error ??
-    hookLabIdeaCreator.error ??
-    stitchTemplates.error ??
-    (selectedTab === "stitches" ? hookPlans.error : null);
+    products.error;
   const hasDemoProductFilter = false;
   const canUseLibraryTotals = !hasSearchQuery;
   const selectedVideoTotalCount =
@@ -255,15 +240,11 @@ export function LibraryPageClient({
     ? "Products are loading."
     : "Create a product before uploading videos.";
   const canSortSelectedTab =
-    selectedTab !== "avatars" &&
-    selectedTab !== "templates" &&
-    selectedTab !== "pexels";
+    selectedTab !== "avatars" && selectedTab !== "pexels";
   const searchPlaceholder =
     selectedTab === "avatars"
       ? "Search avatars"
-      : selectedTab === "templates"
-        ? "Search templates"
-        : selectedTab === "pexels"
+      : selectedTab === "pexels"
           ? "Search Pexels packs"
           : "Search library";
   const selectedVideoSection =
@@ -391,7 +372,6 @@ export function LibraryPageClient({
         ) : null}
         {showUploadControls &&
         selectedTab !== "avatars" &&
-        selectedTab !== "templates" &&
         selectedTab !== "pexels" ? (
           <UploadPanel
             allowedAssetTypes={["ugc", "demo"]}
@@ -491,9 +471,6 @@ export function LibraryPageClient({
           <StitchesSection
             key={`stitches-${searchQuery}-${library.sortOrder}`}
             demoClips={library.videoGroups.demo.clips}
-            hookPlans={hookPlans.plans}
-            savingHookPlanId={hookPlans.savingPlanId}
-            savingIdeaStitchId={hookLabIdeaCreator.savingStitchId}
             stitches={stitches}
             totalCount={
               hasSearchQuery
@@ -518,18 +495,15 @@ export function LibraryPageClient({
             }
             hasMoreItems={selectedStitchHasMoreItems}
             isLoadingMoreItems={selectedStitchIsLoadingMoreItems}
-            onAcceptHookVariant={hookPlans.accept}
             onDelete={library.removeStitch}
             onLoadClip={library.loadClip}
             onLoadMoreItems={handleLoadMoreSelectedStitches}
             onLoadPoster={library.loadStitchPoster}
             onLoadVideo={library.loadStitchVideo}
             onPostBridgeScheduled={library.refresh}
-            onSaveIdea={hookLabIdeaCreator.createIdeaFromStitch}
             onScore={library.scoreStitch}
             onApplyQuickEdit={library.applyStitchQuickEdit}
             onResetQuickEdit={library.resetStitchQuickEdit}
-            onRejectHookVariant={hookPlans.reject}
             statusCounts={stitchStatusCounts}
             statusFilter={stitchStatusFilter}
             onStatusFilterChange={setStitchStatusFilter}
@@ -540,7 +514,6 @@ export function LibraryPageClient({
             onUpdateSourceCuts={library.updateStitchSourceCuts}
             onUpdateSourceSettings={library.updateStitchSourceSettings}
             onUpdateTextOverlay={library.updateStitchTextOverlay}
-            onSelectHookVariant={hookPlans.selectOption}
             ugcClips={stitchrUgcClips}
           />
         ) : null}
@@ -592,18 +565,6 @@ export function LibraryPageClient({
           <AvatarLibraryTabSection
             searchQuery={searchQuery}
             showUploadControls={showUploadControls}
-          />
-        ) : null}
-        {selectedTab === "templates" ? (
-          <TemplateLibraryTabSection
-            deletingTemplateId={stitchTemplates.deletingTemplateId}
-            error={stitchTemplates.error}
-            isLoading={stitchTemplates.isLoading}
-            savingTemplateId={stitchTemplates.savingTemplateId}
-            searchQuery={searchQuery}
-            templates={stitchTemplates.templates}
-            onDelete={stitchTemplates.deleteTemplate}
-            onRename={stitchTemplates.renameTemplate}
           />
         ) : null}
       </div>

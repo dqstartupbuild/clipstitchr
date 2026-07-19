@@ -54,14 +54,14 @@ export const gettingStartedDoc = {
     {
       title: "How the library stays organized",
       body: [
-        "The Library keeps your Hook/UGC clips, demos, avatar photos, templates, carousels, and finished ads in one place. Use the tabs when you need to find Hook/UGC, Demos, Swaps, Swipes, Stitches, Avatars, or Templates.",
+        "The Library keeps your Hook/UGC clips, demos, avatar photos, carousels, and finished ads in one place. Use the tabs when you need to find Hook/UGC, Demos, Swaps, Swipes, Stitches, Avatars, or Pexels.",
         "ClipStitchr prepares uploads for vertical posts before they enter the library, so you do not have to fix the same clip every time you use it.",
       ],
     },
     {
       title: "Where to go next",
       body: [
-        "Use Stitchr when you already have footage and need finished ads. Use scores, templates, Clipr, Swapr, Swipr, and Avatars when you want a cleaner ad, more clips, or a carousel post.",
+        "Use Stitchr when you already have footage and need finished ads. Use scores, Clipr, Swapr, Swipr, and Avatars when you want a cleaner ad, more clips, or a carousel post.",
       ],
       cards: [
         {
@@ -73,7 +73,7 @@ export const gettingStartedDoc = {
         {
           title: "Catch weak clips sooner",
           description:
-            "Use clip scores, stitch scores, and templates to pick better inputs and reuse what worked.",
+            "Use clip scores and stitch scores to pick better inputs and improve what you make.",
           href: "/docs/clip-scores",
         },
         {

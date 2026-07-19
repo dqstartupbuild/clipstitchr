@@ -12,9 +12,8 @@ large documents wherever possible.
   so public list consumers cannot accidentally read every article body.
 - `/blog`, `/blog/[slug]`, and `/sitemap.xml` use hourly revalidation instead
   of forced dynamic rendering.
-- Hook Lab Idea and Review lists use indexed, cursor-paginated reads instead of
-  loading every Idea or parent hook-plan array.
-- Legacy Template rows load only for compatibility consumers. Templates no
+- Hook Lab post lists use indexed, cursor-paginated reads instead of loading
+  every saved post.
   longer have a visible Library tab.
 - Dashboard library providers now track the active Library tab and skip hidden
   clip, photo, avatar, Swipr, Swipe, Stitch, and Pexels subscriptions.

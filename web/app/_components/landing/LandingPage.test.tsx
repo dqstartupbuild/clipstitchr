@@ -80,7 +80,7 @@ describe("LandingPage", () => {
     expect(markup).toContain("/example-outputs/clipstitchr-example-11.webm");
     expect(markup).toContain("/example-outputs/clipstitchr-example-20.webm");
     expect(markup).toContain("Batch up to 20 hooks");
-    expect(markup).toContain("Hook Lab ideas");
+    expect(markup).toContain("Social post analysis");
     expect(markup).toContain("Swipr carousels");
     expect(markup).toContain("75");
     expect(markup).toContain("161K+");

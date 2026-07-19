@@ -19,7 +19,7 @@ export function createClipPerformanceScorePromptLines(
     "Use removeRanges for boring middle moments like loading screens, dead air, repeated frames, or pauses.",
     "Use timestamp seconds like 3.5 to 6.2. Keep ranges precise and only suggest cuts that clearly help.",
     ...createQuickEditHybridPromptLines(),
-    "Do not suggest new text overlay copy. Hook Lab handles hook and overlay writing.",
+    "Do not suggest new text overlay copy.",
     "Use crop.mode smart-9x16 when black bars, poor vertical framing, low subject placement, or off-center product/demo focus should be fixed.",
     "Do not promise actual performance. Treat the score as a helpful editing and selection guess.",
   ];

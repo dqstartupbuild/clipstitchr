@@ -13,7 +13,7 @@ describe("parseClipPerformanceScore", () => {
         quickEditSuggestions: {
           overlayText: {
             replaceWith: "Do not save this hook",
-            reason: "Hook Lab owns overlay writing.",
+            reason: "Overlay writing is handled separately.",
           },
           removeRanges: [],
         },

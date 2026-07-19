@@ -12,8 +12,8 @@ const capabilityChapters = [
     marker: "FIND",
     title: "When the library gets thin, make the next useful source clip.",
     description:
-      "Hook Lab remembers patterns worth repeating. Clipr and Swapr help fill a real footage gap without turning generated material into the whole strategy.",
-    details: ["Hook Lab ideas", "Clipr source clips", "Swapr variations"],
+      "Hook Lab breaks down public social posts. Clipr and Swapr help fill a real footage gap without turning generated material into the whole strategy.",
+    details: ["Social post analysis", "Clipr source clips", "Swapr variations"],
   },
   {
     marker: "SHIP",

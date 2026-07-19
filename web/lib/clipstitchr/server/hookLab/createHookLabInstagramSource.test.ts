@@ -7,11 +7,14 @@ describe("createHookLabInstagramSource", () => {
       createHookLabInstagramSource(
         {
           caption: "A useful opening",
+          commentsCount: 84,
           displayUrl: "https://cdn.example.com/cover.jpg",
           id: "post_123",
           ownerFullName: "Creator Name",
           ownerUsername: "creator",
+          likesCount: 5_600,
           productType: "clips",
+          videoPlayCount: 120_000,
           timestamp: "2026-07-01T12:30:00.000Z",
           url: "https://www.instagram.com/reel/ABC123/?utm_source=ig_web",
           videoUrl: "https://cdn.example.com/video.mp4",
@@ -23,6 +26,13 @@ describe("createHookLabInstagramSource", () => {
       authorProfileUrl: undefined,
       authorUsername: "creator",
       canonicalUrl: "https://www.instagram.com/reel/ABC123/",
+      metrics: {
+        commentCount: 84,
+        likeCount: 5_600,
+        playCount: 120_000,
+        saveCount: undefined,
+        shareCount: undefined,
+      },
       platform: "instagram",
       sourceCreatedAt: "2026-07-01T12:30:00.000Z",
       sourcePostId: "post_123",

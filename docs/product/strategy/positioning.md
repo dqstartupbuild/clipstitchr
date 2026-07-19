@@ -20,7 +20,7 @@ The core product is Stitchr: a way to turn saved Hook/UGC clips, b-roll,
 reaction clips, and product demos into finished 9:16 ads without opening a
 timeline editor.
 
-Scores, templates, Hook Lab, Clipr, Swapr, Swipr, avatars, and daily drafts
+Scores, Hook Lab, Clipr, Swapr, Swipr, avatars, and daily drafts
 support that same job:
 
 > Remove the parts of content work that make users avoid starting.
@@ -121,8 +121,7 @@ Core supporting features:
 
 - Library: keep clips, demos, drafts, carousels, avatars, and
   finished ads in one place.
-- Hook Lab: save what made a line, public post, or past Stitch worth repeating,
-  then turn that pattern into fresh product-relevant drafts.
+- Hook Lab: save and break down a public TikTok or Instagram video post.
 - Clip and Stitch Scores: catch weak clips or finished ads before the user posts
   or runs them.
 - Daily drafts: keep new drafts appearing when social falls off the real work
@@ -145,8 +144,8 @@ Use this order for the public landing page:
 2. Output proof: show finished examples before explaining tools.
 3. How it works: upload once, build the library, stitch and ship.
 4. Toolkit: every tool feeds one library.
-5. Hook Lab: finding a useful pattern is easy; repeating it without copying is
-   hard.
+5. Hook Lab: public numbers are easier to understand with a complete video
+   breakdown.
 6. Stitchr: saved Hook/UGC clips plus a demo become ads.
 7. Scores: find weak clips before wasting a post or ad.
 8. Hook/UGC helpers: fill a thin library without another shoot.
@@ -173,7 +172,7 @@ Use this order for the public landing page:
 | Feature | Human reason |
 | --- | --- |
 | Stitchr | The user has clips but does not want to rebuild the same UGC-then-demo ad by hand. |
-| Hook Lab | The user wants to repeat why something worked without copying the original post. |
+| Hook Lab | The user wants to understand what happens in a public post and how its performance looks. |
 | Scores | Nobody wants to learn the clip was wrong after posting or running the ad. |
 | Daily drafts | Showing up consistently on social is hard when the user does not like social. |
 | Clipr | The library needs more Hook/UGC clips or a fresh take on a saved demo without another shoot. |

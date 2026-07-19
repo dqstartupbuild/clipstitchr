@@ -3,11 +3,11 @@ import { putR2Object } from "@/lib/clipstitchr/server/r2/putR2Object";
 
 export function saveHookLabThumbnail({
   body,
-  ideaId,
+  postId,
   ownerId,
 }: {
   body: Uint8Array;
-  ideaId: string;
+  postId: string;
   ownerId: string;
 }) {
   return putR2Object({
@@ -19,7 +19,7 @@ export function saveHookLabThumbnail({
     key: createR2ObjectKey({
       contentType: "image/jpeg",
       kind: "hook-lab-thumbnail",
-      recordId: ideaId,
+      recordId: postId,
       userId: ownerId,
     }),
   });

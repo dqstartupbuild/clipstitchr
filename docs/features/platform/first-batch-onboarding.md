@@ -9,7 +9,7 @@ The first batch onboarding flow gives new users one direct path into ClipStitchr
 3. Wait for the signed Stripe confirmation to unlock setup.
 4. Add a product name and website.
 5. Review and edit the generated product profile.
-6. Choose Hook Lab writing goal/tone and any phrases to avoid.
+6. Optionally save a public TikTok or Instagram post in Hook Lab for research.
 7. Upload Hook/UGC clips and review their scores.
 8. Upload a product demo and review its score.
 9. Choose Stitchr batch text style and colors.
@@ -52,8 +52,6 @@ The review screen lets the user edit:
 
 - Product name
 - Website
-- Preferred hook style
-- Hook Lab goal, tone, and phrases to avoid
 - Product details
 - Audience details
 - Audience problem

@@ -16,7 +16,7 @@ The packs are fixed local data. They do not import ClipStitchr's Hook library, c
 
 ## Paid Boundary
 
-The resource supplies finite category context but does not personalize hooks to a specific app, save a Hook Lab collection, generate unlimited variants, create footage, or produce an ad. ClipStitchr remains paid production software.
+The resource supplies finite category context but does not personalize hooks to a specific app, analyze social posts, generate unlimited variants, create footage, or produce an ad. ClipStitchr remains paid production software.
 
 ## Use Cases
 

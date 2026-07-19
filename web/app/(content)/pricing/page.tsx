@@ -5,7 +5,7 @@ import { site } from "@/lib/site";
 export const metadata = createPageMetadata({
   title: `Pricing | ${site.name}`,
   description:
-    "ClipStitchr pricing for turning saved clips and demos into TikTok and Reels ads, with included Stitchr, scores, Hook Lab Ideas, and credits for extra material.",
+    "ClipStitchr pricing for turning saved clips and demos into TikTok and Reels ads, with included Stitchr, scores, Hook Lab post analysis, and credits for extra material.",
   canonical: "/pricing",
   keywords: [
     "ClipStitchr pricing",

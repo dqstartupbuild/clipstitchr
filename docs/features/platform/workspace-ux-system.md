@@ -90,7 +90,7 @@ Media cards use `MediaPrimaryAction` for the clearest next action:
 - Stitches: Download
 - Swipes: Continue editing
 - Avatar photos: Use in Swapr
-- Hook Lab recipe Ideas: Use idea from Hook Lab
+- Hook Lab posts: Open analysis
 
 ## Maintenance Notes
 

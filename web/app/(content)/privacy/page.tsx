@@ -51,10 +51,10 @@ export default function PrivacyPage() {
               and stitches.
             </p>
             <p>
-              Hook Lab can learn from text you paste, one of your saved
-              Stitches, or a public TikTok or Instagram post you choose. We send
-              that source to our processing providers so they can find a
-              reusable writing pattern and visual idea.
+              Hook Lab analyzes a public TikTok or Instagram video post you
+              choose. We send the public post details and temporary video to our
+              processing providers so they can describe the video and explain
+              its public performance.
             </p>
             <p>
               For a public social post, Apify retrieves the public post details
@@ -62,9 +62,10 @@ export default function PrivacyPage() {
               places the video in protected temporary storage only while it is
               being analyzed. We delete the working copies whether the analysis
               works or fails. We may keep the public post link, creator
-              attribution, extracted text, a private preview image, and the
-              reusable Idea in your account until you remove it. We do not use
-              Hook Lab to save or repost the source video.
+              attribution, extracted text, public engagement counts, a private
+              preview image, and the completed analysis in your account until
+              you remove it. We do not use Hook Lab to save or repost the source
+              video.
             </p>
             <p>
               You can delete clips, photos, and stitches in the dashboard. Those

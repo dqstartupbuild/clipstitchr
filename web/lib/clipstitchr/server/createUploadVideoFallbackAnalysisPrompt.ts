@@ -24,7 +24,7 @@ export function createUploadVideoFallbackAnalysisPrompt({
       "Return an empty string for product, location, or action fields that do not fit the visible demo. Do not fill fields with unrelated details.",
       "Every score is 0 to 100, not 0 to 10. Use 50 to 75 for an average usable clip and only use very low scores for unusable clips.",
       "Base the score only on visible short-form posting usefulness.",
-      "Do not suggest new text overlay copy. Hook Lab handles hook and overlay writing.",
+      "Do not suggest new text overlay copy.",
       ...formatQuickEditDetectorCandidatesForPrompt(detectorCandidates),
       "Use quickEditSuggestions.candidates for detector-style ranges, then use removeRanges only for ranges worth reviewing in the manual cut editor.",
     ].join("\n");
@@ -40,7 +40,7 @@ export function createUploadVideoFallbackAnalysisPrompt({
     "Return an empty string for person, outfit, location, or action fields that do not fit the visible UGC. Do not fill fields with unrelated details.",
     "Every score is 0 to 100, not 0 to 10. Use 50 to 75 for an average usable clip and only use very low scores for unusable clips.",
     "Base the score only on visible short-form posting usefulness.",
-    "Do not suggest new text overlay copy. Hook Lab handles hook and overlay writing.",
+    "Do not suggest new text overlay copy.",
     ...formatQuickEditDetectorCandidatesForPrompt(detectorCandidates),
     "Use quickEditSuggestions.candidates for detector-style ranges, then use removeRanges only for ranges worth reviewing in the manual cut editor.",
   ].join("\n");

@@ -4,7 +4,6 @@ import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/Automat
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
 import type { ProductLimitDialogReason } from "@/lib/clipstitchr/types/ProductLimitDialogReason";
-import type { StitchTemplate } from "@/lib/clipstitchr/types/StitchTemplate";
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 
 type SettingsProductSectionProps = {
@@ -22,7 +21,6 @@ type SettingsProductSectionProps = {
   archivedProducts?: ProductProfile[];
   savingProductId: string | null;
   restoringProductId?: string | null;
-  stitchTemplates: StitchTemplate[];
   swiprPacks: SwiprLibraryPack[];
   onDeleteProduct: (id: string) => Promise<void>;
   onSaveAutomation: (preferences: AutomationPreferencesInput) => Promise<void>;
@@ -50,7 +48,6 @@ export function SettingsProductSection({
   archivedProducts = [],
   savingProductId,
   restoringProductId = null,
-  stitchTemplates,
   swiprPacks,
   onDeleteProduct,
   onSaveAutomation,
@@ -98,7 +95,6 @@ export function SettingsProductSection({
         isSaving={isAutomationSaving}
         preferences={automationPreferences}
         productName={activeProductName}
-        stitchTemplates={stitchTemplates}
         swiprPacks={swiprPacks}
         onSave={onSaveAutomation}
       />

@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Hook Lab | ${site.name}`,
   description:
-    "Save repeatable content ideas, review generated hooks, and turn inspiration into fresh ClipStitchr videos.",
+    "Save public TikTok and Instagram video posts, then read a timestamped video and performance analysis.",
   canonical: "/dashboard/hooks",
   noIndex: true,
 });

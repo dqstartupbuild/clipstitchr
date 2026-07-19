@@ -5,5 +5,4 @@ export type LibraryTab =
   | "swipes"
   | "pexels"
   | "stitches"
-  | "avatars"
-  | "templates";
+  | "avatars";

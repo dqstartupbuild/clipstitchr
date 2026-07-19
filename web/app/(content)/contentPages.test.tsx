@@ -180,7 +180,7 @@ describe("content pages", () => {
     expect(indexMarkup).toContain("What helps the next ad");
     expect(indexMarkup).toContain(firstDoc.title);
     expect(indexMarkup).toContain("Clip Scores");
-    expect(indexMarkup).toContain("Saved setup Ideas");
+    expect(indexMarkup).toContain("Hook Lab");
     expect(indexMarkup).toContain("Automation");
     expect(indexMarkup).toContain("Post Bridge");
     expect(generateDocsArticleStaticParams()).toContainEqual({

@@ -74,7 +74,7 @@ describe("parseUploadAssetAnalysis", () => {
             quickEditSuggestions: {
               overlayText: {
                 replaceWith: "A hook score should not save",
-                reason: "Hook Lab owns overlay writing.",
+                reason: "Overlay writing is handled separately.",
               },
               candidates: [
                 {

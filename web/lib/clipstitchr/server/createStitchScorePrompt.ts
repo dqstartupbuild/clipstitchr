@@ -62,7 +62,7 @@ export function createStitchScorePrompt({
     "- For a first score, omit reassessment or leave its lists empty.",
     "- Drop-off risk points should be specific and plain, with timestamps or moments when possible.",
     "- Suggested trims should be concrete. Mention what to cut or where to start sooner.",
-    "- Do not suggest new text overlay copy. Hook Lab handles hook and overlay writing.",
+    "- Do not suggest new text overlay copy.",
     "- Do not return suggestedOverlayText or quickEditSuggestions.overlayText.",
     "- Suggested opening line should describe a stronger opening beat, not new overlay copy.",
     "- quickEditSuggestions should be concrete enough for non-destructive edits that a user can review before saving.",

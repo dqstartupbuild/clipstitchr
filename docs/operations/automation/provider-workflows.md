@@ -29,7 +29,7 @@ This document covers:
 - Private sound upload, TikTok import, and selection.
 - Swapr provider prediction finalization.
 - Upload video/image analysis handoffs when provider calls are used.
-- Hook Lab Idea analysis, Apify Actor continuation, and Idea-use generation.
+- Hook Lab public-post ingestion and full-video analysis.
 - Daily autopilot runs for eligible users.
 
 This document does not cover Media Bunny rendering details. Media processing is
@@ -233,36 +233,21 @@ documentation.
 
 ## Hook Lab Durable Workflow
 
-Hook Lab uses two provider job types and one media job type:
+Hook Lab uses one provider job type: `hook-lab-post-analysis`.
 
-- `hook-lab-idea-analysis`
-- `hook-lab-idea-use`
-- `hook-lab-variant-finalization`
-
-The create route saves an Idea before it creates provider work. Text and owned-
-Stitch sources can be analyzed directly. TikTok and Instagram sources start an
-Apify Actor asynchronously. The run URL sets `waitForFinish=0`, `timeout=180`,
-`maxItems=1`, and a bounded `maxTotalChargeUsd`; the platform input also asks
-for one result. The worker saves the Actor run and dataset IDs, marks the
-provider job as waiting, releases the job lock, and requests a 30-second
-continuation. A later worker execution polls the durable run until it reaches a
-terminal state.
+The create route validates a public TikTok or Instagram video URL, saves a
+`hookLabPosts` record, and creates durable provider work. The worker starts an
+Apify Actor asynchronously with one requested result and a bounded maximum
+charge. It saves the Actor run and dataset IDs, releases the job lock while the
+Actor runs, and requests a delayed continuation to poll the durable run.
 
 Convex records `providerRunRequestedAt` atomically before the external Actor
 start. Recovery reuses a saved run and does not issue a second paid start when
 the first response was ambiguous. A successful terminal run is reused by an
 ordinary analysis retry and its ID is attached to the current provider job. A
-media download/type/expiry failure is stored as `source_video_unavailable`, so
-the next explicit user retry clears the stale run and dataset before starting a
-fresh capped import. Idea-use variants separately checkpoint generated writing,
-image, and video object metadata. Reclaimed jobs resume from the latest
-checkpoint rather than repeating provider calls that already completed.
-
-Ready Hook Lab text blueprints also feed Stitchr writing as structured memory.
-Convex selects at most eight product/shared blueprints, ranks product scope and
-real use first, and snapshots them into Batch/automation jobs. Prompt formatting
-omits source text and includes only reusable structure, slots, cadence, claims,
-and safety constraints.
+media download, type, or expiry failure causes the next explicit retry to start
+a fresh capped import. Reclaimed jobs resume from saved provider lineage rather
+than repeating provider calls that already completed.
 
 Platform adapters isolate Actor-specific output. The imported media fetcher
 accepts only validated HTTPS media URLs from adapter output, revalidates DNS and
@@ -273,10 +258,9 @@ the token is never forwarded to a media CDN or another host. The worker stages
 the validated bytes under a MIME-named, owner-private temporary R2 key and gives
 Gemini a short-lived signed URL. This avoids Replicate file indirection that can
 hide the video's MIME type. The temporary R2 object and worker-local media are
-removed in `finally`; only an owner-private thumbnail may be retained. Owned
-Stitch video is fully streamed under the same byte/type/timeout validation,
-then analyzed through a fresh short-lived signed URL. Temporary R2 deletion is
-retried three times with a 10-second abort timeout per attempt. If cleanup still
+removed in `finally`; only an owner-private thumbnail may be retained.
+Temporary R2 deletion is retried three times with a 10-second abort timeout per
+attempt. If cleanup still
 fails, the worker emits a sanitized error with the durable provider job ID,
 without overriding completed analysis or its original failure; this prevents a
 cleanup outage from duplicating a paid prediction. Thumbnail generation removes
@@ -291,17 +275,10 @@ the ID again. Permanent MIME/input and terminal import failures bypass identical
 immediate retries; transient network, provider-availability, and rate-limit
 failures keep the bounded retry path.
 
-An Idea-use request creates one durable use plus 1, 3, or 5 durable variants
-after reserving every requested unit of writing, avatar, video, provider,
-asset-save, and Convex-write quota. Each provider job generates writing, a
-fresh avatar still, and an eight-second reaction opening, then creates a media
-job. The media worker owns normalization, poster creation, reusable clip save,
-editable Stitch assembly, lineage, and transient-object cleanup.
-
 Hook Lab enables `shouldDownloadVideos` for the default Clockworks TikTok Actor.
 A capped one-item integration run verified that this input returns a temporary
-video URL. Actor output still stays behind the platform adapter, and an Idea
-fails safely if a future Actor version omits usable media.
+video URL. Actor output stays behind the platform adapter, and a post fails
+safely if a future Actor version omits usable media.
 
 ## Clipr Durable Target
 
@@ -589,7 +566,7 @@ Update `docs/operations/security/rate-limits.md` whenever these limits are imple
 - Media worker deployment: `docs/operations/deployment/media-worker.md`
 - Durable workflow notes: `docs/operations/reliability/durable-workflows.md`
 - Rate limits: `docs/operations/security/rate-limits.md`
-- Hook Lab implementation: `docs/features/hook-lab/stitchr-hook-lab.md`
+- Hook Lab implementation: `docs/features/hook-lab/hook-lab-post-analysis.md`
 - Replicate webhooks: https://replicate.com/docs/webhooks
 - Replicate webhook setup:
   https://replicate.com/docs/topics/webhooks/setup-webhook

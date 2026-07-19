@@ -8,7 +8,7 @@ export function PricingHero() {
         <h1 className="marketing-heading">Pick your pace.</h1>
         <div className="pricing-hero-detail">
           <p>
-            Stitchr, scoring, Hook Lab Ideas, and your clip library are
+            Stitchr, scoring, Hook Lab post analysis, and your clip library are
             included. Creation credits cover everyday output, while each plan
             has a separate allowance for Clipr and Swapr videos.
           </p>

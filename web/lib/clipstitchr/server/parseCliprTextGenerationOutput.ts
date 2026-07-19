@@ -4,7 +4,6 @@ import type { CliprScenePlan } from "@/lib/clipstitchr/types/CliprScenePlan";
 import type { CliprTextGeneration } from "@/lib/clipstitchr/types/CliprTextGeneration";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
-import type { StitchrHookVariant } from "@/lib/clipstitchr/types/StitchrHookVariant";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createStitchSocialCaption } from "@/lib/clipstitchr/utils/createStitchSocialCaption";
 import { createSwiprPostDescriptionFallback } from "@/lib/clipstitchr/utils/createSwiprPostDescriptionFallback";
@@ -23,11 +22,6 @@ type ParsedCliprScene = {
   visualPrompt?: unknown;
 };
 
-type ParsedStitchrHookVariant = {
-  angle?: unknown;
-  reason?: unknown;
-  text?: unknown;
-};
 
 function normalizeString(value: unknown, fallback: string) {
   return sanitizeCliprGeneratedText(
@@ -281,58 +275,6 @@ function normalizeScenePlan(
     }));
 }
 
-function normalizeHookVariantString(value: unknown, maxLength: number) {
-  return typeof value === "string"
-    ? value.trim().replace(/\s+/g, " ").slice(0, maxLength)
-    : "";
-}
-
-function normalizeStitchrHookVariants({
-  filledHook,
-  selectedTemplate,
-  value,
-}: {
-  filledHook: string;
-  selectedTemplate: CliprHookTemplate;
-  value: unknown;
-}): StitchrHookVariant[] {
-  const rawVariants = Array.isArray(value) ? value : [];
-  const variants = rawVariants
-    .map((variant: ParsedStitchrHookVariant) => {
-      const text = normalizeString(variant.text, "");
-
-      return {
-        angle:
-          normalizeHookVariantString(variant.angle, 90) || "Hook Lab pick",
-        reason: normalizeHookVariantString(variant.reason, 140),
-        text,
-      };
-    })
-    .filter((variant) => getGeneratedHookIsReadable(variant.text, selectedTemplate));
-  const rankedVariants = [
-    {
-      angle: variants[0]?.angle || "Best fit",
-      reason: variants[0]?.reason || "Matches the selected clips and product.",
-      text: filledHook,
-    },
-    ...variants.filter((variant) => variant.text !== filledHook),
-  ];
-  const seenHooks = new Set<string>();
-
-  return rankedVariants
-    .filter((variant) => {
-      const dedupeKey = variant.text.toLowerCase();
-
-      if (seenHooks.has(dedupeKey)) {
-        return false;
-      }
-
-      seenHooks.add(dedupeKey);
-      return true;
-    })
-    .slice(0, 8);
-}
-
 export function parseCliprTextGenerationOutput({
   candidates,
   durationSeconds,
@@ -355,7 +297,6 @@ export function parseCliprTextGenerationOutput({
     description?: unknown;
     filledHook?: unknown;
     hashtags?: unknown;
-    hookVariants?: unknown;
     overlayText?: unknown;
     scenePlan?: unknown;
     script?: unknown;
@@ -449,14 +390,6 @@ export function parseCliprTextGenerationOutput({
     caption,
     description,
     hashtags,
-    hookVariants:
-      purpose === "stitchr"
-        ? normalizeStitchrHookVariants({
-            filledHook,
-            selectedTemplate,
-            value: parsed.hookVariants,
-          })
-        : [],
     hookStyleKey: selectedTemplate.styleKey,
     hookTemplateId: selectedTemplate.id,
     overlayText: normalizeString(parsed.overlayText, filledHook),

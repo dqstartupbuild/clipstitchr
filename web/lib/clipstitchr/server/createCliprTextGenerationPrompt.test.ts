@@ -23,15 +23,8 @@ const product: ProductProfile = {
   audienceDetails: "Founders and solo marketers.",
   createdAt: "2026-01-01T00:00:00.000Z",
   emotionalNarrative: "Founders want to stop looking scattered and feel proud.",
-  hookEdgeLevel: "bold",
-  hookGenerationGoal: "comments",
   inferredPainPoints: ["launch content gets scattered"],
-  rejectedHookExamples: ["Stop scrolling"],
   updatedAt: "2026-01-01T00:00:00.000Z",
-  winningHookExamples: [
-    "This launch got away from me",
-    "I thought launch day would feel calmer",
-  ],
 };
 
 describe("createCliprTextGenerationPrompt", () => {
@@ -71,7 +64,7 @@ describe("createCliprTextGenerationPrompt", () => {
     );
   });
 
-  it("uses a simplified source-aware Stitchr hook framework", () => {
+  it("uses a simplified source-aware Stitchr text prompt", () => {
     const prompt = createCliprTextGenerationPrompt({
       candidates: [candidate],
       durationSeconds: 30,
@@ -98,54 +91,25 @@ describe("createCliprTextGenerationPrompt", () => {
       ],
     });
 
-    expect(prompt).toContain("You write short-form social hooks and captions");
-    expect(prompt).toContain("Account context:");
-    expect(prompt).toContain("What's working for this account");
-    expect(prompt).toContain("Stitchr source context:");
-    expect(prompt).toContain("There is no script or voiceover.");
-    expect(prompt).toContain('"templateId":"stitchr-hook-lab"');
-    expect(prompt).toContain('"caption":"short caption hook related to the overlay and clips"');
+    expect(prompt).toContain("Write one short text overlay");
+    expect(prompt).toContain("Product:");
+    expect(prompt).toContain("Selected clips:");
+    expect(prompt).toContain("There is no generated voiceover.");
+    expect(prompt).toContain('"caption":"short feed caption"');
     expect(prompt).toContain('"hashtags":["#tagone","#tagtwo","#tagthree"]');
-    expect(prompt).toContain('"hookVariants"');
-    expect(prompt).toContain(
-      "Founders want to stop looking scattered and feel proud.",
-    );
-    expect(prompt).toContain("Hook Lab memory:");
-    expect(prompt).toContain("Goal: Get more comments");
-    expect(prompt).toContain("Tone: Bold");
-    expect(prompt).toContain("No saved Idea patterns yet.");
-    expect(prompt).not.toContain("This launch got away from me");
-    expect(prompt).not.toContain("I thought launch day would feel calmer");
-    expect(prompt).toContain("Stop scrolling");
-    expect(prompt).toContain("Write for the viewer first");
-    expect(prompt).toContain("The product is context, not the main character");
-    expect(prompt).toContain(
-      "Preserve their function, not source wording",
-    );
-    expect(prompt).toContain(
-      "Never reproduce source-specific names, brands, claims, references, or unresolved slots",
-    );
-    expect(prompt).toContain("hookVariants must contain 6-8 distinct hooks");
-    expect(prompt).toContain("Most hooks should be 3-9 words");
-    expect(prompt).toContain("hashtags must contain 3-5 hashtags");
+    expect(prompt).toContain("Write one strong result");
+    expect(prompt).toContain("Most overlays should be 3-9 words");
+    expect(prompt).toContain("hashtags must contain 3-5 lowercase hashtags");
     expect(prompt).toContain("Creator surprised by messy launch work");
     expect(prompt).toContain("A founder looks frustrated at scattered files.");
     expect(prompt).toContain(
       "AI hook hint: The moment I stopped pretending launch chaos was normal",
     );
     expect(prompt).toContain("AI hook hint reason: Matches the visible frustration.");
-    expect(prompt).toContain(
-      "Use the source context when it gives you a real visual detail",
-    );
+    expect(prompt).toContain("Use a real detail from the selected clips");
     expect(prompt).toContain("The demo shows launch assets getting organized.");
     expect(prompt).toContain("script must be an empty string");
-    expect(prompt).toContain("Return only the JSON object");
-    expect(prompt).not.toContain("Emotional Narrative Hooks");
-    expect(prompt).not.toContain("Reaction-Matched Hooks");
-    expect(prompt).not.toContain("Use one Stitchr emotional angle");
-    expect(prompt).not.toContain("Content angles to choose from");
-    expect(prompt).not.toContain("Follow-through arcs to choose from");
-    expect(prompt).not.toContain("Candidate templates");
+    expect(prompt).toContain("Respond with only this JSON shape");
   });
 
   it("defines Swipr as an audience-first carousel with natural product placement", () => {

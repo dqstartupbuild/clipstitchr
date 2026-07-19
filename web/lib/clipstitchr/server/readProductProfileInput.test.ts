@@ -10,12 +10,8 @@ describe("readProductProfileInput", () => {
         productDetails: "  AI launch planning  ",
         audienceDetails: "  solo founders  ",
         emotionalNarrative: "  solo founders want confidence  ",
-        hookEdgeLevel: " bold ",
-        hookGenerationGoal: " comments ",
         inferredProblem: "  launches feel slow  ",
         inferredPainPoints: ["  no content rhythm  ", "", "no content rhythm"],
-        rejectedHookExamples: ["  Stop scrolling  ", "", "Stop scrolling"],
-        winningHookExamples: "  This launch got away from me  \n\nI thought launch day would feel calmer",
       }),
     ).toEqual({
       name: "LaunchKit",
@@ -23,15 +19,8 @@ describe("readProductProfileInput", () => {
       productDetails: "AI launch planning",
       audienceDetails: "solo founders",
       emotionalNarrative: "solo founders want confidence",
-      hookEdgeLevel: "bold",
-      hookGenerationGoal: "comments",
       inferredProblem: "launches feel slow",
       inferredPainPoints: ["no content rhythm"],
-      rejectedHookExamples: ["Stop scrolling"],
-      winningHookExamples: [
-        "This launch got away from me",
-        "I thought launch day would feel calmer",
-      ],
     });
   });
 

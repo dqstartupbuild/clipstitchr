@@ -29,14 +29,14 @@ Feature documentation is grouped by the part of ClipStitchr it supports:
 | `features/courses/` | Email courses, workshops, access, and progress |
 | `features/demo/` | Product Demo upload behavior |
 | `features/editor/` | Browser media inspection and non-destructive editing |
-| `features/hook-lab/` | Hook Lab and Stitchr integration |
+| `features/hook-lab/` | Hook Lab public-post analysis |
 | `features/library/` | The shared media Library |
 | `features/marketing/` | Public marketing surfaces and case studies |
 | `features/platform/` | Shared account, onboarding, navigation, and workspace behavior |
 | `features/post-bridge/` | Scheduling and post-performance workflows |
 | `features/public-tools/` | Public tools organized into audits, calculators, generators, portfolio records, and resources |
 | `features/settings/` | Product and automation settings |
-| `features/stitchr/` | Stitchr creation, templates, scoring, and saved renders |
+| `features/stitchr/` | Stitchr creation, scoring, and saved renders |
 | `features/swapr/` | Swapr generation |
 | `features/swipr/` | Swipr and Pexels workflows |
 

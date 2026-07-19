@@ -17,7 +17,6 @@ import { createSwiprSwipeFromConvexDocument } from "@/lib/clipstitchr/backend/cr
 import { createVideoClipMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipMetadataFromConvexDocument";
 import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
-import { useCreateHookLabIdeaFromStitch } from "@/lib/clipstitchr/hooks/useCreateHookLabIdeaFromStitch";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
@@ -27,7 +26,6 @@ export function DashboardPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const products = useDashboardProduct();
-  const hookLabIdeaCreator = useCreateHookLabIdeaFromStitch();
   const swiprLibrary = useSwiprLibrary();
   const productQueryArgs = products.activeProductId
     ? { productId: products.activeProductId }
@@ -94,8 +92,7 @@ export function DashboardPageClient() {
     library.error ??
     photoLibrary.error ??
     swiprLibrary.error ??
-    products.error ??
-    hookLabIdeaCreator.error;
+    products.error;
 
   return (
     <DashboardShell>
@@ -126,14 +123,12 @@ export function DashboardPageClient() {
         />
         <RecentStitchesSection
           demoClips={demoClips}
-          savingIdeaStitchId={hookLabIdeaCreator.savingStitchId}
           stitches={recentStitches}
           onDelete={library.removeStitch}
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadStitchPoster}
           onLoadVideo={library.loadStitchVideo}
           onPostBridgeScheduled={library.refresh}
-          onSaveIdea={hookLabIdeaCreator.createIdeaFromStitch}
           onScore={library.scoreStitch}
           onApplyQuickEdit={library.applyStitchQuickEdit}
           onResetQuickEdit={library.resetStitchQuickEdit}

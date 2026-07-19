@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { Bot, Clock } from "lucide-react";
 import { AutomationCliprModePicker } from "@/app/_components/settings/AutomationCliprModePicker";
 import { AutomationGenerationCountPicker } from "@/app/_components/settings/AutomationGenerationCountPicker";
-import { AutomationStitchrTemplateAllocationPicker } from "@/app/_components/settings/AutomationStitchrTemplateAllocationPicker";
 import { AutomationStitchrColorChoicePicker } from "@/app/_components/settings/AutomationStitchrColorChoicePicker";
 import { AutomationStitchrTextStylePicker } from "@/app/_components/settings/AutomationStitchrTextStylePicker";
 import { AutomationSwiprPackPicker } from "@/app/_components/settings/AutomationSwiprPackPicker";
@@ -23,11 +22,9 @@ import type {
   AutomationPreferencesInput,
 } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { AutomationTool } from "@/lib/clipstitchr/types/AutomationTool";
-import type { StitchTemplate } from "@/lib/clipstitchr/types/StitchTemplate";
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
 import { getCssColorHex } from "@/lib/clipstitchr/utils/getCssColorHex";
-import { normalizeAutomationStitchrTemplateAllocations } from "@/lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations";
 
 type SettingsAutomationPanelProps = {
   error: string | null;
@@ -35,7 +32,6 @@ type SettingsAutomationPanelProps = {
   isSaving: boolean;
   productName?: string;
   preferences: AutomationPreferencesInput;
-  stitchTemplates: StitchTemplate[];
   swiprPacks: SwiprLibraryPack[];
   onSave: (preferences: AutomationPreferencesInput) => Promise<void>;
 };
@@ -56,7 +52,6 @@ export function SettingsAutomationPanel({
   isSaving,
   productName,
   preferences,
-  stitchTemplates,
   swiprPacks,
   onSave,
 }: SettingsAutomationPanelProps) {
@@ -164,20 +159,6 @@ export function SettingsAutomationPanel({
     updateDraftPreferences({
       ...draftPreferences,
       stitchrGenerationCount,
-      stitchrTemplateAllocations:
-        normalizeAutomationStitchrTemplateAllocations(
-          draftPreferences.stitchrTemplateAllocations,
-          stitchrGenerationCount,
-          new Set(stitchTemplates.map((template) => template.id)),
-        ),
-    });
-  };
-  const handleStitchrTemplateAllocationsChange = (
-    stitchrTemplateAllocations: AutomationPreferencesInput["stitchrTemplateAllocations"],
-  ) => {
-    updateDraftPreferences({
-      ...draftPreferences,
-      stitchrTemplateAllocations,
     });
   };
   const handleStitchrTextColorChange = (
@@ -277,15 +258,7 @@ export function SettingsAutomationPanel({
     });
   };
   const handleSave = async () => {
-    await onSave({
-      ...draftPreferences,
-      stitchrTemplateAllocations:
-        normalizeAutomationStitchrTemplateAllocations(
-          draftPreferences.stitchrTemplateAllocations,
-          draftPreferences.stitchrGenerationCount,
-          new Set(stitchTemplates.map((template) => template.id)),
-        ),
-    });
+    await onSave(draftPreferences);
   };
 
   return (
@@ -362,19 +335,12 @@ export function SettingsAutomationPanel({
             disabled={isLoading || isSaving}
             label="Stitchr Config"
           >
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4">
               <AutomationGenerationCountPicker
                 disabled={isLoading || isSaving}
                 label="Stitchr drafts"
                 value={draftPreferences.stitchrGenerationCount}
                 onChange={handleStitchrGenerationCountChange}
-              />
-              <AutomationStitchrTemplateAllocationPicker
-                allocations={draftPreferences.stitchrTemplateAllocations}
-                disabled={isLoading || isSaving}
-                generationCount={draftPreferences.stitchrGenerationCount}
-                templates={stitchTemplates}
-                onChange={handleStitchrTemplateAllocationsChange}
               />
             </div>
             <div className="flex flex-col gap-2">

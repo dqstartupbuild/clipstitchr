@@ -70,9 +70,8 @@ Hook/UGC and Demo Quick Edit updates the clip's global default trim metadata. Th
 affects future Stitchr selections and source clip preview/export, but it does
 not mutate existing saved Stitches.
 
-Score analysis no longer creates overlay text suggestions. Hook Lab owns hook
-and overlay writing so generated copy can keep learning from the user's saved
-winning and rejected examples.
+Score analysis does not create overlay text suggestions. Stitchr text generation
+is a separate action.
 
 When a new Stitch is created, Stitchr copies the current source clip Quick Edit
 metadata into the saved Stitch as `ugcQuickEdit` and `demoQuickEdit`. Later

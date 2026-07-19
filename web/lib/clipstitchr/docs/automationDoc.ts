@@ -27,7 +27,7 @@ export const automationDoc = {
         "Enable or pause daily drafts.",
         "Choose Stitchr, Clipr, or Swipr.",
         "Pick Any, Reaction, or B-roll for generated Hook/UGC.",
-        "Choose the default text style, colors, and template mix for Stitchr drafts.",
+        "Choose the default text style and colors for Stitchr drafts.",
         "Save your changes.",
       ],
     },

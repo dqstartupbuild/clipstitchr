@@ -71,14 +71,11 @@ attention first, show the product immediately after.
 9. Tap or swipe through each exact Hook/UGC-then-demo preview.
 10. Optionally configure one text overlay and one caption/hashtag field per
     output or copy one overlay across the batch.
-11. Optionally generate ranked overlay hook options, a caption hook, and 3-5
-    hashtags from saved product context, structured Hook Lab Idea patterns, and the selected
-    Hook/UGC/demo clip descriptions. Stitchr auto-text can draw from product/ad
-    hook-library templates, but source names and template IDs stay hidden. Hook
-    Lab handles generated text; if selected clips have already-applied Quick
-    Edit overlay metadata from older records, auto-text can treat that metadata
-    as soft direction. The top hook is applied automatically, alternate hooks
-    stay selectable, and the generated overlay and caption field stay editable. The backend
+11. Optionally generate one overlay, a caption hook, and 3-5 hashtags from saved
+    product context and the selected Hook/UGC/demo clip descriptions. If
+    selected clips have already-applied Quick Edit overlay metadata, auto-text
+    can treat that metadata as soft direction. The generated overlay and caption
+    stay editable. The backend
     writing call uses `TEXT_WRITING_MODEL_ID`, which defaults to
     `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
     higher-cost writing tests.
@@ -113,35 +110,24 @@ Saved Stitch renders are documented separately in
 Stitchr Batch is documented separately in
 `docs/features/stitchr/stitchr-batch.md`.
 
-Saved stitches are reusable templates. The saved stitch card can launch Stitchr
+Saved stitches are reusable. The saved stitch card can launch Stitchr
 with the original source clips, trims, source-audio flags, playback rates, and
 text overlays and caption field already selected, letting users create a new
 stitch by changing only the parts that should differ. In normal Stitchr mode,
-reused text and reused caption copy become session templates for selected
+reused text and reused caption copy become session defaults for selected
 Hook/UGC clips that do not have their own edits yet. The user can deselect the
 original Hook/UGC clip, move through picker pages, select different Hook/UGC
 clips, and keep the same reused text and caption on the new outputs. If a
 specific Hook/UGC clip gets its own text edit, caption edit, empty text list, or
-empty caption field, that clip-specific choice wins over the reused template
+empty caption field, that clip-specific choice wins over the reused
 content. Reuse does not overwrite the existing stitch. Posted status is also
 non-destructive metadata: marking or
 unmarking a stitch as posted only changes library organization and does not
 change source clips, stored stitch settings, music, posters, captions, or
 downloadable output.
 
-Reusable Stitchr setups now live as recipe Ideas in Hook Lab. A recipe can
-supply source choices, trims, text-overlay style, audio behavior, playback
-rates, and caption copy. Batch can apply the recipe's text and caption while it
-still chooses fresh Hook/UGC and Demo pairs. Legacy Template IDs continue to
-resolve through a fallback reader during the rollback window. See
-`docs/features/hook-lab/stitchr-hook-lab.md` for current behavior and
-`docs/features/stitchr/stitchr-templates.md` for compatibility details.
-
 Stitchr social captions are documented separately in
 `docs/features/stitchr/stitchr-social-captions.md`.
-
-Stitchr Hook Lab is documented separately in
-`docs/features/hook-lab/stitchr-hook-lab.md`.
 
 Saved Stitch scoring is documented separately in `docs/features/editor/stitch-score.md`.
 Quick Edit is documented separately in `docs/features/editor/quick-edit.md`. Applying
@@ -168,12 +154,11 @@ automated Stitch.
   into Stitchr.
 - Keep generated overlay text and caption copy editable while hiding hook
   style/template mechanics.
-- Keep Hook Lab Ideas as user-owned structured memory, not copied output.
 - Keep Stitchr hook and caption generation simple and viewer-first, matching
   the Swipr prompt style while still using selected source context when it is
   helpful.
 - Keep selected, uploaded, or imported sounds editable and separate from the saved stitch.
-- Keep saved stitches usable as templates even after they are marked posted.
+- Keep saved stitches reusable even after they are marked posted.
 - Use clip scores as guidance for selection, not as a hard gate that blocks the
   user's creative judgment.
 - Use Stitch scores as quick editing guidance for finished stitches, not as a

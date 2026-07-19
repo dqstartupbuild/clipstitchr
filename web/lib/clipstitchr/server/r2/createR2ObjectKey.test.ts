@@ -108,10 +108,10 @@ describe("createR2ObjectKey", () => {
       createR2ObjectKey({
         userId: "user_123",
         kind: "hook-lab-thumbnail",
-        recordId: "idea_456",
+        recordId: "post_456",
         contentType: "image/jpeg",
       }),
-    ).toBe("users/user_123/hook-lab/idea_456/thumbnail.jpg");
+    ).toBe("users/user_123/hook-lab/post_456/thumbnail.jpg");
   });
 
   it("creates MIME-derived temporary Hook Lab source video keys", () => {
@@ -119,11 +119,11 @@ describe("createR2ObjectKey", () => {
       createR2ObjectKey({
         userId: "user_123",
         kind: "hook-lab-source-video",
-        recordId: "provider:idea_456:attempt_1",
+        recordId: "provider:post_456:attempt_1",
         contentType: "video/quicktime",
       }),
     ).toBe(
-      "users/user_123/hook-lab-sources/provider-idea_456-attempt_1/source.mov",
+      "users/user_123/hook-lab-sources/provider-post_456-attempt_1/source.mov",
     );
   });
 });

@@ -70,12 +70,8 @@ function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile 
     name: "Launch Kit",
     preferredCliprHookStyleKey: "mystery_gap",
     productDetails: "A launch kit",
-    rejectedHookExamples: ["Too hype"],
-    hookEdgeLevel: "punchy",
-    hookGenerationGoal: "views",
     updatedAt: "2026-05-20T00:00:00.000Z",
     websiteUrl: "https://launchkit.example.com/",
-    winningHookExamples: ["Real winner"],
     ...overrides,
   };
 }
@@ -135,7 +131,6 @@ describe("ProductSettingsEditDialog", () => {
     expect(markup).toContain("Audience details");
     expect(markup).toContain("Emotional narrative");
     expect(markup).toContain("Save");
-    expect(markup).not.toContain("Hooks to learn from");
     expect(markup).not.toContain("Real winner");
   });
 
@@ -205,14 +200,10 @@ describe("ProductSettingsEditDialog", () => {
     expect(onSave).toHaveBeenCalledWith({
       audienceDetails: "New audience",
       emotionalNarrative: "New emotional story",
-      hookEdgeLevel: "punchy",
-      hookGenerationGoal: "views",
       name: "New Launch Kit",
       preferredCliprHookStyleKey: "direct",
       productDetails: "New product details",
-      rejectedHookExamples: ["Too hype"],
       websiteUrl: "https://new.example.com/",
-      winningHookExamples: ["Real winner"],
     });
   });
 
@@ -289,13 +280,9 @@ describe("ProductSettingsEditDialog", () => {
 
     expect(rejectedSave).toHaveBeenCalledWith({
       audienceDetails: "Audience",
-      hookEdgeLevel: "punchy",
-      hookGenerationGoal: "views",
       name: "Launch Kit",
       preferredCliprHookStyleKey: undefined,
       productDetails: "Details",
-      rejectedHookExamples: ["Too hype"],
-      winningHookExamples: ["Real winner"],
     });
   });
 });

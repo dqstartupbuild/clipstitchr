@@ -120,8 +120,8 @@ Weak:
 
 Strong:
 
-> Save the line, post, or Stitch that made you stop. Hook Lab keeps the useful
-> pattern and turns it into something fresh for your product.
+> Save a public TikTok or Instagram post. Hook Lab shows what happens in the
+> video and explains how its public performance looks.
 
 ## Section Guidance
 
@@ -133,9 +133,9 @@ one video at a time, or remember where the finished file went.
 
 Hook Lab:
 
-This exists because people can recognize a good idea without knowing how to
-repeat it for their own product. Explain that Hook Lab learns the pattern and
-creative beat without copying the original post.
+This exists because public engagement counts do not explain why a post caught
+attention. Explain that Hook Lab gives the user a timestamped breakdown and a
+plain-language performance read.
 
 Scoring:
 
@@ -278,7 +278,7 @@ If a line could appear unchanged on a competitor homepage, rewrite it.
 
 - Say what happens in plain words.
 - Keep buttons action-oriented: `See pricing`, `Get ClipStitchr`, `Watch
-examples`, `Save Template`, `Score stitch`, `Review draft`.
+examples`, `Open analysis`, `Score stitch`, `Review draft`.
 - ClipStitchr has no free plan or trial. Do not use `free`, `try free`, or
   no-credit-card language in account and pricing CTAs.
 - Avoid making users feel judged for having messy files or inconsistent posting.

@@ -57,10 +57,6 @@ export function ProductSettingsEditDialog({
               emotionalNarrative: emotionalNarrative || undefined,
               preferredCliprHookStyleKey:
                 preferredCliprHookStyleKey || undefined,
-              winningHookExamples: product.winningHookExamples,
-              rejectedHookExamples: product.rejectedHookExamples,
-              hookGenerationGoal: product.hookGenerationGoal,
-              hookEdgeLevel: product.hookEdgeLevel,
             });
           } catch {
             return;

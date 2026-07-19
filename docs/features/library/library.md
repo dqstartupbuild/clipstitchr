@@ -6,7 +6,7 @@ The server passes the requested `tab` query value into the first Library render.
 
 The authenticated Library lives at `/dashboard/library`. It is the single place
 for saved Hook/UGC clips, product demos, generated outputs, finished work, and
-avatar photos. Reusable Stitchr setups now live as Ideas in Hook Lab.
+avatar photos.
 
 Library tabs are grouped by the way users think about the work:
 
@@ -22,12 +22,7 @@ compatibility redirects:
 
 - `/dashboard/uploads` -> `/dashboard/library`
 - `/dashboard/avatars` -> `/dashboard/library?tab=avatars`
-- `/dashboard/templates` -> `/dashboard/hooks?view=ideas`
 - `/dashboard/stitches` -> `/dashboard/library?tab=stitches`
-
-The legacy `/dashboard/library?tab=templates` URL also redirects to
-`/dashboard/hooks?view=ideas`. `templates` remains an accepted internal tab
-value only for rollback compatibility; it is not rendered in `LibraryTabs`.
 
 ## Implementation
 
@@ -50,10 +45,6 @@ Avatar functionality moved into
 photo upload, avatar assignment, default avatar actions, product assignment,
 voice and wardrobe controls, AI photo generation, metadata editing, deletion,
 and photo browsing.
-
-The old `TemplateLibraryTabSection.tsx` remains in source during the Hook Lab
-rollback window, but current navigation never renders it. Recipe Ideas are
-managed at `/dashboard/hooks?view=ideas`.
 
 Pexels pack management lives in
 `web/app/_components/library/PexelsLibraryTabSection.tsx`. It preserves Pexels
@@ -107,11 +98,9 @@ web/app/_components/library/
   PexelsLibraryFilterTabs.tsx
   PexelsLibraryPackCard.tsx
   PexelsLibraryTabSection.tsx
-  TemplateLibraryTabSection.tsx  # legacy rollback compatibility
 
 web/app/dashboard/uploads/page.tsx
 web/app/dashboard/avatars/page.tsx
-web/app/dashboard/templates/page.tsx
 web/app/dashboard/stitches/page.tsx
 ```
 
@@ -121,10 +110,6 @@ Add new visible Library tabs to `LibraryTab`, `LibraryTabs`, and
 `getLibraryTabFromSearchParams` together. If a tab needs upload controls, update
 `getLibraryTabFromAssetType` and `UploadDestinationMenuButton` in the same
 change.
-
-Keep the `templates` compatibility value and server redirect until the Hook Lab
-Template migration has completed its rollback window. Do not re-add Templates
-to the visible Assets group.
 
 Place new tabs in the clearest Library group: Videos, Finished, or Assets. If a
 new group is needed, keep the label plain and user-facing.

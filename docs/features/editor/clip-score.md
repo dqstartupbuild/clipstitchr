@@ -47,8 +47,8 @@ Stored fields:
 - `fixes`: up to 3 short fixes
 - `quickEditSuggestions`: optional structured non-destructive edit suggestions
 
-New clip scores do not save text overlay suggestions. Hook Lab owns hook and
-overlay writing so generated copy can adapt to each product's saved examples.
+New clip scores do not save text overlay suggestions. Stitchr text generation is
+a separate action.
 Historical `quickEditSuggestions.overlayText` data remains readable, but score
 parsers strip provider-returned overlay text from new scoring responses.
 

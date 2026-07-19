@@ -6,6 +6,5 @@ export function getGenerationRequiredForProviderJob(jobType: string) {
     "avatar-photo-generation",
     "swipr-background-generation",
     "swapr-photo-expansion",
-    "hook-lab-idea-use",
   ]).has(jobType);
 }

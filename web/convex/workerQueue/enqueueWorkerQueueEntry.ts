@@ -159,7 +159,6 @@ export async function enqueueWorkerQueueEntry(
 
   const usageReservationExempt =
     args.sourceKind === "media_job" ||
-    args.tool === "hook-lab-idea-use" ||
     (args.tool === "stitchr" && planKey === "agency");
 
   if (

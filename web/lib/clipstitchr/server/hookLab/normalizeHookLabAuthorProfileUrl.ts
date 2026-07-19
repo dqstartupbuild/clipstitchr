@@ -1,8 +1,8 @@
-import type { HookLabSourcePlatform } from "@/lib/clipstitchr/types/HookLabSourcePlatform";
+import type { HookLabPostPlatform } from "@/lib/clipstitchr/types/HookLabPostPlatform";
 
 export function normalizeHookLabAuthorProfileUrl(
   input: string | undefined,
-  platform: HookLabSourcePlatform,
+  platform: HookLabPostPlatform,
 ) {
   if (!input) {
     return undefined;

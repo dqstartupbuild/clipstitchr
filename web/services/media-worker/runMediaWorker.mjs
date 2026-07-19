@@ -3,12 +3,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { ConvexHttpClient } from "convex/browser";
 import { anyApi } from "convex/server";
 import { createUploadNormalizationFilter } from "./createUploadNormalizationFilter.mjs";
@@ -16,9 +11,6 @@ import { getQuickEditPlaybackDuration } from "./getQuickEditPlaybackDuration.mjs
 import { readUploadNormalizationLayout } from "./readUploadNormalizationLayout.mjs";
 import { readQuickEditSuggestions } from "./readQuickEditSuggestions.mjs";
 import { selectUploadNormalizationLayout } from "./selectUploadNormalizationLayout.mjs";
-import { processHookLabVariantFinalization } from "./processHookLabVariantFinalization.mjs";
-import { deleteHookLabMediaJobTemporaryObjects } from "./deleteHookLabMediaJobTemporaryObjects.mjs";
-import { failHookLabMediaJob } from "./failHookLabMediaJob.mjs";
 import { mediaWorkerQueueApiReference } from "./mediaWorkerQueueApiReference.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -211,15 +203,6 @@ async function uploadR2Object({ body, client, config, contentType, key }) {
     contentType,
     size: body.byteLength,
   };
-}
-
-async function deleteR2Object({ client, config, key }) {
-  await client.send(
-    new DeleteObjectCommand({
-      Bucket: config.r2.bucketName,
-      Key: key,
-    }),
-  );
 }
 
 function sanitizeR2KeySegment(segment) {
@@ -1409,8 +1392,7 @@ function getAutomationMediaJobFailureInput(job) {
 function getProviderMediaJobFailureInput(job) {
   if (
     job.jobType !== "clipr-finalization" &&
-    job.jobType !== "swapr-finalization" &&
-    job.jobType !== "hook-lab-variant-finalization"
+    job.jobType !== "swapr-finalization"
   ) {
     return null;
   }
@@ -1425,14 +1407,7 @@ function getProviderMediaJobFailureInput(job) {
     return null;
   }
 
-  return {
-    providerJobId: input.providerJobId.trim(),
-    hookLabIdeaVariantId:
-      typeof input.hookLabIdeaVariantId === "string" &&
-      input.hookLabIdeaVariantId.trim()
-        ? input.hookLabIdeaVariantId.trim()
-        : undefined,
-  };
+  return { providerJobId: input.providerJobId.trim() };
 }
 
 async function failAutomationMediaJob({
@@ -1522,42 +1497,14 @@ async function failProviderMediaJob({
     }),
   ];
 
-  if (input.hookLabIdeaVariantId) {
-    mutations.push(
-      client.mutation(
-        api["hookLabIdeaVariants/failFromMediaWorker"].failFromMediaWorker,
-        {
-          secret: config.mediaWorkerSecret,
-          ownerId: job.ownerId,
-          id: input.hookLabIdeaVariantId,
-          failureCode: "media_finalization_failed",
-          failureMessage:
-            "We made the opening but could not save the finished Stitch. Try again.",
-          updatedAt,
-        },
-      ),
-    );
-  }
-
   await Promise.all(mutations.map((mutation) => mutation.catch(() => null)));
 }
 
-async function failJob({ client, config, error, job, r2 }) {
+async function failJob({ client, config, error, job }) {
   const message =
     error instanceof Error ? error.message : "Unable to process media job.";
   const retry = job.attempt < MEDIA_MAX_JOB_ATTEMPTS;
   const updatedAt = new Date().toISOString();
-
-  if (!retry && job.jobType === "hook-lab-variant-finalization") {
-    await failHookLabMediaJob({ client, config, job, updatedAt });
-    await deleteHookLabMediaJobTemporaryObjects({
-      config,
-      deleteR2Object,
-      job,
-      r2,
-    });
-    return;
-  }
 
   await client.mutation(api.mediaJobs.markStatus, {
     secret: config.mediaWorkerSecret,
@@ -1586,12 +1533,6 @@ async function failJob({ client, config, error, job, r2 }) {
         message,
         updatedAt,
       }),
-      deleteHookLabMediaJobTemporaryObjects({
-        config,
-        deleteR2Object,
-        job,
-        r2,
-      }),
     ]);
   }
 }
@@ -1614,23 +1555,6 @@ async function processJob({ client, config, job, r2 }) {
 
   if (job.jobType === "swapr-finalization") {
     await processSwaprFinalization({ client, config, job, r2 });
-    return;
-  }
-
-  if (job.jobType === "hook-lab-variant-finalization") {
-    await processHookLabVariantFinalization({
-      client,
-      config,
-      createPoster,
-      createVideoClipObjectKey,
-      deleteR2Object,
-      downloadR2Object,
-      job,
-      normalizeVideo,
-      r2,
-      readVideoMetadata,
-      uploadR2Object,
-    });
     return;
   }
 
@@ -1672,7 +1596,7 @@ async function runOnce({ client, config, maxJobs, r2 }) {
     try {
       await processJob({ client, config, job, r2 });
     } catch (error) {
-      await failJob({ client, config, error, job, r2 });
+      await failJob({ client, config, error, job });
       throw error;
     }
 

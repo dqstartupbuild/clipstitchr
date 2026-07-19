@@ -58,16 +58,15 @@ The app processes media in the browser and stores durable data in Convex and Clo
 - Uploaded UGC and Demo videos are normalized to TikTok 9:16 before they are saved.
 - Stitchr can select up to 20 UGC videos with one selected Demo video, preview
   each UGC-then-Demo sequence, and export one finished stitch per selected UGC.
-- Saved stitches can become Hook Lab recipe Ideas that preserve their source
-  clips, trims, text overlays, audio flags, and playback rates. Legacy Template
-  reads remain as a rollback fallback.
+- Saved stitches can reopen in Stitchr with their source clips, trims, text
+  overlays, audio flags, and playback rates.
 - Saved stitches can be marked posted or active; the Stitches library filters
   them into Active, Posted, and All views without changing the saved output.
 - Convex stores clip, photo, stitch, tag, trim, and R2 object metadata.
 - Cloudflare R2 stores normalized videos, stitched videos, photos, posters, and thumbnails.
 - Library views read Convex metadata first; preview media is hydrated from R2 as needed.
 - The Library route at `/dashboard/library` includes UGC, Demo, Swaps, Swipes,
-  Stitches, Avatars, and Pexels tabs. Reusable Ideas live in Hook Lab.
+  Stitches, Avatars, and Pexels tabs.
 - Avatar photo upload, avatar descriptions, and generated avatar scenario photos
   live in the Library Avatars tab.
 - Each saved video also stores a generated JPEG poster object plus `posterVersion`.
@@ -95,7 +94,7 @@ The app processes media in the browser and stores durable data in Convex and Clo
 │   ├── page.tsx                 # Landing page
 │   ├── dashboard/               # Authenticated workspace routes
 │   │   ├── library/             # Library route with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Pexels tabs
-│   │   ├── hooks/               # Hook Lab Ideas and Review
+│   │   ├── hooks/               # TikTok and Instagram post analysis
 │   │   ├── uploads/             # Compatibility redirect to library
 │   │   ├── avatars/             # Compatibility redirect to library?tab=avatars
 │   │   ├── stitchr/             # Stitchr video stitching route

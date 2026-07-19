@@ -62,15 +62,14 @@ export const stitchrDoc = {
     {
       title: "Hooks",
       body: [
-        "Writing overlay text that does not sound fake is harder than it should be. Batch mode writes hooks together when it can, so the finished drafts do not all open with the same bland line.",
-        "Open Library, then Hooks, to copy hooks, save the ones you like, or add weak ones to the avoid list. Those choices help the next drafts sound closer to your taste.",
+        "Writing overlay text that does not sound fake is harder than it should be. Stitchr can write one editable overlay and feed caption from the selected clips and product.",
       ],
     },
     {
       title: "Saved outputs",
       body: [
         "Finished stitches appear in the Library under Stitches. Your original Hook/UGC and demo clips stay unchanged, so you can reuse them in the next batch.",
-        "Open the Stitch menu to score a saved Stitch before posting, save the setup as a Template, or load it in Stitchr later.",
+        "Open the Stitch menu to score a saved Stitch before posting or load it in Stitchr later.",
       ],
     },
   ],

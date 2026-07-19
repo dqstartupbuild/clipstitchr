@@ -3,12 +3,13 @@ import { getHookLabSourcePlatform } from "@/lib/clipstitchr/server/hookLab/getHo
 import { normalizeHookLabSourceCreatedAt } from "@/lib/clipstitchr/server/hookLab/normalizeHookLabSourceCreatedAt";
 import { normalizeHookLabAuthorProfileUrl } from "@/lib/clipstitchr/server/hookLab/normalizeHookLabAuthorProfileUrl";
 import { readHookLabSourceString } from "@/lib/clipstitchr/server/hookLab/readHookLabSourceString";
-import type { HookLabImportedSource } from "@/lib/clipstitchr/types/HookLabImportedSource";
+import { readHookLabSourceNumber } from "@/lib/clipstitchr/server/hookLab/readHookLabSourceNumber";
+import type { HookLabImportedPost } from "@/lib/clipstitchr/types/HookLabImportedPost";
 
 export function createHookLabTikTokSource(
   item: unknown,
   requestedUrl: string,
-): HookLabImportedSource {
+): HookLabImportedPost {
   const error = readHookLabSourceString(item, ["error", "errorCode"]);
 
   if (error) {
@@ -62,6 +63,37 @@ export function createHookLabTikTokSource(
       "author.username",
     ]),
     canonicalUrl,
+    metrics: {
+      commentCount: readHookLabSourceNumber(item, [
+        "commentCount",
+        "comments",
+        "stats.commentCount",
+      ]),
+      likeCount: readHookLabSourceNumber(item, [
+        "diggCount",
+        "likeCount",
+        "likes",
+        "stats.diggCount",
+        "stats.likeCount",
+      ]),
+      playCount: readHookLabSourceNumber(item, [
+        "playCount",
+        "viewCount",
+        "views",
+        "stats.playCount",
+        "stats.viewCount",
+      ]),
+      saveCount: readHookLabSourceNumber(item, [
+        "collectCount",
+        "saveCount",
+        "stats.collectCount",
+      ]),
+      shareCount: readHookLabSourceNumber(item, [
+        "shareCount",
+        "shares",
+        "stats.shareCount",
+      ]),
+    },
     platform: "tiktok",
     sourceCreatedAt: normalizeHookLabSourceCreatedAt(
       readHookLabSourceString(item, ["createTimeISO", "createTime", "timestamp"]),

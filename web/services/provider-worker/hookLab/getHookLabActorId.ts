@@ -1,6 +1,6 @@
-import type { HookLabSourcePlatform } from "@/lib/clipstitchr/types/HookLabSourcePlatform";
+import type { HookLabPostPlatform } from "@/lib/clipstitchr/types/HookLabPostPlatform";
 
-export function getHookLabActorId(platform: HookLabSourcePlatform) {
+export function getHookLabActorId(platform: HookLabPostPlatform) {
   const value =
     platform === "tiktok"
       ? process.env.HOOK_LAB_TIKTOK_ACTOR_ID?.trim() ||

@@ -12,6 +12,5 @@ describe("getUploadAssetTypeFromLibraryTab", () => {
     expect(getUploadAssetTypeFromLibraryTab("swaps")).toBe("ugc");
     expect(getUploadAssetTypeFromLibraryTab("swipes")).toBe("ugc");
     expect(getUploadAssetTypeFromLibraryTab("stitches")).toBe("ugc");
-    expect(getUploadAssetTypeFromLibraryTab("templates")).toBe("ugc");
   });
 });

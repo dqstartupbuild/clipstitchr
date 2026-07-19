@@ -1,7 +1,7 @@
 import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
 
-const directEditParams = ["templateStitchId", "templateId", "ugcId", "demoId"];
+const directEditParams = ["reuseStitchId", "ugcId", "demoId"];
 
 export function getInitialStitchrMode(): StitchrMode {
   const requestedMode = getSearchParamValue("mode");

@@ -8,7 +8,6 @@ the feed caption and hashtags together.
 When Stitchr auto-text runs, the writing model now returns:
 
 - the visual overlay hook
-- ranked visual overlay hook options for Stitchr
 - a caption hook that relates to the overlay
 - 3-5 normalized hashtags
 - one combined caption/hashtag text block for editing and copying
@@ -18,8 +17,8 @@ feel connected to the overlay hook and to what appears in the selected Hook/UGC 
 demo clips.
 
 The Stitchr writing prompt intentionally follows the simpler Swipr-style prompt
-shape: account context, Hook Lab memory, source context, a compact JSON
-contract, and short viewer-first copy rules. Selected Hook/UGC/demo descriptions and
+shape: account context, source context, a compact JSON contract, and short
+viewer-first copy rules. Selected Hook/UGC/demo descriptions and
 hook hints are used when they add real context, but the prompt avoids heavy
 internal hook framework lists and falls back to product/audience context when
 source details are thin.
@@ -31,17 +30,16 @@ after the clipboard write succeeds.
 
 1. Select Stitchr source clips.
 2. Generate text from the Stitchr auto-text panel.
-3. Pick a different generated hook option if the top hook is not right.
-4. Review or edit the caption and hashtags in the single caption field.
-5. Create the stitch.
-6. Open the saved stitch details later to read or copy the same caption and
+3. Review or edit the generated overlay and the caption and hashtags.
+4. Create the stitch.
+5. Open the saved stitch details later to read or copy the same caption and
    hashtags.
-7. Open the saved stitch editor later to edit or copy the same field.
+6. Open the saved stitch editor later to edit or copy the same field.
 
-For reused stitches and templates, normal Stitchr mode treats the saved caption
-like reused overlay text. It stays available even if the original Hook/UGC clip
-is deselected, and newly selected Hook/UGC clips inherit it unless they get
-their own caption edit.
+For reused stitches, normal Stitchr mode treats the saved caption like reused
+overlay text. It stays available even if the original Hook/UGC clip is
+deselected, and newly selected Hook/UGC clips inherit it unless they get their
+own caption edit.
 
 ## Implementation
 
@@ -73,10 +71,7 @@ The prompt and parser live in:
 - `web/lib/clipstitchr/utils/getStitchrSocialCaptionForUgcId.ts`
 
 Saved stitches store `socialCaption` in Convex through `web/convex/stitches.ts`
-and `web/convex/schema.ts`. Hook Lab Stitch recipes preserve the caption for
-reuse. Legacy Templates copy the same field through
-`web/convex/stitchTemplates/createStitchTemplateDocumentFromStitch.ts` during
-the rollback window.
+and `web/convex/schema.ts`.
 
 The reusable caption field is
 `web/app/_components/stitches/StitchSocialCaptionField.tsx`. Stitchr uses it

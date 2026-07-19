@@ -14,9 +14,6 @@ import { requestWorkerLaunch } from "./workerLaunch";
 import { createStitchrBatchRunId } from "./stitchrBatchRunId";
 import { listRecentVideoClipsByLibraryKind } from "./listRecentVideoClipsByLibraryKind";
 import { upsertAutomationTaskSummary } from "./upsertAutomationTaskSummary";
-import { getStitchTemplateBatchTextOverlay } from "./stitchTemplates/getStitchTemplateBatchTextOverlay";
-import { getStitchRecipeByIdeaOrTemplate } from "./getStitchRecipeByIdeaOrTemplate";
-import { getHookLabPromptBlueprints } from "./hookLabIdeas/getHookLabPromptBlueprints";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import { STITCHR_BATCH_OUTPUT_COUNT } from "../lib/clipstitchr/constants/stitchrBatchGenerationLimits";
@@ -107,18 +104,6 @@ function getStitchrBatchTaskNeedsMediaLaunch(task: {
   return task.status === "running" && task.stage === "awaiting-media-worker";
 }
 
-function getStitchrBatchTaskNeedsHookPlanning(task: {
-  outputAssetIds: string[];
-  stage: string;
-  status: string;
-}) {
-  return (
-    task.status === "queued" ||
-    (task.status === "running" && task.stage === "awaiting-text-provider") ||
-    (task.status === "completed" && task.outputAssetIds.length === 0)
-  );
-}
-
 function getStitchrBatchTaskIsActive(task: {
   outputAssetIds: string[];
   status: string;
@@ -146,7 +131,6 @@ export const plan = mutation({
       automationStitchrTextStyleChoiceValidator,
     ),
     soundTrackId: v.optional(v.string()),
-    templateId: v.optional(v.string()),
   },
   handler: async (
     ctx,
@@ -163,7 +147,6 @@ export const plan = mutation({
       stitchrTextStrokeColorChoice,
       stitchrTextStyleChoice,
       soundTrackId,
-      templateId,
     },
   ) => {
     assertAutomationWorkerSecret(secret);
@@ -173,12 +156,6 @@ export const plan = mutation({
     if (!product) {
       throw new Error("Product not found.");
     }
-
-    const hookLabTextBlueprints = await getHookLabPromptBlueprints(
-      ctx,
-      ownerId,
-      product.id,
-    );
 
     const runId = createStitchrBatchRunId(
       ownerId,
@@ -195,9 +172,6 @@ export const plan = mutation({
       const status = getExistingRunStatus(existingTasks);
       const activeTaskIds = existingTasks
         .filter(getStitchrBatchTaskIsActive)
-        .map((task) => task.id);
-      const hookPlanningTaskIds = existingTasks
-        .filter(getStitchrBatchTaskNeedsHookPlanning)
         .map((task) => task.id);
       const shouldLaunchProvider = existingTasks.some(
         getStitchrBatchTaskNeedsProviderLaunch,
@@ -292,7 +266,6 @@ export const plan = mutation({
         runId,
         status,
         taskIds: status === "running" ? activeTaskIds : [],
-        hookPlanningTaskIds: status === "running" ? hookPlanningTaskIds : [],
         message:
           status === "running"
             ? "This Stitchr batch is already running, so I nudged it to keep going."
@@ -314,19 +287,6 @@ export const plan = mutation({
         productId: product.id,
       }),
     ]);
-    const batchTemplate = templateId
-      ? await getStitchRecipeByIdeaOrTemplate(ctx, ownerId, templateId)
-      : null;
-
-    if (templateId && !batchTemplate) {
-      throw new Error("Unable to find that Stitch idea.");
-    }
-
-    const templateTextOverlay = batchTemplate
-      ? getStitchTemplateBatchTextOverlay(batchTemplate)
-      : undefined;
-    const templateSocialCaption =
-      batchTemplate?.socialCaption?.trim() || undefined;
     const soundTrack = soundTrackId
       ? await ctx.db
           .query("sharedMusicTracks")
@@ -427,7 +387,6 @@ export const plan = mutation({
 
     const taskIds: string[] = [];
     const selectedStitchrTextStyleChoice =
-      templateTextOverlay?.styleId ??
       getAutomationStitchrTextStyleChoice(
         stitchrTextStyleChoice ?? defaultAutomationStitchrTextStyleChoice,
       );
@@ -483,7 +442,6 @@ export const plan = mutation({
       }
 
       const stitchrTextStyleId =
-        templateTextOverlay?.styleId ??
         resolveAutomationStitchrTextStyleId(
           selectedStitchrTextStyleChoice,
           `${ownerId}:${product.id}:${batchDate}:${runKey}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}`,
@@ -492,27 +450,24 @@ export const plan = mutation({
         (style) => style.id === stitchrTextStyleId,
       );
       const stitchrTextColor =
-        templateTextOverlay?.color ??
         resolveAutomationStitchrColor(
           selectedStitchrTextColorChoice,
           `${ownerId}:${product.id}:${batchDate}:${runKey}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:text`,
         );
       const stitchrTextBackgroundColor =
-        templateTextOverlay?.backgroundColor ??
-        (stitchrTextStyle?.backgroundColor
+        stitchrTextStyle?.backgroundColor
           ? resolveAutomationStitchrColor(
               selectedStitchrTextBackgroundColorChoice,
               `${ownerId}:${product.id}:${batchDate}:${runKey}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:background`,
             )
-          : undefined);
+          : undefined;
       const stitchrTextStrokeColor =
-        templateTextOverlay?.strokeColor ??
-        (stitchrTextStyle?.strokeColor
+        stitchrTextStyle?.strokeColor
           ? resolveAutomationStitchrColor(
               selectedStitchrTextStrokeColorChoice,
               `${ownerId}:${product.id}:${batchDate}:${runKey}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:stroke`,
             )
-          : undefined);
+          : undefined;
       const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(
         ugc.quickEdit,
       );
@@ -585,18 +540,9 @@ export const plan = mutation({
           eligibleCliprHookStyleKeys: product?.eligibleCliprHookStyleKeys,
           eligibleCliprHookTemplateIds: product?.eligibleCliprHookTemplateIds,
           preferredCliprHookStyleKey: product?.preferredCliprHookStyleKey,
-          winningHookExamples: product?.winningHookExamples,
-          rejectedHookExamples: product?.rejectedHookExamples,
-          hookGenerationGoal: product?.hookGenerationGoal,
-          hookEdgeLevel: product?.hookEdgeLevel,
-          hookLabTextBlueprints,
           productCreatedAt: product?.createdAt,
           productUpdatedAt: product?.updatedAt,
           selectedScore: selectedPair.score,
-          templateId: batchTemplate?.id,
-          templateName: batchTemplate?.name,
-          templateTextOverlay,
-          templateSocialCaption,
           soundTrack: soundTrackSnapshot,
           stitchrTextStyleChoice: selectedStitchrTextStyleChoice,
           stitchrTextStyleId,
@@ -650,7 +596,6 @@ export const plan = mutation({
       runId,
       status: "running",
       taskIds,
-      hookPlanningTaskIds: taskIds,
     };
   },
 });

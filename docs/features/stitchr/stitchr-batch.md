@@ -17,9 +17,6 @@ ad" unless it is directly explaining the UI label.
 - Works even when scheduled automation is turned off in Settings.
 - Uses its own Stitchr Batch pair history so recent Hook/UGC and Demo pairings are
   avoided when better options exist.
-- Can use a selected setup Idea so every queued draft uses that
-  recipe's saved text overlay style and caption copy instead of generated
-  random text.
 - Lets the user choose Batch text style, text color, background color, and
   outline color, including `Any` choices that vary drafts automatically.
 - Schedules a delayed provider-worker fallback when tasks are queued, then the
@@ -27,15 +24,15 @@ ad" unless it is directly explaining the UI label.
   planning so drafts start without waiting for the fallback.
 - Saves finished drafts as normal Stitch library items, not as automation-owned
   outputs.
-- Uses the active product's bounded structured Hook Lab Idea memory when it
-  generates text for drafts that do not use a selected setup recipe.
+- Uses the active product and selected source descriptions when it generates
+  text for drafts.
 - Leaves Normal and Longr Stitchr modes available for manual editing.
 
 ## User Flow
 
 1. The user opens `/dashboard/stitchr`.
 2. The page starts on Batch mode unless the URL is launching a saved stitch,
-   setup Idea, Hook/UGC clip, or Demo clip for direct editing.
+   Hook/UGC clip, or Demo clip for direct editing.
 3. The **Start from an idea** picker stays available in Batch mode. **Start
    fresh** is the default. Selecting a setup Idea in Batch mode does not switch
    the page into manual editing.
@@ -180,10 +177,6 @@ The JSON response includes `providerDispatchStatus`:
 - `web/lib/clipstitchr/server/stitchr/getStitchrBatchRateLimitKey.ts` keeps
   the planning and media-worker final-save quota keys aligned by owner and
   batch date.
-- `web/convex/stitchTemplates/getStitchTemplateBatchTextOverlay.ts` picks the
-  reusable overlay from a saved template.
-- `web/services/provider-worker/createStitchrTemplateTextOverlay.ts` adapts the
-  saved overlay to each generated draft duration.
 - `web/convex/recordStitchrBatchPairHistory.ts` records completed Batch pair
   usage.
 - `web/convex/automationStitchrPairScoring.ts` scores and spreads pair
@@ -219,10 +212,8 @@ web/convex/rateLimiter.ts
 web/convex/workerDispatch.ts
 web/convex/workerLaunch.ts
 web/lib/clipstitchr/server/stitchr/getStitchrBatchRateLimitKey.ts
-web/convex/stitchTemplates/getStitchTemplateBatchTextOverlay.ts
 web/convex/stitchrBatch.ts
 web/convex/stitchrBatchRunId.ts
-web/services/provider-worker/createStitchrTemplateTextOverlay.ts
 ```
 
 ## Maintenance Notes

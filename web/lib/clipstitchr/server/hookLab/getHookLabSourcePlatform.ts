@@ -1,8 +1,8 @@
-import type { HookLabSourcePlatform } from "@/lib/clipstitchr/types/HookLabSourcePlatform";
+import type { HookLabPostPlatform } from "@/lib/clipstitchr/types/HookLabPostPlatform";
 
 export function getHookLabSourcePlatform(
   input: string,
-): HookLabSourcePlatform | null {
+): HookLabPostPlatform | null {
   let url: URL;
 
   try {

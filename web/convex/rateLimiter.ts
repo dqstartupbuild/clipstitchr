@@ -577,49 +577,17 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 60,
     shards: 5,
   },
-  hookLabSocialImport: {
-    kind: "token bucket",
-    rate: 15,
-    period: DAY,
-    capacity: 3,
-  },
-  hookLabSocialImportGlobal: {
-    kind: "token bucket",
-    rate: 300,
-    period: DAY,
-    capacity: 60,
-    shards: 5,
-  },
-  hookLabIdeaAnalysis: {
+  hookLabPostAnalysis: {
     kind: "token bucket",
     rate: 30,
     period: DAY,
     capacity: 5,
   },
-  hookLabIdeaAnalysisGlobal: {
+  hookLabPostAnalysisGlobal: {
     kind: "token bucket",
     rate: 1000,
     period: DAY,
     capacity: 200,
-    shards: 5,
-  },
-  hookLabIdeaUse: {
-    kind: "token bucket",
-    rate: 10,
-    period: DAY,
-    capacity: 5,
-  },
-  hookLabIdeaAssetSave: {
-    kind: "token bucket",
-    rate: 20,
-    period: DAY,
-    capacity: 10,
-  },
-  hookLabIdeaAssetSaveGlobal: {
-    kind: "token bucket",
-    rate: 2000,
-    period: DAY,
-    capacity: 400,
     shards: 5,
   },
   postBridgeRead: {
@@ -827,19 +795,6 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     rate: STITCHR_BATCH_GLOBAL_DAILY_OUTPUT_LIMIT,
     period: DAY,
     capacity: STITCHR_BATCH_GLOBAL_DAILY_OUTPUT_LIMIT,
-    shards: 5,
-  },
-  stitchrBatchHookPlanDaily: {
-    kind: "token bucket",
-    rate: 20,
-    period: DAY,
-    capacity: 10,
-  },
-  stitchrBatchHookPlanGlobalDaily: {
-    kind: "token bucket",
-    rate: 2000,
-    period: DAY,
-    capacity: 500,
     shards: 5,
   },
   stitchrBatchAssetSaveDaily: {

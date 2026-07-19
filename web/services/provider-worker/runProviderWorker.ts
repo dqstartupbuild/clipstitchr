@@ -20,14 +20,10 @@ import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createClip
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
 import { createSwiprAutomationTextGeneration } from "@/lib/clipstitchr/server/createSwiprAutomationTextGeneration";
 import { pickSwiprDraftBackgroundIds } from "@/lib/clipstitchr/server/pickSwiprDraftBackgroundIds";
-import { createStitchrTemplateTextOverlay } from "./createStitchrTemplateTextOverlay";
-import { getOptionalStitchrTextOverlay } from "./getOptionalStitchrTextOverlay";
-import { getHookLabIdeaAnalysisFailure } from "./hookLab/getHookLabIdeaAnalysisFailure";
+import { getHookLabPostAnalysisFailure } from "./hookLab/getHookLabPostAnalysisFailure";
 import { getHookLabAnalysisErrorIsRetryable } from "./hookLab/getHookLabAnalysisErrorIsRetryable";
-import { parseHookLabIdeaAnalysisJobInput } from "./hookLab/parseHookLabIdeaAnalysisJobInput";
-import { parseHookLabIdeaUseJobInput } from "./hookLab/parseHookLabIdeaUseJobInput";
-import { processHookLabIdeaAnalysis } from "./hookLab/processHookLabIdeaAnalysis";
-import { processHookLabIdeaUse } from "./hookLab/processHookLabIdeaUse";
+import { parseHookLabPostAnalysisJobInput } from "./hookLab/parseHookLabPostAnalysisJobInput";
+import { processHookLabPostAnalysis } from "./hookLab/processHookLabPostAnalysis";
 import { getCliprProviderJobSnapshot } from "./getCliprProviderJobSnapshot";
 import { processManualCliprDemo } from "./processManualCliprDemo";
 import { processManualSwiprDraft } from "./processManualSwiprDraft";
@@ -42,7 +38,6 @@ import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateC
 import { createStitchScoreOutputText } from "@/lib/clipstitchr/server/createStitchScoreOutputText";
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
 import { createQuickEditDetectorCandidates } from "@/lib/clipstitchr/server/createQuickEditDetectorCandidates";
-import { readHookLabTextBlueprints } from "@/lib/clipstitchr/server/readHookLabTextBlueprints";
 import { parsePostBridgeBatchJobInput } from "@/lib/clipstitchr/server/postBridge/parsePostBridgeBatchJobInput";
 import { createStitchScoreDetectorCandidates } from "@/lib/clipstitchr/server/createStitchScoreDetectorCandidates";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
@@ -90,7 +85,6 @@ import { createCliprMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils
 import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 import { createDefaultSwiprTextOverlay } from "@/lib/clipstitchr/utils/createDefaultSwiprTextOverlay";
 import { createId } from "@/lib/clipstitchr/utils/createId";
-import { createStitchSocialCaption } from "@/lib/clipstitchr/utils/createStitchSocialCaption";
 import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { getAvatarGenerationTags } from "@/lib/clipstitchr/utils/getAvatarGenerationTags";
 import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClipName";
@@ -292,8 +286,6 @@ type StitchrAutomationTaskInput = {
   stitchrTextColor?: string;
   stitchrTextStrokeColor?: string;
   stitchrTextStyleId: TextOverlayStyleId;
-  templateSocialCaption?: string;
-  templateTextOverlay?: TextOverlay;
   ugcClipId: string;
   ugcClipName: string;
   ugcDuration: number;
@@ -342,23 +334,11 @@ type SwiprProviderBackground = {
   id: string;
 };
 
-type SavedStitchrHookPlan = {
-  caption?: string;
-  hashtags: string[];
-  hookOptions: CliprTextGeneration["hookVariants"];
-  providerModel?: string;
-  providerPredictionId?: string;
-  selectedHook: string;
-  socialCaption?: string;
-  status: string;
-};
-
 type StitchrWorkerTextGeneration = Pick<
   CliprTextGeneration,
   | "caption"
   | "filledHook"
   | "hashtags"
-  | "hookVariants"
   | "overlayText"
   | "providerModel"
   | "providerPredictionId"
@@ -793,17 +773,6 @@ function parseStitchrAutomationTaskInput(
         preferredCliprHookStyleKey: getOptionalString(
           input.preferredCliprHookStyleKey,
         ),
-        winningHookExamples: getStringArray(input.winningHookExamples),
-        rejectedHookExamples: getStringArray(input.rejectedHookExamples),
-        hookGenerationGoal: getOptionalString(
-          input.hookGenerationGoal,
-        ) as ProductProfile["hookGenerationGoal"],
-        hookEdgeLevel: getOptionalString(
-          input.hookEdgeLevel,
-        ) as ProductProfile["hookEdgeLevel"],
-        hookLabTextBlueprints: readHookLabTextBlueprints(
-          input.hookLabTextBlueprints,
-        ),
         createdAt: getOptionalString(input.productCreatedAt) ?? "",
         updatedAt: getOptionalString(input.productUpdatedAt) ?? "",
       }
@@ -854,10 +823,6 @@ function parseStitchrAutomationTaskInput(
     stitchrTextColor: getOptionalString(input.stitchrTextColor),
     stitchrTextStrokeColor: getOptionalString(input.stitchrTextStrokeColor),
     stitchrTextStyleId: getStitchrTextStyleId(input.stitchrTextStyleId),
-    templateSocialCaption: getOptionalString(input.templateSocialCaption),
-    templateTextOverlay: getOptionalStitchrTextOverlay(
-      input.templateTextOverlay,
-    ),
     ugcClipId: getString(input.ugcClipId, "Stitchr UGC ID"),
     ugcClipName: getString(input.ugcClipName, "Stitchr UGC name"),
     ugcDuration,
@@ -967,22 +932,11 @@ function parseSwiprAutomationTaskInput(
       eligibleCliprHookTemplateIds: getStringArray(
         input.eligibleCliprHookTemplateIds,
       ),
-      hookEdgeLevel: getOptionalString(
-        input.hookEdgeLevel,
-      ) as ProductProfile["hookEdgeLevel"],
-      hookGenerationGoal: getOptionalString(
-        input.hookGenerationGoal,
-      ) as ProductProfile["hookGenerationGoal"],
-      hookLabTextBlueprints: readHookLabTextBlueprints(
-        input.hookLabTextBlueprints,
-      ),
       inferredProblem: getOptionalString(input.inferredProblem),
       inferredPainPoints: getStringArray(input.inferredPainPoints),
       preferredCliprHookStyleKey: getOptionalString(
         input.preferredCliprHookStyleKey,
       ),
-      rejectedHookExamples: getStringArray(input.rejectedHookExamples),
-      winningHookExamples: getStringArray(input.winningHookExamples),
       createdAt: productCreatedAt,
       updatedAt: productUpdatedAt,
     },
@@ -1810,106 +1764,6 @@ async function processClipr({
   });
 }
 
-function getSavedStitchrHookPlanIsUsable(
-  plan: SavedStitchrHookPlan | null,
-): plan is SavedStitchrHookPlan {
-  return Boolean(
-    plan &&
-    (plan.status === "planned" || plan.status === "fallback") &&
-    plan.selectedHook.trim(),
-  );
-}
-
-function createStitchrTextGenerationFromHookPlan(
-  plan: SavedStitchrHookPlan,
-): StitchrWorkerTextGeneration {
-  const caption = plan.caption?.trim() || plan.selectedHook;
-  const hashtags = plan.hashtags.length
-    ? plan.hashtags
-    : ["#ugc", "#productdemo", "#adcreative"];
-
-  return {
-    caption,
-    filledHook: plan.selectedHook,
-    hashtags,
-    hookVariants: plan.hookOptions.length
-      ? plan.hookOptions
-      : [
-          {
-            angle: "Saved hook",
-            reason: "Loaded from the batch hook plan.",
-            text: plan.selectedHook,
-          },
-        ],
-    overlayText: plan.selectedHook,
-    providerModel: plan.providerModel ?? "saved-hook-plan",
-    providerPredictionId: plan.providerPredictionId,
-    socialCaption:
-      plan.socialCaption ?? createStitchSocialCaption({ caption, hashtags }),
-  };
-}
-
-async function getStitchrTextGenerationFromSavedPlan({
-  client,
-  config,
-  task,
-}: {
-  client: ConvexHttpClient;
-  config: ProviderWorkerConfig;
-  task: AutomationTask;
-}) {
-  const hookPlan = (await client.query(
-    api.stitchrHookPlans.getByAutomationTaskForProvider,
-    {
-      automationTaskId: task.id,
-      ownerId: task.ownerId,
-      secret: config.providerWorkerSecret,
-    },
-  )) as SavedStitchrHookPlan | null;
-
-  return getSavedStitchrHookPlanIsUsable(hookPlan)
-    ? createStitchrTextGenerationFromHookPlan(hookPlan)
-    : null;
-}
-
-async function saveStitchrWorkerFallbackHookPlan({
-  client,
-  config,
-  input,
-  task,
-  textGeneration,
-}: {
-  client: ConvexHttpClient;
-  config: ProviderWorkerConfig;
-  input: StitchrAutomationTaskInput;
-  task: AutomationTask;
-  textGeneration: StitchrWorkerTextGeneration;
-}) {
-  await client.mutation(api.stitchrHookPlans.saveWorkerFallbackResult, {
-    ownerId: task.ownerId,
-    plan: {
-      automationRunId: task.runId,
-      automationTaskId: task.id,
-      caption: textGeneration.caption,
-      demoClipId: input.demoClipId,
-      demoClipName: input.demoClipName,
-      hashtags: textGeneration.hashtags,
-      hookOptions: textGeneration.hookVariants,
-      productId: input.product.id,
-      productName: input.product.name,
-      providerModel: textGeneration.providerModel,
-      providerPredictionId: textGeneration.providerPredictionId,
-      selectedHook: textGeneration.overlayText || textGeneration.filledHook,
-      socialCaption: textGeneration.socialCaption,
-      stitchId: `${task.id}:stitch`,
-      ugcClipId: input.ugcClipId,
-      ugcClipName: input.ugcClipName,
-    },
-    secret: config.providerWorkerSecret,
-    updatedAt: getNow(),
-  });
-}
-
 async function processStitchr({
   client,
   config,
@@ -1967,42 +1821,19 @@ async function processStitchr({
       input.demoDuration,
       input.demoQuickEdit?.removeRanges,
     );
-  const templateTextOverlay = input.templateTextOverlay
-    ? createStitchrTemplateTextOverlay(input.templateTextOverlay, duration)
-    : undefined;
-  let textGeneration: StitchrWorkerTextGeneration | null = null;
-
-  if (!templateTextOverlay) {
-    textGeneration = await getStitchrTextGenerationFromSavedPlan({
-      client,
-      config,
-      task,
+  const textGeneration: StitchrWorkerTextGeneration =
+    await createCliprTextGeneration({
+      durationSeconds: 30,
+      product: input.product,
+      purpose: "stitchr",
+      replicate: createReplicateClient(),
+      slideCount: 1,
+      stitchrClipContexts,
     });
 
-    if (!textGeneration) {
-      textGeneration = await createCliprTextGeneration({
-        durationSeconds: 30,
-        product: input.product,
-        purpose: "stitchr",
-        replicate: createReplicateClient(),
-        slideCount: 1,
-        stitchrClipContexts,
-      });
-
-      await saveStitchrWorkerFallbackHookPlan({
-        client,
-        config,
-        input,
-        task,
-        textGeneration,
-      });
-    }
-  }
-
   const textOverlay =
-    templateTextOverlay ??
     createStitchrTextOverlay(
-      textGeneration?.overlayText || textGeneration?.filledHook || "",
+      textGeneration.overlayText || textGeneration.filledHook || "",
       duration,
       input.stitchrTextStyleId,
       input.stitchrTextColor,
@@ -2036,8 +1867,7 @@ async function processStitchr({
         sourceSummary: `${input.ugcClipName} + ${input.demoClipName}`,
         stitchId: `${task.id}:stitch`,
         stitchName: `${input.ugcClipName} + ${input.demoClipName}`,
-        socialCaption:
-          input.templateSocialCaption ?? textGeneration?.socialCaption,
+        socialCaption: textGeneration.socialCaption,
         textOverlay,
         ugcClipId: input.ugcClipId,
         ugcClipName: input.ugcClipName,
@@ -2060,7 +1890,7 @@ async function processStitchr({
     task,
     status: "running",
     stage: "awaiting-media-worker",
-    providerJobId: textGeneration?.providerPredictionId,
+    providerJobId: textGeneration.providerPredictionId,
     mediaJobId: mediaJob.id,
     releaseLock: true,
   });
@@ -3442,21 +3272,11 @@ async function processProviderJob({
     return;
   }
 
-  if (job.jobType === "hook-lab-idea-analysis") {
-    await processHookLabIdeaAnalysis({
+  if (job.jobType === "hook-lab-post-analysis") {
+    await processHookLabPostAnalysis({
       client,
       job,
       providerWorkerSecret: config.providerWorkerSecret,
-    });
-    return;
-  }
-
-  if (job.jobType === "hook-lab-idea-use") {
-    await processHookLabIdeaUse({
-      client,
-      job,
-      providerWorkerSecret: config.providerWorkerSecret,
-      quality: getPlanGenerationProfile(job.planKeySnapshot).avatarImageQuality,
     });
     return;
   }
@@ -3571,54 +3391,19 @@ async function failProviderJob({
 }) {
   const message = getErrorMessage(error, "Unable to process provider job.");
 
-  if (job.jobType === "hook-lab-idea-analysis") {
-    const failure = getHookLabIdeaAnalysisFailure(error);
+  if (job.jobType === "hook-lab-post-analysis") {
+    const failure = getHookLabPostAnalysisFailure(error);
 
     await client.mutation(
-      api["hookLabIdeas/failAnalysisJobFromProvider"]
-        .failAnalysisJobFromProvider,
+      api["hookLabPosts/failAnalysisFromProvider"].failAnalysisFromProvider,
       {
         secret: config.providerWorkerSecret,
         ownerId: job.ownerId,
-        jobId: job.id,
-        ideaId: parseHookLabIdeaAnalysisJobInput(job.inputSnapshotJson).ideaId,
+        id: parseHookLabPostAnalysisJobInput(job.inputSnapshotJson).postId,
         ...failure,
         updatedAt: getNow(),
       },
     );
-    return;
-  }
-
-  if (job.jobType === "hook-lab-idea-use") {
-    const result = await client.mutation(
-      api["hookLabIdeaVariants/failGenerationJobFromProvider"]
-        .failGenerationJobFromProvider,
-      {
-        secret: config.providerWorkerSecret,
-        ownerId: job.ownerId,
-        jobId: job.id,
-        variantId: parseHookLabIdeaUseJobInput(job.inputSnapshotJson).variantId,
-        failureCode: "generation_failed",
-        failureMessage:
-          "We could not finish this version. Try the idea again in a moment.",
-        updatedAt: getNow(),
-      },
-    );
-    const temporaryObjectKeys = Array.isArray(result?.temporaryObjectKeys)
-      ? result.temporaryObjectKeys.filter(
-          (key: unknown): key is string =>
-            typeof key === "string" && Boolean(key),
-        )
-      : [];
-
-    if (temporaryObjectKeys.length > 0) {
-      await deleteR2Objects(temporaryObjectKeys).catch((cleanupError) => {
-        console.error(
-          "Hook Lab temporary object cleanup failed.",
-          cleanupError,
-        );
-      });
-    }
     return;
   }
 
@@ -3725,7 +3510,7 @@ async function runOnce({
           "Unable to process provider job.",
         );
         const retryQueued =
-          providerJob.jobType !== "hook-lab-idea-analysis" ||
+          providerJob.jobType !== "hook-lab-post-analysis" ||
           getHookLabAnalysisErrorIsRetryable(error)
             ? await client.mutation(
                 api["providerJobAttempts/retryAfterFailure"].retryAfterFailure,

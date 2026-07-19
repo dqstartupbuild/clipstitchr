@@ -205,7 +205,7 @@ describe("client API wrappers", () => {
     );
   });
 
-  it("sends selected Stitchr batch templates", async () => {
+  it("sends the browser time zone for Stitchr batches", async () => {
     fetchMock.mockResolvedValueOnce(
       createJsonResponse({
         batchDate: "2026-06-17",
@@ -217,7 +217,6 @@ describe("client API wrappers", () => {
     );
 
     await generateStitchrBatch({
-      templateId: "template_1",
       timeZone: "America/Detroit",
     });
 
@@ -225,7 +224,6 @@ describe("client API wrappers", () => {
       "/api/stitchr/batch/generate",
       expect.objectContaining({
         body: JSON.stringify({
-          templateId: "template_1",
           timeZone: "America/Detroit",
         }),
         headers: { "content-type": "application/json" },

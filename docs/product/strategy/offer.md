@@ -157,7 +157,7 @@ Headline:
 
 Subhead:
 
-> Stitchr, scoring, Hook Lab Ideas, and your clip library are included. Creation
+> Stitchr, scoring, Hook Lab post analysis, and your clip library are included. Creation
 > credits cover everyday output, while each plan has a separate allowance for
 > Clipr and Swapr videos.
 

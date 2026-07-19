@@ -17,7 +17,6 @@ import StitchesPage from "@/app/dashboard/stitches/page";
 import StitchrPage from "@/app/dashboard/stitchr/page";
 import SwaprPage from "@/app/dashboard/swapr/page";
 import SwiprPage from "@/app/dashboard/swipr/page";
-import TemplatesPage from "@/app/dashboard/templates/page";
 import UploadsPage from "@/app/dashboard/uploads/page";
 import robots from "@/app/robots";
 
@@ -211,21 +210,10 @@ describe("app route wrappers", () => {
     expect(() => AvatarsPage()).toThrow(
       "REDIRECT:/dashboard/library?tab=avatars",
     );
-    expect(() => TemplatesPage()).toThrow(
-      "REDIRECT:/dashboard/hooks?view=ideas",
-    );
     expect(() => UploadsPage()).toThrow("REDIRECT:/dashboard/library");
     expect(() => StitchesPage()).toThrow(
       "REDIRECT:/dashboard/library?tab=stitches",
     );
-  });
-
-  it("redirects the old Templates library query", async () => {
-    await expect(
-      LibraryPage({
-        searchParams: Promise.resolve({ tab: "templates" }),
-      }),
-    ).rejects.toThrow("REDIRECT:/dashboard/hooks?view=ideas");
   });
 
   it("returns robots metadata and renders shared button links", () => {

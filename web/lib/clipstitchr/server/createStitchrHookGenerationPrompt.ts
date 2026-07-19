@@ -1,10 +1,7 @@
 import type { CliprPlaceholderFillers } from "@/lib/clipstitchr/types/CliprPlaceholderFillers";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
-import { getHookEdgeLevelLabel } from "@/lib/clipstitchr/utils/getHookEdgeLevelLabel";
-import { getHookGenerationGoalLabel } from "@/lib/clipstitchr/utils/getHookGenerationGoalLabel";
 import { formatStitchrTextGenerationClipContext } from "@/lib/clipstitchr/server/formatStitchrTextGenerationClipContext";
-import { formatHookLabPromptMemory } from "@/lib/clipstitchr/server/formatHookLabPromptMemory";
 import { getGeneratedWritingAntiSlopPromptRules } from "@/lib/clipstitchr/server/getGeneratedWritingAntiSlopPromptRules";
 
 type CreateStitchrHookGenerationPromptOptions = {
@@ -18,73 +15,41 @@ export function createStitchrHookGenerationPrompt({
   product,
   stitchrClipContexts = [],
 }: CreateStitchrHookGenerationPromptOptions) {
-  const rejectedHookExamples = product.rejectedHookExamples?.length
-    ? product.rejectedHookExamples.map((example) => `- ${example}`).join("\n")
-    : "- None saved yet.";
   const sourceContext = stitchrClipContexts.length
     ? stitchrClipContexts
         .map(formatStitchrTextGenerationClipContext)
         .join("\n")
-    : "No source clip context was provided. Use product/audience context only.";
+    : "No clip details were supplied.";
 
   return [
-    "You write short-form social hooks and captions for TikTok, Reels, and Shorts.",
+    "Write one short text overlay and one feed caption for a vertical stitched video.",
+    "The video places creator footage before a product demo. There is no generated voiceover.",
     "",
-    "Account context:",
-    `- App / brand: ${product.name} - ${product.productDetails}`,
+    "Product:",
+    `- Name: ${product.name}`,
+    `- Details: ${product.productDetails || "(unspecified)"}`,
     `- Audience: ${product.audienceDetails || "(unspecified)"}`,
-    `- Niche / problem: ${product.inferredProblem || "(unspecified)"}`,
+    `- Problem: ${product.inferredProblem || "(unspecified)"}`,
     "",
-    "What's working for this account. Respect this closely:",
-    product.emotionalNarrative ||
-      product.inferredProblem ||
-      "(none yet - stay specific to the supplied audience, product, and clip context)",
-    "",
-    "Hook Lab memory:",
-    `- Goal: ${getHookGenerationGoalLabel(product.hookGenerationGoal)}`,
-    `- Tone: ${getHookEdgeLevelLabel(product.hookEdgeLevel)}`,
-    "Saved Idea patterns:",
-    formatHookLabPromptMemory(product.hookLabTextBlueprints),
-    "Hooks to avoid:",
-    rejectedHookExamples,
-    "",
-    "Stitchr source context:",
+    "Selected clips:",
     sourceContext,
     "",
-    "Write eight ranked visual overlay hook options and one feed caption for a stitched video.",
-    "The video has a short UGC reaction followed by a product or demo clip. There is no script or voiceover.",
-    "Use the source context when it gives you a real visual detail, reaction, or demo payoff. If the source context is thin, use the account context instead and do not invent details.",
+    "Respond with only this JSON shape:",
+    '{"filledHook":"short overlay text","overlayText":"same short overlay text","caption":"short feed caption","hashtags":["#tagone","#tagtwo","#tagthree"],"slides":["same short overlay text"],"script":"","scenePlan":[],"variablesUsed":{}}',
     "",
-    "Respond with a JSON object of this exact shape:",
-    '{"templateId":"stitchr-hook-lab","filledHook":"best short visual overlay hook","variablesUsed":{"placeholder":"value"},"overlayText":"same best short visual overlay hook","caption":"short caption hook related to the overlay and clips","hashtags":["#tagone","#tagtwo","#tagthree"],"hookVariants":[{"text":"best short visual overlay hook","angle":"why this angle should stop the scroll","reason":"why it fits this product and clip pair"}],"slides":["same best short visual overlay hook"],"script":"","scenePlan":[]}',
-    "",
-    "Creative standard:",
-    "- Write for the viewer first. The product is context, not the main character.",
-    "- The hook should make the viewer feel seen, curious, surprised, or slightly called out.",
-    "- The hook should fit what appears to happen in the selected UGC/demo clips when that context is useful.",
-    "- Use saved Idea patterns as structured creative memory. Preserve their function, not source wording.",
-    "- Never reproduce source-specific names, brands, claims, references, or unresolved slots from an Idea pattern.",
-    "- Avoid the saved rejected hooks and avoid their cadence.",
-    "- Do not open with the product name unless the source context makes that feel natural.",
-    "- Use product facts only as quiet background proof. Do not explain features or write a product pitch.",
-    "- The caption should be a second simple hook for the feed caption, not a repeat of the overlay.",
-    "- Keep the caption natural and short. Do not add an emoji by default; use at most one when it adds meaning.",
-    "- Avoid generic creator advice like work smarter, unlock growth, level up, or game changer.",
-    ...getGeneratedWritingAntiSlopPromptRules(),
     "Rules:",
-    "- Keep the hook and caption on-brand, simple, and genuinely good.",
-    "- Do not write generic filler or vague hype.",
-    "- filledHook and overlayText must be the same final human-readable hook.",
-    "- hookVariants must contain 6-8 distinct hooks, ranked best first.",
-    "- hookVariants[0].text must match filledHook and overlayText.",
-    "- Each hookVariants item must have a short plain-language angle and reason.",
-    "- Most hooks should be 3-9 words and readable on a vertical video.",
-    "- Do not invent fake stats, fake studies, fake quotes, fake testimonials, or visual details not present in the context.",
-    "- hashtags must contain 3-5 hashtags, all lowercase, no spaces, each starting with #.",
-    "- slides must contain exactly one item, matching filledHook.",
+    "- Use a real detail from the selected clips when one is available.",
+    "- If clip details are limited, stay grounded in the supplied product and audience.",
+    "- Write one strong result. Do not return alternatives, rankings, saved patterns, or feedback options.",
+    "- Keep overlayText and filledHook identical, natural, and easy to read.",
+    "- Most overlays should be 3-9 words.",
+    "- Make the caption add context instead of repeating the overlay.",
+    "- Do not invent results, statistics, testimonials, or visual details.",
+    "- hashtags must contain 3-5 lowercase hashtags without spaces.",
+    "- slides must contain exactly one item matching filledHook.",
     "- script must be an empty string and scenePlan must be an empty array.",
-    "- Never return unresolved placeholders, placeholder labels, snake_case keys, or database-style labels.",
-    "- Return only the JSON object.",
-    `Audience language hints: ${JSON.stringify(fillers)}`,
+    "- Never return placeholders or internal field labels.",
+    ...getGeneratedWritingAntiSlopPromptRules(),
+    `Optional audience language hints: ${JSON.stringify(fillers)}`,
   ].join("\n");
 }

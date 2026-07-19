@@ -151,16 +151,12 @@ export const consumeTikTokSoundImport = mutation({
   },
 });
 
-export const consumeHookLabIdeaAnalysis = mutation({
+export const consumeHookLabPostAnalysis = mutation({
   args: {
     idempotencyKey: v.string(),
-    isSocialImport: v.boolean(),
     secret: v.string(),
   },
-  handler: async (
-    ctx,
-    { idempotencyKey, isSocialImport, secret },
-  ) => {
+  handler: async (ctx, { idempotencyKey, secret }) => {
     assertRateLimitApiSecret(secret);
 
     const ownerId = await getAuthenticatedOwnerId(ctx);
@@ -175,21 +171,11 @@ export const consumeHookLabIdeaAnalysis = mutation({
       return { alreadyReserved: true };
     }
 
-    if (isSocialImport) {
-      await rateLimiter.limit(ctx, "hookLabSocialImport", {
-        key: ownerId,
-        throws: true,
-      });
-      await rateLimiter.limit(ctx, "hookLabSocialImportGlobal", {
-        throws: true,
-      });
-    }
-
-    await rateLimiter.limit(ctx, "hookLabIdeaAnalysis", {
+    await rateLimiter.limit(ctx, "hookLabPostAnalysis", {
       key: ownerId,
       throws: true,
     });
-    await rateLimiter.limit(ctx, "hookLabIdeaAnalysisGlobal", {
+    await rateLimiter.limit(ctx, "hookLabPostAnalysisGlobal", {
       throws: true,
     });
     await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
@@ -659,28 +645,6 @@ export const consumeCliprHookScript = mutation({
     });
     await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
       ...(generationCount ? { count: generationCount } : {}),
-      throws: true,
-    });
-  },
-});
-
-export const consumeStitchrBatchHookPlan = mutation({
-  args: {
-    secret: v.string(),
-  },
-  handler: async (ctx, { secret }) => {
-    assertRateLimitApiSecret(secret);
-
-    const ownerId = await getAuthenticatedOwnerId(ctx);
-
-    await rateLimiter.limit(ctx, "stitchrBatchHookPlanDaily", {
-      key: ownerId,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "stitchrBatchHookPlanGlobalDaily", {
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
       throws: true,
     });
   },

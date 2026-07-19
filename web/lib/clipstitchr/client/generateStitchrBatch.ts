@@ -5,8 +5,6 @@ import { getBrowserTimeZone } from "@/lib/clipstitchr/client/getBrowserTimeZone"
 export type GenerateStitchrBatchResult = {
   batchDate: string;
   count: number;
-  hookPlanCount?: number;
-  hookPlanStatus?: string;
   message?: string;
   providerDispatchStatus?: string;
   runId: string;
@@ -21,7 +19,6 @@ export type GenerateStitchrBatchOptions = {
   stitchrTextStyleChoice?: AutomationStitchrTextStyleChoice;
   productId?: string;
   soundTrackId?: string;
-  templateId?: string;
   timeZone?: string;
 };
 
@@ -29,7 +26,6 @@ export async function generateStitchrBatch(
   options: GenerateStitchrBatchOptions = {},
 ) {
   const productId = options.productId?.trim();
-  const templateId = options.templateId?.trim();
   const soundTrackId = options.soundTrackId?.trim();
   const timeZone = options.timeZone?.trim() || getBrowserTimeZone();
   const body = {
@@ -49,7 +45,6 @@ export async function generateStitchrBatch(
       ? { stitchrTextStyleChoice: options.stitchrTextStyleChoice }
       : {}),
     ...(productId ? { productId } : {}),
-    ...(templateId ? { templateId } : {}),
     ...(soundTrackId ? { soundTrackId } : {}),
     ...(timeZone ? { timeZone } : {}),
   };

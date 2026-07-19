@@ -70,7 +70,7 @@ describe("createStitchScorePrompt", () => {
     expect(prompt).toContain("Wait for it");
     expect(prompt).toContain("Person reacts in the first second.");
     expect(prompt).toContain("first-score");
-    expect(prompt).toContain("Hook Lab handles hook and overlay writing.");
+    expect(prompt).toContain("Do not suggest new text overlay copy.");
     expect(prompt).toContain("Do not return suggestedOverlayText");
     expect(prompt).not.toContain('"suggestedOverlayText"');
     expect(prompt).not.toContain('"overlayText":{"replaceWith"');

@@ -67,7 +67,7 @@ describe("providerJobs.claimNextForProvider", () => {
     const { ctx, db } = createCtx({
       _id: "job_doc",
       attempt: 1,
-      jobType: "hook-lab-idea-use",
+      jobType: "hook-lab-post-analysis",
       lockedUntil: "2026-07-12T11:59:00.000Z",
       stage: "awaiting-provider",
       status: "running",
@@ -75,7 +75,7 @@ describe("providerJobs.claimNextForProvider", () => {
 
     await expect(
       (claimNextForProvider as unknown as ConvexFunction).handler(ctx, {
-        jobType: "hook-lab-idea-use",
+        jobType: "hook-lab-post-analysis",
         lockedUntil: "2026-07-12T12:05:00.000Z",
         secret: "provider-secret",
         updatedAt: "2026-07-12T12:00:00.000Z",
@@ -94,7 +94,7 @@ describe("providerJobs.claimNextForProvider", () => {
     const { ctx, db } = createCtx({
       _id: "job_doc",
       attempt: 3,
-      jobType: "hook-lab-idea-analysis",
+      jobType: "hook-lab-post-analysis",
       lockedUntil: "2026-07-12T11:59:00.000Z",
       stage: "awaiting-provider",
       status: "running",
@@ -102,7 +102,7 @@ describe("providerJobs.claimNextForProvider", () => {
 
     await expect(
       (claimNextForProvider as unknown as ConvexFunction).handler(ctx, {
-        jobType: "hook-lab-idea-analysis",
+        jobType: "hook-lab-post-analysis",
         lockedUntil: "2026-07-12T12:05:00.000Z",
         secret: "provider-secret",
         updatedAt: "2026-07-12T12:00:00.000Z",

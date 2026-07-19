@@ -41,9 +41,7 @@ the worker process does not sleep while waiting for Apify.
 Before starting an Actor, Hook Lab atomically records
 `providerRunRequestedAt`. Recovery always reuses a recorded run and treats an
 ambiguous start response as operator-visible failure instead of risking a
-second paid Actor start. An explicit user retry may clear the marker. Generated
-writing, image, and video object checkpoints similarly let reclaimed Idea-use
-jobs resume after their last completed provider step.
+second paid Actor start. An explicit user retry may clear the marker.
 
 ## Queue Drain Behavior
 
@@ -93,7 +91,7 @@ web/convex/providerWorkerLaunch.ts
 web/convex/workerContinuationDelayMs.ts
 web/services/media-worker/runMediaWorker.mjs
 web/services/provider-worker/runProviderWorker.ts
-web/services/provider-worker/hookLab/waitForHookLabApifyRun.ts
+web/services/provider-worker/hookLab/waitForHookLabPostActor.ts
 ```
 
 ## Future Option: Queue-Based Dispatch

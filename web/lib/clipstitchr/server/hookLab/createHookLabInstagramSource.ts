@@ -3,12 +3,13 @@ import { getHookLabSourcePlatform } from "@/lib/clipstitchr/server/hookLab/getHo
 import { normalizeHookLabSourceCreatedAt } from "@/lib/clipstitchr/server/hookLab/normalizeHookLabSourceCreatedAt";
 import { normalizeHookLabAuthorProfileUrl } from "@/lib/clipstitchr/server/hookLab/normalizeHookLabAuthorProfileUrl";
 import { readHookLabSourceString } from "@/lib/clipstitchr/server/hookLab/readHookLabSourceString";
-import type { HookLabImportedSource } from "@/lib/clipstitchr/types/HookLabImportedSource";
+import { readHookLabSourceNumber } from "@/lib/clipstitchr/server/hookLab/readHookLabSourceNumber";
+import type { HookLabImportedPost } from "@/lib/clipstitchr/types/HookLabImportedPost";
 
 export function createHookLabInstagramSource(
   item: unknown,
   requestedUrl: string,
-): HookLabImportedSource {
+): HookLabImportedPost {
   const error = readHookLabSourceString(item, ["error", "errorDescription"]);
   const sourceType = readHookLabSourceString(item, ["type", "productType"]);
 
@@ -56,6 +57,32 @@ export function createHookLabInstagramSource(
       "username",
     ]),
     canonicalUrl,
+    metrics: {
+      commentCount: readHookLabSourceNumber(item, [
+        "commentsCount",
+        "commentCount",
+        "comments",
+      ]),
+      likeCount: readHookLabSourceNumber(item, [
+        "likesCount",
+        "likeCount",
+        "likes",
+      ]),
+      playCount: readHookLabSourceNumber(item, [
+        "videoPlayCount",
+        "videoViewCount",
+        "viewCount",
+        "views",
+      ]),
+      saveCount: readHookLabSourceNumber(item, [
+        "savesCount",
+        "saveCount",
+      ]),
+      shareCount: readHookLabSourceNumber(item, [
+        "sharesCount",
+        "shareCount",
+      ]),
+    },
     platform: "instagram",
     sourceCreatedAt: normalizeHookLabSourceCreatedAt(
       readHookLabSourceString(item, ["timestamp", "takenAt", "createdAt"]),

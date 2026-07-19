@@ -16,7 +16,6 @@ import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
-import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
 import type { StitchLibraryStatusFilter } from "@/lib/clipstitchr/types/StitchLibraryStatusFilter";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
@@ -27,32 +26,25 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 
 type StitchesSectionProps = {
   demoClips: VideoClipMetadata[];
-  hookPlans?: StitchrHookPlan[];
-  savingHookPlanId?: string | null;
   stitches: Stitch[];
   emptyDescription?: string;
   emptyTitle?: string;
   hasMoreItems?: boolean;
   id?: string;
   isLoadingMoreItems?: boolean;
-  savingIdeaStitchId?: string | null;
   statusCounts?: Record<StitchLibraryStatusFilter, number>;
   statusFilter?: StitchLibraryStatusFilter;
   title?: string;
   totalCount?: number;
   onDelete: (id: string) => void | Promise<void>;
-  onAcceptHookVariant?: (planId: string, hookText: string) => void;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadMoreItems?: () => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onPostBridgeScheduled?: () => void | Promise<void>;
-  onSaveIdea?: (stitch: Stitch) => void | Promise<unknown>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
-  onRejectHookVariant?: (planId: string, hookText: string) => void;
-  onSelectHookVariant?: (planId: string, hookText: string) => void;
   onStatusFilterChange?: (status: StitchLibraryStatusFilter) => void;
   onUpdateMusic: (
     stitch: Stitch,
@@ -89,32 +81,25 @@ type StitchesSectionProps = {
 
 export function StitchesSection({
   demoClips,
-  hookPlans = [],
-  savingHookPlanId = null,
   stitches,
-  emptyDescription = "Create a Stitch after you have at least one Hook/UGC clip and one product demo.",
+  emptyDescription = "Create a Stitch after you have at least one UGC clip and one product demo.",
   emptyTitle = "No Stitches yet",
   hasMoreItems = false,
   id = "stitches",
   isLoadingMoreItems = false,
-  savingIdeaStitchId = null,
   statusCounts,
   statusFilter = "active",
   title = "Stitches",
   totalCount,
   onDelete,
-  onAcceptHookVariant,
   onLoadClip,
   onLoadMoreItems,
   onLoadPoster,
   onLoadVideo,
   onPostBridgeScheduled,
-  onSaveIdea,
   onScore,
   onApplyQuickEdit,
   onResetQuickEdit,
-  onRejectHookVariant,
-  onSelectHookVariant,
   onStatusFilterChange,
   onUpdateMusic,
   onUpdatePostedStatus,
@@ -201,25 +186,19 @@ export function StitchesSection({
                 key={stitch.id}
                 stitch={stitch}
                 demoClips={demoClips}
-                hookPlans={hookPlans}
-                savingHookPlanId={savingHookPlanId}
                 isSelected={batchDelete.selectedIds.has(stitch.id)}
                 isSelectionDisabled={
                   batchDelete.isDeletingSelected ||
                   batchQueue.isBatchQueueDialogOpen
                 }
-                isSavingIdea={savingIdeaStitchId === stitch.id}
                 onDelete={onDelete}
-                onAcceptHookVariant={onAcceptHookVariant}
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
                 onLoadVideo={onLoadVideo}
                 onPostBridgeScheduled={onPostBridgeScheduled}
-                onSaveIdea={onSaveIdea}
                 onScore={onScore}
                 onApplyQuickEdit={onApplyQuickEdit}
                 onResetQuickEdit={onResetQuickEdit}
-                onRejectHookVariant={onRejectHookVariant}
                 onSelect={
                   batchDelete.isSelecting
                     ? () => batchDelete.toggleItemSelection(stitch.id)
@@ -232,7 +211,6 @@ export function StitchesSection({
                 onUpdateSourceCuts={onUpdateSourceCuts}
                 onUpdateSourceSettings={onUpdateSourceSettings}
                 onUpdateTextOverlay={onUpdateTextOverlay}
-                onSelectHookVariant={onSelectHookVariant}
                 ugcClips={ugcClips}
               />
             ))}

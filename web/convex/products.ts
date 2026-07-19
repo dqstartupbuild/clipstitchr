@@ -26,20 +26,7 @@ const CLIPR_FILLER_KEY_MAX_LENGTH = 40;
 const CLIPR_FILLER_VALUE_MAX_LENGTH = 120;
 const CLIPR_FILLER_VALUE_LIMIT = 16;
 const CLIPR_HOOK_STYLE_KEY_MAX_LENGTH = 80;
-const PRODUCT_HOOK_EXAMPLE_MAX_LENGTH = 180;
-const PRODUCT_HOOK_EXAMPLE_LIMIT = 20;
-const HOOK_GENERATION_GOAL_MAX_LENGTH = 30;
-const HOOK_EDGE_LEVEL_MAX_LENGTH = 20;
 const PRODUCT_LIST_LIMIT = 100;
-
-const hookGenerationGoals = new Set([
-  "views",
-  "clicks",
-  "comments",
-  "trust",
-  "demo_watch",
-]);
-const hookEdgeLevels = new Set(["safe", "punchy", "bold"]);
 
 function normalizeText(value: string, maxLength: number) {
   return value.trim().slice(0, maxLength);
@@ -76,20 +63,6 @@ function normalizeFillers(fillers: Record<string, string[]> | undefined) {
   );
 
   return Object.keys(normalizedFillers).length ? normalizedFillers : undefined;
-}
-
-function normalizeOptionalChoice(
-  value: string | undefined,
-  validValues: Set<string>,
-  maxLength: number,
-) {
-  if (!value) {
-    return undefined;
-  }
-
-  const normalizedValue = normalizeText(value, maxLength);
-
-  return validValues.has(normalizedValue) ? normalizedValue : undefined;
 }
 
 export const list = query({
@@ -174,10 +147,6 @@ export const create = mutation({
       v.record(v.string(), v.array(v.string())),
     ),
     preferredCliprHookStyleKey: v.optional(v.string()),
-    winningHookExamples: v.optional(v.array(v.string())),
-    rejectedHookExamples: v.optional(v.array(v.string())),
-    hookGenerationGoal: v.optional(v.string()),
-    hookEdgeLevel: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
   },
@@ -196,10 +165,6 @@ export const create = mutation({
       eligibleCliprHookTemplateIds,
       cliprPlaceholderFillers,
       preferredCliprHookStyleKey,
-      winningHookExamples,
-      rejectedHookExamples,
-      hookGenerationGoal,
-      hookEdgeLevel,
     },
   ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
@@ -262,26 +227,6 @@ export const create = mutation({
             CLIPR_HOOK_STYLE_KEY_MAX_LENGTH,
           )
         : undefined,
-      winningHookExamples: normalizeTextArray(
-        winningHookExamples,
-        PRODUCT_HOOK_EXAMPLE_LIMIT,
-        PRODUCT_HOOK_EXAMPLE_MAX_LENGTH,
-      ),
-      rejectedHookExamples: normalizeTextArray(
-        rejectedHookExamples,
-        PRODUCT_HOOK_EXAMPLE_LIMIT,
-        PRODUCT_HOOK_EXAMPLE_MAX_LENGTH,
-      ),
-      hookGenerationGoal: normalizeOptionalChoice(
-        hookGenerationGoal,
-        hookGenerationGoals,
-        HOOK_GENERATION_GOAL_MAX_LENGTH,
-      ),
-      hookEdgeLevel: normalizeOptionalChoice(
-        hookEdgeLevel,
-        hookEdgeLevels,
-        HOOK_EDGE_LEVEL_MAX_LENGTH,
-      ),
       createdAt: now,
       updatedAt: now,
     };
@@ -358,10 +303,6 @@ export const update = mutation({
       v.record(v.string(), v.array(v.string())),
     ),
     preferredCliprHookStyleKey: v.optional(v.string()),
-    winningHookExamples: v.optional(v.array(v.string())),
-    rejectedHookExamples: v.optional(v.array(v.string())),
-    hookGenerationGoal: v.optional(v.string()),
-    hookEdgeLevel: v.optional(v.string()),
     updatedAt: v.string(),
   },
   handler: async (
@@ -379,10 +320,6 @@ export const update = mutation({
       eligibleCliprHookTemplateIds,
       cliprPlaceholderFillers,
       preferredCliprHookStyleKey,
-      winningHookExamples,
-      rejectedHookExamples,
-      hookGenerationGoal,
-      hookEdgeLevel,
       updatedAt,
     },
   ) => {
@@ -446,26 +383,6 @@ export const update = mutation({
             CLIPR_HOOK_STYLE_KEY_MAX_LENGTH,
           )
         : undefined,
-      winningHookExamples: normalizeTextArray(
-        winningHookExamples,
-        PRODUCT_HOOK_EXAMPLE_LIMIT,
-        PRODUCT_HOOK_EXAMPLE_MAX_LENGTH,
-      ),
-      rejectedHookExamples: normalizeTextArray(
-        rejectedHookExamples,
-        PRODUCT_HOOK_EXAMPLE_LIMIT,
-        PRODUCT_HOOK_EXAMPLE_MAX_LENGTH,
-      ),
-      hookGenerationGoal: normalizeOptionalChoice(
-        hookGenerationGoal,
-        hookGenerationGoals,
-        HOOK_GENERATION_GOAL_MAX_LENGTH,
-      ),
-      hookEdgeLevel: normalizeOptionalChoice(
-        hookEdgeLevel,
-        hookEdgeLevels,
-        HOOK_EDGE_LEVEL_MAX_LENGTH,
-      ),
       updatedAt,
     };
 

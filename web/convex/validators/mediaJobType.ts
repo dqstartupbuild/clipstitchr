@@ -5,7 +5,6 @@ export const mediaJobTypeValidator = v.union(
   v.literal("stitchr-draft-finalization"),
   v.literal("stitchr-export"),
   v.literal("stitchr-longr-export"),
-  v.literal("hook-lab-variant-finalization"),
   v.literal("swapr-finalization"),
   v.literal("upload-normalization"),
 );

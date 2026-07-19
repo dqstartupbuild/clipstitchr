@@ -58,9 +58,7 @@ process raw uploaded source videos when browser normalization is unavailable,
 `clipr-finalization` jobs that normalize Clipr provider videos, and
 `swapr-finalization` jobs that download one or more Replicate outputs,
 normalize/concatenate them, and save reusable UGC-compatible Swapr clips. Longr
-export and operational dashboards remain follow-up phases. Hook Lab adds
-`hook-lab-variant-finalization`, which turns one provider-generated reaction
-opening into a reusable Hook/UGC clip and an editable Stitch with Idea lineage.
+export and operational dashboards remain follow-up phases.
 
 Run the local worker with:
 
@@ -101,7 +99,6 @@ Deployment choices and where those variables live are documented in
 | `stitchr-longr-export` | Planned saved sequence clips, copied trims, output metadata | One finished Stitch from the ordered Longr-mode sequence, poster image, final `stitches` record |
 | `clipr-finalization` | Implemented provider-generated avatar video already copied to R2 and referenced by a Clipr job/provider job | Normalized final Clipr UGC video, poster image, final `videoClips` record |
 | `swapr-finalization` | Implemented provider output URL(s) and Swapr metadata already recorded server-side | Normalized/concatenated UGC clip, poster image, final `videoClips` record |
-| `hook-lab-variant-finalization` | Implemented provider-generated eight-second reaction opening in private R2, saved default Demo/recipe snapshot, generated text/caption, and Idea/use/variant lineage | Normalized 1080x1920 opening, poster, reusable Hook/UGC `videoClips` record, editable UGC-then-Demo `stitches` record, and completed variant/use lineage |
 
 Manual and automatic Clipr now have provider-side executors and media-worker
 finalization paths. Manual and automatic Swapr now have provider-side create and
@@ -120,7 +117,6 @@ Durability starts at different points for different workflows:
 | Stitchr Longr mode | The `stitchr-longr-export` job exists in Convex |
 | Clipr generation | The `manual-clipr` provider job exists; media durability starts after the provider worker creates `clipr-finalization` |
 | Swapr generation | The `manual-swapr` provider job exists; media durability starts after the provider worker records output URL(s) and creates `swapr-finalization` |
-| Hook Lab Idea use | The `hook-lab-idea-use` provider jobs exist; media durability for each variant starts when its `hook-lab-variant-finalization` job exists |
 
 Skipping resumable or multipart uploads leaves one intentional gap: a brand-new
 local file is not close-safe until the browser finishes uploading the raw source
@@ -149,10 +145,6 @@ needs media encoding:
   tracks that can appear in phone uploads.
 - Completed output and poster files are uploaded back to R2.
 - Scratch files are deleted after completion or failure cleanup.
-- Hook Lab transient generated image/video R2 inputs are deleted with
-  best-effort cleanup after a successful final save or the final failed
-  attempt. Saved normalized clips and posters use separate durable keys and are
-  never included in that transient cleanup list.
 
 The worker runs a startup FFmpeg self-test. A target runtime must include
 `ffmpeg`, `ffprobe`, `libx264`, and AAC encoding before it should accept
@@ -197,8 +189,6 @@ Relevant limits are documented in `docs/operations/security/rate-limits.md`:
 - media output second limits;
 - active media job concurrency;
 - final Convex record-save limits.
-- Hook Lab's dedicated two-object-per-variant reservation for the normalized
-  opening video and poster; the editable Stitch is metadata-only at creation.
 
 Rate limits are not a replacement for access control. Ownership checks still
 must happen before creating or completing jobs.

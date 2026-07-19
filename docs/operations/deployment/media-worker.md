@@ -16,10 +16,6 @@ slash-delimited function paths. The legacy
 `workerQueue:claimNextWorkerQueueEntry` path does not resolve and makes a Cloud
 Run execution exit before it can claim queued media work.
 
-Hook Lab adds `hook-lab-variant-finalization`. It creates a normalized reusable
-opening clip and an editable ready-to-review Stitch from provider-generated
-media, then records Idea/use/variant lineage.
-
 This document covers deployment for media execution only. Provider orchestration
 and daily autopilot planning are documented in
 `docs/operations/automation/provider-workflows.md`.
@@ -336,10 +332,9 @@ should not wait for it.
 6. Confirm startup passes the FFmpeg support self-test.
 7. Queue a short Clipr finalization and confirm the job moves from `queued` to
    `running` to `completed`.
-8. Queue a Hook Lab Idea use and confirm the opening is normalized to
-   1080x1920, its poster and reusable clip are saved, the editable Stitch uses
-   the configured Demo, and the variant reaches `completed`.
-9. Confirm Hook Lab's transient generated image/video objects are removed after
+8. Run a Hook Lab post analysis and confirm it completes without creating a
+   media job or a saved Library clip.
+9. Confirm temporary Hook Lab analysis video objects are removed after
    successful finalization or the final failed attempt, and scratch directories
    are removed on success and failure.
 10. Confirm failed jobs show a clear error in the dashboard job panel.

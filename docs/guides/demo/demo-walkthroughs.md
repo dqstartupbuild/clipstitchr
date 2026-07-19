@@ -364,73 +364,9 @@ Help a user turn on daily drafts and choose which tools ClipStitchr should use a
 - Product and source prerequisites are clear.
 - The user knows where automated drafts will appear.
 
-## Scenario 6: I Want to Reuse My Best Stitchr Setup as a Template
+## Scenario 6: I Want to Research a Public Social Post
 
-### Goal
-
-Help a user save a finished Stitchr setup as a reusable template, then use it to make a new version faster.
-
-### Starting State
-
-- User is signed in.
-- User has at least one finished Stitchr output.
-- User wants to reuse the same clip setup, trims, text, caption, audio choices, or pacing.
-- User may want to swap in different UGC clips later.
-
-### Play-by-Play
-
-1. Open the Library.
-   - Go to the Stitches tab.
-   - Pick a finished stitch that represents a good setup.
-   - Say: "When a video has the right structure, you do not have to rebuild it from scratch."
-
-2. Save the stitch as a template.
-   - Open the stitch card actions.
-   - Click Save as Template.
-   - Wait for the save to finish.
-   - Say: "This saves the setup, not another copy of the video."
-
-3. Open the Library Templates tab.
-   - Show the new template card.
-   - Point out the source stitch name and the UGC plus Demo pairing.
-   - Say: "Templates keep the pieces that made the stitch work."
-
-4. Rename the template.
-   - Click the rename action.
-   - Use a practical name like "Founder hook + product walkthrough" or "Testimonial intro + demo."
-   - Save the new name.
-   - Say: "Name it after the job it does, so you can find it later."
-
-5. Use the template in Stitchr.
-   - Click Use in Stitchr from the template card.
-   - Or open Stitchr and choose the template from the Template picker.
-   - Show that None is the default when no template is selected.
-   - Say: "The template loads the clips, trims, text, caption, and settings from the original setup."
-
-6. Create a new version.
-   - Keep the demo if it still fits.
-   - Swap in a different UGC clip if the goal is a fresh opening.
-   - Keep or edit the reused text.
-   - Preview the new UGC-then-Demo flow.
-   - Say: "You can keep the parts that worked and only change what needs testing."
-
-7. Stitch the new version.
-   - Click Stitch.
-   - Save the new output.
-   - Open the Library Stitches tab and show the new video beside the original.
-   - Say: "Now one good setup can turn into more versions without extra setup work."
-
-8. Manage templates.
-   - Return to the Library Templates tab.
-   - Show rename and delete.
-   - Say: "Deleting a template only removes the saved setup. Your clips and finished stitches stay in the library."
-
-### Done State
-
-- A finished stitch has been saved as a template.
-- The template has a clear reusable name.
-- The user has used the template to start a new Stitchr session.
-- The user understands that templates save setup, not rendered video files.
+Paste one public TikTok or Instagram video URL into Hook Lab, wait for the saved post to finish analyzing, then open its report. Confirm the dialog shows public metrics, a full-video timestamped play-by-play, and a platform-performance explanation.
 
 ## Recommended Demo Order
 
@@ -438,20 +374,17 @@ Help a user save a finished Stitchr setup as a reusable template, then use it to
 2. Demo plus existing avatar into Clipr, then Stitchr.
 3. Demo plus new avatar into Clipr, then Stitchr.
 4. Empty workspace into Swipr carousel.
-5. Save a strong Stitchr output as a template and reuse it.
+5. Analyze a public social post in Hook Lab.
 6. Automation setup after assets and product context exist.
 
 ## Source References
 
 - `project-scope.md`
 - `docs/features/stitchr/stitchr.md`
-- `docs/features/stitchr/stitchr-templates.md`
+- `docs/features/hook-lab/hook-lab-post-analysis.md`
 - `docs/features/avatar/avatar.md`
 - `docs/features/clipr/clipr.md`
 - `docs/features/swipr/swipr.md`
 - `docs/planning/automation/provider-automation.md`
 - `web/app/dashboard/settings/SettingsPageClient.tsx`
 - `web/app/_components/settings/SettingsAutomationPanel.tsx`
-- `web/app/_components/library/TemplateLibraryTabSection.tsx`
-- `web/app/_components/templates/StitchTemplateCard.tsx`
-- `web/app/_components/stitchr/StitchTemplatePicker.tsx`

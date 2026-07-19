@@ -99,10 +99,6 @@ export async function PATCH(
       eligibleCliprHookTemplateIds: product.eligibleCliprHookTemplateIds,
       cliprPlaceholderFillers: product.cliprPlaceholderFillers,
       preferredCliprHookStyleKey: product.preferredCliprHookStyleKey,
-      winningHookExamples: product.winningHookExamples,
-      rejectedHookExamples: product.rejectedHookExamples,
-      hookGenerationGoal: product.hookGenerationGoal,
-      hookEdgeLevel: product.hookEdgeLevel,
       updatedAt: product.updatedAt,
     });
 

@@ -45,7 +45,7 @@ Browse everything from the Library
 Use Stitchr, Clipr, Swapr, Swipr, Quick Edit, and Hook Lab
         |
         v
-Save finished Stitches, Swipes, generated clips, templates, and assets
+Save finished Stitches, Swipes, generated clips, social research, and assets
         |
         v
 Download, reuse, mark posted, or schedule
@@ -57,8 +57,8 @@ Download, reuse, mark posted, or schedule
 
 The authenticated Library at `/dashboard/library` is the single place for
 saved Hook/UGC clips, product demos, generated outputs, finished work, avatar
-photos, and imported Pexels packs. Reusable inspiration and Stitch recipes live
-in Hook Lab Ideas.
+photos, and imported Pexels packs. Public social-post research lives in Hook
+Lab.
 
 Library groups:
 
@@ -70,7 +70,6 @@ Compatibility redirects keep older dashboard URLs working:
 
 - `/dashboard/uploads` -> `/dashboard/library`
 - `/dashboard/avatars` -> `/dashboard/library?tab=avatars`
-- `/dashboard/templates` -> `/dashboard/hooks?view=ideas`
 - `/dashboard/stitches` -> `/dashboard/library?tab=stitches`
 
 ### Stitchr
@@ -99,7 +98,6 @@ Stitchr also supports:
 
 - Batch mode for automated daily draft creation
 - Longr mode for ordered multi-clip sequences
-- reusable Hook Lab Idea recipes, with legacy Template fallback during migration
 - multiple editable text overlays
 - social captions and hashtags
 - selected, uploaded, or TikTok-imported sounds
@@ -108,11 +106,10 @@ Stitchr also supports:
 
 ### Hook Lab
 
-Hook Lab has **Ideas** and **Review** views. Users can save a useful line, a
-supported public TikTok or Instagram post, or a past Stitch; Hook Lab learns a
-structured writing pattern or creative beat and can turn it into 1, 3, or 5
-fresh, editable Stitches. Review keeps every generated hook on its own card so
-Use, Save idea, and Not for me never affect sibling hooks.
+Hook Lab saves public TikTok and Instagram video posts for research. It records
+the public post details and engagement counts, analyzes the full video and
+audio, and provides a timestamped play-by-play plus a plain-language performance
+review in one dialog.
 
 ### Quick Edit
 
@@ -314,7 +311,6 @@ Common stored records include:
 - avatar preferences
 - product profiles
 - saved Stitches
-- Stitchr templates
 - saved Swipes
 - shared and private music tracks
 - provider jobs
@@ -374,7 +370,6 @@ Dashboard routes:
 | `/dashboard/onboarding` | First-run onboarding |
 | `/dashboard/uploads` | Redirect to Library |
 | `/dashboard/avatars` | Redirect to Library Avatars tab |
-| `/dashboard/templates` | Redirect to Hook Lab Ideas |
 | `/dashboard/stitches` | Redirect to Library Stitches tab |
 
 ## Repository Layout
@@ -555,7 +550,7 @@ Start here:
 - `docs/features/swapr/swapr-scope.md` for Swapr scope
 - `docs/features/editor/quick-edit.md` for non-destructive source edits
 - `docs/features/stitchr/stitchr-batch.md` for automated draft creation
-- `docs/features/stitchr/stitchr-templates.md` for reusable Stitchr setups
+- `docs/features/hook-lab/hook-lab-post-analysis.md` for public post analysis
 - `docs/features/post-bridge/post-bridge-scheduling.md` for scheduling
 - `docs/features/post-bridge/post-bridge-analytics.md` for analytics
 - `docs/operations/security/rate-limits.md` for backend cost protection

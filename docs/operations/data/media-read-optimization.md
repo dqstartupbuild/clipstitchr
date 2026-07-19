@@ -23,8 +23,7 @@ reads across every mounted subscription.
   top-level Swipe background plus any per-slide background IDs used by those
   recent cards, so the dashboard does not need the full Swipr background
   library subscription. Dashboard source clip fan-out is capped to a small
-  picker-sized set, and the home page uses a mutation-only Stitch template hook
-  instead of subscribing to the full template list.
+  picker-sized set.
 - `useClipLibraryState` subscribes only on dashboard routes that render clip or
   stitch media directly. The dashboard home keeps only aggregate counts loaded.
   Settings, Clipr, Avatars, and Swipr do not open hidden clip-list
@@ -45,7 +44,6 @@ reads across every mounted subscription.
 - Settings loads compact Pexels pack summaries, not background photo rows, for
   automation pack selection. Swipr Batch uses those summaries for picker
   labels while generation performs its own indexed selected-pack lookup.
-- `useStitchrHookPlans` can be disabled by callers. The Library page enables it
   only on the active Stitches tab and scopes the query to the active product.
 - Public blog index, RSS, and sitemap routes read compact `blogPostCards`
   records and use hourly route revalidation. Full `blogPosts` body documents are

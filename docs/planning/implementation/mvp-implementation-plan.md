@@ -7,9 +7,9 @@
 ### Product Scope
 
 - `project-scope.md`
-  - MVP routes are `/`, `/dashboard`, `/dashboard/library`, `/dashboard/stitchr`, `/dashboard/swapr`, `/dashboard/clipr`, and `/dashboard/swipr`; `/dashboard/uploads`, `/dashboard/avatars`, `/dashboard/templates`, and `/dashboard/stitches` redirect to the relevant Library tab for compatibility.
-  - The authenticated Library at `/dashboard/library` has UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Templates tabs.
-  - Avatar photo upload, avatar descriptions, avatar scenario photo generation, and Stitchr templates live in Library tabs.
+  - MVP routes are `/`, `/dashboard`, `/dashboard/library`, `/dashboard/hooks`, `/dashboard/stitchr`, `/dashboard/swapr`, `/dashboard/clipr`, and `/dashboard/swipr`; `/dashboard/uploads`, `/dashboard/avatars`, and `/dashboard/stitches` redirect to the relevant Library tab for compatibility.
+  - The authenticated Library at `/dashboard/library` has UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Pexels tabs.
+  - Avatar photo upload, avatar descriptions, and avatar scenario photo generation live in the Library.
   - Uploads are UGC clips, Demo videos, and Swapr avatar reference photos.
   - Every uploaded clip must be normalized to TikTok 9:16 before it is usable.
   - Preview and export must use the same sequence: each selected UGC plays first, Demo starts immediately after that UGC ends.
@@ -212,16 +212,13 @@ web/app/(content)/terms/page.tsx
 
 - Server route entry for the authenticated Library.
 - Exports page metadata with canonical `/dashboard/library`.
-- Renders the tabbed library client with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Templates tabs.
+- Renders the tabbed library client with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Pexels tabs.
 
 #### `web/app/dashboard/avatars/page.tsx`
 
 - Compatibility route only.
 - Redirects to `/dashboard/library?tab=avatars` instead of rendering a dedicated avatars screen.
 
-#### `web/app/dashboard/templates/page.tsx`
-
-- Compatibility route only.
 - Redirects to `/dashboard/library?tab=templates` instead of rendering a dedicated templates screen.
 
 #### `web/app/dashboard/uploads/page.tsx`

@@ -2,7 +2,6 @@
 
 import {
   CheckCircle2,
-  BookmarkPlus,
   CalendarClock,
   Download,
   Edit3,
@@ -34,7 +33,6 @@ import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchPreviewErrorState } from "@/lib/clipstitchr/types/StitchPreviewErrorState";
 import type { StitchPreviewSources } from "@/lib/clipstitchr/types/StitchPreviewSources";
-import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
 import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -50,19 +48,14 @@ import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { getReuseStitchHref } from "@/lib/clipstitchr/utils/getReuseStitchHref";
 import { getQuickEditSuggestionsHasActionableChange } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange";
 import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
-import { getStitchrHookPlanMatchesStitch } from "@/lib/clipstitchr/utils/getStitchrHookPlanMatchesStitch";
 import { capturePostHogException } from "@/lib/clipstitchr/analytics/capturePostHogException";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
 type StitchCardProps = {
   stitch: Stitch;
   demoClips?: VideoClipMetadata[];
-  hookPlans?: StitchrHookPlan[];
   isSelected?: boolean;
   isSelectionDisabled?: boolean;
-  isSavingIdea?: boolean;
-  savingHookPlanId?: string | null;
-  onAcceptHookVariant?: (planId: string, hookText: string) => void;
   onDelete: (id: string) => void | Promise<void>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
@@ -71,10 +64,7 @@ type StitchCardProps = {
   onPostBridgeScheduled?: () => void | Promise<void>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
-  onRejectHookVariant?: (planId: string, hookText: string) => void;
   onSelect?: () => void;
-  onSelectHookVariant?: (planId: string, hookText: string) => void;
-  onSaveIdea?: (stitch: Stitch) => void | Promise<unknown>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
@@ -111,12 +101,8 @@ type StitchCardProps = {
 export function StitchCard({
   stitch,
   demoClips = [],
-  hookPlans = [],
   isSelected = false,
   isSelectionDisabled = false,
-  isSavingIdea = false,
-  savingHookPlanId = null,
-  onAcceptHookVariant,
   onDelete,
   onLoadClip,
   onLoadPoster,
@@ -125,10 +111,7 @@ export function StitchCard({
   onPostBridgeScheduled,
   onApplyQuickEdit,
   onResetQuickEdit,
-  onRejectHookVariant,
   onSelect,
-  onSelectHookVariant,
-  onSaveIdea,
   onUpdateMusic,
   onUpdatePostedStatus,
   onUpdateSocialCaption,
@@ -200,10 +183,6 @@ export function StitchCard({
   const [socialCaptionError, setSocialCaptionError] = useState<string | null>(
     null,
   );
-  const [ideaSaveFeedback, setIdeaSaveFeedback] = useState<{
-    message: string;
-    variant: "error" | "success";
-  } | null>(null);
   const [textError, setTextError] = useState<string | null>(null);
   const [sourceSettingsError, setSourceSettingsError] = useState<string | null>(
     null,
@@ -215,9 +194,6 @@ export function StitchCard({
     : "Ready to download";
   const isPosted = Boolean(stitch.isPosted) || hasScheduledPostBridgePost;
   const canUseQuickEdit = !getStitchIsLongr(stitch);
-  const matchingHookPlans = hookPlans.filter((plan) =>
-    getStitchrHookPlanMatchesStitch(plan, stitch),
-  );
   const hasActionableQuickEditSuggestions =
     getQuickEditSuggestionsHasActionableChange(
       stitch.stitchScore?.quickEditSuggestions,
@@ -599,48 +575,12 @@ export function StitchCard({
       setIsSavingPostedStatus(false);
     }
   };
-  const handleSaveIdea = async () => {
-    if (!onSaveIdea) {
-      return;
-    }
-
-    setIdeaSaveFeedback(null);
-
-    try {
-      await onSaveIdea(stitch);
-      setIdeaSaveFeedback({
-        message: "Saved as an Idea in Hook Lab.",
-        variant: "success",
-      });
-    } catch (nextError) {
-      capturePostHogException(nextError, {
-        feature: "hook_lab_idea_save_from_stitch",
-      });
-      setIdeaSaveFeedback({
-        message:
-          nextError instanceof Error
-            ? nextError.message
-            : "Couldn’t save this Stitch as an Idea.",
-        variant: "error",
-      });
-    }
-  };
   const actionItems: MediaCardActionMenuItem[] = [
     {
       label: "Reuse in Stitchr",
       href: getReuseStitchHref(stitch),
       icon: <RefreshCw aria-hidden className="h-4 w-4" />,
     },
-    ...(onSaveIdea
-      ? [
-          {
-            label: "Save as idea",
-            icon: <BookmarkPlus aria-hidden className="h-4 w-4" />,
-            disabled: isSavingIdea,
-            onClick: () => void handleSaveIdea(),
-          },
-        ]
-      : []),
     ...(onScore
       ? [
           {
@@ -815,16 +755,6 @@ export function StitchCard({
             {quickEditError}
           </p>
         ) : null}
-        {ideaSaveFeedback?.variant === "error" ? (
-          <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
-            {ideaSaveFeedback.message}
-          </p>
-        ) : null}
-        {ideaSaveFeedback?.variant === "success" ? (
-          <p className="mt-3 rounded-md border border-accent/30 bg-surface-muted px-2 py-1 text-xs font-semibold text-accent-dark">
-            {ideaSaveFeedback.message}
-          </p>
-        ) : null}
         {socialCaptionError ? (
           <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
             {socialCaptionError}
@@ -850,12 +780,7 @@ export function StitchCard({
       {isEditOpen ? (
         <StitchEditDialog
           demoClips={demoClips}
-          hookPlans={matchingHookPlans}
           isLoadingPreview={isLoadingPreview}
-          isSavingHookPlan={Boolean(
-            savingHookPlanId &&
-              matchingHookPlans.some((plan) => plan.id === savingHookPlanId),
-          )}
           isSavingMusic={isSavingMusic}
           isSavingSocialCaption={isSavingSocialCaption}
           isSavingSourceSettings={isSavingSourceSettings || isSavingSourceCrop}
@@ -870,7 +795,6 @@ export function StitchCard({
           textError={textError}
           ugcClips={ugcClips}
           onClose={() => setIsEditOpen(false)}
-          onAcceptHookVariant={onAcceptHookVariant}
           onLoadPreview={(ugcClipId, demoClipId) => {
             void loadSourcePreview(ugcClipId, demoClipId);
           }}
@@ -885,8 +809,6 @@ export function StitchCard({
           }
           onSaveSourceSettings={handleUpdateSourceSettings}
           onSaveTextOverlay={handleUpdateTextOverlay}
-          onRejectHookVariant={onRejectHookVariant}
-          onSelectHookVariant={onSelectHookVariant}
         />
       ) : null}
       {isScheduleOpen ? (

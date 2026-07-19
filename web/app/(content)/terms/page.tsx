@@ -133,14 +133,13 @@ export default function TermsPage() {
             </p>
             <p>
               Hook Lab may make protected temporary working copies of the source
-              video while it learns the Idea. Those copies are deleted after
-              processing and are not added to your Library.
+              video while it creates the analysis. Those copies are deleted
+              after processing and are not added to your Library.
             </p>
             <p>
-              Hook Lab is meant to repeat a general writing pattern or creative
-              beat. You may not use it to impersonate someone, clone a person’s
-              identity or voice, remove watermarks, or copy a source post
-              shot-for-shot.
+              You may not use Hook Lab to impersonate someone, clone a person’s
+              identity or voice, remove watermarks, or unlawfully reproduce a
+              source post.
             </p>
           </section>
 

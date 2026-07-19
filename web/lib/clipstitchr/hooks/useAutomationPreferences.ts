@@ -16,7 +16,6 @@ import { filterEnabledAutomationTools } from "@/lib/clipstitchr/utils/filterEnab
 import { getAutomationStitchrColorChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "@/lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
-import { normalizeAutomationStitchrTemplateAllocations } from "@/lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations";
 import { getSwiprCallToActionStyle } from "@/lib/clipstitchr/utils/getSwiprCallToActionStyle";
 import { normalizeSwiprCreativeContext } from "@/lib/clipstitchr/utils/normalizeSwiprCreativeContext";
 
@@ -31,7 +30,6 @@ function getDefaultPreferences(productId?: string): AutomationPreferencesInput {
     stitchrTextColorChoice: defaultAutomationStitchrColorChoice,
     stitchrTextBackgroundColorChoice: defaultAutomationStitchrColorChoice,
     stitchrTextStrokeColorChoice: defaultAutomationStitchrColorChoice,
-    stitchrTemplateAllocations: [],
     swiprGenerationCount: defaultAutomationGenerationCount,
     swiprCallToActionStyle: defaultSwiprCallToActionStyle,
     swiprCreativeContext: "",
@@ -84,11 +82,6 @@ export function useAutomationPreferences(productId?: string) {
             stitchrTextStrokeColorChoice: getAutomationStitchrColorChoice(
               preferencesDocument.stitchrTextStrokeColorChoice,
             ),
-            stitchrTemplateAllocations:
-              normalizeAutomationStitchrTemplateAllocations(
-                preferencesDocument.stitchrTemplateAllocations,
-                preferencesDocument.stitchrGenerationCount,
-              ),
             swiprGenerationCount: getAutomationGenerationCount(
               preferencesDocument.swiprGenerationCount,
             ),
@@ -156,11 +149,6 @@ export function useAutomationPreferences(productId?: string) {
           stitchrTextStrokeColorChoice: getAutomationStitchrColorChoice(
             nextPreferences.stitchrTextStrokeColorChoice,
           ),
-          stitchrTemplateAllocations:
-            normalizeAutomationStitchrTemplateAllocations(
-              nextPreferences.stitchrTemplateAllocations,
-              nextPreferences.stitchrGenerationCount,
-            ),
           swiprGenerationCount: getAutomationGenerationCount(
             nextPreferences.swiprGenerationCount,
           ),

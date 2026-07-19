@@ -12,10 +12,6 @@ export function createProductProfileInputFromProduct(
       ? { emotionalNarrative: product.emotionalNarrative }
       : {}),
     ...(product.websiteUrl ? { websiteUrl: product.websiteUrl } : {}),
-    ...(product.hookEdgeLevel ? { hookEdgeLevel: product.hookEdgeLevel } : {}),
-    ...(product.hookGenerationGoal
-      ? { hookGenerationGoal: product.hookGenerationGoal }
-      : {}),
     ...(product.inferredProblem
       ? { inferredProblem: product.inferredProblem }
       : {}),
@@ -23,7 +19,5 @@ export function createProductProfileInputFromProduct(
     ...(product.preferredCliprHookStyleKey
       ? { preferredCliprHookStyleKey: product.preferredCliprHookStyleKey }
       : {}),
-    rejectedHookExamples: product.rejectedHookExamples ?? [],
-    winningHookExamples: product.winningHookExamples ?? [],
   };
 }
