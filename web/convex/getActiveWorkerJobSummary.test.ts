@@ -21,7 +21,7 @@ describe("getActiveWorkerJobSummary", () => {
     vi.clearAllMocks();
   });
 
-  it("includes active CLI batch jobs with progress", async () => {
+  it("includes active automation batch jobs with progress", async () => {
     mocks.listActiveWorkerJobSummaries.mockImplementation(
       async (_ctx, _ownerId, worker) =>
         worker === "media"

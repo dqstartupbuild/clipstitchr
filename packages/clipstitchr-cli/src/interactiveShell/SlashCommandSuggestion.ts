@@ -1,5 +1,0 @@
-export type SlashCommandSuggestion = {
-  completion: "continue" | "run";
-  description: string;
-  value: string;
-};

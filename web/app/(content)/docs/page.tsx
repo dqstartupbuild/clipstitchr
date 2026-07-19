@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 export const metadata = createPageMetadata({
   title: `Docs | ${site.name}`,
   description:
-    "Plain ClipStitchr docs for using the CLI, turning saved clips into ads, writing better hooks, reusing Ideas, and checking limits.",
+    "Plain ClipStitchr docs for turning saved clips into ads, writing better hooks, reusing Ideas, and checking limits.",
   canonical: "/docs",
 });
 
@@ -27,8 +27,8 @@ export default function DocsIndexPage() {
             <strong>ClipStitchr field manual</strong>
             <p>
               Most people should add a product demo, upload a few clips, and
-              make finished ads first. Use the other guides when you need the
-              CLI, better hooks, a cleaner clip, a reusable setup, more source
+              make finished ads first. Use the other guides when you need
+              better hooks, a cleaner clip, a reusable setup, more source
               material, or a carousel instead.
             </p>
           </div>

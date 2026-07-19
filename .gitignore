@@ -1,6 +1,5 @@
 node_modules/
 dist/
-.clipstitchr/
 .env
 .env.*
 !.env.example

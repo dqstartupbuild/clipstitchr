@@ -7,8 +7,7 @@ export function selectUploadNormalizationLayout({
 }) {
   if (
     requestedLayout === "crop-fill" ||
-    requestedLayout === "fit-with-background" ||
-    requestedLayout === "smart-screen-demo"
+    requestedLayout === "fit-with-background"
   ) {
     return requestedLayout;
   }

@@ -372,7 +372,7 @@ product and audience context, randomly picks the max 8 photos, saves private
 one-off Pexels photo records, generates text with the same carousel-writing
 prompt used by Swipr page Batch mode, and saves an editable Swipe draft.
 Automation Settings persist the optional Swipr topic/direction and final-slide
-CTA style. Daily and CLI-triggered task snapshots carry those bounded values to
+CTA style. Daily task snapshots carry those bounded values to
 the provider worker so delayed work uses the choices captured at planning time.
 
 ## Abuse Protection

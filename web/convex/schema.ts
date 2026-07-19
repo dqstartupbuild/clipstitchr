@@ -19,7 +19,6 @@ import { cliprJobStageValidator } from "./validators/cliprJobStage";
 import { cliprJobStatusValidator } from "./validators/cliprJobStatus";
 import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
-import { cliDeviceAuthorizationStatusValidator } from "./validators/cliDeviceAuthorizationStatus";
 import { clipPerformanceScoreValidator } from "./validators/clipPerformanceScore";
 import { cliprResolvedGenerationModeValidator } from "./validators/cliprResolvedGenerationMode";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
@@ -1062,38 +1061,6 @@ export default defineSchema({
     onboardingCompletedAt: v.optional(v.string()),
     updatedAt: v.string(),
   }).index("by_owner", ["ownerId"]),
-  cliDeviceAuthorizations: defineTable({
-    id: v.string(),
-    deviceCodeHash: v.string(),
-    userCode: v.string(),
-    status: cliDeviceAuthorizationStatusValidator,
-    ownerId: v.optional(v.string()),
-    sessionId: v.optional(v.string()),
-    clientName: v.optional(v.string()),
-    machineName: v.optional(v.string()),
-    expiresAt: v.string(),
-    approvedAt: v.optional(v.string()),
-    consumedAt: v.optional(v.string()),
-    createdAt: v.string(),
-    updatedAt: v.string(),
-  })
-    .index("by_device_code_hash", ["deviceCodeHash"])
-    .index("by_user_code", ["userCode"])
-    .index("by_status_expires", ["status", "expiresAt"]),
-  cliSessions: defineTable({
-    ownerId: v.string(),
-    id: v.string(),
-    tokenHash: v.string(),
-    clientName: v.optional(v.string()),
-    machineName: v.optional(v.string()),
-    expiresAt: v.string(),
-    revokedAt: v.optional(v.string()),
-    createdAt: v.string(),
-    updatedAt: v.string(),
-  })
-    .index("by_token_hash", ["tokenHash"])
-    .index("by_owner_created", ["ownerId", "createdAt"])
-    .index("by_owner_id", ["ownerId", "id"]),
   soundPreferences: defineTable({
     ownerId: v.string(),
     rightsAcceptedAt: v.optional(v.string()),

@@ -803,7 +803,7 @@ Suggested plain-language errors:
 
 ## Error Contract
 
-Use structured server codes so browser, CLI, automation, and workers behave the
+Use structured server codes so browser, automation, and workers behave the
 same way:
 
 ```text
@@ -906,7 +906,7 @@ repair must use compensating entries and must never edit history silently.
 - Create shadow periods and grants for internal test accounts.
 - Calculate every reservation, commit, and release without blocking work.
 - Compare expected usage with actual saved outputs.
-- Cover manual, batch, daily automation, CLI, provider-worker, and media-worker
+- Cover manual, batch, daily automation, provider-worker, and media-worker
   paths.
 
 ### Phase 3: Stripe test mode
@@ -926,7 +926,7 @@ Recommended order:
 4. Stitchr batch and daily drafts;
 5. Clipr allowance;
 6. Swapr allowance;
-7. CLI and every retry/recovery path.
+7. Every retry/recovery path.
 
 Do not enable a surface until all of its create, success, failure,
 cancellation, retry, and recovery paths carry the same reservation.
@@ -1027,7 +1027,7 @@ Do not enable credit enforcement until:
 - Monthly and refill expiration remain explainable.
 - Retries, webhooks, and workers are safely idempotent.
 - Support can trace every credit from purchase to output.
-- The same rules cover browser, automation, CLI, and workers.
+- The same rules cover browser, automation, and workers.
 
 ### Negative
 

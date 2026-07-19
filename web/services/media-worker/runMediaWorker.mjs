@@ -13,7 +13,6 @@ import { ConvexHttpClient } from "convex/browser";
 import { anyApi } from "convex/server";
 import { createUploadNormalizationFilter } from "./createUploadNormalizationFilter.mjs";
 import { getQuickEditPlaybackDuration } from "./getQuickEditPlaybackDuration.mjs";
-import { readUploadInteractionEvents } from "./readUploadInteractionEvents.mjs";
 import { readUploadNormalizationLayout } from "./readUploadNormalizationLayout.mjs";
 import { readQuickEditSuggestions } from "./readQuickEditSuggestions.mjs";
 import { selectUploadNormalizationLayout } from "./selectUploadNormalizationLayout.mjs";
@@ -358,8 +357,9 @@ function parseUploadNormalizationInput(inputSnapshotJson) {
   return {
     clipId: getString(input.clipId, "clip ID"),
     clipType: input.clipType === "demo" ? "demo" : "ugc",
-    interactionEvents: readUploadInteractionEvents(input.interactionEvents),
-    layout: readUploadNormalizationLayout(input.layout ?? input.normalizationLayout),
+    layout: readUploadNormalizationLayout(
+      input.layout ?? input.normalizationLayout,
+    ),
     originalName: getString(input.originalName, "original name"),
     productId:
       typeof input.productId === "string" && input.productId.trim()
@@ -948,7 +948,6 @@ async function processUploadNormalization({ client, config, job, r2 }) {
       sourceAspectRatio: sourceMetadata.aspectRatio,
     });
     const uploadVideoFilter = createUploadNormalizationFilter({
-      interactionEvents: input.interactionEvents,
       layout,
       sourceMetadata,
     });

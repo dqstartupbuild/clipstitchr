@@ -1,1 +1,0 @@
-export const cliOpenAiComputerRelayMaxScreenshotBase64Length = 8_000_000;

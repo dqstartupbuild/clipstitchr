@@ -231,11 +231,6 @@ describe("settings components", () => {
     expect(emptyMarkup).toContain("Product settings");
     expect(emptyMarkup).toContain("Account settings");
     expect(emptyMarkup).toContain("Config");
-    expect(emptyMarkup).toContain("Run ClipStitchr from your product repo");
-    expect(emptyMarkup).toContain("npm install -g clipstitchr");
-    expect(emptyMarkup).toContain("Copy");
-    expect(emptyMarkup).toContain('href="/docs/clipstitchr-cli"');
-    expect(emptyMarkup).toContain('target="_blank"');
     expect(emptyMarkup).toContain("Contact support");
     expect(emptyMarkup).toContain('href="mailto:support@followusai.com"');
     expect(emptyMarkup).toContain("Plan and usage");

@@ -25,10 +25,9 @@ Feature documentation is grouped by the part of ClipStitchr it supports:
 | Directory | Product area |
 | --- | --- |
 | `features/avatar/` | Avatar workflows |
-| `features/cli/` | ClipStitchr CLI and native helper behavior |
 | `features/clipr/` | Clipr generation |
 | `features/courses/` | Email courses, workshops, access, and progress |
-| `features/demo/` | Product demos and demo agents |
+| `features/demo/` | Product Demo upload behavior |
 | `features/editor/` | Browser media inspection and non-destructive editing |
 | `features/hook-lab/` | Hook Lab and Stitchr integration |
 | `features/library/` | The shared media Library |

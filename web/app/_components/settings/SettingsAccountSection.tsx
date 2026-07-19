@@ -1,4 +1,3 @@
-import { SettingsClipstitchrCliPanel } from "@/app/_components/settings/SettingsClipstitchrCliPanel";
 import { SettingsPostBridgePanel } from "@/app/_components/settings/SettingsPostBridgePanel";
 import { SettingsSubscriptionPanel } from "@/app/_components/settings/SettingsSubscriptionPanel";
 import { SettingsSupportPanel } from "@/app/_components/settings/SettingsSupportPanel";
@@ -26,7 +25,6 @@ export function SettingsAccountSection({
           These stay the same no matter which product is active.
         </p>
       </div>
-      <SettingsClipstitchrCliPanel />
       <SettingsPostBridgePanel
         isProductActionDisabled={isProductActionDisabled}
         products={products}

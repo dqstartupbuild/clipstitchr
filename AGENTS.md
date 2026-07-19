@@ -162,25 +162,6 @@ Current history uses direct, imperative commit messages, for example `Initial co
 
 Pull requests should include a short summary, testing performed, linked issue or task when available, and screenshots or recordings for UI changes. Note any changes to architecture decisions in `project-scope.md`.
 
-## ClipStitchr CLI Versioning
-
-Every completed change to the shipped CLI package under
-`packages/clipstitchr-cli` must include a Semantic Versioning bump. Use the
-highest-impact change in the completed batch:
-
-- **PATCH** (`x.y.Z`): backward-compatible bug fixes, UX or copy refinements,
-  internal refactors, and dependency or build updates.
-- **MINOR** (`x.Y.z`): backward-compatible commands, options, workflows, or
-  other new user-facing capabilities.
-- **MAJOR** (`X.y.z`): breaking command, option, output, exit-code, config,
-  runtime, or automation-contract changes that require users to migrate.
-
-Implement, document, test, and commit the CLI change first. Then update both
-`packages/clipstitchr-cli/package.json` and
-`packages/clipstitchr-cli/package-lock.json` in one final separate version-bump
-commit. Preserve backward-compatible aliases when a CLI migration calls for
-them. Do not create a tag or publish the package unless explicitly requested.
-
 ## Security & Configuration Tips
 
 Do not commit uploaded media, generated videos, secrets, or local environment files. Browser video processing depends on Media Bunny and browser codec support; document any codec polyfills, worker/WASM assets, or response-header changes with the Media Bunny setup.

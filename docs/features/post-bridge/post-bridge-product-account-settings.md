@@ -23,8 +23,8 @@ queued Post Bridge posts for the active product.
 
 - Link different products to different TikTok, Instagram, or YouTube accounts.
 - Review product posting defaults without changing the active dashboard product.
-- Fix product defaults before using single-post scheduling, dashboard bulk
-  queue, or CLI queue commands.
+- Fix product defaults before using single-post scheduling or dashboard bulk
+  queue.
 
 ## Source Files
 

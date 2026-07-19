@@ -131,8 +131,8 @@ scheduled posts are scoped to that user's Post Bridge account.
 
 Before every Post Bridge API call, the server reserves capacity from a shared
 bucket keyed by a SHA-256 hash of that API key. The bucket runs below Post
-Bridge's published per-key request rate and waits proactively, so dashboard and
-CLI calls using the same key cannot independently burst past the provider
+Bridge's published per-key request rate and waits proactively, so dashboard
+calls using the same key cannot independently burst past the provider
 limit. Provider `429` retry and backoff remains a fallback.
 
 Manual Swipe sounds use the existing sound picker. TikTok sound search and import

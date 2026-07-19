@@ -55,8 +55,7 @@ The report shows:
 - The full technical and human checklist.
 
 Wide desktop demos do not automatically fail. The result reuses ClipStitchr's
-existing wide-demo policy to explain its fit-with-background and guided
-screen-demo production path.
+existing wide-demo policy to explain its fit-with-background production path.
 
 ## Page Flow and Conversion
 

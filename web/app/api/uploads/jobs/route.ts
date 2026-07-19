@@ -39,8 +39,7 @@ function getUploadNormalizationLayout(
 ): UploadNormalizationLayout | undefined {
   if (
     value === "crop-fill" ||
-    value === "fit-with-background" ||
-    value === "smart-screen-demo"
+    value === "fit-with-background"
   ) {
     return value;
   }

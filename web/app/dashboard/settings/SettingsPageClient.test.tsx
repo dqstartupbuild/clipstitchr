@@ -220,8 +220,6 @@ describe("SettingsPageClient", () => {
     expect(markup).toContain("Edit saved products");
     expect(markup).toContain("Account settings");
     expect(markup).toContain("Config");
-    expect(markup).toContain("Run ClipStitchr from your product repo");
-    expect(markup).toContain("npm install -g clipstitchr");
     expect(markup).toContain("Daily drafts");
     expect(markup).toContain("Plan and usage");
     expect(markup).toContain("Launch Kit");

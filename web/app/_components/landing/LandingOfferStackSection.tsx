@@ -19,8 +19,8 @@ const capabilityChapters = [
     marker: "SHIP",
     title: "Carry the same product context past the video export.",
     description:
-      "Build carousel drafts in Swipr, prepare daily drafts for review, or queue finished work through the CLI and Post Bridge when the campaign is ready.",
-    details: ["Swipr carousels", "Review-first daily drafts", "CLI and scheduling"],
+      "Build carousel drafts in Swipr, prepare daily drafts for review, or queue finished work through Post Bridge when the campaign is ready.",
+    details: ["Swipr carousels", "Review-first daily drafts", "Post Bridge scheduling"],
   },
 ];
 
@@ -53,9 +53,6 @@ export function LandingOfferStackSection() {
       <div className="landing-capability-links">
         <Link className="landing-text-link" href="/docs">
           Explore the full workflow
-        </Link>
-        <Link className="landing-text-link" href="/docs/clipstitchr-cli">
-          Set up the CLI
         </Link>
       </div>
     </section>

@@ -77,7 +77,6 @@ describe("LandingPage", () => {
     expect(markup).toContain("Built from real clips");
     expect(markup).toContain("One demo in. Ads out");
     expect(markup).toContain("One library. Three jobs");
-    expect(markup).toContain("/docs/clipstitchr-cli");
     expect(markup).toContain("/example-outputs/clipstitchr-example-11.webm");
     expect(markup).toContain("/example-outputs/clipstitchr-example-20.webm");
     expect(markup).toContain("Batch up to 20 hooks");

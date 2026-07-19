@@ -7,7 +7,6 @@ export const activeWorkerJobLabels: Record<string, string> = {
   "stitchr-draft-finalization": "Stitch drafts",
   "stitchr-longr-export": "Stitch export",
   "swapr-finalization": "Swapr finalization",
-  "swipr-batch": "Swipr Batch",
   "upload-normalization": "Upload processing",
   "upload-video-analysis": "Upload analysis",
 };

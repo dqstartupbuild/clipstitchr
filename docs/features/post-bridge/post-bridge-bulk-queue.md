@@ -32,7 +32,7 @@ can require several API calls: create a media upload URL, load connected
 accounts, and create the post. ClipStitchr therefore applies one centralized
 provider pacing bucket keyed by a SHA-256 hash of the saved Post Bridge API key.
 It reserves calls at 8 requests per second with an initial burst of 2, then
-waits before making the provider request. This covers dashboard, CLI, account,
+waits before making the provider request. This covers dashboard, account,
 queue, and analytics calls that share the same Post Bridge key.
 
 Provider `429` retries remain as a fallback for transient provider pressure.
@@ -46,9 +46,8 @@ schedule-create, and Convex metadata-update limits. Schedule creation allows a
 and 10,000 posts per day globally. The hourly cap matches Post Bridge's
 published platform limit.
 
-The CLI and dashboard use the same owner-scoped schedule and upload limits. The
-provider pacing bucket is keyed by the saved Post Bridge key, so it is also
-shared when both entry points use that key.
+The provider pacing bucket is keyed by the saved Post Bridge key, so it is
+shared across every entry point that uses that key.
 
 The batch dialog consumes one connected-account read when it opens for a
 product. Reactive source updates during the batch reuse those loaded choices,

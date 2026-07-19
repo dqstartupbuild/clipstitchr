@@ -33,25 +33,4 @@ describe("createUploadNormalizationFilter", () => {
     expect(filter.value).toContain("boxblur=40:1");
     expect(filter.value).toContain("overlay=x='(W-w)/2'");
   });
-
-  it("adds time-based zoom expressions for smart screen demos", () => {
-    const filter = createUploadNormalizationFilter({
-      interactionEvents: [
-        {
-          type: "click",
-          timestampMs: 1200,
-          x: 960,
-          y: 540,
-          viewportWidth: 1920,
-          viewportHeight: 1080,
-        },
-      ],
-      layout: "smart-screen-demo",
-      sourceMetadata,
-    });
-
-    expect(filter.mode).toBe("filter-complex");
-    expect(filter.value).toContain("between(t");
-    expect(filter.value).toContain("sin(PI");
-  });
 });

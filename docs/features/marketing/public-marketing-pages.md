@@ -57,7 +57,7 @@ systems between pages.
 
 The homepage has five product chapters: the real-output hero, the output reel,
 the batch workflow and populated workspace, three consolidated campaign jobs,
-and campaign proof followed by one direct close. CLI, Hook Lab, Clipr, Swapr,
+and campaign proof followed by one direct close. Hook Lab, Clipr, Swapr,
 Swipr, scoring, and automation remain represented without repeating the same
 standalone heading-and-card section.
 

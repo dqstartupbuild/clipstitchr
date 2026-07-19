@@ -13,5 +13,5 @@ export function getProductDemoOrientationAdvice(
     return null;
   }
 
-  return "This wide demo is not an automatic failure. ClipStitchr can preserve the full app screen on a vertical canvas with its fit-with-background and guided screen-demo layouts.";
+  return "This wide demo is not an automatic failure. ClipStitchr can preserve the full app screen on a vertical canvas with its fit-with-background layout.";
 }
