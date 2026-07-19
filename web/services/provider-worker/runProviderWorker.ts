@@ -2922,6 +2922,18 @@ async function processManualClipr({
       ? createCliprMusicMetadataFromSharedTrack(input.musicTrack)
       : undefined;
 
+  await client.mutation(api.cliprJobs.recordAvatarVideoOutputFromProvider, {
+    secret: config.providerWorkerSecret,
+    ownerId: job.ownerId,
+    id: input.jobId,
+    avatarVideoObject: avatarVideoOutput.avatarVideoObject,
+    avatarVideoProviderPredictionId:
+      avatarVideoOutput.avatarVideoProviderPredictionId,
+    music,
+    providerModels,
+    progress: 0.68,
+    updatedAt: getNow(),
+  });
   const clipName = getCliprFinalClipName(input.productName, getNow());
   const mediaClipId = createId();
   const mediaJob = (await client.mutation(
@@ -2948,18 +2960,6 @@ async function processManualClipr({
     },
   )) as { id: string };
 
-  await client.mutation(api.cliprJobs.recordAvatarVideoOutputFromProvider, {
-    secret: config.providerWorkerSecret,
-    ownerId: job.ownerId,
-    id: input.jobId,
-    avatarVideoObject: avatarVideoOutput.avatarVideoObject,
-    avatarVideoProviderPredictionId:
-      avatarVideoOutput.avatarVideoProviderPredictionId,
-    music,
-    providerModels,
-    progress: 0.68,
-    updatedAt: getNow(),
-  });
   await markProviderJobStatus({
     client,
     config,

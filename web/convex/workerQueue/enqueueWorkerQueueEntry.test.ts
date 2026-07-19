@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { enqueueWorkerQueueEntry } from "./enqueueWorkerQueueEntry";
 
 const mocks = vi.hoisted(() => ({
@@ -16,6 +16,10 @@ vi.mock("./validateWorkerQueueUsageReservations", () => ({
 }));
 
 describe("enqueueWorkerQueueEntry inherited slots", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("validates an inherited slot before requeueing an existing entry", async () => {
     const existing = {
       _id: "queue_doc_1",
@@ -106,6 +110,63 @@ describe("enqueueWorkerQueueEntry inherited slots", () => {
         now,
         ownerId: existing.ownerId,
         queueEntryId: "provider:provider_job:provider_job_1",
+        reservationIds: [existing.usageReservationId],
+      },
+    );
+  });
+
+  it("authorizes reservation transfer only for an inherited media handoff", async () => {
+    const generationSlotId = "generation:provider:provider_job_1";
+    const inheritedSlot = {
+      planKeySnapshot: "pro",
+      slotId: generationSlotId,
+    };
+    const existing = {
+      _id: "queue_doc_1",
+      generationSlotId,
+      ownerId: "owner_1",
+      sourceId: "media_job_1",
+      sourceKind: "media_job",
+      status: "queued",
+      usageReservationId: "reservation_1",
+    };
+    const queryChain = {
+      unique: vi.fn(async () => existing),
+      withIndex: vi.fn(
+        (
+          _name: string,
+          callback: (query: { eq: () => unknown }) => unknown,
+        ) => {
+          const query = { eq: vi.fn(() => query) };
+          callback(query);
+          return queryChain;
+        },
+      ),
+    };
+    const ctx = { db: { query: vi.fn(() => queryChain) } };
+    const now = "2026-07-16T12:00:00.000Z";
+    mocks.getGenerationSlotForQueue.mockResolvedValue(inheritedSlot);
+
+    await expect(
+      enqueueWorkerQueueEntry(ctx as never, {
+        generationRequired: true,
+        generationSlotId,
+        now,
+        ownerId: existing.ownerId,
+        sourceId: existing.sourceId,
+        sourceKind: "media_job",
+        tool: "clipr-finalization",
+        usageReservationId: existing.usageReservationId,
+        worker: "media",
+      }),
+    ).resolves.toBe(existing);
+    expect(mocks.validateWorkerQueueUsageReservations).toHaveBeenCalledWith(
+      ctx,
+      {
+        handoffGenerationSlotId: generationSlotId,
+        now,
+        ownerId: existing.ownerId,
+        queueEntryId: "media:media_job:media_job_1",
         reservationIds: [existing.usageReservationId],
       },
     );

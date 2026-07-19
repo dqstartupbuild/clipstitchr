@@ -172,6 +172,17 @@ export async function processManualCliprDemo<
             userId: job.ownerId,
           });
         })();
+  await client.mutation(api.cliprJobs.recordAvatarVideoOutputFromProvider, {
+    secret: config.providerWorkerSecret,
+    ownerId: job.ownerId,
+    id: input.jobId,
+    avatarVideoObject: avatarVideoOutput.avatarVideoObject,
+    avatarVideoProviderPredictionId:
+      avatarVideoOutput.avatarVideoProviderPredictionId,
+    providerModels: avatarVideoOutput.providerModels,
+    progress: 0.68,
+    updatedAt: getNow(),
+  });
   const clipName = getCliprFinalClipName(input.productName, getNow());
   const mediaClipId = createId();
   const mediaJob = (await client.mutation(
@@ -198,17 +209,6 @@ export async function processManualCliprDemo<
     },
   )) as { id: string };
 
-  await client.mutation(api.cliprJobs.recordAvatarVideoOutputFromProvider, {
-    secret: config.providerWorkerSecret,
-    ownerId: job.ownerId,
-    id: input.jobId,
-    avatarVideoObject: avatarVideoOutput.avatarVideoObject,
-    avatarVideoProviderPredictionId:
-      avatarVideoOutput.avatarVideoProviderPredictionId,
-    providerModels: avatarVideoOutput.providerModels,
-    progress: 0.68,
-    updatedAt: getNow(),
-  });
   await markProviderJobStatus({
     client,
     config,

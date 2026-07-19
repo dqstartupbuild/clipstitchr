@@ -74,6 +74,11 @@ Examples:
 
 Provider jobs should be finalized by a server-side path, not by the client.
 
+Clipr persists each successful provider output on the durable Clipr job before
+it enqueues media finalization. If the provider-to-media handoff fails, a retry
+reuses the stored R2 image or video instead of starting another Replicate
+prediction.
+
 Recommended flow:
 
 1. User starts the job.

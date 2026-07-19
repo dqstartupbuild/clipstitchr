@@ -14,7 +14,9 @@ function createContext(reservation: Record<string, unknown>) {
     ),
   };
   const queueEntryQuery = {
-    unique: vi.fn(async () => null),
+    unique: vi.fn(
+      async (): Promise<Record<string, unknown> | null> => null,
+    ),
     withIndex: vi.fn(
       (_name: string, applyIndex: (value: typeof indexQuery) => unknown) => {
         applyIndex(indexQuery);
