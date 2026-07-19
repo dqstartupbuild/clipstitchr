@@ -342,6 +342,10 @@ The route:
 - Consumes counted text-generation quota before provider work.
 - Loads the selected product and the user's account-added Swipr backgrounds.
 - Requires selected Pexels query packs.
+- Uses compact account-pack summaries for picker names and exact available
+  photo counts without loading pack photos for the labels.
+- Loads up to 500 compact photo records from each selected pack for generation,
+  so every photo in current packs participates in randomized selection.
 - Generates multiple slideshow text drafts with a SlideSmith-style prompt that
   writes complete, distinct slide decks without exposing internal template IDs.
   Every deck follows the shared product-placement and final-slide CTA rules.
@@ -411,6 +415,8 @@ Required protections:
   reads only that pack's bounded compact photo cards. These authenticated,
   indexed, cached reads do not receive a write-backed rate bucket. Cover
   downloads retain the existing signed-R2 limits.
+- Settings and Swipr Batch use the compact account-pack counts for their pack
+  labels. Settings does not load pack photo records.
 - Batch draft generation consumes counted text-generation quota before the
   writing provider is called.
 - Automatic Swipr is protected by the Swipr automation daily/global budget

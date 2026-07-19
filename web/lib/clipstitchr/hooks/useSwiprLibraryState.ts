@@ -41,7 +41,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     isAuthenticated &&
     (isLibraryRoute
       ? activeLibraryTab === "swipes"
-      : isSettingsRoute || isSwiprRoute || isUploadsRoute);
+      : isSwiprRoute || isUploadsRoute);
   const shouldLoadSwipes =
     isAuthenticated &&
     (isLibraryRoute
@@ -50,8 +50,11 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const shouldLoadPostedSwipes =
     isAuthenticated &&
     (isLibraryRoute ? activeLibraryTab === "swipes" : isUploadsRoute);
-  const shouldLoadGlobalPexelsBackgrounds =
-    isAuthenticated && isLibraryRoute && activeLibraryTab === "pexels";
+  const shouldLoadPexelsPackSummaries =
+    isAuthenticated &&
+    ((isLibraryRoute && activeLibraryTab === "pexels") ||
+      isSettingsRoute ||
+      isSwiprRoute);
   const productQueryArgs = productId ? { productId } : {};
   const backgroundDocuments = useQuery(
     api.swiprBackgrounds.list,
@@ -59,7 +62,11 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   );
   const globalPexelsPackSummaryDocuments = useQuery(
     api.swiprBackgrounds.listGlobalPexelsPackSummaries,
-    shouldLoadGlobalPexelsBackgrounds ? {} : "skip",
+    shouldLoadPexelsPackSummaries
+      ? {
+          accountOnly: isSettingsRoute || isSwiprRoute,
+        }
+      : "skip",
   );
   const swipeDocuments = useQuery(
     api.swipes.list,
@@ -661,7 +668,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     isLoading:
       isAuthLoading ||
       (shouldLoadBackgrounds && backgroundDocuments === undefined) ||
-      (shouldLoadGlobalPexelsBackgrounds &&
+      (shouldLoadPexelsPackSummaries &&
         globalPexelsPackSummaryDocuments === undefined) ||
       (shouldLoadReferencedSwipeBackgrounds &&
         referencedBackgroundDocuments === undefined) ||

@@ -51,7 +51,7 @@ import { createSwiprSlide } from "@/lib/clipstitchr/utils/createSwiprSlide";
 import { getProductSwiprContext } from "@/lib/clipstitchr/utils/getProductSwiprContext";
 import { getSwiprBackgroundFromAsset } from "@/lib/clipstitchr/utils/getSwiprBackgroundFromAsset";
 import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
-import { getSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getSwiprLibraryPacks";
+import { getAccountSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getAccountSwiprLibraryPacks";
 import { createSwiprSwipeSocialDescription } from "@/lib/clipstitchr/utils/createSwiprSwipeSocialDescription";
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
 import { getSwiprSwipeEditHref } from "@/lib/clipstitchr/utils/getSwiprSwipeEditHref";
@@ -177,8 +177,8 @@ export function SwiprPageClient() {
     savedSwipeSnapshot && savedSwipeBackgroundIds.length > 0,
   );
   const libraryPacks = useMemo(
-    () => getSwiprLibraryPacks(swiprLibrary.backgrounds),
-    [swiprLibrary.backgrounds],
+    () => getAccountSwiprLibraryPacks(swiprLibrary.globalPexelsPacks),
+    [swiprLibrary.globalPexelsPacks],
   );
   const allPexelsLibraryBackgrounds = useMemo(
     () =>
@@ -736,7 +736,15 @@ export function SwiprPageClient() {
       return;
     }
 
-    if (!selectedLibraryBackgrounds.length) {
+    const selectedLibraryPackKeys = new Set(selectedLibraryQueryKeys);
+    const hasSelectedLibraryPhotos = libraryPacks.some(
+      (pack) =>
+        selectedLibraryPackKeys.has(
+          normalizeSwiprLibraryQueryKey(pack.name),
+        ) && pack.count > 0,
+    );
+
+    if (!hasSelectedLibraryPhotos) {
       setAutoTextMessage("Choose a Pexels pack with saved photos.");
       return;
     }

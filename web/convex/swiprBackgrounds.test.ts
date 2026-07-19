@@ -289,16 +289,61 @@ describe("convex swiprBackgrounds", () => {
     ]);
   });
 
+  it("reads only account-added Pexels summaries for picker routes", async () => {
+    const summary = {
+      _id: "summary_1",
+      covers: [],
+      libraryQuery: "Desk Setup",
+      libraryQueryKey: "desk setup",
+      photoCount: 12,
+      updatedAt: "2026-05-20T00:00:00.000Z",
+    };
+    const summaryQuery = createQueryChain({ unique: summary });
+    const ctx = {
+      db: {
+        query: vi.fn((tableName: string) => {
+          if (tableName === "swiprLibraryPackAccounts") {
+            return createQueryChain({
+              collect: [createPackAccount()],
+            });
+          }
+
+          if (tableName === "swiprPexelsPackSummaries") {
+            return summaryQuery;
+          }
+
+          return createQueryChain();
+        }),
+      },
+    };
+
+    await expect(
+      getHandler(listGlobalPexelsPackSummaries)(ctx, {
+        accountOnly: true,
+      }),
+    ).resolves.toStrictEqual([
+      {
+        ...summary,
+        accountCovers: [],
+        accountPhotoCount: 12,
+        isInAccount: true,
+      },
+    ]);
+    expect(summaryQuery.unique).toHaveBeenCalledOnce();
+    expect(summaryQuery.take).not.toHaveBeenCalled();
+  });
+
   it("loads only the selected global Pexels pack on demand", async () => {
     const backgrounds = [
       createBackground({ id: "background_1" }),
       createBackground({ id: "background_2" }),
     ];
+    const backgroundQuery = createQueryChain({ collect: backgrounds });
     const ctx = {
       db: {
         query: vi.fn((tableName: string) => {
           if (tableName === "swiprBackgroundCards") {
-            return createQueryChain({ collect: backgrounds });
+            return backgroundQuery;
           }
 
           if (tableName === "swiprLibraryPackAccounts") {
@@ -322,6 +367,7 @@ describe("convex swiprBackgrounds", () => {
     ).resolves.toStrictEqual([
       { ...backgrounds[1], isOwnedByCurrentUser: true },
     ]);
+    expect(backgroundQuery.take).toHaveBeenCalledWith(500);
   });
 
   it("hydrates referenced Swipe backgrounds by id without exposing private uploads", async () => {

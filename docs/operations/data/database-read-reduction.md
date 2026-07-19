@@ -31,6 +31,10 @@ large documents wherever possible.
 - The Pexels Library tab does not load the account Swipr background list.
   Opening one pack subscribes only to that pack's bounded compact background
   records, and closing the dialog stops that subscription.
+- Settings reads compact Pexels pack summaries only for account-added
+  automation packs and no longer loads Swipr background photo rows. Swipr Batch
+  also reads only account-pack summaries for exact counts instead of counting
+  its editor background window.
 - Pack cover blobs are requested only when their cards approach the viewport.
   The R2 object references carried by the summary avoid a background lookup
   before signing the cover download.

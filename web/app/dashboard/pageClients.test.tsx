@@ -252,6 +252,7 @@ vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
       },
     ],
     error: null,
+    globalPexelsPacks: [],
     isSavingBackground: false,
     isSavingSwipe: false,
     loadBackgroundAsset: mocks.loadBackgroundAsset,

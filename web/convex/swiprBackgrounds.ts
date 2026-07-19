@@ -27,7 +27,6 @@ const SWIPR_LIBRARY_PACK_ACCOUNT_LIMIT = 12;
 const SWIPR_LIBRARY_PACK_BACKGROUND_LIMIT = 24;
 const LIBRARY_PACK_EXCLUSION_PER_QUERY_LIMIT = 250;
 const LIBRARY_PACK_EXCLUSION_DELETE_LIMIT = 1000;
-const LIBRARY_QUERY_BACKGROUND_LOOKUP_LIMIT = 120;
 const LIBRARY_QUERY_KEY_LOOKUP_LIMIT = 20;
 const PEXELS_PHOTO_ID_LOOKUP_LIMIT = 120;
 
@@ -300,22 +299,48 @@ export const list = query({
 });
 
 export const listGlobalPexelsPackSummaries = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    accountOnly: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { accountOnly = false }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const [summaries, ownerLibraryPackAccountKeys, photoExclusions] =
-      await Promise.all([
-        ctx.db
+    const ownerLibraryPackAccountKeysPromise =
+      getOwnerLibraryPackAccountKeys(ctx, ownerId);
+    const globalSummariesPromise = accountOnly
+      ? null
+      : ctx.db
           .query("swiprPexelsPackSummaries")
           .withIndex("by_updated")
           .order("desc")
-          .take(GLOBAL_PEXELS_PACK_SUMMARY_LIMIT),
-        getOwnerLibraryPackAccountKeys(ctx, ownerId),
-        ctx.db
-          .query("swiprLibraryPackPhotoExclusions")
-          .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-          .take(LIBRARY_PACK_EXCLUSION_DELETE_LIMIT),
-      ]);
+          .take(GLOBAL_PEXELS_PACK_SUMMARY_LIMIT);
+    const ownerLibraryPackAccountKeys =
+      await ownerLibraryPackAccountKeysPromise;
+    const summaries = accountOnly
+      ? (
+          await Promise.all(
+            [...ownerLibraryPackAccountKeys].map((libraryQueryKey) =>
+              ctx.db
+                .query("swiprPexelsPackSummaries")
+                .withIndex("by_library_query_key", (q) =>
+                  q.eq("libraryQueryKey", libraryQueryKey),
+                )
+                .unique(),
+            ),
+          )
+        ).filter((summary) => summary !== null)
+      : (await globalSummariesPromise) ?? [];
+    const photoExclusions = (
+      await Promise.all(
+        [...ownerLibraryPackAccountKeys].map((libraryQueryKey) =>
+          ctx.db
+            .query("swiprLibraryPackPhotoExclusions")
+            .withIndex("by_owner_query", (q) =>
+              q.eq("ownerId", ownerId).eq("libraryQueryKey", libraryQueryKey),
+            )
+            .take(LIBRARY_PACK_EXCLUSION_PER_QUERY_LIMIT),
+        ),
+      )
+    ).flat();
     const excludedIdsByPackKey = new Map<string, Set<string>>();
 
     for (const exclusion of photoExclusions) {
@@ -374,7 +399,7 @@ export const listGlobalPexelsPack = query({
         getGlobalPexelsPackByQueryKey(
           ctx,
           libraryQueryKey,
-          LIBRARY_QUERY_BACKGROUND_LOOKUP_LIMIT,
+          GLOBAL_PEXELS_BACKGROUND_LOOKUP_LIMIT,
         ),
         getOwnerLibraryPackAccountKeys(ctx, ownerId),
         applyAccountExclusions
@@ -447,7 +472,7 @@ export const listByLibraryQueryKeys = query({
               q.eq("source", "pexels").eq("libraryQueryKey", libraryQueryKey),
             )
             .order("desc")
-            .take(LIBRARY_QUERY_BACKGROUND_LOOKUP_LIMIT),
+            .take(GLOBAL_PEXELS_BACKGROUND_LOOKUP_LIMIT),
         ),
       )
     ).flat();

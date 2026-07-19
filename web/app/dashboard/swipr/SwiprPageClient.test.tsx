@@ -7,6 +7,7 @@ import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResul
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
+import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 
@@ -28,6 +29,7 @@ const mocks = vi.hoisted(() => ({
   swiprLibraryState: {
     backgrounds: [] as SwiprBackgroundAsset[],
     error: null as string | null,
+    globalPexelsPacks: [] as SwiprLibraryPack[],
     isSavingBackground: false,
     isSavingSwipe: false,
     loadBackgroundAsset: vi.fn(),
@@ -559,6 +561,15 @@ describe("SwiprPageClient", () => {
         source: "pexels",
       }),
     ];
+    mocks.swiprLibraryState.globalPexelsPacks = [
+      {
+        accountCount: 166,
+        count: 170,
+        coverBackgroundIds: [],
+        isInAccount: true,
+        name: "coffee desk",
+      },
+    ];
     queueSwiprState({
       selectedLibraryQueries: ["coffee desk"],
       swiprCallToActionStyle: "follow",
@@ -746,7 +757,12 @@ describe("SwiprPageClient", () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(pexelsPanelProps.libraryPacks).toHaveLength(1);
+    expect(pexelsPanelProps.libraryPacks).toEqual([
+      expect.objectContaining({
+        count: 166,
+        name: "coffee desk",
+      }),
+    ]);
     expect(mocks.importPexelsPhotosToSwiprLibrary).toHaveBeenCalledWith({
       page: 1,
       photos: [pexelsPhoto],

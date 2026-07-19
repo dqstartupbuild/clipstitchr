@@ -9,7 +9,7 @@ import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct
 import { useAutomationPreferences } from "@/lib/clipstitchr/hooks/useAutomationPreferences";
 import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
-import { getSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getSwiprLibraryPacks";
+import { getAccountSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getAccountSwiprLibraryPacks";
 
 export function SettingsPageClient() {
   const products = useDashboardProduct();
@@ -17,8 +17,8 @@ export function SettingsPageClient() {
   const swiprLibrary = useSwiprLibrary();
   const automation = useAutomationPreferences(products.activeProduct?.id);
   const swiprPacks = useMemo(
-    () => getSwiprLibraryPacks(swiprLibrary.backgrounds),
-    [swiprLibrary.backgrounds],
+    () => getAccountSwiprLibraryPacks(swiprLibrary.globalPexelsPacks),
+    [swiprLibrary.globalPexelsPacks],
   );
 
   return (

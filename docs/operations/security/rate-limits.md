@@ -553,7 +553,7 @@ library. Private Swipr photos are only listed and loaded for their owner and
 are used to reopen, edit, preview, batch draft, and download saved Swipes.
 
 The Pexels Library catalog uses authenticated, indexed, bounded Convex reads:
-at most 250 compact pack summaries on entry and at most 120 compact background
+at most 250 compact pack summaries on entry and at most 500 compact background
 cards for the one pack a user opens. These reads do not have a separate rate
 bucket because they are read-only and Convex query caching prevents repeated
 identical requests from consuming database bandwidth. Cover downloads still
@@ -561,6 +561,13 @@ consume the existing R2 signed-download limits, and covers are requested only
 when their cards approach the viewport. The rate-limited Pexels search route
 checks only its returned page of IDs against the indexed compact background
 table before returning results.
+
+Settings and Swipr Batch read compact summaries only for account-added packs to
+show exact counts. Settings skips Swipr background photo rows. Batch draft
+generation can read at most 500 compact background cards per selected pack
+after its existing counted writing quota is consumed; this matches the
+automation pack lookup ceiling and does not add a new external provider call or
+write surface.
 
 The Swipr creation page can upload multiple photos in one browser selection and
 generate one AI photo per current carousel image. AI generation has no separate

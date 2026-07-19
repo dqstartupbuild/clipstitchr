@@ -244,6 +244,7 @@ describe("useSwiprLibraryState", () => {
       if (queryId === "swiprBackgrounds.listGlobalPexelsPackSummaries") {
         return [
           {
+            covers: [],
             libraryQuery: "desk setup",
             photoCount: 12,
           },
@@ -354,13 +355,32 @@ describe("useSwiprLibraryState", () => {
     );
     expect(mocks.useQuery).toHaveBeenCalledWith(
       "swiprBackgrounds.listGlobalPexelsPackSummaries",
-      {},
+      { accountOnly: false },
     );
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", "skip");
     expect(mocks.useQuery).toHaveBeenCalledWith(
       "swiprBackgrounds.listByIds",
       "skip",
     );
+  });
+
+  it("loads compact pack summaries without photo rows on Settings", () => {
+    mocks.usePathname.mockReturnValue("/dashboard/settings");
+
+    const state = useSwiprLibraryState();
+
+    expect(state.globalPexelsPacks).toEqual([
+      { count: 12, coverBackgroundIds: [], name: "desk setup" },
+    ]);
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      "swiprBackgrounds.list",
+      "skip",
+    );
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      "swiprBackgrounds.listGlobalPexelsPackSummaries",
+      { accountOnly: true },
+    );
+    expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", "skip");
   });
 
   it("skips library queries while signed out", () => {

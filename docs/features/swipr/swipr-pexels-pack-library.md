@@ -105,13 +105,21 @@ global All count. Cover blobs begin loading only when the pack card approaches
 the viewport.
 
 Opening a pack starts `swiprBackgrounds.listGlobalPexelsPack` for that one
-normalized pack key. The query returns at most 120 compact background cards and
+normalized pack key. The query returns at most 500 compact background cards and
 applies account exclusions only in Mine. The existing dialog paginates those
 bounded results 12 at a time. Closing the dialog skips the query again.
 
-Swipr manual/batch, saved Swipe hydration, Settings pack selection, server
-draft generation, and automation keep their existing owner-scoped and indexed
-background queries. They do not depend on the Library summary read model.
+Settings and the Swipr Batch pack picker subscribe only to compact summary
+records for the account's added packs. Their labels use the account-specific
+summary count, including photo exclusions, instead of counting the small
+background window loaded elsewhere in the dashboard. Settings does not
+subscribe to Swipr background photo rows.
+
+Swipr manual editing and saved Swipe hydration keep their existing owner-scoped
+and indexed background queries. Server draft generation and automation load
+selected pack photos independently of the picker summaries. Batch generation
+can read up to 500 photos from each selected pack, matching automation's pack
+ceiling and covering every current pack.
 
 Product automation settings can also reuse Mine packs. In Settings, the user
 can pick which account-added Pexels packs Swipr automation should use for the

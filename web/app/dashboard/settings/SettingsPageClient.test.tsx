@@ -116,6 +116,7 @@ vi.mock("@/lib/clipstitchr/hooks/useBillingWorkspace", () => ({
 vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
   useSwiprLibrary: () => ({
     backgrounds: [],
+    globalPexelsPacks: [],
   }),
 }));
 
