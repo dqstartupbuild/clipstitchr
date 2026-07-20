@@ -8,6 +8,7 @@ import { SwiprSlideStrip } from "@/app/_components/swipr/SwiprSlideStrip";
 import { SwiprTextOverlayPanel } from "@/app/_components/swipr/SwiprTextOverlayPanel";
 import { Badge } from "@/app/_components/ui/Badge";
 import { Button } from "@/app/_components/ui/Button";
+import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
@@ -161,16 +162,12 @@ export function SwiprSwipeEditDialog({
   };
 
   return (
-    <div
-      className="dashboard-dialog-viewport"
-      onClick={onClose}
-    >
+    <DashboardDialogViewport onClose={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="swipr-swipe-edit-dialog-title"
-        className="max-h-full w-full max-w-5xl overflow-y-auto rounded-lg bg-white shadow-xl"
-        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-5xl rounded-lg bg-white shadow-xl"
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
@@ -289,6 +286,6 @@ export function SwiprSwipeEditDialog({
           </div>
         </div>
       </div>
-    </div>
+    </DashboardDialogViewport>
   );
 }

@@ -7,6 +7,7 @@ import { api } from "@/convex/_generated/api";
 import { PostBridgeProductAccountConfigRow } from "@/app/_components/settings/PostBridgeProductAccountConfigRow";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { fetchPostBridgeAccountOptions } from "@/lib/clipstitchr/client/fetchPostBridgeAccountOptions";
 import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
@@ -110,16 +111,12 @@ export function SettingsPostBridgeProductConfigDialog({
   };
 
   return (
-    <div
-      className="dashboard-dialog-viewport"
-      onClick={onClose}
-    >
+    <DashboardDialogViewport onClose={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="post-bridge-product-config-dialog-title"
-        className="max-h-full w-full max-w-[calc(100vw-1rem)] min-w-0 overflow-x-hidden overflow-y-auto rounded-lg bg-white shadow-xl sm:max-w-4xl"
-        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-[calc(100vw-1rem)] min-w-0 rounded-lg bg-white shadow-xl sm:max-w-4xl"
       >
         <div className="flex min-w-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
@@ -218,6 +215,6 @@ export function SettingsPostBridgeProductConfigDialog({
           ) : null}
         </div>
       </div>
-    </div>
+    </DashboardDialogViewport>
   );
 }

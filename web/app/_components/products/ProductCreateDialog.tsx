@@ -4,6 +4,7 @@ import { PackagePlus, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
 
@@ -28,16 +29,15 @@ export function ProductCreateDialog({
   const canSave = name.trim().length > 0 && !isSaving;
 
   return (
-    <div
-      className="dashboard-dialog-viewport dashboard-dialog-viewport-elevated"
-      onClick={isRequired ? undefined : onClose}
+    <DashboardDialogViewport
+      onClose={isRequired ? undefined : onClose}
+      elevated
     >
       <form
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-create-dialog-title"
-        className="max-h-full w-full max-w-xl overflow-y-auto rounded-lg bg-white p-5 shadow-xl"
-        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-xl rounded-lg bg-white p-5 shadow-xl"
         onSubmit={async (event) => {
           event.preventDefault();
 
@@ -156,6 +156,6 @@ export function ProductCreateDialog({
           </Button>
         </div>
       </form>
-    </div>
+    </DashboardDialogViewport>
   );
 }

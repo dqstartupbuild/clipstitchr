@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { Button } from "@/app/_components/ui/Button";
+import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
@@ -74,16 +75,12 @@ export function StitchMusicSettingsDialog({
   };
 
   return (
-    <div
-      className="dashboard-dialog-viewport"
-      onClick={onClose}
-    >
+    <DashboardDialogViewport onClose={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="stitch-music-dialog-title"
         className="w-full max-w-lg rounded-lg bg-white shadow-xl"
-        onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
@@ -177,6 +174,6 @@ export function StitchMusicSettingsDialog({
           </div>
         </div>
       </div>
-    </div>
+    </DashboardDialogViewport>
   );
 }

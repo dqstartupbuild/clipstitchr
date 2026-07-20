@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/app/_components/ui/Button";
+import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 import { getErrorMessage } from "@/lib/clipstitchr/utils/getErrorMessage";
 import { getHookLabPostTitle } from "@/lib/clipstitchr/utils/getHookLabPostTitle";
@@ -22,14 +23,7 @@ export function HookLabPostDeleteDialog({
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div
-      className="dashboard-dialog-viewport"
-      onMouseDown={(event) => {
-        if (event.currentTarget === event.target && !isDeleting) {
-          onClose();
-        }
-      }}
-    >
+    <DashboardDialogViewport onClose={isDeleting ? undefined : onClose}>
       <div
         aria-describedby="hook-lab-post-delete-description"
         aria-labelledby="hook-lab-post-delete-title"
@@ -81,6 +75,6 @@ export function HookLabPostDeleteDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </DashboardDialogViewport>
   );
 }

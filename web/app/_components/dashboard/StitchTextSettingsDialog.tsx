@@ -4,6 +4,7 @@ import { Type, X } from "lucide-react";
 import { useState } from "react";
 import { TextOverlayEditor } from "@/app/_components/stitchr/TextOverlayEditor";
 import { Button } from "@/app/_components/ui/Button";
+import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -50,16 +51,12 @@ export function StitchTextSettingsDialog({
   };
 
   return (
-    <div
-      className="dashboard-dialog-viewport"
-      onClick={onClose}
-    >
+    <DashboardDialogViewport onClose={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="stitch-text-dialog-title"
-        className="max-h-full w-full max-w-3xl overflow-y-auto rounded-lg bg-white shadow-xl"
-        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-3xl rounded-lg bg-white shadow-xl"
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
@@ -107,6 +104,6 @@ export function StitchTextSettingsDialog({
           </div>
         </div>
       </div>
-    </div>
+    </DashboardDialogViewport>
   );
 }

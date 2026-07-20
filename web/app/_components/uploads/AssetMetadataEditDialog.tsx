@@ -4,6 +4,7 @@ import { Save, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AssetTagEditor } from "@/app/_components/uploads/AssetTagEditor";
 import { Button } from "@/app/_components/ui/Button";
+import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
@@ -155,12 +156,12 @@ export function AssetMetadataEditDialog({
   };
 
   return (
-    <div className="dashboard-dialog-viewport">
+    <DashboardDialogViewport onClose={onClose}>
       <form
         role="dialog"
         aria-modal="true"
         aria-labelledby="asset-metadata-dialog-title"
-        className="max-h-full w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-xl"
+        className="w-full max-w-lg rounded-lg bg-white shadow-xl"
         onSubmit={(event) => {
           event.preventDefault();
           void handleSave();
@@ -388,6 +389,6 @@ export function AssetMetadataEditDialog({
           </Button>
         </div>
       </form>
-    </div>
+    </DashboardDialogViewport>
   );
 }

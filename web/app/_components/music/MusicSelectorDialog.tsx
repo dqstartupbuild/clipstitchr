@@ -7,6 +7,7 @@ import { TikTokSoundCandidateListItem } from "@/app/_components/music/TikTokSoun
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
+import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { ACCEPTED_MUSIC_TYPES } from "@/lib/clipstitchr/constants/acceptedMusicTypes";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { TikTokSoundCandidate } from "@/lib/clipstitchr/types/TikTokSoundCandidate";
@@ -79,16 +80,12 @@ export function MusicSelectorDialog({
   }, [searchQuery, tracks]);
 
   return (
-    <div
-      className="dashboard-dialog-viewport"
-      onClick={onClose}
-    >
+    <DashboardDialogViewport onClose={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="music-selector-title"
-        className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-xl flex-col overflow-hidden rounded-lg bg-white shadow-xl sm:max-h-[calc(100dvh-3rem)]"
-        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-xl rounded-lg bg-white shadow-xl"
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-4">
           <div className="min-w-0">
@@ -107,7 +104,7 @@ export function MusicSelectorDialog({
             onClick={onClose}
           />
         </div>
-        <div className="min-h-0 overflow-y-auto">
+        <div className="min-h-0">
           <div className="grid gap-3 border-b border-border p-4">
             {!isRightsAccepted ? (
               <div className="grid gap-2 rounded-lg border border-accent/25 bg-surface-muted p-3">
@@ -282,6 +279,6 @@ export function MusicSelectorDialog({
           </div>
         </div>
       </div>
-    </div>
+    </DashboardDialogViewport>
   );
 }

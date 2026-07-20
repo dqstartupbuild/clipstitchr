@@ -3937,7 +3937,6 @@
 
   & > :is([role="dialog"], [role="alertdialog"]) {
     flex-shrink: 0;
-    margin-block: auto;
   }
 
   @media (min-width: 640px) {

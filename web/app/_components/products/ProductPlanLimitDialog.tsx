@@ -3,6 +3,7 @@
 import { Lock, X } from "lucide-react";
 import Link from "next/link";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { useDialogFocusManagement } from "@/lib/clipstitchr/hooks/useDialogFocusManagement";
 import type { ProductLimitDialogReason } from "@/lib/clipstitchr/types/ProductLimitDialogReason";
 
@@ -32,9 +33,10 @@ export function ProductPlanLimitDialog({
       : `${resolvedPlanName} includes ${productLimit ?? "a limited number of"} ${productWord}. Review your subscription to add another product.`;
 
   return (
-    <div
-      className="product-plan-limit-theme dashboard-dialog-viewport dashboard-dialog-viewport-notification"
-      onClick={onClose}
+    <DashboardDialogViewport
+      className="product-plan-limit-theme"
+      notification
+      onClose={onClose}
     >
       <div
         ref={dialogRef}
@@ -42,7 +44,6 @@ export function ProductPlanLimitDialog({
         aria-describedby="product-plan-limit-message"
         aria-modal="true"
         className="w-full max-w-md rounded-lg bg-white p-5 shadow-[0_14px_28px_rgba(0,0,0,0.28)]"
-        onClick={(event) => event.stopPropagation()}
         role="dialog"
         tabIndex={-1}
       >
@@ -77,6 +78,6 @@ export function ProductPlanLimitDialog({
           Review subscription
         </Link>
       </div>
-    </div>
+    </DashboardDialogViewport>
   );
 }

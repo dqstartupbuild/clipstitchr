@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { MediaActionButtonList } from "@/app/_components/dashboard/MediaActionButtonList";
 import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
@@ -24,16 +25,12 @@ export function PhotoAssetDetailsDialog({
   onClose,
 }: PhotoAssetDetailsDialogProps) {
   return (
-    <div
-      className="dashboard-dialog-viewport"
-      onClick={onClose}
-    >
+    <DashboardDialogViewport onClose={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="photo-details-dialog-title"
-        className="max-h-full w-full max-w-3xl overflow-y-auto rounded-lg bg-white shadow-xl"
-        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-3xl rounded-lg bg-white shadow-xl"
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
@@ -142,6 +139,6 @@ export function PhotoAssetDetailsDialog({
           </div>
         </div>
       </div>
-    </div>
+    </DashboardDialogViewport>
   );
 }

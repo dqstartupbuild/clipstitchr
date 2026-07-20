@@ -61,13 +61,12 @@ function renderDialog(
 }
 
 describe("MusicSelectorDialog", () => {
-  it("bounds the dialog to the viewport with one scrollable content area", () => {
+  it("uses the shared viewport and keeps the dialog top-aligned", () => {
     const markup = renderDialog();
 
     expect(markup).toContain("dashboard-dialog-viewport");
-    expect(markup).toContain("max-h-[calc(100dvh-1.5rem)]");
-    expect(markup).toContain("sm:max-h-[calc(100dvh-3rem)]");
-    expect(markup).toContain("min-h-0 overflow-y-auto");
+    expect(markup).toContain('role="dialog"');
+    expect(markup).toContain("w-full max-w-xl");
   });
 
   it("renders matching tracks and selected state", () => {

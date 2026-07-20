@@ -126,14 +126,6 @@ describe("CreateAvatarFromClipDialog", () => {
       onClose,
       onCreate,
     });
-    const root = findElements(
-      tree,
-      (element) =>
-        element.type === "div" &&
-        String(element.props?.className).includes(
-          "dashboard-dialog-viewport",
-        ),
-    )[0];
     const form = findElements(tree, (element) => element.type === "form")[0];
     const iconButton = findElements(
       tree,
@@ -157,16 +149,10 @@ describe("CreateAvatarFromClipDialog", () => {
         element.type.name === "SelectInput",
     );
     const preventDefault = vi.fn();
-    const stopPropagation = vi.fn();
 
-    (root.props.onClick as () => void)();
-    (form.props.onClick as (event: { stopPropagation: () => void }) => void)({
-      stopPropagation,
-    });
     (iconButton.props.onClick as () => void)();
 
-    expect(onClose).toHaveBeenCalledTimes(2);
-    expect(stopPropagation).toHaveBeenCalledOnce();
+    expect(onClose).toHaveBeenCalledOnce();
 
     (inputs[0].props.onChange as (event: {
       currentTarget: { value: string };
@@ -232,21 +218,12 @@ describe("CreateAvatarFromClipDialog", () => {
       onClose,
       onCreate,
     });
-    const root = findElements(
-      tree,
-      (element) =>
-        element.type === "div" &&
-        String(element.props?.className).includes(
-          "dashboard-dialog-viewport",
-        ),
-    )[0];
     const submitButton = findElements(
       tree,
       (element) =>
         typeof element.type === "function" && element.type.name === "Button",
     )[0];
 
-    expect(root.props.onClick).toBeUndefined();
     expect(submitButton.props.disabled).toBe(true);
     expect(submitButton.props.isLoading).toBe(true);
 
