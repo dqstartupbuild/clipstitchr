@@ -33,10 +33,10 @@ export function HookLabPostAnalysisDialog({
       <article
         aria-labelledby="hook-lab-analysis-title"
         aria-modal="true"
-        className="flex max-h-full min-h-0 w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
+        className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl sm:max-h-[calc(100dvh-3rem)]"
         role="dialog"
       >
-        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
+        <header className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">
               {post.platform === "tiktok" ? "TikTok" : "Instagram"} analysis

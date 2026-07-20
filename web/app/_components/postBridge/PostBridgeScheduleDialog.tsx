@@ -196,10 +196,10 @@ export function PostBridgeScheduleDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="post-bridge-schedule-dialog-title"
-        className="flex max-h-full min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
+        className="max-h-full w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">
               {contextLabel}
@@ -220,7 +220,7 @@ export function PostBridgeScheduleDialog({
           />
         </div>
 
-        <div className="grid min-h-0 gap-5 overflow-y-auto p-4 sm:p-5">
+        <div className="grid gap-5 p-4 sm:p-5">
           <div className="grid gap-3">
             <p className="text-sm font-bold text-text-primary">Accounts</p>
             {accounts.length ? (

@@ -148,7 +148,7 @@ describe("StitchDetailsDialog", () => {
       tree,
       (element) =>
         element.type === "div" &&
-        String(element.props?.className).includes("grid min-h-0 min-w-0"),
+        String(element.props?.className).includes("grid min-w-0"),
     )[0];
     const titleText = findElements(
       tree,
@@ -172,11 +172,9 @@ describe("StitchDetailsDialog", () => {
 
     expect(onClose).toHaveBeenCalledOnce();
     expect(stopPropagation).toHaveBeenCalledOnce();
-    expect(dialog.props.className).toContain("flex max-h-full min-h-0");
-    expect(dialog.props.className).toContain("overflow-hidden");
+    expect(dialog.props.className).toContain("overflow-x-hidden");
     expect(dialog.props.className).toContain("max-w-[calc(100vw-1rem)]");
     expect(contentGrid.props.className).toContain("max-w-full");
-    expect(contentGrid.props.className).toContain("overflow-y-auto");
     expect(titleText.props.className).toContain("break-words");
     expect(detailText.props.className).toContain("[overflow-wrap:anywhere]");
   });

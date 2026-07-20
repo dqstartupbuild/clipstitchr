@@ -45,10 +45,10 @@ pages without a downloadable video are not supported.
 
 The completed report uses the same warm dark surface, border, typography,
 header, close control, and shadow treatment as other dashboard dialogs. Its
-`shrink-0` header remains outside the report's only scrolling region, so the
-close control stays reachable while reading a long timeline. The shared grid
-dialog viewport preserves the report's top edge on short screens, accounts for
-mobile safe areas, and safely centers the bounded report on wider screens.
+header remains outside the report's scrolling region, so the close control
+stays reachable while reading a long timeline. The shared dashboard dialog
+viewport preserves the report's top edge on short screens and accounts for
+mobile safe areas.
 
 ## Analysis contract
 

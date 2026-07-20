@@ -24,10 +24,10 @@ export function NotificationDetailDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="notification-detail-title"
-        className="flex max-h-full min-h-0 w-full max-w-lg flex-col overflow-hidden rounded-lg border border-border bg-white shadow-xl"
+        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-white p-5 shadow-xl sm:max-h-[calc(100dvh-3rem)]"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="flex shrink-0 items-start justify-between gap-4 p-5 pb-0">
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
               Notification
@@ -47,24 +47,22 @@ export function NotificationDetailDialog({
           >
             <X aria-hidden className="h-4 w-4" />
           </button>
-        </header>
-        <div className="min-h-0 overflow-y-auto p-5 pt-0">
-          <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-text-secondary">
-            {notification.message}
-          </p>
-          <div className="mt-5 flex justify-end gap-2">
-            <Button type="button" variant="secondary" onClick={onClose}>
-              Dismiss
-            </Button>
-            <Button
-              type="button"
-              variant="danger"
-              icon={<Trash2 aria-hidden className="h-4 w-4" />}
-              onClick={() => onDelete(notification.id)}
-            >
-              Delete
-            </Button>
-          </div>
+        </div>
+        <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-text-secondary">
+          {notification.message}
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Dismiss
+          </Button>
+          <Button
+            type="button"
+            variant="danger"
+            icon={<Trash2 aria-hidden className="h-4 w-4" />}
+            onClick={() => onDelete(notification.id)}
+          >
+            Delete
+          </Button>
         </div>
       </section>
     </div>

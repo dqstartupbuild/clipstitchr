@@ -3922,31 +3922,29 @@
 @utility dashboard-dialog-viewport {
   position: fixed;
   inset: 0;
-  height: 100dvh;
   z-index: 50;
-  display: grid;
-  grid-template-rows: minmax(0, 1fr);
-  place-items: start center;
-  overflow: hidden;
-  padding:
-    calc(0.75rem + env(safe-area-inset-top))
-    0.5rem
-    calc(0.75rem + env(safe-area-inset-bottom));
+  display: flex;
+  overflow-x: hidden;
+  overflow-y: auto;
+  align-items: flex-start;
+  justify-content: center;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
   background: rgb(2 6 23 / 60%);
   overscroll-behavior: contain;
 
   & > :is([role="dialog"], [role="alertdialog"]) {
-    min-height: 0;
-    max-height: 100%;
-    margin: 0;
+    flex-shrink: 0;
+    margin-block: auto;
   }
 
   @media (min-width: 640px) {
-    place-items: safe center;
-    padding:
-      calc(1.5rem + env(safe-area-inset-top))
-      1rem
-      calc(1.5rem + env(safe-area-inset-bottom));
+    padding-right: 1rem;
+    padding-left: 1rem;
+    padding-top: max(1.5rem, env(safe-area-inset-top));
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }
 }
 

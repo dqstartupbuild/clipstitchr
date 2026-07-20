@@ -215,10 +215,10 @@ export function VideoClipDetailsDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="video-details-dialog-title"
-        className="flex max-h-full min-h-0 w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-hidden rounded-lg bg-white shadow-xl sm:max-w-4xl"
+        className="max-h-full w-full max-w-[calc(100vw-1rem)] min-w-0 overflow-x-hidden overflow-y-auto rounded-lg bg-white shadow-xl sm:max-w-4xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="flex min-w-0 shrink-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
+        <div className="flex min-w-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">
               Clip details
@@ -237,8 +237,8 @@ export function VideoClipDetailsDialog({
             icon={<X aria-hidden className="h-4 w-4" />}
             onClick={onClose}
           />
-        </header>
-        <div className="grid min-h-0 min-w-0 max-w-full gap-4 overflow-x-hidden overflow-y-auto p-4 sm:gap-5 sm:p-5 md:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
+        </div>
+        <div className="grid min-w-0 max-w-full gap-4 p-4 sm:gap-5 sm:p-5 md:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
           <VideoClipMusicPreview
             src={videoUrl}
             posterSrc={posterUrl}

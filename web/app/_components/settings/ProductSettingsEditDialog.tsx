@@ -37,7 +37,7 @@ export function ProductSettingsEditDialog({
   return (
     <div className="dashboard-dialog-viewport">
       <form
-        className="flex max-h-full min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-surface p-5 shadow-xl"
+        className="max-h-full w-full max-w-2xl overflow-y-auto rounded-lg bg-surface p-5 shadow-xl"
         role="dialog"
         aria-modal="true"
         aria-label={`Edit ${product.name}`}
@@ -63,7 +63,7 @@ export function ProductSettingsEditDialog({
           }
         }}
       >
-        <div className="flex shrink-0 items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">
               Saved product
@@ -81,7 +81,7 @@ export function ProductSettingsEditDialog({
             <X aria-hidden className="h-4 w-4" />
           </button>
         </div>
-        <div className="mt-4 flex min-h-0 flex-col gap-4 overflow-y-auto">
+        <div className="mt-4 flex flex-col gap-4">
           <label className="block">
             <span className="text-sm font-semibold text-text-primary">
               Product name
@@ -159,7 +159,7 @@ export function ProductSettingsEditDialog({
             />
           </label>
         </div>
-        <div className="mt-5 flex shrink-0 flex-wrap justify-end gap-2">
+        <div className="mt-5 flex flex-wrap justify-end gap-2">
           <Button
             type="button"
             variant="secondary"

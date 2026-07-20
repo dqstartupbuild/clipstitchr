@@ -87,10 +87,10 @@ export function MusicSelectorDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="music-selector-title"
-        className="flex max-h-full min-h-0 w-full max-w-xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
+        className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-xl flex-col overflow-hidden rounded-lg bg-white shadow-xl sm:max-h-[calc(100dvh-3rem)]"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-4">
+        <div className="flex items-start justify-between gap-4 border-b border-border p-4">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">Sound</p>
             <h2
@@ -106,7 +106,7 @@ export function MusicSelectorDialog({
             icon={<X aria-hidden className="h-4 w-4" />}
             onClick={onClose}
           />
-        </header>
+        </div>
         <div className="min-h-0 overflow-y-auto">
           <div className="grid gap-3 border-b border-border p-4">
             {!isRightsAccepted ? (
