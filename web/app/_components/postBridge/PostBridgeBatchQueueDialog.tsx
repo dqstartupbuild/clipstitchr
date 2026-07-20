@@ -128,8 +128,8 @@ export function PostBridgeBatchQueueDialog({
 
   return (
     <div className="dashboard-dialog-viewport" onClick={isBusy ? undefined : onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="post-bridge-batch-dialog-title" className="max-h-full w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl" onClick={(event) => event.stopPropagation()}>
-        <div className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
+      <div role="dialog" aria-modal="true" aria-labelledby="post-bridge-batch-dialog-title" className="flex max-h-full min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-white shadow-xl" onClick={(event) => event.stopPropagation()}>
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div>
             <p className="text-sm font-semibold text-accent-dark">{items.length} selected</p>
             <h2 id="post-bridge-batch-dialog-title" className="mt-1 text-xl font-bold text-text-primary">Add selected posts to queue</h2>
@@ -137,7 +137,7 @@ export function PostBridgeBatchQueueDialog({
           </div>
           <IconButton type="button" label="Close batch queue dialog" disabled={isBusy} icon={<X aria-hidden className="h-4 w-4" />} onClick={onClose} />
         </div>
-        <div className="grid gap-5 p-4 sm:p-5">
+        <div className="grid min-h-0 gap-5 overflow-y-auto p-4 sm:p-5">
           <div className="grid gap-3">
             <p className="text-sm font-bold text-text-primary">Accounts</p>
             {isAccountLoading ? <p className="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text-secondary">Loading your connected accounts...</p> : accounts.length ? <div className="grid gap-2 sm:grid-cols-2">{accounts.map((account) => <PostBridgeAccountCheckbox key={account.id} account={account} checked={selectedAccountIdSet.has(account.id)} disabled={isBusy} onChange={handleAccountChange} />)}</div> : <p className="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text-secondary">Connect TikTok, Instagram, or YouTube Shorts in Post Bridge first.</p>}

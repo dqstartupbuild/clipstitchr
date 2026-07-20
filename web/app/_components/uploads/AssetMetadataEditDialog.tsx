@@ -160,13 +160,13 @@ export function AssetMetadataEditDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="asset-metadata-dialog-title"
-        className="max-h-full w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-xl"
+        className="flex max-h-full min-h-0 w-full max-w-lg flex-col overflow-hidden rounded-lg bg-white shadow-xl"
         onSubmit={(event) => {
           event.preventDefault();
           void handleSave();
         }}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">Details</p>
             <h2
@@ -183,7 +183,7 @@ export function AssetMetadataEditDialog({
             onClick={onClose}
           />
         </div>
-        <div className="flex flex-col gap-5 p-5">
+        <div className="flex min-h-0 flex-col gap-5 overflow-y-auto p-5">
           <label className="block">
             <span className="text-sm font-semibold text-text-primary">
               Title
@@ -374,7 +374,7 @@ export function AssetMetadataEditDialog({
             </>
           ) : null}
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border p-5">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-border p-5">
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>

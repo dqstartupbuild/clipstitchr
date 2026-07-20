@@ -118,10 +118,10 @@ export function SettingsPostBridgeProductConfigDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="post-bridge-product-config-dialog-title"
-        className="max-h-full w-full max-w-[calc(100vw-1rem)] min-w-0 overflow-x-hidden overflow-y-auto rounded-lg bg-white shadow-xl sm:max-w-4xl"
+        className="flex max-h-full min-h-0 w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-hidden rounded-lg bg-white shadow-xl sm:max-w-4xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex min-w-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
+        <div className="flex min-w-0 shrink-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">
               Product links
@@ -143,7 +143,7 @@ export function SettingsPostBridgeProductConfigDialog({
             onClick={onClose}
           />
         </div>
-        <div className="flex min-w-0 flex-col gap-4 p-4 sm:p-5">
+        <div className="flex min-h-0 min-w-0 flex-col gap-4 overflow-x-hidden overflow-y-auto p-4 sm:p-5">
           <div className="flex justify-end">
             <Button
               type="button"

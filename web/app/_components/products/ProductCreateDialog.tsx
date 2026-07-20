@@ -36,7 +36,7 @@ export function ProductCreateDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-create-dialog-title"
-        className="max-h-full w-full max-w-xl overflow-y-auto rounded-lg bg-white p-5 shadow-xl"
+        className="flex max-h-full min-h-0 w-full max-w-xl flex-col overflow-hidden rounded-lg bg-white p-5 shadow-xl"
         onClick={(event) => event.stopPropagation()}
         onSubmit={async (event) => {
           event.preventDefault();
@@ -64,7 +64,7 @@ export function ProductCreateDialog({
           }
         }}
       >
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex shrink-0 items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-accent-dark">Product</p>
             <h2
@@ -87,7 +87,7 @@ export function ProductCreateDialog({
             />
           ) : null}
         </div>
-        <div className="mt-5 grid gap-4">
+        <div className="mt-5 grid min-h-0 gap-4 overflow-y-auto">
           <label className="block">
             <span className="text-sm font-semibold text-text-primary">
               Product name
@@ -145,7 +145,7 @@ export function ProductCreateDialog({
             {error}
           </div>
         ) : null}
-        <div className="mt-5 flex justify-end">
+        <div className="mt-5 flex shrink-0 justify-end">
           <Button
             type="submit"
             icon={<PackagePlus aria-hidden className="h-4 w-4" />}

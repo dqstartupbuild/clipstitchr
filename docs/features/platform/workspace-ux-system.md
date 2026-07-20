@@ -87,13 +87,17 @@ system preference switch, or light-mode token branch; shared UI should be
 checked against the dark root tokens and the scoped `dashboard-shell` tokens.
 
 Dashboard modals use `dashboard-dialog-viewport` from `app/globals.css`. The
-viewport owns the backdrop, safe-area padding, vertical overflow, and stacking
-level. Its direct dialog child uses automatic vertical margins, which center a
-short modal without pushing the top of a tall modal above the screen. Tall
-dialogs must also bound their panel to the dynamic viewport and scroll either
-the panel or a single `min-h-0` content region. Keep the header and close
-control outside an internal scrolling content region when the dialog contains
-a long report or list.
+viewport is a one-row grid that owns the backdrop, safe-area padding, dynamic
+viewport height, and stacking level. It clips its own overflow so touch input
+cannot split between an outer overlay scroller and the dialog body. On phone
+widths dialogs start at the safe top edge. At `640px` and wider, bounded dialogs
+are safely centered.
+
+The direct dialog child is constrained with `min-height: 0`, `max-height: 100%`,
+and no automatic margin. Long dialogs use a bounded flex column: a `shrink-0`
+header followed by exactly one `min-h-0 overflow-y-auto` body. Do not subtract
+hard-coded padding from `100dvh`; the viewport already owns the safe-area and
+outer spacing calculations.
 
 Media cards use `MediaPrimaryAction` for the clearest next action:
 
@@ -149,3 +153,15 @@ and close clicks. Open representative short and tall dashboard dialogs at
 desktop and phone heights. Confirm the top edge and close control are visible
 at scroll position zero, the bottom content is reachable, and returning to the
 top does not stop before the header.
+
+Run the real-browser dialog regression at a `390x640` viewport:
+
+```text
+npx playwright install chromium
+npm run test:browser
+```
+
+The test reads the production `dashboard-dialog-viewport` utility, confirms the
+overlay does not scroll, verifies the header and dismiss control remain inside
+the viewport, scrolls the single dialog body to the bottom and back to zero, and
+checks that both controls remain reachable.

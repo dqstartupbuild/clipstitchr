@@ -82,10 +82,10 @@ export function StitchMusicSettingsDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="stitch-music-dialog-title"
-        className="w-full max-w-lg rounded-lg bg-white shadow-xl"
+        className="flex max-h-full min-h-0 w-full max-w-lg flex-col overflow-hidden rounded-lg bg-white shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">Sound</p>
             <h2
@@ -102,7 +102,7 @@ export function StitchMusicSettingsDialog({
             onClick={onClose}
           />
         </div>
-        <div className="flex flex-col gap-4 p-5">
+        <div className="flex min-h-0 flex-col gap-4 overflow-y-auto p-5">
           {error ? (
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               {error}

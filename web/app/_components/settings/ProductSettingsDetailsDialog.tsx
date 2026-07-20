@@ -57,10 +57,10 @@ export function ProductSettingsDetailsDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-details-dialog-title"
-        className="max-h-full w-full max-w-[calc(100vw-1rem)] min-w-0 overflow-x-hidden overflow-y-auto rounded-lg bg-white shadow-xl sm:max-w-3xl"
+        className="flex max-h-full min-h-0 w-full max-w-[calc(100vw-1rem)] min-w-0 flex-col overflow-hidden rounded-lg bg-white shadow-xl sm:max-w-3xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex min-w-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
+        <div className="flex min-w-0 shrink-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">
               Saved product
@@ -79,7 +79,7 @@ export function ProductSettingsDetailsDialog({
             onClick={onClose}
           />
         </div>
-        <div className="flex min-w-0 flex-col gap-5 p-4 sm:p-5">
+        <div className="flex min-h-0 min-w-0 flex-col gap-5 overflow-x-hidden overflow-y-auto p-4 sm:p-5">
           {detailItems.map((item) => (
             <div key={item.label} className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">

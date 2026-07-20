@@ -86,13 +86,13 @@ export function CreateAvatarFromClipDialog({
     >
       <form
         aria-labelledby="create-avatar-from-clip-title"
-        className="max-h-full w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-xl"
+        className="flex max-h-full min-h-0 w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
         role="dialog"
         aria-modal="true"
         onClick={(event) => event.stopPropagation()}
         onSubmit={handleSubmit}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">
               Create avatar
@@ -112,7 +112,7 @@ export function CreateAvatarFromClipDialog({
             onClick={onClose}
           />
         </div>
-        <div className="grid gap-5 p-5 md:grid-cols-[220px_minmax(0,1fr)]">
+        <div className="grid min-h-0 gap-5 overflow-y-auto p-5 md:grid-cols-[220px_minmax(0,1fr)]">
           <div>
             <div className="overflow-hidden rounded-md border border-border bg-slate-100">
               {posterUrl ? (

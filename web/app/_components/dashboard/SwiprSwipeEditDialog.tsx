@@ -169,10 +169,10 @@ export function SwiprSwipeEditDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="swipr-swipe-edit-dialog-title"
-        className="max-h-full w-full max-w-5xl overflow-y-auto rounded-lg bg-white shadow-xl"
+        className="flex max-h-full min-h-0 w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">
               Edit Swipe
@@ -191,7 +191,7 @@ export function SwiprSwipeEditDialog({
             onClick={onClose}
           />
         </div>
-        <div className="grid gap-5 p-5 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="grid min-h-0 gap-5 overflow-y-auto p-5 lg:grid-cols-[300px_minmax(0,1fr)]">
           <div className="flex flex-col gap-4">
             <div
               ref={stageRef}

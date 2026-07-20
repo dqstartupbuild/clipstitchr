@@ -32,10 +32,10 @@ export function PhotoAssetDetailsDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="photo-details-dialog-title"
-        className="max-h-full w-full max-w-3xl overflow-y-auto rounded-lg bg-white shadow-xl"
+        className="flex max-h-full min-h-0 w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">
               Photo details
@@ -55,7 +55,7 @@ export function PhotoAssetDetailsDialog({
             onClick={onClose}
           />
         </div>
-        <div className="grid gap-5 p-5 md:grid-cols-[260px_minmax(0,1fr)]">
+        <div className="grid min-h-0 gap-5 overflow-y-auto p-5 md:grid-cols-[260px_minmax(0,1fr)]">
           <div className="overflow-hidden rounded-lg bg-slate-100">
             <div className="aspect-[9/16]">
               {imageUrl ? (

@@ -58,10 +58,10 @@ export function StitchTextSettingsDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="stitch-text-dialog-title"
-        className="max-h-full w-full max-w-3xl overflow-y-auto rounded-lg bg-white shadow-xl"
+        className="flex max-h-full min-h-0 w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">Text</p>
             <h2
@@ -78,7 +78,7 @@ export function StitchTextSettingsDialog({
             onClick={onClose}
           />
         </div>
-        <div className="p-5">
+        <div className="min-h-0 overflow-y-auto p-5">
           {error ? (
             <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               {error}
