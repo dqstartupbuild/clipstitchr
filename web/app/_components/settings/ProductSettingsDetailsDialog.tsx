@@ -50,7 +50,7 @@ export function ProductSettingsDetailsDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/60 px-2 py-3 sm:items-center sm:px-4 sm:py-6"
+      className="dashboard-dialog-viewport"
       onClick={onClose}
     >
       <div

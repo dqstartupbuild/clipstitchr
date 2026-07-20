@@ -35,7 +35,7 @@ export function ProductSettingsEditDialog({
   const canSave = name.trim().length > 0 && !isSaving;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6">
+    <div className="dashboard-dialog-viewport">
       <form
         className="max-h-full w-full max-w-2xl overflow-y-auto rounded-lg bg-surface p-5 shadow-xl"
         role="dialog"

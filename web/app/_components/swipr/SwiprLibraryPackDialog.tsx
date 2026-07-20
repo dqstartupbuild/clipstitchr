@@ -48,7 +48,7 @@ export function SwiprLibraryPackDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/60 px-3 py-4 [padding-bottom:max(1rem,env(safe-area-inset-bottom))] [padding-top:max(1rem,env(safe-area-inset-top))] sm:items-center sm:px-4"
+      className="dashboard-dialog-viewport"
       onClick={onDismiss}
     >
       <div

@@ -43,6 +43,13 @@ pages without a downloadable video are not supported.
 12. Temporary local and R2 source-video files are deleted. Only the saved post,
     report, and thumbnail remain.
 
+The completed report uses the same warm dark surface, border, typography,
+header, close control, and shadow treatment as other dashboard dialogs. Its
+header remains outside the report's scrolling region, so the close control
+stays reachable while reading a long timeline. The shared dashboard dialog
+viewport preserves the report's top edge on short screens and accounts for
+mobile safe areas.
+
 ## Analysis contract
 
 The model receives the entire video, its measured duration, the source caption,

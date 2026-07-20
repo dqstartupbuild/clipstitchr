@@ -14,6 +14,8 @@ It adds:
 - Grouped Library navigation for Videos, Finished, and Assets.
 - Shared segmented controls for tabs, filters, and mode toggles.
 - Shared dashboard alerts for error, info, success, and warning messages.
+- A shared dialog viewport that preserves the top edge and close control on
+  short screens while centering shorter dialogs when space is available.
 - Shared workflow layouts for creation screens with a main work area and sticky
   preview/status column.
 - A Stitchr step strip that shows Pick clips, Add text, Preview, and Create.
@@ -84,6 +86,15 @@ The product and public app shell are dark-only. There is no theme selector,
 system preference switch, or light-mode token branch; shared UI should be
 checked against the dark root tokens and the scoped `dashboard-shell` tokens.
 
+Dashboard modals use `dashboard-dialog-viewport` from `app/globals.css`. The
+viewport owns the backdrop, safe-area padding, vertical overflow, and stacking
+level. Its direct dialog child uses automatic vertical margins, which center a
+short modal without pushing the top of a tall modal above the screen. Tall
+dialogs must also bound their panel to the dynamic viewport and scroll either
+the panel or a single `min-h-0` content region. Keep the header and close
+control outside an internal scrolling content region when the dialog contains
+a long report or list.
+
 Media cards use `MediaPrimaryAction` for the clearest next action:
 
 - Clips: Use in Stitchr
@@ -134,4 +145,7 @@ Then perform a read-only route sweep across Clipr, Swipr, Swapr, Hook Lab,
 Schedule, and Analytics. Confirm every route has one visible H1, no hidden
 content waiting on an entrance animation, no horizontal page overflow, and no
 signed-in hydration warning. Test the mobile navigation drawer with real open
-and close clicks.
+and close clicks. Open representative short and tall dashboard dialogs at
+desktop and phone heights. Confirm the top edge and close control are visible
+at scroll position zero, the bottom content is reachable, and returning to the
+top does not stop before the header.

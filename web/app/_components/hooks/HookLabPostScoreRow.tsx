@@ -15,7 +15,7 @@ export function HookLabPostScoreRow({
   return (
     <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
       {scores.map(([label, value]) => (
-        <div key={label} className="border-t-2 border-[#26312c] pt-3">
+        <div key={label} className="border-t-2 border-border pt-3">
           <dt className="text-sm text-text-secondary">{label}</dt>
           <dd className="mt-1 text-3xl font-bold tracking-tight text-text-primary">
             {value}

@@ -64,6 +64,7 @@ describe("MusicSelectorDialog", () => {
   it("bounds the dialog to the viewport with one scrollable content area", () => {
     const markup = renderDialog();
 
+    expect(markup).toContain("dashboard-dialog-viewport");
     expect(markup).toContain("max-h-[calc(100dvh-1.5rem)]");
     expect(markup).toContain("sm:max-h-[calc(100dvh-3rem)]");
     expect(markup).toContain("min-h-0 overflow-y-auto");

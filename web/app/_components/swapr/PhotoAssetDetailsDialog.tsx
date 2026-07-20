@@ -25,7 +25,7 @@ export function PhotoAssetDetailsDialog({
 }: PhotoAssetDetailsDialogProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6"
+      className="dashboard-dialog-viewport"
       onClick={onClose}
     >
       <div

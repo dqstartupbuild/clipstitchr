@@ -127,7 +127,7 @@ export function PostBridgeBatchQueueDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/60 px-3 py-4 sm:items-center sm:px-4 sm:py-6" onClick={isBusy ? undefined : onClose}>
+    <div className="dashboard-dialog-viewport" onClick={isBusy ? undefined : onClose}>
       <div role="dialog" aria-modal="true" aria-labelledby="post-bridge-batch-dialog-title" className="max-h-full w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl" onClick={(event) => event.stopPropagation()}>
         <div className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div>

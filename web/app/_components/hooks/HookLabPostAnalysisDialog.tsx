@@ -1,7 +1,6 @@
 "use client";
 
 import { ExternalLink, X } from "lucide-react";
-import type { CSSProperties } from "react";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 import { getHookLabPostTitle } from "@/lib/clipstitchr/utils/getHookLabPostTitle";
@@ -24,7 +23,7 @@ export function HookLabPostAnalysisDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/75 px-2 py-3 sm:px-4 sm:py-6"
+      className="dashboard-dialog-viewport"
       onMouseDown={(event) => {
         if (event.currentTarget === event.target) {
           onClose();
@@ -34,48 +33,39 @@ export function HookLabPostAnalysisDialog({
       <article
         aria-labelledby="hook-lab-analysis-title"
         aria-modal="true"
-        className="w-full max-w-5xl overflow-hidden rounded-xl bg-[#f8faf8]"
+        className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl sm:max-h-[calc(100dvh-3rem)]"
         role="dialog"
-        style={
-          {
-            "--text-primary": "#18201c",
-            "--text-secondary": "#46504b",
-            "--text-tertiary": "#68756e",
-            colorScheme: "light",
-          } as CSSProperties
-        }
       >
-        <header className="sticky top-0 z-10 flex items-start justify-between gap-5 bg-[#18201c] px-5 py-5 text-white sm:px-8">
+        <header className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
-            <p className="text-sm text-[#b9c6bf]">
+            <p className="text-sm font-semibold text-accent-dark">
               {post.platform === "tiktok" ? "TikTok" : "Instagram"} analysis
             </p>
             <h2
-              className="mt-1 truncate text-2xl font-bold"
+              className="mt-1 truncate text-xl font-bold text-text-primary"
               id="hook-lab-analysis-title"
             >
               {getHookLabPostTitle(post)}
             </h2>
           </div>
           <IconButton
-            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
             icon={<X aria-hidden className="size-4" />}
             label="Close post analysis"
             onClick={onClose}
           />
         </header>
 
-        <div className="grid gap-10 px-5 py-7 sm:px-8 sm:py-9">
+        <div className="grid min-h-0 gap-8 overflow-y-auto p-4 sm:p-5">
           <section aria-labelledby="hook-lab-report-overview">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <h3
-                className="text-2xl font-bold text-text-primary"
+                className="text-xl font-bold text-text-primary"
                 id="hook-lab-report-overview"
               >
                 What the post does
               </h3>
               <a
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[#315342] transition-colors hover:text-[#18201c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-accent-dark transition-colors hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 href={post.canonicalUrl}
                 rel="noreferrer"
                 target="_blank"
@@ -133,7 +123,7 @@ export function HookLabPostAnalysisDialog({
 
           <section aria-labelledby="hook-lab-report-performance">
             <h3
-              className="text-2xl font-bold text-text-primary"
+              className="text-xl font-bold text-text-primary"
               id="hook-lab-report-performance"
             >
               Why it may have performed this way
@@ -175,7 +165,7 @@ export function HookLabPostAnalysisDialog({
                 </ul>
               </div>
             </div>
-            <p className="mt-6 bg-[#e3ebe6] p-4 text-sm leading-6 text-[#37463f]">
+            <p className="mt-6 rounded-lg border border-border bg-surface-muted p-4 text-sm leading-6 text-text-secondary">
               <span className="font-bold">Confidence:</span>{" "}
               {analysis.performance.confidence}
             </p>
@@ -183,7 +173,7 @@ export function HookLabPostAnalysisDialog({
 
           <section aria-labelledby="hook-lab-report-timeline">
             <h3
-              className="text-2xl font-bold text-text-primary"
+              className="text-xl font-bold text-text-primary"
               id="hook-lab-report-timeline"
             >
               Full play-by-play
@@ -199,7 +189,7 @@ export function HookLabPostAnalysisDialog({
 
           <section aria-labelledby="hook-lab-report-lessons">
             <h3
-              className="text-2xl font-bold text-text-primary"
+              className="text-xl font-bold text-text-primary"
               id="hook-lab-report-lessons"
             >
               Useful takeaways

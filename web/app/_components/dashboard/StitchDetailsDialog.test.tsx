@@ -136,7 +136,9 @@ describe("StitchDetailsDialog", () => {
       tree,
       (element) =>
         element.type === "div" &&
-        String(element.props?.className).includes("fixed inset-0"),
+        String(element.props?.className).includes(
+          "dashboard-dialog-viewport",
+        ),
     )[0];
     const dialog = findElements(
       tree,

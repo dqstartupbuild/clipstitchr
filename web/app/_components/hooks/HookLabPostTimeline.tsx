@@ -13,7 +13,7 @@ export function HookLabPostTimeline({
           className="grid gap-2 sm:grid-cols-[6.5rem_minmax(0,1fr)] sm:gap-5"
           key={`${entry.startSeconds}-${entry.endSeconds}-${index}`}
         >
-          <p className="font-semibold tabular-nums text-[#3f554a]">
+          <p className="font-semibold tabular-nums text-accent-dark">
             {formatHookLabTimelineTime(entry.startSeconds)}-
             {formatHookLabTimelineTime(entry.endSeconds)}
           </p>

@@ -130,7 +130,9 @@ describe("CreateAvatarFromClipDialog", () => {
       tree,
       (element) =>
         element.type === "div" &&
-        String(element.props?.className).includes("fixed inset-0"),
+        String(element.props?.className).includes(
+          "dashboard-dialog-viewport",
+        ),
     )[0];
     const form = findElements(tree, (element) => element.type === "form")[0];
     const iconButton = findElements(
@@ -234,7 +236,9 @@ describe("CreateAvatarFromClipDialog", () => {
       tree,
       (element) =>
         element.type === "div" &&
-        String(element.props?.className).includes("fixed inset-0"),
+        String(element.props?.className).includes(
+          "dashboard-dialog-viewport",
+        ),
     )[0];
     const submitButton = findElements(
       tree,

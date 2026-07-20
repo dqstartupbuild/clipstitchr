@@ -29,7 +29,7 @@ export function ProductCreateDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-start justify-center bg-slate-950/60 px-3 py-4 sm:items-center sm:px-4 sm:py-6"
+      className="dashboard-dialog-viewport dashboard-dialog-viewport-elevated"
       onClick={isRequired ? undefined : onClose}
     >
       <form

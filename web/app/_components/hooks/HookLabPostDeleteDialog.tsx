@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import type { CSSProperties } from "react";
 import { Button } from "@/app/_components/ui/Button";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 import { getErrorMessage } from "@/lib/clipstitchr/utils/getErrorMessage";
@@ -24,7 +23,7 @@ export function HookLabPostDeleteDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      className="dashboard-dialog-viewport"
       onMouseDown={(event) => {
         if (event.currentTarget === event.target && !isDeleting) {
           onClose();
@@ -35,16 +34,8 @@ export function HookLabPostDeleteDialog({
         aria-describedby="hook-lab-post-delete-description"
         aria-labelledby="hook-lab-post-delete-title"
         aria-modal="true"
-        className="w-full max-w-md rounded-xl bg-white p-5"
+        className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl"
         role="alertdialog"
-        style={
-          {
-            "--text-primary": "#18201c",
-            "--text-secondary": "#46504b",
-            "--text-tertiary": "#68756e",
-            colorScheme: "light",
-          } as CSSProperties
-        }
       >
         <h2
           className="text-xl font-bold text-text-primary"

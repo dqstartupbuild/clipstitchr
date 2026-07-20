@@ -80,7 +80,7 @@ export function MusicSelectorDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-3 sm:p-6"
+      className="dashboard-dialog-viewport"
       onClick={onClose}
     >
       <div

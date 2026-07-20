@@ -33,7 +33,7 @@ export function ProductPlanLimitDialog({
 
   return (
     <div
-      className="product-plan-limit-theme fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 px-4 py-6"
+      className="product-plan-limit-theme dashboard-dialog-viewport dashboard-dialog-viewport-notification"
       onClick={onClose}
     >
       <div

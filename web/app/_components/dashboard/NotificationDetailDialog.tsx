@@ -17,14 +17,14 @@ export function NotificationDetailDialog({
 }: NotificationDetailDialogProps) {
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-slate-950/60 px-3 py-4 sm:items-center sm:px-4"
+      className="dashboard-dialog-viewport dashboard-dialog-viewport-notification"
       onClick={onClose}
     >
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="notification-detail-title"
-        className="my-auto max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-white p-5 shadow-2xl"
+        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-white p-5 shadow-xl sm:max-h-[calc(100dvh-3rem)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
