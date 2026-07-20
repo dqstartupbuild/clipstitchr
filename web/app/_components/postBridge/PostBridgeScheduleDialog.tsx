@@ -9,7 +9,6 @@ import { PostBridgeSoundModePicker } from "@/app/_components/postBridge/PostBrid
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { ProgressBar } from "@/app/_components/ui/ProgressBar";
-import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { fetchPostBridgeAccountOptions } from "@/lib/clipstitchr/client/fetchPostBridgeAccountOptions";
 import { schedulePostBridgePost } from "@/lib/clipstitchr/client/schedulePostBridgePost";
 import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
@@ -189,12 +188,16 @@ export function PostBridgeScheduleDialog({
   };
 
   return (
-    <DashboardDialogViewport onClose={isBusy ? undefined : onClose}>
+    <div
+      className="dashboard-dialog-viewport"
+      onClick={isBusy ? undefined : onClose}
+    >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="post-bridge-schedule-dialog-title"
-        className="w-full max-w-2xl rounded-lg bg-white shadow-xl"
+        className="max-h-full w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl"
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
@@ -337,6 +340,6 @@ export function PostBridgeScheduleDialog({
           </div>
         </div>
       </div>
-    </DashboardDialogViewport>
+    </div>
   );
 }

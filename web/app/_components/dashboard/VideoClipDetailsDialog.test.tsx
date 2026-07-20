@@ -244,6 +244,18 @@ describe("VideoClipDetailsDialog", () => {
       },
       videoUrl: "clip.mp4",
     });
+    const root = findElements(
+      tree,
+      (element) =>
+        element.type === "div" &&
+        String(element.props?.className).includes(
+          "dashboard-dialog-viewport",
+        ),
+    )[0];
+    const dialog = findElements(
+      tree,
+      (element) => element.props?.role === "dialog",
+    )[0];
     const iconButton = findElements(
       tree,
       (element) =>
@@ -279,9 +291,15 @@ describe("VideoClipDetailsDialog", () => {
         typeof element.type === "function" &&
         element.type.name === "ClipPerformanceScoreDetails",
     )[0];
+    const stopPropagation = vi.fn();
 
+    (root.props.onClick as () => void)();
+    (dialog.props.onClick as (event: { stopPropagation: () => void }) => void)({
+      stopPropagation,
+    });
     (iconButton.props.onClick as () => void)();
-    expect(onClose).toHaveBeenCalledOnce();
+    expect(onClose).toHaveBeenCalledTimes(2);
+    expect(stopPropagation).toHaveBeenCalledOnce();
 
     expect(preview.props.trimRange).toEqual({ start: 1, end: 5 });
     expect(scoreDetails.props.score).toEqual(
@@ -360,6 +378,7 @@ describe("VideoClipDetailsDialog", () => {
         element.type === "p" && element.props?.children === longToken,
     )[0];
 
+    expect(dialog.props.className).toContain("overflow-x-hidden");
     expect(dialog.props.className).toContain("max-w-[calc(100vw-1rem)]");
     expect(contentGrid.props.className).toContain("min-w-0");
     expect(titleText.props.className).toContain("break-words");

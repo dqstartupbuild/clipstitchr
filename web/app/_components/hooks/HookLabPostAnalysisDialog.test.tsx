@@ -68,7 +68,7 @@ describe("HookLabPostAnalysisDialog", () => {
     expect(markup).toContain("dashboard-dialog-viewport");
     expect(markup).toContain("border-b border-border");
     expect(markup).toContain("bg-white shadow-xl");
-    expect(markup).toContain("min-h-0 gap-8");
+    expect(markup).toContain("min-h-0 gap-8 overflow-y-auto");
     expect(markup).not.toContain("--text-primary");
     expect(markup).toContain("Platform numbers");
     expect(markup).toContain("Why it may have performed this way");

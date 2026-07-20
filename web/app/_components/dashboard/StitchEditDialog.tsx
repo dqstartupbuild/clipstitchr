@@ -11,7 +11,6 @@ import { TextOverlayEditor } from "@/app/_components/stitchr/TextOverlayEditor";
 import { Badge } from "@/app/_components/ui/Badge";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
@@ -595,12 +594,16 @@ export function StitchEditDialog({
     setMusic(null);
   };
   return (
-    <DashboardDialogViewport onClose={onClose}>
+    <div
+      className="dashboard-dialog-viewport"
+      onClick={onClose}
+    >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="stitch-edit-dialog-title"
-        className="w-full max-w-[calc(100vw-1rem)] min-w-0 rounded-lg bg-white shadow-xl sm:max-w-5xl"
+        className="max-h-full w-full max-w-[calc(100vw-1rem)] min-w-0 overflow-x-hidden overflow-y-auto rounded-lg bg-white shadow-xl sm:max-w-5xl"
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="flex min-w-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
@@ -876,6 +879,6 @@ export function StitchEditDialog({
           </div>
         </div>
       </div>
-    </DashboardDialogViewport>
+    </div>
   );
 }

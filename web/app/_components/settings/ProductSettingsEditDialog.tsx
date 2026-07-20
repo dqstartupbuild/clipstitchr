@@ -3,7 +3,6 @@
 import { Save, X } from "lucide-react";
 import { useState } from "react";
 import { ProductHookStyleSelect } from "@/app/_components/settings/ProductHookStyleSelect";
-import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { Button } from "@/app/_components/ui/Button";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
@@ -36,9 +35,9 @@ export function ProductSettingsEditDialog({
   const canSave = name.trim().length > 0 && !isSaving;
 
   return (
-    <DashboardDialogViewport onClose={onClose}>
+    <div className="dashboard-dialog-viewport">
       <form
-        className="w-full max-w-2xl rounded-lg bg-surface p-5 shadow-xl"
+        className="max-h-full w-full max-w-2xl overflow-y-auto rounded-lg bg-surface p-5 shadow-xl"
         role="dialog"
         aria-modal="true"
         aria-label={`Edit ${product.name}`}
@@ -180,6 +179,6 @@ export function ProductSettingsEditDialog({
           </Button>
         </div>
       </form>
-    </DashboardDialogViewport>
+    </div>
   );
 }

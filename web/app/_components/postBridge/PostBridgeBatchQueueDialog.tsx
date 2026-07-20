@@ -9,7 +9,6 @@ import { PostBridgeSoundModePicker } from "@/app/_components/postBridge/PostBrid
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { ProgressBar } from "@/app/_components/ui/ProgressBar";
-import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { fetchPostBridgeAccountOptions } from "@/lib/clipstitchr/client/fetchPostBridgeAccountOptions";
 import { queuePostBridgeBatchItems } from "@/lib/clipstitchr/client/queuePostBridgeBatchItems";
 import type { PostBridgeBatchQueueItem } from "@/lib/clipstitchr/types/PostBridgeBatchQueueItem";
@@ -128,8 +127,8 @@ export function PostBridgeBatchQueueDialog({
   };
 
   return (
-    <DashboardDialogViewport onClose={isBusy ? undefined : onClose}>
-      <div role="dialog" aria-modal="true" aria-labelledby="post-bridge-batch-dialog-title" className="w-full max-w-2xl rounded-lg bg-white shadow-xl">
+    <div className="dashboard-dialog-viewport" onClick={isBusy ? undefined : onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="post-bridge-batch-dialog-title" className="max-h-full w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl" onClick={(event) => event.stopPropagation()}>
         <div className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div>
             <p className="text-sm font-semibold text-accent-dark">{items.length} selected</p>
@@ -150,6 +149,6 @@ export function PostBridgeBatchQueueDialog({
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="secondary" disabled={isBusy} onClick={onClose}>Cancel</Button><Button type="button" isLoading={isBusy} disabled={status === "complete" || !accounts.length || !selectedAccountIds.length} onClick={() => void handleQueue()}>Add {items.length} to queue</Button></div>
         </div>
       </div>
-    </DashboardDialogViewport>
+    </div>
   );
 }

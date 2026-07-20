@@ -116,10 +116,12 @@ describe("StitchDetailsDialog", () => {
 
   it("keeps long stitch metadata inside the mobile dialog width", () => {
     const longToken = "stitch-output-" + "x".repeat(180);
+    const onClose = vi.fn();
+    const stopPropagation = vi.fn();
     const tree = StitchDetailsDialog({
       demoClip: null,
       isLoadingPreview: false,
-      onClose: vi.fn(),
+      onClose,
       onLoadPreview: vi.fn(),
       posterUrl: "poster.jpg",
       previewError: longToken,
@@ -130,6 +132,14 @@ describe("StitchDetailsDialog", () => {
       }),
       ugcClip: null,
     });
+    const root = findElements(
+      tree,
+      (element) =>
+        element.type === "div" &&
+        String(element.props?.className).includes(
+          "dashboard-dialog-viewport",
+        ),
+    )[0];
     const dialog = findElements(
       tree,
       (element) => element.props?.role === "dialog",
@@ -155,6 +165,14 @@ describe("StitchDetailsDialog", () => {
         String(element.props?.children).includes(longToken),
     )[0];
 
+    (root.props.onClick as () => void)();
+    (dialog.props.onClick as (event: { stopPropagation: () => void }) => void)({
+      stopPropagation,
+    });
+
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(stopPropagation).toHaveBeenCalledOnce();
+    expect(dialog.props.className).toContain("overflow-x-hidden");
     expect(dialog.props.className).toContain("max-w-[calc(100vw-1rem)]");
     expect(contentGrid.props.className).toContain("max-w-full");
     expect(titleText.props.className).toContain("break-words");

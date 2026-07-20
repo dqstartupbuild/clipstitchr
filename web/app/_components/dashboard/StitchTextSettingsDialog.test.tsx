@@ -120,6 +120,34 @@ function createStitch(overrides: Partial<Stitch> = {}): Stitch {
   };
 }
 
+function findElements(
+  value: unknown,
+  predicate: (element: {
+    props?: Record<string, unknown>;
+    type?: unknown;
+  }) => boolean,
+): Array<{ props: Record<string, unknown>; type?: unknown }> {
+  if (!value || typeof value !== "object") {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((child) => findElements(child, predicate));
+  }
+
+  const element = value as {
+    props?: { children?: unknown };
+    type?: unknown;
+  };
+  const matches = predicate(
+    element as { props?: Record<string, unknown>; type?: unknown },
+  )
+    ? [element as { props: Record<string, unknown>; type?: unknown }]
+    : [];
+
+  return [...matches, ...findElements(element.props?.children, predicate)];
+}
+
 async function flushPromises() {
   for (let index = 0; index < 3; index += 1) {
     await Promise.resolve();
@@ -146,19 +174,24 @@ describe("StitchTextSettingsDialog", () => {
   it("renders the editor, closes from shell controls, and saves clamped text", async () => {
     const onClose = vi.fn();
     const onSave = vi.fn(async () => undefined);
+    const stopPropagation = vi.fn();
     const nextOverlay = createTextOverlay({ text: "Updated" });
-    const markup = renderToStaticMarkup(
-      <StitchTextSettingsDialog
-        error="Text update failed."
-        isSaving={true}
-        onClose={onClose}
-        onSave={onSave}
-        stitch={createStitch()}
-      />,
-    );
+    const tree = StitchTextSettingsDialog({
+      error: "Text update failed.",
+      isSaving: true,
+      onClose,
+      onSave,
+      stitch: createStitch(),
+    });
+    const markup = renderToStaticMarkup(tree);
+    const divs = findElements(tree, (element) => element.type === "div");
 
     mocks.textEditorProps?.onChange([nextOverlay]);
     mocks.iconButtons[0]?.onClick?.();
+    (divs[0].props.onClick as () => void)();
+    (divs[1].props.onClick as (event: { stopPropagation: () => void }) => void)(
+      { stopPropagation },
+    );
     mocks.buttons[0]?.onClick?.();
     await flushPromises();
 
@@ -190,6 +223,7 @@ describe("StitchTextSettingsDialog", () => {
       ]),
     );
     expect(onClose).toHaveBeenCalled();
+    expect(stopPropagation).toHaveBeenCalled();
     expect(mocks.buttons[0]?.isLoading).toBe(true);
   });
 

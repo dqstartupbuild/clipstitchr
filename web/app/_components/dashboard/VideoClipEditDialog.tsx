@@ -9,7 +9,6 @@ import { VideoTrimEditor } from "@/app/_components/trim/VideoTrimEditor";
 import { AssetTagEditor } from "@/app/_components/uploads/AssetTagEditor";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { useVideoClipDetailsMusic } from "@/lib/clipstitchr/hooks/useVideoClipDetailsMusic";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
@@ -206,12 +205,16 @@ export function VideoClipEditDialog({
   };
 
   return (
-    <DashboardDialogViewport onClose={onClose}>
+    <div
+      className="dashboard-dialog-viewport"
+      onClick={onClose}
+    >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="video-clip-edit-dialog-title"
-        className="w-full max-w-[calc(100vw-1rem)] min-w-0 rounded-lg bg-white shadow-xl sm:max-w-5xl"
+        className="max-h-full w-full max-w-[calc(100vw-1rem)] min-w-0 overflow-x-hidden overflow-y-auto rounded-lg bg-white shadow-xl sm:max-w-5xl"
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="flex min-w-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
@@ -475,6 +478,6 @@ export function VideoClipEditDialog({
           </div>
         </div>
       </div>
-    </DashboardDialogViewport>
+    </div>
   );
 }

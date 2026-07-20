@@ -165,6 +165,34 @@ function createSwipe(overrides: Partial<SwiprSwipe> = {}): SwiprSwipe {
   };
 }
 
+function findElements(
+  value: unknown,
+  predicate: (element: {
+    props?: Record<string, unknown>;
+    type?: unknown;
+  }) => boolean,
+): Array<{ props: Record<string, unknown>; type?: unknown }> {
+  if (!value || typeof value !== "object") {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((child) => findElements(child, predicate));
+  }
+
+  const element = value as {
+    props?: { children?: unknown };
+    type?: unknown;
+  };
+  const matches = predicate(
+    element as { props?: Record<string, unknown>; type?: unknown },
+  )
+    ? [element as { props: Record<string, unknown>; type?: unknown }]
+    : [];
+
+  return [...matches, ...findElements(element.props?.children, predicate)];
+}
+
 describe("SwiprSwipeDetailsDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -181,30 +209,32 @@ describe("SwiprSwipeDetailsDialog", () => {
     const onDelete = vi.fn();
     const onDownload = vi.fn();
     const onLoadBackgroundBlob = vi.fn(async () => new Blob(["background"]));
-    const markup = renderToStaticMarkup(
-      SwiprSwipeDetailsDialog({
-        background: createBackground({
-          blob: new Blob(["background"], { type: "image/jpeg" }),
-        }),
-        backgrounds: [createBackground()],
-        editHref: "/dashboard/swipr?mode=edit&swipe=swipe_1",
-        isDownloading: true,
-        onClose,
-        onDelete,
-        onDownload,
-        onLoadBackgroundBlob,
-        swipe: createSwipe({
-          caption: "The fastest way to plan a launch.",
-          description: "A longer post description for the carousel.",
-          hashtags: ["#launch", "#founders"],
-          rationale: "The hook speaks to one urgent planning problem.",
-        }),
+    const stopPropagation = vi.fn();
+    const tree = SwiprSwipeDetailsDialog({
+      background: createBackground({
+        blob: new Blob(["background"], { type: "image/jpeg" }),
       }),
-    );
+      backgrounds: [createBackground()],
+      editHref: "/dashboard/swipr?mode=edit&swipe=swipe_1",
+      isDownloading: true,
+      onClose,
+      onDelete,
+      onDownload,
+      onLoadBackgroundBlob,
+      swipe: createSwipe({
+        caption: "The fastest way to plan a launch.",
+        description: "A longer post description for the carousel.",
+        hashtags: ["#launch", "#founders"],
+        rationale: "The hook speaks to one urgent planning problem.",
+      }),
+    });
+    const markup = renderToStaticMarkup(tree);
+    const divs = findElements(tree, (element) => element.type === "div");
 
-    mocks.iconButtons
-      .find((button) => button.label === "Close Swipe details")
-      ?.onClick?.();
+    (divs[0].props.onClick as () => void)();
+    (divs[1].props.onClick as (event: { stopPropagation: () => void }) => void)(
+      { stopPropagation },
+    );
     mocks.iconButtons
       .find((button) => button.label === "Previous carousel image")
       ?.onClick?.();
@@ -234,6 +264,7 @@ describe("SwiprSwipeDetailsDialog", () => {
     expect(mocks.swipeNavigationOptions?.isEnabled).toBe(true);
     expect(stateUpdaters.map((updater) => updater(0))).toEqual([1, 1, 1, 1]);
     expect(stateUpdaters.map((updater) => updater(1))).toEqual([0, 0, 0, 0]);
+    expect(stopPropagation).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
     expect(onDownload).toHaveBeenCalled();
     expect(onDelete).toHaveBeenCalled();

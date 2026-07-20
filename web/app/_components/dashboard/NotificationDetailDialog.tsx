@@ -2,7 +2,6 @@
 
 import { Trash2, X } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
-import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import type { DashboardNotification } from "@/lib/clipstitchr/types/DashboardNotification";
 
 type NotificationDetailDialogProps = {
@@ -17,12 +16,16 @@ export function NotificationDetailDialog({
   onDelete,
 }: NotificationDetailDialogProps) {
   return (
-    <DashboardDialogViewport onClose={onClose} notification>
+    <div
+      className="dashboard-dialog-viewport dashboard-dialog-viewport-notification"
+      onClick={onClose}
+    >
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="notification-detail-title"
-        className="w-full max-w-lg rounded-lg border border-border bg-white p-5 shadow-xl"
+        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-white p-5 shadow-xl sm:max-h-[calc(100dvh-3rem)]"
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -62,6 +65,6 @@ export function NotificationDetailDialog({
           </Button>
         </div>
       </section>
-    </DashboardDialogViewport>
+    </div>
   );
 }

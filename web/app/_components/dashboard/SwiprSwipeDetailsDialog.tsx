@@ -15,7 +15,6 @@ import { StitchSocialCaptionCopyButton } from "@/app/_components/stitches/Stitch
 import { SwiprStaticTextOverlayBox } from "@/app/_components/swipr/SwiprStaticTextOverlayBox";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { useHorizontalSwipeNavigation } from "@/lib/clipstitchr/hooks/useHorizontalSwipeNavigation";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
@@ -118,12 +117,16 @@ export function SwiprSwipeDetailsDialog({
   }, [activeBackground, activeBackgroundBlob, onLoadBackgroundBlob]);
 
   return (
-    <DashboardDialogViewport onClose={onClose}>
+    <div
+      className="dashboard-dialog-viewport"
+      onClick={onClose}
+    >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="swipr-swipe-details-title"
-        className="w-full max-w-3xl rounded-lg bg-white shadow-xl"
+        className="max-h-full w-full max-w-3xl overflow-x-hidden overflow-y-auto rounded-lg bg-white shadow-xl"
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
@@ -278,6 +281,6 @@ export function SwiprSwipeDetailsDialog({
           </div>
         </div>
       </div>
-    </DashboardDialogViewport>
+    </div>
   );
 }

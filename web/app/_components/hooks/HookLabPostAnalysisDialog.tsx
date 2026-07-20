@@ -2,7 +2,6 @@
 
 import { ExternalLink, X } from "lucide-react";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 import { getHookLabPostTitle } from "@/lib/clipstitchr/utils/getHookLabPostTitle";
 import { HookLabPostMetricRow } from "./HookLabPostMetricRow";
@@ -23,11 +22,18 @@ export function HookLabPostAnalysisDialog({
   const { analysis } = post;
 
   return (
-    <DashboardDialogViewport onClose={onClose}>
+    <div
+      className="dashboard-dialog-viewport"
+      onMouseDown={(event) => {
+        if (event.currentTarget === event.target) {
+          onClose();
+        }
+      }}
+    >
       <article
         aria-labelledby="hook-lab-analysis-title"
         aria-modal="true"
-        className="w-full max-w-5xl rounded-lg bg-white shadow-xl"
+        className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl sm:max-h-[calc(100dvh-3rem)]"
         role="dialog"
       >
         <header className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
@@ -49,7 +55,7 @@ export function HookLabPostAnalysisDialog({
           />
         </header>
 
-        <div className="grid min-h-0 gap-8 p-4 sm:p-5">
+        <div className="grid min-h-0 gap-8 overflow-y-auto p-4 sm:p-5">
           <section aria-labelledby="hook-lab-report-overview">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <h3
@@ -196,6 +202,6 @@ export function HookLabPostAnalysisDialog({
           </section>
         </div>
       </article>
-    </DashboardDialogViewport>
+    </div>
   );
 }

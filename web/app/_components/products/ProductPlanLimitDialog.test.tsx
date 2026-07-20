@@ -18,11 +18,7 @@ Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 let container: HTMLDivElement;
 let root: Root;
 
-let originalScrollTo: typeof HTMLElement.prototype.scrollTo;
-
 beforeEach(() => {
-  originalScrollTo = HTMLElement.prototype.scrollTo;
-  HTMLElement.prototype.scrollTo = vi.fn() as typeof HTMLElement.prototype.scrollTo;
   container = document.createElement("div");
   document.body.append(container);
   root = createRoot(container);
@@ -31,7 +27,6 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   document.body.replaceChildren();
-  HTMLElement.prototype.scrollTo = originalScrollTo;
 });
 
 describe("ProductPlanLimitDialog", () => {

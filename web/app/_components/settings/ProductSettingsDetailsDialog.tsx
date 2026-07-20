@@ -2,7 +2,6 @@
 
 import { X } from "lucide-react";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { getCliprHookStyleName } from "@/lib/clipstitchr/utils/getCliprHookStyleName";
@@ -50,12 +49,16 @@ export function ProductSettingsDetailsDialog({
     .filter((item) => item.values.length);
 
   return (
-    <DashboardDialogViewport onClose={onClose}>
+    <div
+      className="dashboard-dialog-viewport"
+      onClick={onClose}
+    >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-details-dialog-title"
-        className="w-full max-w-[calc(100vw-1rem)] min-w-0 rounded-lg bg-white shadow-xl sm:max-w-3xl"
+        className="max-h-full w-full max-w-[calc(100vw-1rem)] min-w-0 overflow-x-hidden overflow-y-auto rounded-lg bg-white shadow-xl sm:max-w-3xl"
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="flex min-w-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
@@ -151,6 +154,6 @@ export function ProductSettingsDetailsDialog({
           </div>
         </div>
       </div>
-    </DashboardDialogViewport>
+    </div>
   );
 }

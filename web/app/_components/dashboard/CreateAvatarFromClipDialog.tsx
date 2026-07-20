@@ -4,7 +4,6 @@ import { UserRound, X } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/app/_components/ui/Button";
-import { DashboardDialogViewport } from "@/app/_components/ui/DashboardDialogViewport";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { avatarLightingOptions } from "@/lib/clipstitchr/constants/avatarLightingOptions";
@@ -81,12 +80,16 @@ export function CreateAvatarFromClipDialog({
   };
 
   return (
-    <DashboardDialogViewport onClose={isGenerating ? undefined : onClose}>
+    <div
+      className="dashboard-dialog-viewport"
+      onClick={isGenerating ? undefined : onClose}
+    >
       <form
         aria-labelledby="create-avatar-from-clip-title"
-        className="w-full max-w-4xl rounded-lg bg-white shadow-xl"
+        className="max-h-full w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-xl"
         role="dialog"
         aria-modal="true"
+        onClick={(event) => event.stopPropagation()}
         onSubmit={handleSubmit}
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-5">
@@ -274,6 +277,6 @@ export function CreateAvatarFromClipDialog({
           </div>
         </div>
       </form>
-    </DashboardDialogViewport>
+    </div>
   );
 }
