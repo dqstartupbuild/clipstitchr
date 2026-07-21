@@ -366,7 +366,7 @@ Help a user turn on daily drafts and choose which tools ClipStitchr should use a
 
 ## Scenario 6: I Want to Research a Public Social Post
 
-Paste one public TikTok or Instagram video URL into Hook Lab, wait for the saved post to finish analyzing, then open its report. Confirm the dialog shows public metrics, a full-video timestamped play-by-play, and a platform-performance explanation.
+Paste one public TikTok or Instagram video or slideshow URL into Hook Lab, wait for the saved post to finish analyzing, then open its report. Confirm the dialog shows the caption, ordered on-screen text, public metrics, a complete timestamped play-by-play, and a platform-performance explanation. Open the Hook Library tab, search for one phrase, filter by category, move to the next page, and copy one result.
 
 ## Recommended Demo Order
 

@@ -26,6 +26,7 @@ function readScore(value: unknown) {
 export function parseHookLabPostAnalysis(
   outputText: string,
   durationSeconds: number,
+  sourceText?: string,
 ): HookLabPostAnalysis {
   const jsonStart = outputText.indexOf("{");
   const jsonEnd = outputText.lastIndexOf("}");
@@ -102,11 +103,15 @@ export function parseHookLabPostAnalysis(
 
   return {
     callToAction: readString(parsed.callToAction, "None identified."),
+    caption:
+      sourceText?.trim() ||
+      readString(parsed.caption, "No caption was available."),
     contentSummary: readString(
       parsed.contentSummary,
       "No summary was returned.",
     ),
     format: readString(parsed.format, "Format not identified."),
+    onScreenText: readStringArray(parsed.onScreenText),
     openingHook: readString(
       parsed.openingHook,
       "Opening hook not identified.",

@@ -40,7 +40,7 @@ describe("readCreateHookLabPostRequest", () => {
         createRequest("https://www.youtube.com/watch?v=123"),
       ),
     ).rejects.toThrow(
-      "Use a public TikTok video or Instagram video post link.",
+      "Use a public TikTok or Instagram video or slideshow post link.",
     );
   });
 });

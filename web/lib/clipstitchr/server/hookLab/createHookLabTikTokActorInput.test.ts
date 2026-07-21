@@ -14,7 +14,18 @@ describe("createHookLabTikTokActorInput", () => {
           "https://www.tiktok.com/@creator/video/7412345678901234567",
         ],
         resultsPerPage: 1,
+        shouldDownloadSlideshowImages: true,
         shouldDownloadVideos: true,
+      }),
+    );
+  });
+
+  it("accepts a mobile short share URL", () => {
+    expect(
+      createHookLabTikTokActorInput("https://vt.tiktok.com/ZSHared123/?_r=1"),
+    ).toEqual(
+      expect.objectContaining({
+        postURLs: ["https://vt.tiktok.com/ZSHared123/"],
       }),
     );
   });

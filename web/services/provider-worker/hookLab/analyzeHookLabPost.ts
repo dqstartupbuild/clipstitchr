@@ -1,5 +1,4 @@
 import { deleteHookLabTemporaryVideo } from "@/lib/clipstitchr/server/hookLab/deleteHookLabTemporaryVideo";
-import { fetchHookLabRemoteVideo } from "@/lib/clipstitchr/server/hookLab/fetchHookLabRemoteVideo";
 import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
@@ -14,9 +13,9 @@ import { loadHookLabPostSource } from "./loadHookLabPostSource";
 import { markHookLabPostAnalysisJobStatus } from "./markHookLabPostAnalysisJobStatus";
 import type { ProcessHookLabPostAnalysisOptions } from "./ProcessHookLabPostAnalysisOptions";
 import { recordHookLabPostAnalysisPrediction } from "./recordHookLabPostAnalysisPrediction";
+import { prepareHookLabSourceMedia } from "./prepareHookLabSourceMedia";
 import { saveHookLabTemporarySourceVideo } from "./saveHookLabTemporarySourceVideo";
 import { saveHookLabThumbnail } from "./saveHookLabThumbnail";
-import { writeHookLabTemporaryVideo } from "./writeHookLabTemporaryVideo";
 
 export async function analyzeHookLabPost({
   client,
@@ -35,10 +34,6 @@ export async function analyzeHookLabPost({
     return null;
   }
 
-  if (!source.temporaryVideoUrl) {
-    throw new Error(`${source.platform} does not expose a usable source video.`);
-  }
-
   await markHookLabPostAnalysisJobStatus({
     client,
     job,
@@ -48,24 +43,23 @@ export async function analyzeHookLabPost({
     status: "running",
   });
 
-  const fetchedVideo = await fetchHookLabRemoteVideo({
-    maxBytes: getHookLabImportedVideoMaxBytes(),
-    timeoutMs: 60_000,
-    url: source.temporaryVideoUrl,
-  });
-  const temporaryVideoPath = await writeHookLabTemporaryVideo(
-    fetchedVideo.bytes,
+  const preparedMedia = await prepareHookLabSourceMedia(
+    source,
+    getHookLabImportedVideoMaxBytes(),
   );
+  const temporaryVideoPath = preparedMedia.filePath;
   let temporaryThumbnailPath: string | undefined;
   let temporaryVideoObject: R2ObjectReference | undefined;
 
   try {
-    const durationSeconds = await getHookLabVideoDuration(temporaryVideoPath);
+    const durationSeconds =
+      preparedMedia.durationSeconds ??
+      (await getHookLabVideoDuration(temporaryVideoPath));
 
     assertHookLabVideoDuration(durationSeconds);
     temporaryVideoObject = await saveHookLabTemporarySourceVideo({
-      body: fetchedVideo.bytes,
-      contentType: fetchedVideo.contentType,
+      body: preparedMedia.body,
+      contentType: preparedMedia.contentType,
       ownerId: job.ownerId,
       recordId: job.id,
     });
@@ -76,6 +70,7 @@ export async function analyzeHookLabPost({
       createHookLabPostAnalysis({
         durationSeconds,
         metrics: source.metrics,
+        mediaKind: source.mediaKind,
         onPredictionCreated: (prediction) =>
           recordHookLabPostAnalysisPrediction({
             client,
@@ -120,6 +115,7 @@ export async function analyzeHookLabPost({
       authorUsername: source.authorUsername,
       canonicalUrl: source.canonicalUrl,
       durationSeconds,
+      mediaKind: source.mediaKind,
       metrics: source.metrics,
       providerDatasetId: post.providerDatasetId,
       providerRunId: post.providerRunId,

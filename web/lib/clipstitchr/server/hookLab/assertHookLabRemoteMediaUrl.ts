@@ -9,13 +9,14 @@ export async function assertHookLabRemoteMediaUrl(
   input: string,
   resolveHostname: ResolveHookLabHostname = (hostname) =>
     lookup(hostname, { all: true, verbatim: true }),
+  mediaLabel = "video",
 ) {
   let url: URL;
 
   try {
     url = new URL(input);
   } catch {
-    throw new Error("The imported video URL is invalid.");
+    throw new Error(`The imported ${mediaLabel} URL is invalid.`);
   }
 
   if (
@@ -24,7 +25,7 @@ export async function assertHookLabRemoteMediaUrl(
     url.password ||
     (url.port && url.port !== "443")
   ) {
-    throw new Error("The imported video must use a secure public URL.");
+    throw new Error(`The imported ${mediaLabel} must use a secure public URL.`);
   }
 
   const hostname = url.hostname
@@ -42,7 +43,7 @@ export async function assertHookLabRemoteMediaUrl(
     hostname.endsWith(".internal") ||
     hostname === "instance-data"
   ) {
-    throw new Error("The imported video must use a public host.");
+    throw new Error(`The imported ${mediaLabel} must use a public host.`);
   }
 
   const literalIpVersion = hostname.includes(":")
@@ -58,7 +59,7 @@ export async function assertHookLabRemoteMediaUrl(
     addresses.length === 0 ||
     addresses.some(({ address }) => !getHookLabIpAddressIsPublic(address))
   ) {
-    throw new Error("The imported video must resolve to a public host.");
+    throw new Error(`The imported ${mediaLabel} must resolve to a public host.`);
   }
 
   return url;

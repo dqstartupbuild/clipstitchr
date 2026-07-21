@@ -166,7 +166,7 @@ shared text.
 | 12 | The Library includes Avatars and Pexels assets | ✅ | ✅ |
 | 13 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
 | 14 | Demo upload and picker surfaces can filter demos by linked product | ✅ | ✅ |
-| 15 | Hook Lab saves and analyzes public TikTok and Instagram video posts | ✅ | ✅ |
+| 15 | Hook Lab saves and analyzes public TikTok and Instagram video and slideshow posts | ✅ | ✅ |
 
 ### 4.5 AI-Assisted Content Supply (Secondary)
 
@@ -212,18 +212,21 @@ demand in the browser.
 
 ### 4.6 Hook Lab Post Analysis
 
-Hook Lab accepts one public TikTok or Instagram video URL, saves its public post
-details and engagement counts, and analyzes the complete video and audio.
+Hook Lab accepts one public TikTok or Instagram video or slideshow URL, saves
+its public post details and engagement counts, and analyzes the complete post.
+Photo slideshows are rendered as three-second beats per slide before analysis.
 
 | # | Feature | Current | Prod |
 |---|---------|---------|------|
 | 1 | One social-post URL composer at `/dashboard/hooks` | ✅ | ✅ |
-| 2 | Public TikTok and Instagram video-post ingestion through Apify | ✅ | ✅ |
+| 2 | Public TikTok and Instagram video/slideshow ingestion through Apify | ✅ | ✅ |
 | 3 | Durable post records with public metadata, metrics, status, and analysis | ✅ | ✅ |
 | 4 | Gemini full-video analysis with a timestamped play-by-play | ✅ | ✅ |
 | 5 | Platform-performance explanation grounded in public engagement counts | ✅ | ✅ |
 | 6 | A dialog containing the complete saved report | ✅ | ✅ |
 | 7 | Retry and delete controls | ✅ | ✅ |
+| 8 | Caption and ordered on-screen text saved as dedicated report fields | ✅ | ✅ |
+| 9 | Searchable, category-filtered Hook Library with 24-item pagination | ✅ | ✅ |
 
 Production social import requires server-side user and global limits, an Apify
 cost cap, SSRF-safe media fetching, a video-download-enabled TikTok Actor, and
@@ -287,7 +290,7 @@ selected slides.
 /                → Landing page (marketing + "Start free" CTA)
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
-/dashboard/hooks → Authenticated Hook Lab for public TikTok and Instagram post analysis
+/dashboard/hooks → Authenticated Hook Lab for public TikTok/Instagram post analysis and the paginated Hook Library
 /dashboard/clipr → Authenticated Clipr engagement clip generator
 /dashboard/swipr → Authenticated TikTok carousel image generator
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos with UGC clips or finished stitches

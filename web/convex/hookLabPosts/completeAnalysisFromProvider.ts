@@ -3,6 +3,7 @@ import { assertProviderWorkerSecret } from "../auth/assertProviderWorkerSecret";
 import { mutation } from "../_generated/server";
 import { hookLabPostAnalysisValidator } from "../validators/hookLabPostAnalysis";
 import { hookLabPostMetricsValidator } from "../validators/hookLabPostMetrics";
+import { hookLabPostMediaKindValidator } from "../validators/hookLabPostMediaKind";
 import { r2ObjectValidator } from "../validators/r2Object";
 import { commitUsageReservationForOwner } from "../usage/commitUsageReservation";
 
@@ -19,6 +20,7 @@ export const completeAnalysisFromProvider = mutation({
     durationSeconds: v.number(),
     id: v.string(),
     metrics: hookLabPostMetricsValidator,
+    mediaKind: hookLabPostMediaKindValidator,
     ownerId: v.string(),
     promptVersion: v.string(),
     providerDatasetId: v.optional(v.string()),
@@ -57,6 +59,7 @@ export const completeAnalysisFromProvider = mutation({
       failureCode: undefined,
       failureMessage: undefined,
       metrics: args.metrics,
+      mediaKind: args.mediaKind,
       promptVersion: args.promptVersion.slice(0, 80),
       providerDatasetId: args.providerDatasetId?.slice(0, 180),
       providerPredictionId: args.providerPredictionId.slice(0, 180),

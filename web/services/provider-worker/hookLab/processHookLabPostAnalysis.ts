@@ -55,6 +55,7 @@ export async function processHookLabPostAnalysis({
         authorUsername: result.authorUsername,
         canonicalUrl: result.canonicalUrl,
         durationSeconds: result.durationSeconds,
+        mediaKind: result.mediaKind,
         metrics: result.metrics,
         promptVersion: HOOK_LAB_ANALYSIS_PROMPT_VERSION,
         providerDatasetId: result.providerDatasetId,

@@ -7,8 +7,10 @@ import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 const post: HookLabPost = {
   analysis: {
     callToAction: "Save the post for later.",
+    caption: "A quick morning workflow",
     contentSummary: "A creator demonstrates a quick morning workflow.",
     format: "Talking head followed by a screen demonstration.",
+    onScreenText: ["Stop doing this manually", "Three quick steps"],
     openingHook: "The creator opens with a direct problem statement.",
     performance: {
       confidence: "Medium because only public engagement counts are available.",
@@ -71,6 +73,9 @@ describe("HookLabPostAnalysisDialog", () => {
     expect(markup).toContain("min-h-0 gap-8 overflow-y-auto");
     expect(markup).not.toContain("--text-primary");
     expect(markup).toContain("Platform numbers");
+    expect(markup).toContain("Words used in the post");
+    expect(markup).toContain("A quick morning workflow");
+    expect(markup).toContain("Three quick steps");
     expect(markup).toContain("Why it may have performed this way");
     expect(markup).toContain("Full play-by-play");
     expect(markup).toContain("0:00-0:03");

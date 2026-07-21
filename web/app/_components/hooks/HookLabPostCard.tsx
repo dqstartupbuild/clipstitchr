@@ -35,6 +35,7 @@ export function HookLabPostCard({
             </p>
             <p className="mt-1 text-xs capitalize text-text-tertiary">
               {post.platform}
+              {post.mediaKind === "slideshow" ? " slideshow" : ""}
             </p>
           </div>
           <a

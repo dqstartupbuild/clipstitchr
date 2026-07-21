@@ -41,7 +41,7 @@ export function HookLabPostGrid({
       <div className="rounded-xl bg-[#e3ebe6] px-5 py-12 text-center">
         <h2 className="text-xl font-bold text-[#18201c]">No saved posts yet</h2>
         <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#56625c]">
-          Paste your first public TikTok or Instagram video above. Its full
+          Paste your first public TikTok or Instagram post above. Its full
           analysis will stay here.
         </p>
       </div>

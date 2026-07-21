@@ -5,6 +5,7 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 import { getHookLabPostTitle } from "@/lib/clipstitchr/utils/getHookLabPostTitle";
 import { HookLabPostMetricRow } from "./HookLabPostMetricRow";
+import { HookLabPostCopySummary } from "./HookLabPostCopySummary";
 import { HookLabPostScoreRow } from "./HookLabPostScoreRow";
 import { HookLabPostTimeline } from "./HookLabPostTimeline";
 
@@ -104,6 +105,8 @@ export function HookLabPostAnalysisDialog({
               </div>
             </dl>
           </section>
+
+          <HookLabPostCopySummary post={post} />
 
           <section aria-labelledby="hook-lab-report-metrics">
             <h3

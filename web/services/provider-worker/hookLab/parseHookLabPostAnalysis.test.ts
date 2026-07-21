@@ -4,8 +4,10 @@ import { parseHookLabPostAnalysis } from "./parseHookLabPostAnalysis";
 function createReport(timeline: unknown[]) {
   return JSON.stringify({
     callToAction: "Follow for the next part.",
+    caption: "The original caption",
     contentSummary: "A creator names a problem, demonstrates it, then closes.",
     format: "Direct-to-camera with a product demonstration.",
+    onScreenText: ["Three steps", "Try this next"],
     openingHook: "The creator starts with a clear problem.",
     performance: {
       confidence: "The video is observed; retention is inferred.",
@@ -50,6 +52,34 @@ describe("parseHookLabPostAnalysis", () => {
 
     expect(analysis.timeline).toHaveLength(3);
     expect(analysis.timeline.at(-1)?.endSeconds).toBe(10);
+    expect(analysis.caption).toBe("The original caption");
+    expect(analysis.onScreenText).toEqual(["Three steps", "Try this next"]);
+  });
+
+  it("keeps the source caption when the model omits its copy field", () => {
+    const report = JSON.parse(
+      createReport([
+        { startSeconds: 0, endSeconds: 10, visual: "The full post." },
+      ]),
+    ) as Record<string, unknown>;
+
+    delete report.caption;
+
+    expect(
+      parseHookLabPostAnalysis(JSON.stringify(report), 10, "Source caption"),
+    ).toEqual(expect.objectContaining({ caption: "Source caption" }));
+  });
+
+  it("treats the imported caption as authoritative", () => {
+    expect(
+      parseHookLabPostAnalysis(
+        createReport([
+          { startSeconds: 0, endSeconds: 10, visual: "The full post." },
+        ]),
+        10,
+        "Caption copied from the post",
+      ).caption,
+    ).toBe("Caption copied from the post");
   });
 
   it("rejects a report that skips the beginning or ending", () => {

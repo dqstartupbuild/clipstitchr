@@ -1,7 +1,8 @@
 import { getHookLabSourcePlatform } from "@/lib/clipstitchr/server/hookLab/getHookLabSourcePlatform";
+import { extractHookLabSourceUrl } from "@/lib/clipstitchr/server/hookLab/extractHookLabSourceUrl";
 
 export function canonicalizeHookLabSourceUrl(input: string) {
-  const trimmedInput = input.trim();
+  const trimmedInput = extractHookLabSourceUrl(input);
   const platform = getHookLabSourcePlatform(trimmedInput);
 
   if (!platform) {
@@ -12,10 +13,24 @@ export function canonicalizeHookLabSourceUrl(input: string) {
   const pathSegments = url.pathname.split("/").filter(Boolean);
 
   if (platform === "tiktok") {
-    return `https://www.tiktok.com/${pathSegments[0].toLowerCase()}/video/${pathSegments[2]}`;
+    const hostname = url.hostname.toLowerCase();
+
+    if (hostname === "vt.tiktok.com" || hostname === "vm.tiktok.com") {
+      return `https://${hostname}/${pathSegments[0]}/`;
+    }
+
+    if (pathSegments[0] === "t") {
+      return `https://www.tiktok.com/t/${pathSegments[1]}/`;
+    }
+
+    return `https://www.tiktok.com/${pathSegments[0].toLowerCase()}/${pathSegments[1]}/${pathSegments[2]}`;
   }
 
-  const postKind = pathSegments[0] === "p" ? "p" : "reel";
+  if (pathSegments[0] === "share") {
+    return `https://www.instagram.com/${pathSegments.join("/")}/`;
+  }
+
+  const postKind = pathSegments[0] === "p" ? "p" : pathSegments[0] === "tv" ? "tv" : "reel";
 
   return `https://www.instagram.com/${postKind}/${pathSegments[1]}/`;
 }

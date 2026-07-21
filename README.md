@@ -106,10 +106,11 @@ Stitchr also supports:
 
 ### Hook Lab
 
-Hook Lab saves public TikTok and Instagram video posts for research. It records
-the public post details and engagement counts, analyzes the full video and
-audio, and provides a timestamped play-by-play plus a plain-language performance
-review in one dialog.
+Hook Lab saves public TikTok and Instagram videos and slideshows for research.
+It records the public post details and engagement counts, keeps the caption and
+on-screen text in dedicated report fields, and provides a complete timestamped
+play-by-play plus a plain-language performance review. A second tab exposes the
+1,159-template Hook Library with search, category filters, and pagination.
 
 ### Quick Edit
 

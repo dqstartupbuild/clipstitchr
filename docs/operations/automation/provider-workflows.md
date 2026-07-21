@@ -235,7 +235,7 @@ documentation.
 
 Hook Lab uses one provider job type: `hook-lab-post-analysis`.
 
-The create route validates a public TikTok or Instagram video URL, saves a
+The create route validates a public TikTok or Instagram video or slideshow URL, saves a
 `hookLabPosts` record, and creates durable provider work. The worker starts an
 Apify Actor asynchronously with one requested result and a bounded maximum
 charge. It saves the Actor run and dataset IDs, releases the job lock while the
@@ -252,12 +252,15 @@ than repeating provider calls that already completed.
 Platform adapters isolate Actor-specific output. The imported media fetcher
 accepts only validated HTTPS media URLs from adapter output, revalidates DNS and
 public-address status at every redirect, streams with a byte cap, verifies
-video content type and duration, and adds bearer authorization only for an exact
+video or image content type and video duration, and adds bearer authorization only for an exact
 Apify key-value-store record URL. Headers are rebuilt after each redirect, so
 the token is never forwarded to a media CDN or another host. The worker stages
 the validated bytes under a MIME-named, owner-private temporary R2 key and gives
 Gemini a short-lived signed URL. This avoids Replicate file indirection that can
-hide the video's MIME type. The temporary R2 object and worker-local media are
+hide the video's MIME type. TikTok photo posts and Instagram image/carousel
+posts are capped at 20 images, rendered with ffmpeg as 1080x1920 three-second
+slide beats, and then use the same full-runtime Gemini path as source videos.
+The temporary R2 object and worker-local media are
 removed in `finally`; only an owner-private thumbnail may be retained.
 Temporary R2 deletion is retried three times with a 10-second abort timeout per
 attempt. If cleanup still
@@ -275,10 +278,19 @@ the ID again. Permanent MIME/input and terminal import failures bypass identical
 immediate retries; transient network, provider-availability, and rate-limit
 failures keep the bounded retry path.
 
-Hook Lab enables `shouldDownloadVideos` for the default Clockworks TikTok Actor.
-A capped one-item integration run verified that this input returns a temporary
-video URL. Actor output stays behind the platform adapter, and a post fails
-safely if a future Actor version omits usable media.
+Hook Lab enables `shouldDownloadVideos` and `shouldDownloadSlideshowImages` for
+the default Clockworks TikTok Actor. Capped one-item integration runs verified
+the video-download shape, and Clockworks documents `isSlideshow` plus
+`slideshowImageLinks` for photo posts. The Instagram Actor documents `images`,
+`carouselImages`, and `childPosts` for image sets. Actor output stays behind the
+platform adapter, and a post fails safely if a future Actor version omits usable
+media.
+
+YouTube ingestion is intentionally not enabled. A July 21, 2026 test of
+`eunit/youtube-video-downloader` completed without a dataset item under the
+existing $0.50 run cap, while `utils/youtube-video-downloader` timed out on a
+19-second public video. The older Streamers downloader requires separate cloud
+storage credentials. None met the current reliable, bounded, one-Actor contract.
 
 ## Clipr Durable Target
 

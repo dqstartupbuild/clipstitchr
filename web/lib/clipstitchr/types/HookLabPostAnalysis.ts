@@ -3,8 +3,10 @@ import type { HookLabPostTimelineEntry } from "@/lib/clipstitchr/types/HookLabPo
 
 export type HookLabPostAnalysis = {
   callToAction: string;
+  caption?: string;
   contentSummary: string;
   format: string;
+  onScreenText?: string[];
   openingHook: string;
   performance: HookLabPostPerformanceAnalysis;
   timeline: HookLabPostTimelineEntry[];

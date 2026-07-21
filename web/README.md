@@ -94,7 +94,7 @@ The app processes media in the browser and stores durable data in Convex and Clo
 │   ├── page.tsx                 # Landing page
 │   ├── dashboard/               # Authenticated workspace routes
 │   │   ├── library/             # Library route with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Pexels tabs
-│   │   ├── hooks/               # TikTok and Instagram post analysis
+│   │   ├── hooks/               # TikTok/Instagram analysis and hook library
 │   │   ├── uploads/             # Compatibility redirect to library
 │   │   ├── avatars/             # Compatibility redirect to library?tab=avatars
 │   │   ├── stitchr/             # Stitchr video stitching route

@@ -4,6 +4,7 @@ import { normalizeHookLabSourceCreatedAt } from "@/lib/clipstitchr/server/hookLa
 import { normalizeHookLabAuthorProfileUrl } from "@/lib/clipstitchr/server/hookLab/normalizeHookLabAuthorProfileUrl";
 import { readHookLabSourceString } from "@/lib/clipstitchr/server/hookLab/readHookLabSourceString";
 import { readHookLabSourceNumber } from "@/lib/clipstitchr/server/hookLab/readHookLabSourceNumber";
+import { readHookLabSourceStringArray } from "@/lib/clipstitchr/server/hookLab/readHookLabSourceStringArray";
 import type { HookLabImportedPost } from "@/lib/clipstitchr/types/HookLabImportedPost";
 
 export function createHookLabTikTokSource(
@@ -39,7 +40,15 @@ export function createHookLabTikTokSource(
   }
   const sourcePostId =
     readHookLabSourceString(item, ["id", "videoId", "awemeId"]) ??
-    canonicalUrl.match(/\/video\/(\d+)$/)?.[1];
+    canonicalUrl.match(/\/(?:video|photo)\/(\d+)$/)?.[1];
+  const downloadedImageUrls = readHookLabSourceStringArray(item, [
+    "slideshowImageLinks.downloadLink",
+  ]);
+  const temporaryImageUrls = downloadedImageUrls.length
+    ? downloadedImageUrls
+    : readHookLabSourceStringArray(item, [
+        "slideshowImageLinks.tiktokLink",
+      ]);
 
   return {
     authorName: readHookLabSourceString(item, [
@@ -63,6 +72,7 @@ export function createHookLabTikTokSource(
       "author.username",
     ]),
     canonicalUrl,
+    mediaKind: temporaryImageUrls.length ? "slideshow" : "video",
     metrics: {
       commentCount: readHookLabSourceNumber(item, [
         "commentCount",
@@ -100,19 +110,24 @@ export function createHookLabTikTokSource(
     ),
     sourcePostId,
     sourceText: readHookLabSourceString(item, ["text", "description", "caption"]),
-    temporaryVideoUrl: readHookLabSourceString(item, [
-      "videoUrl",
-      "downloadUrl",
-      "mediaUrls",
-      "videoMeta.downloadAddr",
-      "videoMeta.downloadUrl",
-      "videoMeta.playAddr",
-    ]),
+    temporaryImageUrls: temporaryImageUrls.length
+      ? temporaryImageUrls
+      : undefined,
+    temporaryVideoUrl: temporaryImageUrls.length
+      ? undefined
+      : readHookLabSourceString(item, [
+          "videoUrl",
+          "downloadUrl",
+          "mediaUrls",
+          "videoMeta.downloadAddr",
+          "videoMeta.downloadUrl",
+          "videoMeta.playAddr",
+        ]),
     thumbnailUrl: readHookLabSourceString(item, [
       "videoMeta.coverUrl",
       "videoMeta.originCoverUrl",
       "coverUrl",
       "thumbnailUrl",
-    ]),
+    ]) ?? temporaryImageUrls[0],
   };
 }

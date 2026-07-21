@@ -4,6 +4,7 @@ import { normalizeHookLabSourceCreatedAt } from "@/lib/clipstitchr/server/hookLa
 import { normalizeHookLabAuthorProfileUrl } from "@/lib/clipstitchr/server/hookLab/normalizeHookLabAuthorProfileUrl";
 import { readHookLabSourceString } from "@/lib/clipstitchr/server/hookLab/readHookLabSourceString";
 import { readHookLabSourceNumber } from "@/lib/clipstitchr/server/hookLab/readHookLabSourceNumber";
+import { readHookLabSourceStringArray } from "@/lib/clipstitchr/server/hookLab/readHookLabSourceStringArray";
 import type { HookLabImportedPost } from "@/lib/clipstitchr/types/HookLabImportedPost";
 
 export function createHookLabInstagramSource(
@@ -11,14 +12,8 @@ export function createHookLabInstagramSource(
   requestedUrl: string,
 ): HookLabImportedPost {
   const error = readHookLabSourceString(item, ["error", "errorDescription"]);
-  const sourceType = readHookLabSourceString(item, ["type", "productType"]);
-
   if (error) {
     throw new Error("Instagram could not return that public post.");
-  }
-
-  if (sourceType && /sidecar|carousel|image/i.test(sourceType)) {
-    throw new Error("Hook Lab currently supports Instagram video posts and reels.");
   }
 
   const actorUrl = readHookLabSourceString(item, ["url", "inputUrl"]);
@@ -36,6 +31,24 @@ export function createHookLabInstagramSource(
     if (getHookLabSourcePlatform(canonicalUrl) !== "instagram") {
       throw new Error("Paste a public Instagram post link.");
     }
+  }
+  const temporaryVideoUrl = readHookLabSourceString(item, [
+    "videoUrl",
+    "video_url",
+    "downloadUrl",
+  ]);
+  const temporaryImageUrls = temporaryVideoUrl
+    ? []
+    : readHookLabSourceStringArray(item, [
+        "images",
+        "carouselImages",
+        "childPosts.displayUrl",
+        "childPosts.imageUrl",
+        "displayUrl",
+      ]);
+
+  if (!temporaryVideoUrl && !temporaryImageUrls.length) {
+    throw new Error("Instagram did not expose usable post media.");
   }
 
   return {
@@ -57,6 +70,7 @@ export function createHookLabInstagramSource(
       "username",
     ]),
     canonicalUrl,
+    mediaKind: temporaryVideoUrl ? "video" : "slideshow",
     metrics: {
       commentCount: readHookLabSourceNumber(item, [
         "commentsCount",
@@ -89,11 +103,10 @@ export function createHookLabInstagramSource(
     ),
     sourcePostId: readHookLabSourceString(item, ["id", "shortCode", "shortcode"]),
     sourceText: readHookLabSourceString(item, ["caption", "text", "description"]),
-    temporaryVideoUrl: readHookLabSourceString(item, [
-      "videoUrl",
-      "video_url",
-      "downloadUrl",
-    ]),
+    temporaryImageUrls: temporaryImageUrls.length
+      ? temporaryImageUrls
+      : undefined,
+    temporaryVideoUrl,
     thumbnailUrl: readHookLabSourceString(item, [
       "displayUrl",
       "thumbnailUrl",

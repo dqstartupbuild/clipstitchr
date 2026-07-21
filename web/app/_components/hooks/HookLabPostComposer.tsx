@@ -37,8 +37,8 @@ export function HookLabPostComposer({
         Add a public post
       </label>
       <p className="mt-1 max-w-2xl text-sm leading-6 text-[#b9c2be]">
-        Paste one TikTok video or Instagram video post. Hook Lab will save it,
-        watch the full video, and explain what happens.
+        Paste a TikTok or Instagram video, Reel, or slideshow. Mobile share
+        links work too. Hook Lab will save it and explain what happens.
       </p>
       <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
         <input
@@ -47,8 +47,8 @@ export function HookLabPostComposer({
           className="min-h-12 w-full rounded-lg border border-[#46504b] bg-[#222825] px-4 text-base text-white outline-none placeholder:text-[#89928e] focus:border-[#d7e2dc] focus:ring-2 focus:ring-white/15"
           disabled={isCreating}
           inputMode="url"
-          placeholder="https://www.tiktok.com/@creator/video/..."
-          type="url"
+          placeholder="Paste a TikTok or Instagram link"
+          type="text"
           value={url}
           onChange={(event) => setUrl(event.currentTarget.value)}
         />

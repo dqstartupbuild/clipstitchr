@@ -31,6 +31,7 @@ describe("createHookLabTikTokSource", () => {
       authorProfileUrl: "https://www.tiktok.com/@creator",
       authorUsername: "creator",
       canonicalUrl: "https://www.tiktok.com/@creator/video/7412345678901234567",
+      mediaKind: "video",
       metrics: {
         commentCount: 210,
         likeCount: 12_400,
@@ -42,9 +43,55 @@ describe("createHookLabTikTokSource", () => {
       sourceCreatedAt: "2024-07-01T00:00:00.000Z",
       sourcePostId: "7412345678901234567",
       sourceText: "The hook text",
+      temporaryImageUrls: undefined,
       temporaryVideoUrl: undefined,
       thumbnailUrl: "https://cdn.example.com/cover.jpg",
     });
+  });
+
+  it("returns downloaded slideshow images for a photo post", () => {
+    const source = createHookLabTikTokSource(
+      {
+        id: "7412345678901234567",
+        isSlideshow: true,
+        slideshowImageLinks: [
+          {
+            downloadLink: "https://cdn.example.com/slide-1.jpg",
+            tiktokLink: "https://tiktok.example.com/slide-1.jpg",
+          },
+          {
+            downloadLink: "https://cdn.example.com/slide-2.jpg",
+            tiktokLink: "https://tiktok.example.com/slide-2.jpg",
+          },
+        ],
+        videoUrl: "https://cdn.example.com/not-the-slideshow.mp4",
+        webVideoUrl:
+          "https://www.tiktok.com/@creator/photo/7412345678901234567",
+      },
+      "https://www.tiktok.com/@creator/photo/7412345678901234567",
+    );
+
+    expect(source.mediaKind).toBe("slideshow");
+    expect(source.temporaryImageUrls).toEqual([
+      "https://cdn.example.com/slide-1.jpg",
+      "https://cdn.example.com/slide-2.jpg",
+    ]);
+    expect(source.temporaryVideoUrl).toBeUndefined();
+  });
+
+  it("falls back to TikTok image links when downloads are unavailable", () => {
+    const source = createHookLabTikTokSource(
+      {
+        slideshowImageLinks: [
+          { tiktokLink: "https://tiktok.example.com/slide-1.jpg" },
+        ],
+      },
+      "https://www.tiktok.com/@creator/photo/7412345678901234567",
+    );
+
+    expect(source.temporaryImageUrls).toEqual([
+      "https://tiktok.example.com/slide-1.jpg",
+    ]);
   });
 
   it("uses a verified actor media URL when one is present", () => {

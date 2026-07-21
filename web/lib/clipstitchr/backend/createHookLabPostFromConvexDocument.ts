@@ -15,6 +15,7 @@ export function createHookLabPostFromConvexDocument(
     failureMessage: document.failureMessage,
     id: document.id,
     metrics: document.metrics,
+    mediaKind: document.mediaKind,
     platform: document.platform,
     sourceCreatedAt: document.sourceCreatedAt,
     sourcePostId: document.sourcePostId,

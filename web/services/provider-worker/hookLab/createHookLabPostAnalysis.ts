@@ -3,6 +3,7 @@ import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/ser
 import { getUploadVideoAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoAnalysisModelId";
 import type { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import type { HookLabPostMetrics } from "@/lib/clipstitchr/types/HookLabPostMetrics";
+import type { HookLabPostMediaKind } from "@/lib/clipstitchr/types/HookLabPostMediaKind";
 import type { HookLabPostPlatform } from "@/lib/clipstitchr/types/HookLabPostPlatform";
 import { createHookLabPostAnalysisPrompt } from "./createHookLabPostAnalysisPrompt";
 import { parseHookLabPostAnalysis } from "./parseHookLabPostAnalysis";
@@ -12,6 +13,7 @@ type ReplicateClient = ReturnType<typeof createReplicateClient>;
 export async function createHookLabPostAnalysis({
   durationSeconds,
   metrics,
+  mediaKind,
   onPredictionCreated,
   platform,
   replicate,
@@ -21,6 +23,7 @@ export async function createHookLabPostAnalysis({
 }: {
   durationSeconds: number;
   metrics: HookLabPostMetrics;
+  mediaKind: HookLabPostMediaKind;
   onPredictionCreated?: (prediction: Prediction) => Promise<void> | void;
   platform: HookLabPostPlatform;
   replicate: ReplicateClient;
@@ -35,6 +38,7 @@ export async function createHookLabPostAnalysis({
       videos: [videoUrl],
       prompt: createHookLabPostAnalysisPrompt({
         durationSeconds,
+        mediaKind,
         metrics,
         platform,
         sourceCreatedAt,
@@ -59,7 +63,7 @@ export async function createHookLabPostAnalysis({
   });
 
   return {
-    analysis: parseHookLabPostAnalysis(outputText, durationSeconds),
+    analysis: parseHookLabPostAnalysis(outputText, durationSeconds, sourceText),
     modelId,
     predictionId: prediction.id,
   };

@@ -13,5 +13,6 @@ export function createHookLabTikTokActorInput(input: string) {
     ...createTikTokScraperUrlInput(canonicalUrl),
     maxItems: 1,
     resultsPerPage: 1,
+    shouldDownloadSlideshowImages: true,
   };
 }

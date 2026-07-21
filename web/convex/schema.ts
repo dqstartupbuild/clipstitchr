@@ -24,6 +24,7 @@ import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { cliprVideoModelIdValidator } from "./validators/cliprVideoModelId";
 import { clipTypeValidator } from "./validators/clipType";
 import { hookLabPostAnalysisValidator } from "./validators/hookLabPostAnalysis";
+import { hookLabPostMediaKindValidator } from "./validators/hookLabPostMediaKind";
 import { hookLabPostMetricsValidator } from "./validators/hookLabPostMetrics";
 import { hookLabPostPlatformValidator } from "./validators/hookLabPostPlatform";
 import { hookLabPostStatusValidator } from "./validators/hookLabPostStatus";
@@ -1157,6 +1158,7 @@ export default defineSchema({
     thumbnailObject: v.optional(r2ObjectValidator),
     durationSeconds: v.optional(v.number()),
     metrics: hookLabPostMetricsValidator,
+    mediaKind: v.optional(hookLabPostMediaKindValidator),
     analysis: v.optional(hookLabPostAnalysisValidator),
     status: hookLabPostStatusValidator,
     failureCode: v.optional(v.string()),
