@@ -1,5 +1,6 @@
 import type { HookLabPostAnalysis } from "@/lib/clipstitchr/types/HookLabPostAnalysis";
 import { getHookLabTimelineCoversVideo } from "./getHookLabTimelineCoversVideo";
+import { parseHookLabFormatDna } from "./parseHookLabFormatDna";
 
 function readString(value: unknown, fallback: string) {
   return typeof value === "string" && value.trim()
@@ -106,11 +107,13 @@ export function parseHookLabPostAnalysis(
     caption:
       sourceText?.trim() ||
       readString(parsed.caption, "No caption was available."),
+    copyabilityWarnings: readStringArray(parsed.copyabilityWarnings),
     contentSummary: readString(
       parsed.contentSummary,
       "No summary was returned.",
     ),
     format: readString(parsed.format, "Format not identified."),
+    formatDna: parseHookLabFormatDna(parsed.formatDna),
     onScreenText: readStringArray(parsed.onScreenText),
     openingHook: readString(
       parsed.openingHook,

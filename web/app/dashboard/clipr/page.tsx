@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { CliprPageClient } from "@/app/dashboard/clipr/CliprPageClient";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
@@ -12,5 +13,9 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function CliprPage() {
-  return <CliprPageClient />;
+  return (
+    <Suspense fallback={null}>
+      <CliprPageClient />
+    </Suspense>
+  );
 }

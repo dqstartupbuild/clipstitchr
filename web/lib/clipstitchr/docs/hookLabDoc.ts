@@ -4,9 +4,9 @@ export const hookLabDoc = {
   slug: "hook-lab",
   title: "Hook Lab",
   description:
-    "Study a public TikTok or Instagram video or slideshow, then browse reusable hooks.",
+    "Study a public post, reuse its format for a saved product, and browse original hook patterns.",
   summary:
-    "Paste one public post link. Hook Lab saves the post, explains what happens, and keeps the caption and on-screen text easy to find. The Hook Library gives you more opening ideas when you are ready to create.",
+    "Paste one public post link. Hook Lab explains what happens, separates facts from likely takeaways, and turns the reusable shape into an editable brief for your own product.",
   category: "feature",
   order: 18,
   updated: "2026-07-21",
@@ -30,6 +30,14 @@ export const hookLabDoc = {
       body: [
         "Choose Hook Library at the top of Hook Lab to browse more than a thousand reusable opening patterns.",
         "Search for a word or outcome, filter by category, feeling, tool, or intensity, then copy a hook you want to adapt. Results load 24 at a time so the page stays quick.",
+      ],
+    },
+    {
+      title: "Use the format for your product",
+      body: [
+        "Open a completed report to see what happens in the first three seconds, how the post proves its point, where the product appears, and which moment makes the idea memorable.",
+        "Choose Use this format, pick one of your saved products, then choose Clipr, Stitchr, or Swipr. Review and edit the new brief before opening it in that tool.",
+        "ClipStitchr keeps the structure, but writes new words. Product details come only from the saved product you chose.",
       ],
     },
     {

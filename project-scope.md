@@ -227,6 +227,9 @@ Photo slideshows are rendered as three-second beats per slide before analysis.
 | 7 | Retry and delete controls | ✅ | ✅ |
 | 8 | Caption and ordered on-screen text saved as dedicated report fields | ✅ | ✅ |
 | 9 | Searchable, category-filtered Hook Library with 24-item pagination | ✅ | ✅ |
+| 10 | Versioned format DNA with first-three-second, proof, product-role, signature, observation, inference, and copyability analysis | ✅ | ✅ |
+| 11 | Three server-ranked related Hook Library templates per completed report | ✅ | ✅ |
+| 12 | Editable, product-grounded creative briefs handed into Clipr, Stitchr, or Swipr | ✅ | ✅ |
 
 Production social import requires server-side user and global limits, an Apify
 cost cap, SSRF-safe media fetching, a video-download-enabled TikTok Actor, and
@@ -538,8 +541,10 @@ interface Stitch {
 
 Hook Lab stores durable `hookLabPosts` rows containing the canonical source,
 public post metadata, engagement counts, analysis state, the complete
-timestamped report, and provider lineage. Products may store a default avatar
-and Demo clip.
+timestamped report, versioned format DNA, and provider lineage. Separate
+owner-scoped `hookLabCreativeBriefs` rows preserve source-post, Hook Library,
+product, destination-tool, approval, and usage lineage without expanding the
+source-post record. Products may store a default avatar and Demo clip.
 
 ---
 
@@ -589,6 +594,7 @@ and Demo clip.
 - [ ] AI-generated captions / subtitles with timing
 - [x] Hook Lab social-post data model and durable provider workflow
 - [x] Hook Lab timestamped full-video analysis and performance report dialog
+- [x] Hook Lab format-DNA, related-hook, creative-brief, and tool-handoff workflow
 
 ---
 

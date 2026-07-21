@@ -240,6 +240,14 @@ vi.mock("@/lib/clipstitchr/hooks/useSwiprExport", () => ({
   useSwiprExport: () => mocks.swiprExportState,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useHookLabCreativeBrief", () => ({
+  useHookLabCreativeBrief: () => ({
+    brief: null,
+    isLoading: false,
+    markUsed: vi.fn(),
+  }),
+}));
+
 vi.mock("@/lib/clipstitchr/client/generateCliprText", () => ({
   generateCliprText: mocks.generateCliprText,
 }));
@@ -981,7 +989,7 @@ describe("SwiprPageClient", () => {
 
     renderToStaticMarkup(<SwiprPageClient />);
 
-    effects[0]?.();
+    effects.at(-1)?.();
 
     await Promise.resolve();
     await Promise.resolve();
@@ -1007,7 +1015,7 @@ describe("SwiprPageClient", () => {
 
     renderToStaticMarkup(<SwiprPageClient />);
 
-    effects[0]?.();
+    effects.at(-1)?.();
 
     await Promise.resolve();
     await Promise.resolve();
@@ -1028,7 +1036,7 @@ describe("SwiprPageClient", () => {
     queueSwiprState({ loadedSwipeId: "swipe_1" });
 
     renderToStaticMarkup(<SwiprPageClient />);
-    effects[0]?.();
+    effects.at(-1)?.();
 
     expect(mocks.swiprLibraryState.loadBackgroundBlob).not.toHaveBeenCalled();
   });
@@ -1043,7 +1051,7 @@ describe("SwiprPageClient", () => {
     queueSwiprState({ loadedSwipeId: null });
 
     renderToStaticMarkup(<SwiprPageClient />);
-    effects[0]?.();
+    effects.at(-1)?.();
 
     expect(mocks.swiprLibraryState.loadBackgroundBlob).not.toHaveBeenCalled();
   });
@@ -1061,7 +1069,7 @@ describe("SwiprPageClient", () => {
     queueSwiprState({ loadedSwipeId: null });
 
     renderToStaticMarkup(<SwiprPageClient />);
-    const cleanup = effects[0]?.();
+    const cleanup = effects.at(-1)?.();
     if (typeof cleanup === "function") {
       cleanup();
     }
@@ -1091,7 +1099,7 @@ describe("SwiprPageClient", () => {
     queueSwiprState({ loadedSwipeId: null });
 
     renderToStaticMarkup(<SwiprPageClient />);
-    effects[0]?.();
+    effects.at(-1)?.();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(

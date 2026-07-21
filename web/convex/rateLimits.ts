@@ -186,6 +186,28 @@ export const consumeHookLabPostAnalysis = mutation({
   },
 });
 
+export const consumeHookLabCreativeBrief = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "hookLabCreativeBrief", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "hookLabCreativeBriefGlobal", {
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      throws: true,
+    });
+  },
+});
+
 export const consumePostBridgeRead = mutation({
   args: {
     secret: v.string(),

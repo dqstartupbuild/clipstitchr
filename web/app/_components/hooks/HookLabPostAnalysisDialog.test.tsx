@@ -10,6 +10,30 @@ const post: HookLabPost = {
     caption: "A quick morning workflow",
     contentSummary: "A creator demonstrates a quick morning workflow.",
     format: "Talking head followed by a screen demonstration.",
+    formatDna: {
+      adObviousness: "The product appears after the opening problem.",
+      confidence: "The structure is observed and its effect is inferred.",
+      ctaStyle: "Save",
+      doNotCopy: ["The creator's exact wording."],
+      editRhythm: "A visual change every two seconds.",
+      firstPayoff: "The phone screen starts showing the faster workflow.",
+      firstPayoffAtSeconds: 2.4,
+      hookPattern: "Problem before solution",
+      inferences: ["The screen reveal may hold attention."],
+      observedEvidence: ["The first frame shows the creator and a phone."],
+      openingQuestion: "How is the manual work avoided?",
+      openingVisual: "The creator holds a phone beside a task list.",
+      productFirstAppearsAtSeconds: 3,
+      productRole: "helper",
+      proofDevice: "screen recording",
+      replicationFormula: "Name the task, show the workflow, reveal the result.",
+      retentionDevice: "Delayed screen reveal",
+      signatureDevice: "The phone screen reveal",
+      soundOffSummary: "The opening overlay names the manual task.",
+      storyBeats: ["Problem", "Workflow", "Result"],
+      storyFramework: "Problem, demonstration, payoff",
+      version: "format-dna-v1",
+    },
     onScreenText: ["Stop doing this manually", "Three quick steps"],
     openingHook: "The creator opens with a direct problem statement.",
     performance: {
@@ -77,6 +101,10 @@ describe("HookLabPostAnalysisDialog", () => {
     expect(markup).toContain("A quick morning workflow");
     expect(markup).toContain("Three quick steps");
     expect(markup).toContain("Why it may have performed this way");
+    expect(markup).toContain("The first three seconds");
+    expect(markup).toContain("The reusable shape");
+    expect(markup).toContain("Hooks with a similar job");
+    expect(markup).toContain("Use this format");
     expect(markup).toContain("Full play-by-play");
     expect(markup).toContain("0:00-0:03");
     expect(markup).toContain("Stop doing this manually");

@@ -1,0 +1,26 @@
+import { v } from "convex/values";
+
+export const hookLabFormatDnaValidator = v.object({
+  adObviousness: v.string(),
+  confidence: v.string(),
+  ctaStyle: v.string(),
+  doNotCopy: v.array(v.string()),
+  editRhythm: v.string(),
+  firstPayoff: v.string(),
+  firstPayoffAtSeconds: v.optional(v.number()),
+  hookPattern: v.string(),
+  inferences: v.array(v.string()),
+  observedEvidence: v.array(v.string()),
+  openingQuestion: v.string(),
+  openingVisual: v.string(),
+  productFirstAppearsAtSeconds: v.optional(v.number()),
+  productRole: v.string(),
+  proofDevice: v.string(),
+  replicationFormula: v.string(),
+  retentionDevice: v.string(),
+  signatureDevice: v.string(),
+  soundOffSummary: v.string(),
+  storyBeats: v.array(v.string()),
+  storyFramework: v.string(),
+  version: v.string(),
+});

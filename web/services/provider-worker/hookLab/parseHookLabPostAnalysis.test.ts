@@ -7,6 +7,30 @@ function createReport(timeline: unknown[]) {
     caption: "The original caption",
     contentSummary: "A creator names a problem, demonstrates it, then closes.",
     format: "Direct-to-camera with a product demonstration.",
+    formatDna: {
+      adObviousness: "The product appears after the problem is clear.",
+      confidence: "The visual structure is observed; retention is inferred.",
+      ctaStyle: "Follow for continuation",
+      doNotCopy: ["The creator's opening sentence"],
+      editRhythm: "A cut every two to three seconds.",
+      firstPayoff: "The workflow begins to remove the task.",
+      firstPayoffAtSeconds: 2.5,
+      hookPattern: "Unanswered problem reveal",
+      inferences: ["The delayed reveal may support retention."],
+      observedEvidence: ["The first frame shows the result covered."],
+      openingQuestion: "What caused the visible result?",
+      openingVisual: "A covered result beside the creator.",
+      productFirstAppearsAtSeconds: 4,
+      productRole: "helper",
+      proofDevice: "visible demo",
+      replicationFormula: "Show a problem, delay the tool, then prove the change.",
+      retentionDevice: "Delayed reveal",
+      signatureDevice: "The covered result",
+      soundOffSummary: "The overlay names the problem while the result stays hidden.",
+      storyBeats: ["Problem", "Demonstration", "Result"],
+      storyFramework: "Problem, process, payoff",
+      version: "format-dna-v1",
+    },
     onScreenText: ["Three steps", "Try this next"],
     openingHook: "The creator starts with a clear problem.",
     performance: {
@@ -54,6 +78,7 @@ describe("parseHookLabPostAnalysis", () => {
     expect(analysis.timeline.at(-1)?.endSeconds).toBe(10);
     expect(analysis.caption).toBe("The original caption");
     expect(analysis.onScreenText).toEqual(["Three steps", "Try this next"]);
+    expect(analysis.formatDna?.proofDevice).toBe("visible demo");
   });
 
   it("keeps the source caption when the model omits its copy field", () => {

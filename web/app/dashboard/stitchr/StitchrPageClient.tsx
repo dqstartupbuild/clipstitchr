@@ -53,8 +53,13 @@ import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchr
 import { StickyPreviewColumn } from "@/app/_components/workflow/StickyPreviewColumn";
 import { WorkflowLayout } from "@/app/_components/workflow/WorkflowLayout";
 import { WorkflowStepList } from "@/app/_components/workflow/WorkflowStepList";
+import { HookLabBriefHandoffNotice } from "@/app/_components/hooks/HookLabBriefHandoffNotice";
+import { useHookLabCreativeBrief } from "@/lib/clipstitchr/hooks/useHookLabCreativeBrief";
 
 export function StitchrPageClient() {
+  const [briefId] = useState(() => getSearchParamValue("brief") ?? null);
+  const handoff = useHookLabCreativeBrief(briefId, "stitchr");
+  const appliedBriefId = useRef<string | null>(null);
   const library = useClipLibrary();
   const products = useDashboardProduct();
   const stitchrState = useStitchr({
@@ -417,6 +422,38 @@ export function StitchrPageClient() {
   );
   const activeAutoTextProductId =
     products.activeProductId ?? "";
+
+  useEffect(() => {
+    const brief = handoff.brief;
+
+    if (!brief || appliedBriefId.current === brief.id) {
+      return;
+    }
+
+    appliedBriefId.current = brief.id;
+    setMode("normal");
+    setReusedTextOverlays([
+      {
+        ...createDefaultTextOverlay(3, 0),
+        text: brief.brief.soundOffOverlay,
+      },
+    ]);
+    setAutoTextMessage(
+      `Loaded ${brief.brief.directionName}. Choose Hook/UGC and Demo clips that fit the shot plan.`,
+    );
+
+    const product = products.products.find(
+      (item) => item.id === brief.productId,
+    );
+
+    if (product && products.activeProductId !== product.id) {
+      void products.setActiveProduct(product);
+    }
+
+    if (brief.status === "approved") {
+      void handoff.markUsed();
+    }
+  }, [handoff, products]);
   const applyReusedStitch = useCallback(
     async (reuseStitchId: string) => {
       const reusedStitch = await loadStitch(reuseStitchId);
@@ -1354,6 +1391,10 @@ export function StitchrPageClient() {
         {library.error ? (
           <DashboardAlert variant="error">{library.error}</DashboardAlert>
         ) : null}
+        <HookLabBriefHandoffNotice
+          brief={handoff.brief}
+          isLoading={handoff.isLoading}
+        />
         {hasStitchrInputs && mode === "batch" ? (
           <StitchrBatchPanel
             backgroundColorChoice={batchTextBackgroundColorChoice}

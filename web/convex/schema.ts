@@ -28,6 +28,9 @@ import { hookLabPostMediaKindValidator } from "./validators/hookLabPostMediaKind
 import { hookLabPostMetricsValidator } from "./validators/hookLabPostMetrics";
 import { hookLabPostPlatformValidator } from "./validators/hookLabPostPlatform";
 import { hookLabPostStatusValidator } from "./validators/hookLabPostStatus";
+import { hookLabCreativeBriefContentValidator } from "./validators/hookLabCreativeBriefContent";
+import { hookLabCreativeBriefStatusValidator } from "./validators/hookLabCreativeBriefStatus";
+import { hookLabDestinationToolValidator } from "./validators/hookLabDestinationTool";
 import { mediaJobStatusValidator } from "./validators/mediaJobStatus";
 import { mediaJobTypeValidator } from "./validators/mediaJobType";
 import { musicTrackSourceValidator } from "./validators/musicTrackSource";
@@ -1179,6 +1182,22 @@ export default defineSchema({
     .index("by_owner_id", ["ownerId", "id"])
     .index("by_owner_canonical_url", ["ownerId", "canonicalUrl"])
     .index("by_owner_request_key", ["ownerId", "requestKey"]),
+  hookLabCreativeBriefs: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    productId: v.string(),
+    sourcePostIds: v.array(v.string()),
+    hookTemplateId: v.optional(v.string()),
+    formatDnaVersion: v.string(),
+    destinationTool: hookLabDestinationToolValidator,
+    brief: hookLabCreativeBriefContentValidator,
+    status: hookLabCreativeBriefStatusValidator,
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"]),
   sharedMusicTracks: defineTable({
     id: v.string(),
     uploadedByOwnerId: v.string(),

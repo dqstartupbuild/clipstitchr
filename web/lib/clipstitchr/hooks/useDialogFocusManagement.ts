@@ -14,8 +14,10 @@ const dialogFocusableElementSelector = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
-export function useDialogFocusManagement(onClose: () => void) {
-  const dialogRef = useRef<HTMLDivElement>(null);
+export function useDialogFocusManagement<
+  Element extends HTMLElement = HTMLDivElement,
+>(onClose: () => void) {
+  const dialogRef = useRef<Element>(null);
   const onCloseRef = useRef(onClose);
 
   useEffect(() => {

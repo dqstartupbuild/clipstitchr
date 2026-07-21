@@ -48,7 +48,7 @@ export async function createHookLabPostAnalysis({
         "You are a rigorous short-form video analyst. You separate observed evidence, platform metrics, and inference. Return JSON only.",
       temperature: 0.2,
       thinking_level: "low",
-      max_output_tokens: 8_000,
+      max_output_tokens: 12_000,
     },
   });
 

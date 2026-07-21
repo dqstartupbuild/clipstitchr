@@ -1,6 +1,7 @@
 "use client";
 
 import { ExternalLink, X } from "lucide-react";
+import { useState } from "react";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 import { getHookLabPostTitle } from "@/lib/clipstitchr/utils/getHookLabPostTitle";
@@ -8,6 +9,12 @@ import { HookLabPostMetricRow } from "./HookLabPostMetricRow";
 import { HookLabPostCopySummary } from "./HookLabPostCopySummary";
 import { HookLabPostScoreRow } from "./HookLabPostScoreRow";
 import { HookLabPostTimeline } from "./HookLabPostTimeline";
+import { HookLabFirstThreeSecondsSection } from "./HookLabFirstThreeSecondsSection";
+import { HookLabFormatDnaSection } from "./HookLabFormatDnaSection";
+import { HookLabCopyabilityWarningSection } from "./HookLabCopyabilityWarningSection";
+import { HookLabRelatedTemplatesSection } from "./HookLabRelatedTemplatesSection";
+import { HookLabCreativeBriefDialog } from "./HookLabCreativeBriefDialog";
+import { useHookLabRelatedTemplates } from "@/lib/clipstitchr/hooks/useHookLabRelatedTemplates";
 
 export function HookLabPostAnalysisDialog({
   post,
@@ -16,6 +23,9 @@ export function HookLabPostAnalysisDialog({
   post: HookLabPost;
   onClose: () => void;
 }) {
+  const [isCreatingBrief, setIsCreatingBrief] = useState(false);
+  const relatedTemplates = useHookLabRelatedTemplates(post.id);
+
   if (!post.analysis) {
     return null;
   }
@@ -23,7 +33,8 @@ export function HookLabPostAnalysisDialog({
   const { analysis } = post;
 
   return (
-    <div
+    <>
+      <div
       className="dashboard-dialog-viewport"
       onMouseDown={(event) => {
         if (event.currentTarget === event.target) {
@@ -105,6 +116,22 @@ export function HookLabPostAnalysisDialog({
               </div>
             </dl>
           </section>
+
+          {analysis.formatDna ? (
+            <>
+              <HookLabFirstThreeSecondsSection formatDna={analysis.formatDna} />
+              <HookLabFormatDnaSection formatDna={analysis.formatDna} />
+              <HookLabCopyabilityWarningSection
+                doNotCopy={analysis.formatDna.doNotCopy}
+                warnings={analysis.copyabilityWarnings ?? []}
+              />
+              <HookLabRelatedTemplatesSection
+                isLoading={relatedTemplates.isLoading}
+                templates={relatedTemplates.templates}
+                onUseFormat={() => setIsCreatingBrief(true)}
+              />
+            </>
+          ) : null}
 
           <HookLabPostCopySummary post={post} />
 
@@ -205,6 +232,14 @@ export function HookLabPostAnalysisDialog({
           </section>
         </div>
       </article>
-    </div>
+      </div>
+      {isCreatingBrief ? (
+        <HookLabCreativeBriefDialog
+          post={post}
+          templates={relatedTemplates.templates}
+          onClose={() => setIsCreatingBrief(false)}
+        />
+      ) : null}
+    </>
   );
 }

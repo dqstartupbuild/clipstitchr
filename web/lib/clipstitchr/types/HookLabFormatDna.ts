@@ -1,0 +1,24 @@
+export type HookLabFormatDna = {
+  adObviousness: string;
+  confidence: string;
+  ctaStyle: string;
+  doNotCopy: string[];
+  editRhythm: string;
+  firstPayoff: string;
+  firstPayoffAtSeconds?: number;
+  hookPattern: string;
+  inferences: string[];
+  observedEvidence: string[];
+  openingQuestion: string;
+  openingVisual: string;
+  productFirstAppearsAtSeconds?: number;
+  productRole: string;
+  proofDevice: string;
+  replicationFormula: string;
+  retentionDevice: string;
+  signatureDevice: string;
+  soundOffSummary: string;
+  storyBeats: string[];
+  storyFramework: string;
+  version: string;
+};

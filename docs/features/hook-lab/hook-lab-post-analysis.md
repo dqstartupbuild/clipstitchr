@@ -50,7 +50,8 @@ but is not dependable.
    object so the configured Gemini model can read the complete post.
 9. Gemini returns structured JSON with a complete timestamped timeline,
    execution scores, metric-grounded performance reasoning, limitations,
-   confidence, and transferable lessons.
+   confidence, transferable lessons, copyability warnings, and versioned
+   format DNA.
 10. The parser rejects reports that do not cover the video from its opening to
     its ending or that leave a large unexplained timeline gap.
 11. Convex stores the completed report and the UI exposes it through
@@ -86,6 +87,13 @@ The report contains:
 - likely retention strengths and drop-off risks labeled as inference;
 - specific strengths, weak spots, missing-data limitations, and confidence;
 - transferable lessons that do not copy the source post.
+- a first-three-second breakdown covering the first frame, unresolved tension,
+  sound-off meaning, first payoff, and ad obviousness;
+- proof-device and product-role classifications;
+- the signature moment or object that the post depends on;
+- reusable opening, narrative, retention, CTA, and edit structure;
+- directly observed evidence kept separate from clearly labeled inference;
+- possible copyability warnings that are never presented as proven causes.
 
 The scores measure short-form execution. They are not percentile rankings and
 do not claim access to private platform analytics. Hook Lab never invents watch
@@ -107,7 +115,7 @@ on the saved post for traceability.
 
 ## Data model
 
-`hookLabPosts` is the only Hook Lab table. Important fields include:
+`hookLabPosts` stores source analysis. Important fields include:
 
 - ownership and identity: `ownerId`, `id`, `requestKey`;
 - source: `platform`, `canonicalUrl`, `sourcePostId`, `sourceCreatedAt`,
@@ -120,8 +128,10 @@ on the saved post for traceability.
 - ingestion lineage: `providerRunId`, `providerDatasetId`;
 - state: `status`, `failureCode`, `failureMessage`, timestamps.
 
-No generated variations, reusable writing memories, approval feedback,
-avoid-lists, saved setups, or Stitchr generation plans are stored by Hook Lab.
+Generated product briefs are stored separately in the owner-scoped
+`hookLabCreativeBriefs` table. See
+`docs/features/hook-lab/format-to-product-briefs.md` for its contract and
+destination handoff.
 
 ## Rate limits and abuse protection
 

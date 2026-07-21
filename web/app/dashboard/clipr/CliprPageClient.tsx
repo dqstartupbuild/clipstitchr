@@ -1,7 +1,8 @@
 "use client";
 
 import { CirclePlay } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CliprAvatarPanel } from "@/app/_components/clipr/CliprAvatarPanel";
 import { CliprDemoClipPanel } from "@/app/_components/clipr/CliprDemoClipPanel";
 import { CliprGenerationProgress } from "@/app/_components/clipr/CliprGenerationProgress";
@@ -20,6 +21,7 @@ import { Panel } from "@/app/_components/ui/Panel";
 import { PanelHeader } from "@/app/_components/ui/PanelHeader";
 import { StickyPreviewColumn } from "@/app/_components/workflow/StickyPreviewColumn";
 import { WorkflowLayout } from "@/app/_components/workflow/WorkflowLayout";
+import { HookLabBriefHandoffNotice } from "@/app/_components/hooks/HookLabBriefHandoffNotice";
 import { defaultCliprGenerationMode } from "@/lib/clipstitchr/constants/defaultCliprGenerationMode";
 import { defaultCliprDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprDurationSeconds";
 import { defaultCliprVisualDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprVisualDurationSeconds";
@@ -27,12 +29,19 @@ import { defaultCliprVoiceId } from "@/lib/clipstitchr/constants/defaultCliprVoi
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCliprGeneration } from "@/lib/clipstitchr/hooks/useCliprGeneration";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
+import { useHookLabCreativeBrief } from "@/lib/clipstitchr/hooks/useHookLabCreativeBrief";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
+import { getHookLabCreativeBriefDirection } from "@/lib/clipstitchr/utils/getHookLabCreativeBriefDirection";
+import { cliprScriptIdeaMaxLength } from "@/lib/clipstitchr/constants/cliprScriptIdeaMaxLength";
 
 export function CliprPageClient() {
+  const searchParams = useSearchParams();
+  const briefId = searchParams?.get("brief")?.trim() || null;
+  const handoff = useHookLabCreativeBrief(briefId, "clipr");
+  const appliedBriefId = useRef<string | null>(null);
   const library = useClipLibrary();
   const products = useDashboardProduct();
   const photoLibrary = usePhotoLibrary();
@@ -52,6 +61,35 @@ export function CliprPageClient() {
   } | null>(null);
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
+
+  useEffect(() => {
+    const brief = handoff.brief;
+
+    if (!brief || appliedBriefId.current === brief.id) {
+      return;
+    }
+
+    appliedBriefId.current = brief.id;
+    setMode("script");
+    setScriptIdea(
+      getHookLabCreativeBriefDirection(brief.brief).slice(
+        0,
+        cliprScriptIdeaMaxLength,
+      ),
+    );
+
+    const product = products.products.find(
+      (item) => item.id === brief.productId,
+    );
+
+    if (product && products.activeProductId !== product.id) {
+      void products.setActiveProduct(product);
+    }
+
+    if (brief.status === "approved") {
+      void handoff.markUsed();
+    }
+  }, [handoff, products]);
   const activeProductId = products.activeProductId ?? "";
   const defaultAvatar = useMemo(
     () =>
@@ -120,6 +158,11 @@ export function CliprPageClient() {
         {error ? (
           <DashboardAlert variant="error">{error}</DashboardAlert>
         ) : null}
+
+        <HookLabBriefHandoffNotice
+          brief={handoff.brief}
+          isLoading={handoff.isLoading}
+        />
 
         <WorkflowLayout
           aside={

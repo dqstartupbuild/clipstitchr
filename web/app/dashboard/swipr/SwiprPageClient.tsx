@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
@@ -33,6 +33,10 @@ import { loadPexelsPhotoBlob } from "@/lib/clipstitchr/client/loadPexelsPhotoBlo
 import { searchPexelsPhotos } from "@/lib/clipstitchr/client/searchPexelsPhotos";
 import { SWIPR_PEXELS_IMPORT_LIMIT } from "@/lib/clipstitchr/constants/swiprPexelsImportLimit";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
+import { useHookLabCreativeBrief } from "@/lib/clipstitchr/hooks/useHookLabCreativeBrief";
+import { HookLabBriefHandoffNotice } from "@/app/_components/hooks/HookLabBriefHandoffNotice";
+import { getHookLabCreativeBriefDirection } from "@/lib/clipstitchr/utils/getHookLabCreativeBriefDirection";
+import { SWIPR_CREATIVE_CONTEXT_MAX_LENGTH } from "@/lib/clipstitchr/constants/swiprCreativeContextMaxLength";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
@@ -67,6 +71,9 @@ export function SwiprPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedSwipeId = searchParams.get("swipe")?.trim() || null;
+  const briefId = searchParams.get("brief")?.trim() || null;
+  const handoff = useHookLabCreativeBrief(briefId, "swipr");
+  const appliedBriefId = useRef<string | null>(null);
   const photoLibrary = usePhotoLibrary();
   const products = useDashboardProduct();
   const swiprLibrary = useSwiprLibrary();
@@ -117,6 +124,35 @@ export function SwiprPageClient() {
   const [socialCopyMessage, setSocialCopyMessage] = useState<string | null>(
     null,
   );
+
+  useEffect(() => {
+    const brief = handoff.brief;
+
+    if (!brief || appliedBriefId.current === brief.id) {
+      return;
+    }
+
+    appliedBriefId.current = brief.id;
+    setSwiprMode("batch");
+    setSwiprCreativeContext(
+      getHookLabCreativeBriefDirection(brief.brief).slice(
+        0,
+        SWIPR_CREATIVE_CONTEXT_MAX_LENGTH,
+      ),
+    );
+
+    const product = products.products.find(
+      (item) => item.id === brief.productId,
+    );
+
+    if (product && products.activeProductId !== product.id) {
+      void products.setActiveProduct(product);
+    }
+
+    if (brief.status === "approved") {
+      void handoff.markUsed();
+    }
+  }, [handoff, products]);
   const selectedSavedProduct = products.activeProduct;
   const selectedSavedProductId = selectedSavedProduct?.id;
   const productContext = selectedSavedProduct
@@ -1063,6 +1099,11 @@ export function SwiprPageClient() {
         {autoTextMessage ? (
           <DashboardAlert variant="info">{autoTextMessage}</DashboardAlert>
         ) : null}
+
+        <HookLabBriefHandoffNotice
+          brief={handoff.brief}
+          isLoading={handoff.isLoading}
+        />
 
         <WorkflowLayout
           aside={

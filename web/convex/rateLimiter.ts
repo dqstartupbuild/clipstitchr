@@ -590,6 +590,19 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 200,
     shards: 5,
   },
+  hookLabCreativeBrief: {
+    kind: "token bucket",
+    rate: 60,
+    period: DAY,
+    capacity: 8,
+  },
+  hookLabCreativeBriefGlobal: {
+    kind: "token bucket",
+    rate: 2000,
+    period: DAY,
+    capacity: 300,
+    shards: 5,
+  },
   postBridgeRead: {
     kind: "token bucket",
     rate: 120,

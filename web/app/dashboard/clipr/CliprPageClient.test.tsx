@@ -105,6 +105,14 @@ vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
   usePhotoLibrary: () => mocks.photoLibraryState,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useHookLabCreativeBrief", () => ({
+  useHookLabCreativeBrief: () => ({
+    brief: null,
+    isLoading: false,
+    markUsed: vi.fn(),
+  }),
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
   useProducts: () => mocks.productState,
 }));
