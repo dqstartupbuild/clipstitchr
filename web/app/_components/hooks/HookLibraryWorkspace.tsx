@@ -38,10 +38,10 @@ export function HookLibraryWorkspace() {
       role="tabpanel"
     >
       <div>
-        <h2 className="text-2xl font-bold text-text-primary">
+        <h2 className="text-balance text-2xl font-bold text-text-primary">
           Find a stronger opening
         </h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
+        <p className="mt-2 max-w-3xl text-pretty text-sm leading-6 text-text-secondary">
           Browse {data?.totalItems.toLocaleString() ?? "1,000+"} reusable hook
           patterns. Search the words you need, or narrow the list by category,
           feeling, tool, and intensity.

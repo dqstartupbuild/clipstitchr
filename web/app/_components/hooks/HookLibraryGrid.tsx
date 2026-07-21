@@ -16,7 +16,7 @@ export function HookLibraryGrid({
       >
         {Array.from({ length: 6 }, (_, index) => (
           <div
-            className="min-h-64 animate-pulse rounded-lg bg-[#e3ebe6]"
+            className="min-h-64 animate-pulse rounded-lg bg-surface"
             key={index}
           />
         ))}
@@ -26,9 +26,11 @@ export function HookLibraryGrid({
 
   if (!items.length) {
     return (
-      <div className="rounded-lg bg-[#e3ebe6] px-5 py-12 text-center">
-        <h2 className="text-xl font-bold text-[#18201c]">No hooks match</h2>
-        <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#56625c]">
+      <div className="rounded-lg bg-surface px-5 py-12 text-center">
+        <h2 className="text-balance text-xl font-bold text-text-primary">
+          No hooks match
+        </h2>
+        <p className="mx-auto mt-2 max-w-lg text-pretty text-sm leading-6 text-text-secondary">
           Try a broader search or clear one of the filters.
         </p>
       </div>

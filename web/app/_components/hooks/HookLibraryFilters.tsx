@@ -14,15 +14,15 @@ export function HookLibraryFilters({
   onChange: (filters: HookLibraryFilterState) => void;
 }) {
   const controlClassName =
-    "min-h-11 w-full rounded-md bg-white px-3 text-sm text-text-primary outline-none ring-1 ring-inset ring-[#c7d3cc] focus:ring-2 focus:ring-[#51645a]";
+    "min-h-11 w-full rounded-md bg-background px-3 text-sm text-text-primary outline-none ring-1 ring-inset ring-border focus:ring-2 focus:ring-border-hover";
 
   return (
-    <div className="grid gap-4 rounded-lg bg-[#e3ebe6] p-4 sm:p-5">
+    <div className="grid gap-4 rounded-lg bg-surface p-4 sm:p-5">
       <label className="relative block">
         <span className="sr-only">Search hook templates</span>
         <Search
           aria-hidden
-          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#67736d]"
+          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-text-tertiary"
         />
         <input
           className={`${controlClassName} pl-10`}
@@ -35,7 +35,7 @@ export function HookLibraryFilters({
         />
       </label>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <label className="grid gap-1.5 text-sm font-semibold text-[#344039]">
+        <label className="grid gap-1.5 text-sm font-semibold text-text-secondary">
           Category
           <select
             className={controlClassName}
@@ -52,7 +52,7 @@ export function HookLibraryFilters({
             ))}
           </select>
         </label>
-        <label className="grid gap-1.5 text-sm font-semibold text-[#344039]">
+        <label className="grid gap-1.5 text-sm font-semibold text-text-secondary">
           Feeling
           <select
             className={controlClassName}
@@ -69,7 +69,7 @@ export function HookLibraryFilters({
             ))}
           </select>
         </label>
-        <label className="grid gap-1.5 text-sm font-semibold text-[#344039]">
+        <label className="grid gap-1.5 text-sm font-semibold text-text-secondary">
           Best place to use it
           <select
             className={controlClassName}
@@ -88,7 +88,7 @@ export function HookLibraryFilters({
             <option value="swipr">Swipr</option>
           </select>
         </label>
-        <label className="grid gap-1.5 text-sm font-semibold text-[#344039]">
+        <label className="grid gap-1.5 text-sm font-semibold text-text-secondary">
           Intensity
           <select
             className={controlClassName}

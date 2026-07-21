@@ -10,7 +10,7 @@ export function HookLabTabs({
   return (
     <div
       aria-label="Hook Lab views"
-      className="grid max-w-xl grid-cols-2 gap-1 rounded-lg bg-[#dbe5df] p-1"
+      className="grid max-w-xl grid-cols-2 gap-1 rounded-lg bg-surface p-1"
       role="tablist"
     >
       <button
@@ -18,8 +18,8 @@ export function HookLabTabs({
         aria-selected={activeTab === "analysis"}
         className={`min-h-11 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
           activeTab === "analysis"
-            ? "bg-[#151a18] text-white"
-            : "text-[#445049] hover:bg-[#cbd8d0]"
+            ? "bg-surface-elevated text-accent-dark"
+            : "text-text-secondary hover:bg-surface-muted hover:text-text-primary"
         }`}
         role="tab"
         type="button"
@@ -32,8 +32,8 @@ export function HookLabTabs({
         aria-selected={activeTab === "library"}
         className={`min-h-11 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
           activeTab === "library"
-            ? "bg-[#151a18] text-white"
-            : "text-[#445049] hover:bg-[#cbd8d0]"
+            ? "bg-surface-elevated text-accent-dark"
+            : "text-text-secondary hover:bg-surface-muted hover:text-text-primary"
         }`}
         role="tab"
         type="button"

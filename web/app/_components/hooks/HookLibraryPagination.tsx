@@ -24,7 +24,7 @@ export function HookLibraryPagination({
     >
       <button
         aria-label="Previous page"
-        className={`${buttonClassName} bg-[#e3ebe6] text-[#27332d] hover:bg-[#d3dfd8]`}
+        className={`${buttonClassName} bg-surface text-text-secondary hover:bg-surface-muted hover:text-text-primary`}
         disabled={currentPage <= 1}
         type="button"
         onClick={() => onChange(currentPage - 1)}
@@ -36,7 +36,7 @@ export function HookLibraryPagination({
           page === "ellipsis" ? (
             <span
               aria-hidden
-              className="inline-flex size-10 items-center justify-center text-[#68736d]"
+              className="inline-flex size-10 items-center justify-center text-text-tertiary"
               key={`ellipsis-${index}`}
             >
               …
@@ -47,8 +47,8 @@ export function HookLibraryPagination({
               aria-label={`Page ${page}`}
               className={`${buttonClassName} ${
                 page === currentPage
-                  ? "bg-[#151a18] text-white"
-                  : "bg-[#e3ebe6] text-[#27332d] hover:bg-[#d3dfd8]"
+                  ? "bg-surface-elevated text-accent-dark"
+                  : "bg-surface text-text-secondary hover:bg-surface-muted hover:text-text-primary"
               }`}
               key={page}
               type="button"
@@ -60,7 +60,7 @@ export function HookLibraryPagination({
       )}
       <button
         aria-label="Next page"
-        className={`${buttonClassName} bg-[#e3ebe6] text-[#27332d] hover:bg-[#d3dfd8]`}
+        className={`${buttonClassName} bg-surface text-text-secondary hover:bg-surface-muted hover:text-text-primary`}
         disabled={currentPage >= totalPages}
         type="button"
         onClick={() => onChange(currentPage + 1)}
