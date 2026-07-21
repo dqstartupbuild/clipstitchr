@@ -455,6 +455,7 @@ import type * as validators_entitlementState from "../validators/entitlementStat
 import type * as validators_generationSlotProvenance from "../validators/generationSlotProvenance.js";
 import type * as validators_generationSlotState from "../validators/generationSlotState.js";
 import type * as validators_hookLabPostAnalysis from "../validators/hookLabPostAnalysis.js";
+import type * as validators_hookLabPostMediaKind from "../validators/hookLabPostMediaKind.js";
 import type * as validators_hookLabPostMetrics from "../validators/hookLabPostMetrics.js";
 import type * as validators_hookLabPostPerformanceAnalysis from "../validators/hookLabPostPerformanceAnalysis.js";
 import type * as validators_hookLabPostPlatform from "../validators/hookLabPostPlatform.js";
@@ -1023,6 +1024,7 @@ declare const fullApi: ApiFromModules<{
   "validators/generationSlotProvenance": typeof validators_generationSlotProvenance;
   "validators/generationSlotState": typeof validators_generationSlotState;
   "validators/hookLabPostAnalysis": typeof validators_hookLabPostAnalysis;
+  "validators/hookLabPostMediaKind": typeof validators_hookLabPostMediaKind;
   "validators/hookLabPostMetrics": typeof validators_hookLabPostMetrics;
   "validators/hookLabPostPerformanceAnalysis": typeof validators_hookLabPostPerformanceAnalysis;
   "validators/hookLabPostPlatform": typeof validators_hookLabPostPlatform;
