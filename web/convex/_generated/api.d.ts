@@ -46,8 +46,6 @@ import type * as accountEmail_resumeHeldAccountEmailOperationsForOwner from "../
 import type * as accountEmail_startAccountEmailProviderAttempt from "../accountEmail/startAccountEmailProviderAttempt.js";
 import type * as accountEmail_syncCurrentAccountContact from "../accountEmail/syncCurrentAccountContact.js";
 import type * as activeWorkerJobs from "../activeWorkerJobs.js";
-import type * as addPostBridgePostToStitch from "../addPostBridgePostToStitch.js";
-import type * as addPostBridgePostToSwipe from "../addPostBridgePostToSwipe.js";
 import type * as adjustNotificationUnreadSummary from "../adjustNotificationUnreadSummary.js";
 import type * as aggregateBackfills from "../aggregateBackfills.js";
 import type * as aggregateCounts from "../aggregateCounts.js";
@@ -613,8 +611,6 @@ declare const fullApi: ApiFromModules<{
   "accountEmail/startAccountEmailProviderAttempt": typeof accountEmail_startAccountEmailProviderAttempt;
   "accountEmail/syncCurrentAccountContact": typeof accountEmail_syncCurrentAccountContact;
   activeWorkerJobs: typeof activeWorkerJobs;
-  addPostBridgePostToStitch: typeof addPostBridgePostToStitch;
-  addPostBridgePostToSwipe: typeof addPostBridgePostToSwipe;
   adjustNotificationUnreadSummary: typeof adjustNotificationUnreadSummary;
   aggregateBackfills: typeof aggregateBackfills;
   aggregateCounts: typeof aggregateCounts;

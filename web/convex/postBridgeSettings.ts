@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
-import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { clearPostBridgeSocialAccountIdsForOwner } from "./clearPostBridgeSocialAccountIdsForOwner";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
@@ -35,26 +34,6 @@ export const getSecret = query({
     const settings = await ctx.db
       .query("postBridgeSettings")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .unique();
-
-    return settings
-      ? {
-          encryptedApiKey: settings.encryptedApiKey,
-        }
-      : null;
-  },
-});
-
-export const getSecretForProvider = query({
-  args: {
-    ownerId: v.string(),
-    secret: v.string(),
-  },
-  handler: async (ctx, { ownerId, secret }) => {
-    assertProviderWorkerSecret(secret);
-    const settings = await ctx.db
-      .query("postBridgeSettings")
-      .withIndex("by_owner", (query) => query.eq("ownerId", ownerId))
       .unique();
 
     return settings

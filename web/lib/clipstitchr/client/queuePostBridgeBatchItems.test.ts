@@ -1,24 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { queuePostBridgeBatchItems } from "@/lib/clipstitchr/client/queuePostBridgeBatchItems";
-import { submitPostBridgeBatch } from "@/lib/clipstitchr/client/submitPostBridgeBatch";
-import { uploadPostBridgeBatchMediaFile } from "@/lib/clipstitchr/client/uploadPostBridgeBatchMediaFile";
-import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
+import { schedulePostBridgePost } from "@/lib/clipstitchr/client/schedulePostBridgePost";
 import type { PostBridgeBatchQueueItem } from "@/lib/clipstitchr/types/PostBridgeBatchQueueItem";
 
-vi.mock("@/lib/clipstitchr/client/submitPostBridgeBatch", () => ({
-  submitPostBridgeBatch: vi.fn(),
-}));
-
-vi.mock("@/lib/clipstitchr/client/uploadPostBridgeBatchMediaFile", () => ({
-  uploadPostBridgeBatchMediaFile: vi.fn(),
-}));
-
-vi.mock("@/lib/clipstitchr/client/r2/deleteObjectsFromR2", () => ({
-  deleteObjectsFromR2: vi.fn(async () => undefined),
-}));
-
-vi.mock("@/lib/clipstitchr/utils/shufflePostBridgeBatchEntries", () => ({
-  shufflePostBridgeBatchEntries: <Entry,>(entries: Entry[]) => entries,
+vi.mock("@/lib/clipstitchr/client/schedulePostBridgePost", () => ({
+  schedulePostBridgePost: vi.fn(),
 }));
 
 function createItem(id: string): PostBridgeBatchQueueItem {
@@ -46,27 +32,10 @@ function createItem(id: string): PostBridgeBatchQueueItem {
 
 describe("queuePostBridgeBatchItems", () => {
   beforeEach(() => {
-    vi.mocked(submitPostBridgeBatch).mockReset();
-    vi.mocked(uploadPostBridgeBatchMediaFile).mockReset();
-    vi.mocked(deleteObjectsFromR2).mockClear();
-    vi.mocked(uploadPostBridgeBatchMediaFile).mockImplementation(
-      async ({ mediaFile, sourceId }) => ({
-        media: {
-          mediaKind: mediaFile.mediaKind,
-          mimeType: mediaFile.blob.type,
-          name: mediaFile.fileName,
-          sizeBytes: mediaFile.blob.size,
-        },
-        sourceObject: {
-          contentType: mediaFile.blob.type,
-          key: `users/user_1/post-bridge-media/${sourceId}`,
-          size: mediaFile.blob.size,
-        },
-      }),
-    );
+    vi.mocked(schedulePostBridgePost).mockReset();
   });
 
-  it("prepares each item and submits one background batch", async () => {
+  it("queues items sequentially with their own edited captions", async () => {
     const firstItem = createItem("one");
     const secondItem = createItem("two");
     const callOrder: string[] = [];
@@ -78,25 +47,9 @@ describe("queuePostBridgeBatchItems", () => {
       callOrder.push("render-two");
       return { hasAudio: false, mediaFiles: [{ blob: new Blob(), fileName: "two.png", mediaKind: "image" }] };
     });
-    vi.mocked(uploadPostBridgeBatchMediaFile).mockImplementation(async (options) => {
-      callOrder.push(`upload-${options.sourceId}`);
-      return {
-        media: {
-          mediaKind: options.mediaFile.mediaKind,
-          mimeType: "image/png",
-          name: options.mediaFile.fileName,
-          sizeBytes: 1,
-        },
-        sourceObject: {
-          contentType: "image/png",
-          key: `users/user_1/post-bridge-media/${options.sourceId}`,
-          size: 1,
-        },
-      };
-    });
-    vi.mocked(submitPostBridgeBatch).mockImplementation(async () => {
-      callOrder.push("submit-batch");
-      return { jobId: "provider:post-bridge-batch:1" };
+    vi.mocked(schedulePostBridgePost).mockImplementation(async (options) => {
+      callOrder.push(`queue-${options.sourceId}`);
+      return {} as Awaited<ReturnType<typeof schedulePostBridgePost>>;
     });
 
     await queuePostBridgeBatchItems({
@@ -109,39 +62,37 @@ describe("queuePostBridgeBatchItems", () => {
       socialAccountIds: [12],
     });
 
-    expect(callOrder).toEqual([
-      "render-one",
-      "upload-one",
-      "render-two",
-      "upload-two",
-      "submit-batch",
-    ]);
-    expect(submitPostBridgeBatch).toHaveBeenCalledWith({
-      items: [
-        expect.objectContaining({ caption: "Edited first", sourceId: "one" }),
-        expect.objectContaining({ caption: "Edited second", sourceId: "two" }),
-      ],
-      socialAccountIds: [12],
-    });
+    expect(callOrder).toEqual(["render-one", "queue-one", "render-two", "queue-two"]);
+    expect(schedulePostBridgePost).toHaveBeenNthCalledWith(1, expect.objectContaining({ caption: "Edited first", sourceId: "one", useQueue: true }));
+    expect(schedulePostBridgePost).toHaveBeenNthCalledWith(2, expect.objectContaining({ caption: "Edited second", sourceId: "two", useQueue: true }));
   });
 
-  it("does not submit the worker job when media preparation fails", async () => {
-    const item = createItem("one");
-    vi.mocked(item.renderMedia).mockRejectedValue(new Error("Render failed."));
+  it("resumes at the first unfinished item", async () => {
+    const firstItem = createItem("one");
+    const secondItem = createItem("two");
+    const thirdItem = createItem("three");
 
-    await expect(
-      queuePostBridgeBatchItems({
-        captions: ["First"],
-        items: [item],
-        musicTrack: null,
-        onCompletedCountChange: vi.fn(),
-        onProgressChange: vi.fn(),
-        platforms: ["instagram"],
-        socialAccountIds: [12],
-      }),
-    ).rejects.toThrow("Render failed.");
+    await queuePostBridgeBatchItems({
+      captions: ["First", "Second", "Third"],
+      items: [firstItem, secondItem, thirdItem],
+      musicTrack: null,
+      onCompletedCountChange: vi.fn(),
+      onProgressChange: vi.fn(),
+      platforms: ["instagram"],
+      socialAccountIds: [12],
+      startIndex: 1,
+    });
 
-    expect(submitPostBridgeBatch).not.toHaveBeenCalled();
-    expect(deleteObjectsFromR2).toHaveBeenCalledWith([]);
+    expect(firstItem.renderMedia).not.toHaveBeenCalled();
+    expect(secondItem.renderMedia).toHaveBeenCalledOnce();
+    expect(thirdItem.renderMedia).toHaveBeenCalledOnce();
+    expect(schedulePostBridgePost).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ sourceId: "two" }),
+    );
+    expect(schedulePostBridgePost).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ sourceId: "three" }),
+    );
   });
 });

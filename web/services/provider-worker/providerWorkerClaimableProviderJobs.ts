@@ -10,5 +10,4 @@ export const PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS = [
   ["upload-video-analysis", "stitchr"],
   ["stitch-score-analysis", "stitchr"],
   ["hook-lab-post-analysis", "stitchr"],
-  ["post-bridge-batch", "post-bridge"],
 ] as const satisfies readonly (readonly [string, ProviderTool])[];

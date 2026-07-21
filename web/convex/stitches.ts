@@ -3,7 +3,6 @@ import { v } from "convex/values";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
-import { addPostBridgePostToStitch } from "./addPostBridgePostToStitch";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
@@ -23,6 +22,7 @@ import { quickEditCropValidator } from "./validators/quickEditCrop";
 import { quickEditRemoveRangeValidator } from "./validators/quickEditRemoveRange";
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
 import { postBridgePostReferenceValidator } from "./validators/postBridgePostReference";
+import { upsertPostBridgePostProductMapping } from "./postBridgePostProductMappings";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchScoreValidator } from "./validators/stitchScore";
 import { stitchrModeValidator } from "./validators/stitchrMode";
@@ -1309,20 +1309,48 @@ export const addPostBridgePost = mutation({
   },
   handler: async (ctx, { id, post }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    await addPostBridgePostToStitch(ctx, ownerId, id, post);
-  },
-});
+    const postedAt = new Date().toISOString();
 
-export const addPostBridgePostFromProvider = mutation({
-  args: {
-    id: v.string(),
-    ownerId: v.string(),
-    post: postBridgePostReferenceValidator,
-    secret: v.string(),
-  },
-  handler: async (ctx, { id, ownerId, post, secret }) => {
-    assertProviderWorkerSecret(secret);
-    await addPostBridgePostToStitch(ctx, ownerId, id, post);
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      isPosted: true,
+      postBridgePosts: [
+        ...(stitch.postBridgePosts ?? []).filter(
+          (existingPost) => existingPost.postId !== post.postId,
+        ),
+        post,
+      ],
+      postedAt: stitch.postedAt ?? postedAt,
+    });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertPostBridgePostProductMapping(ctx, {
+          ownerId,
+          post,
+          productId: updatedStitch.productId,
+          sourceId: updatedStitch.id,
+          sourceType: "stitch",
+        }),
+        upsertStitchCard(ctx, updatedStitch),
+      ]);
+    }
   },
 });
 
