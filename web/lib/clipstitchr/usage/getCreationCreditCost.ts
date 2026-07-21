@@ -17,6 +17,9 @@ export function getCreationCreditCost(
     case "background_photo":
     case "photo_expansion":
       return policy.standalonePhotoCreditCost;
+    case "ai_analysis":
+    case "hook_lab_analysis":
+      return 1;
     case "clipr_video":
     case "swapr_video":
       return 0;

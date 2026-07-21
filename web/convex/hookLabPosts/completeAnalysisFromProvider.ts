@@ -4,6 +4,7 @@ import { mutation } from "../_generated/server";
 import { hookLabPostAnalysisValidator } from "../validators/hookLabPostAnalysis";
 import { hookLabPostMetricsValidator } from "../validators/hookLabPostMetrics";
 import { r2ObjectValidator } from "../validators/r2Object";
+import { commitUsageReservationForOwner } from "../usage/commitUsageReservation";
 
 export const completeAnalysisFromProvider = mutation({
   args: {
@@ -28,6 +29,7 @@ export const completeAnalysisFromProvider = mutation({
     sourcePostId: v.optional(v.string()),
     sourceText: v.optional(v.string()),
     thumbnailObject: v.optional(r2ObjectValidator),
+    usageReservationId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     assertProviderWorkerSecret(args.secret);
@@ -66,6 +68,23 @@ export const completeAnalysisFromProvider = mutation({
       thumbnailObject: args.thumbnailObject ?? post.thumbnailObject,
       updatedAt: args.analyzedAt,
     });
+
+    if (args.usageReservationId) {
+      await commitUsageReservationForOwner(
+        ctx,
+        args.ownerId,
+        args.usageReservationId,
+        args.analyzedAt,
+        "worker",
+        {
+          domainId: post.id,
+          domainKind: "analysis",
+          operation: "hook_lab_analysis",
+          reservationKind: "worker",
+          resource: "creation_credit",
+        },
+      );
+    }
 
     return post.id;
   },

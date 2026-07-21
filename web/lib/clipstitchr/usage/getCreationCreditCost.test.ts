@@ -46,4 +46,11 @@ describe("getCreationCreditCost", () => {
       ]);
     }
   });
+
+  it("charges one credit for AI and Hook Lab analysis", () => {
+    for (const planKey of ["starter", "pro", "agency"] as const) {
+      expect(getCreationCreditCost(planKey, "ai_analysis")).toBe(1);
+      expect(getCreationCreditCost(planKey, "hook_lab_analysis")).toBe(1);
+    }
+  });
 });

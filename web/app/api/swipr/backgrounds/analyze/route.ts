@@ -11,6 +11,7 @@ import { getUploadAnalysisFormString } from "@/lib/clipstitchr/server/getUploadA
 import { parseSwiprBackgroundAnalysis } from "@/lib/clipstitchr/server/parseSwiprBackgroundAnalysis";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
+import { runAnalysisWithCredit } from "@/lib/clipstitchr/server/usage/runAnalysisWithCredit";
 
 export const runtime = "nodejs";
 
@@ -36,16 +37,22 @@ export async function POST(request: Request) {
       secret: getRateLimitApiSecret(),
     });
 
-    const replicate = createReplicateClient();
-    const outputText = await createSwiprBackgroundAnalysisOutputText({
-      file: getUploadAnalysisFormFile(formData, "file"),
-      originalName,
-      replicate,
+    const analysis = await runAnalysisWithCredit({
+      client: convex,
+      operation: "ai_analysis",
+      secret: getRateLimitApiSecret(),
+      work: async () => {
+        const outputText = await createSwiprBackgroundAnalysisOutputText({
+          file: getUploadAnalysisFormFile(formData, "file"),
+          originalName,
+          replicate: createReplicateClient(),
+        });
+
+        return parseSwiprBackgroundAnalysis(outputText, originalName);
+      },
     });
 
-    return NextResponse.json(
-      parseSwiprBackgroundAnalysis(outputText, originalName),
-    );
+    return NextResponse.json(analysis);
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);
 

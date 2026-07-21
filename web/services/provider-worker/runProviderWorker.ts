@@ -3388,6 +3388,7 @@ async function failProviderJob({
         id: parseHookLabPostAnalysisJobInput(job.inputSnapshotJson).postId,
         ...failure,
         updatedAt: getNow(),
+        usageReservationId: job.usageReservationId,
       },
     );
     return;

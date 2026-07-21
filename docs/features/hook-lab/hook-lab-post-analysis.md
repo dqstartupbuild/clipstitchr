@@ -1,5 +1,10 @@
 # Hook Lab Post Analysis
 
+Each completed Hook Lab analysis consumes 1 creation credit. The credit is
+reserved before the provider job is queued, committed only after the analysis
+is saved, and released if dispatch or analysis fails. Retrying a failed post is
+a new usage only when that retry completes successfully.
+
 Hook Lab is a focused saved-post analyzer at `/dashboard/hooks`. A signed-in
 user can paste one public TikTok video URL or Instagram Reel/video-post URL,
 save the post, and receive a full-video report in a dialog.

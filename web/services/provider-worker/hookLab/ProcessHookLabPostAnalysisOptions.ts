@@ -7,6 +7,7 @@ export type ProcessHookLabPostAnalysisOptions = {
     inputSnapshotJson: string;
     ownerId: string;
     stage: string;
+    usageReservationId?: string;
   };
   providerWorkerSecret: string;
 };

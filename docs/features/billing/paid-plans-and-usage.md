@@ -34,6 +34,11 @@ The refill expires 12 months after payment and never adds videos. Monthly
 credits are spent first. Refill grants are then spent in expiry order, with the
 earliest expiry first.
 
+Each successful AI analysis, clip score, Swipr background analysis, or Hook Lab
+post analysis costs 1 creation credit. Failed analysis attempts release the
+held credit. Automated Stitchr, Swipr, and Clipr runs use the same credit or
+shared-video allowance as their direct counterparts.
+
 ## Commercial Billing Policy
 
 The approved customer policy is part of the production billing contract:

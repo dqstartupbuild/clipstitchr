@@ -64,6 +64,7 @@ export async function processHookLabPostAnalysis({
         sourcePostId: result.sourcePostId,
         sourceText: result.sourceText,
         thumbnailObject: result.thumbnailObject,
+        usageReservationId: job.usageReservationId,
       },
     );
   } catch (error) {

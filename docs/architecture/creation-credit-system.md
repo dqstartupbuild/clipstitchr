@@ -104,6 +104,8 @@ is disabled before launch, the account becomes inactive immediately instead.
 | Standalone avatar photo    | Creation credits   |   25 | New generated `photoAssets` result is durably saved            |
 | Standalone AI background   | Creation credits   |   25 | New generated background asset is durably saved                |
 | Standalone photo expansion | Creation credits   |   25 | New expanded `photoAssets` result is durably saved             |
+| AI analysis                | Creation credits   |    1 | The requested analysis or score is returned successfully       |
+| Hook Lab post analysis     | Creation credits   |    1 | The completed analysis is durably saved to the Hook Lab post   |
 | Clipr video                | AI-video allowance |    1 | Final Clipr `videoClips` result is saved and job is completed  |
 | Swapr video                | AI-video allowance |    1 | Final Swapr `videoClips` result is saved and job is completed  |
 | Clipr required scene still | Included in Clipr  |    0 | Never receives a separate creation-credit reservation          |
@@ -117,12 +119,19 @@ The following actions cost zero credits:
 - using an already-owned avatar photo in Clipr;
 - uploading user media;
 - importing an included Pexels or library asset;
-- Hook Lab, clip scoring, metadata analysis, and ordinary Convex writes;
+- ordinary Convex writes;
 - retries belonging to the same logical generation;
 - provider or worker recovery for the same logical generation.
 
 Deleting an output does not return credits. A deliberate regeneration that
 creates a new output is a new billable operation.
+
+Hook Lab retries use a new credit only when a new analysis completes. Failed
+analysis work releases its reservation. Upload analysis, clip scoring, and
+Swipr background analysis follow the same reserve, commit, and release rule.
+Automation uses the same durable usage reservations as direct creation:
+Stitchr and Swipr consume creation credits, while Clipr consumes one unit from
+the shared Clipr + Swapr video allowance.
 
 Editing an existing generated Swipe may omit its internal usage-reservation ID
 from the browser payload. The save mutation preserves the reservation already

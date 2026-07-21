@@ -1,4 +1,5 @@
 import type { ConvexHttpClient } from "convex/browser";
+import { anyApi } from "convex/server";
 import { api } from "@/convex/_generated/api";
 import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
@@ -15,6 +16,7 @@ export async function createHookLabPostRoute(request: Request) {
   const ownerId = await getAuthenticatedUserId();
   let convex: ConvexHttpClient | null = null;
   let analyzingPostId: string | null = null;
+  let usageReservationId: string | null = null;
 
   if (!ownerId) {
     return createAuthenticationRequiredResponse();
@@ -69,6 +71,17 @@ export async function createHookLabPostRoute(request: Request) {
       idempotencyKey,
       secret: rateLimitSecret,
     });
+    const usage = await convex.mutation(
+      anyApi.usage.reserveAnalysisCredit.reserveAnalysisCredit,
+      {
+        domainId: post.id,
+        idempotencyKey,
+        now: createdAt,
+        operation: "hook_lab_analysis",
+        secret: rateLimitSecret,
+      },
+    );
+    usageReservationId = usage?.reservationId ?? null;
     const job = await convex.mutation(api.providerJobs.create, {
       createdAt,
       id: jobId,
@@ -78,6 +91,7 @@ export async function createHookLabPostRoute(request: Request) {
       ownerId,
       secret: rateLimitSecret,
       stage: "awaiting-provider",
+      usageReservationId: usage?.reservationId ?? undefined,
     });
 
     await capturePostHogServerEvent({
@@ -97,6 +111,16 @@ export async function createHookLabPostRoute(request: Request) {
         client: convex,
         postId: analyzingPostId,
       }).catch(() => undefined);
+    }
+    if (convex && usageReservationId) {
+      await convex
+        .mutation(anyApi.usage.releaseAnalysisCredit.releaseAnalysisCredit, {
+          now: new Date().toISOString(),
+          reason: "Hook Lab analysis could not be queued.",
+          reservationId: usageReservationId,
+          secret: getRateLimitApiSecret(),
+        })
+        .catch(() => undefined);
     }
 
     const rateLimitResponse = createRateLimitExceededResponse(error);

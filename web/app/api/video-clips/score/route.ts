@@ -16,6 +16,7 @@ import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2Downloa
 import { readVideoClipScoreRequest } from "@/lib/clipstitchr/server/readVideoClipScoreRequest";
 import { getClipCanBeScored } from "@/lib/clipstitchr/utils/getClipCanBeScored";
 import { mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis } from "@/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis";
+import { runAnalysisWithCredit } from "@/lib/clipstitchr/server/usage/runAnalysisWithCredit";
 
 export const runtime = "nodejs";
 
@@ -55,37 +56,47 @@ export async function POST(request: Request) {
       secret: getRateLimitApiSecret(),
     });
 
-    assertR2ObjectKeyBelongsToUser(clip.videoObject.key, userId);
+    const performanceScore = await runAnalysisWithCredit({
+      client: convex,
+      operation: "ai_analysis",
+      secret: getRateLimitApiSecret(),
+      work: async () => {
+        assertR2ObjectKeyBelongsToUser(clip.videoObject.key, userId);
+        const sourceUrl = (await getR2DownloadSignedUrl(clip.videoObject.key))
+          .url;
+        const fallbackImageFile = clip.posterObject
+          ? await createFileFromR2Object({
+              fallbackFileName: "clip-score-poster.jpg",
+              object: clip.posterObject,
+              userId,
+            }).catch(() => undefined)
+          : undefined;
+        const detectorCandidates = await createQuickEditDetectorCandidates({
+          sourceUrl,
+        });
+        const outputText = await createUploadVideoAnalysisOutputText({
+          detectorCandidates,
+          fallbackImageFile,
+          mediaKind:
+            clip.clipType === "demo" ? "demo-video" : "ugc-video",
+          originalName: clip.originalName,
+          replicate: createReplicateClient(),
+          sourceSizeBytes: clip.videoObject.size,
+          sourceUrl,
+        });
 
-    const sourceUrl = (await getR2DownloadSignedUrl(clip.videoObject.key)).url;
-    const fallbackImageFile = clip.posterObject
-      ? await createFileFromR2Object({
-          fallbackFileName: "clip-score-poster.jpg",
-          object: clip.posterObject,
-          userId,
-        }).catch(() => undefined)
-      : undefined;
-    const detectorCandidates = await createQuickEditDetectorCandidates({
-      sourceUrl,
-    });
-    const outputText = await createUploadVideoAnalysisOutputText({
-      detectorCandidates,
-      fallbackImageFile,
-      mediaKind: clip.clipType === "demo" ? "demo-video" : "ugc-video",
-      originalName: clip.originalName,
-      replicate: createReplicateClient(),
-      sourceSizeBytes: clip.videoObject.size,
-      sourceUrl,
-    });
-    const performanceScore =
-      mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis({
-        analysis: parseUploadAssetAnalysis(outputText, clip.originalName),
-        detectorCandidates,
-      }).performanceScore;
+        const score = mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis({
+          analysis: parseUploadAssetAnalysis(outputText, clip.originalName),
+          detectorCandidates,
+        }).performanceScore;
 
-    if (!performanceScore) {
-      throw new Error("The clip score came back empty.");
-    }
+        if (!score) {
+          throw new Error("The clip score came back empty.");
+        }
+
+        return score;
+      },
+    });
 
     await convex.mutation(api.videoClips.updatePerformanceScore, {
       id: clip.id,

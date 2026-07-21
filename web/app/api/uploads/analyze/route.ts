@@ -18,6 +18,7 @@ import { parseUploadAssetAnalysis } from "@/lib/clipstitchr/server/parseUploadAs
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis } from "@/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis";
+import { runAnalysisWithCredit } from "@/lib/clipstitchr/server/usage/runAnalysisWithCredit";
 
 export const runtime = "nodejs";
 
@@ -62,37 +63,47 @@ export async function POST(request: Request) {
       },
     );
 
-    const replicate = createReplicateClient();
-    const detectorCandidates = isVideoAnalysis
-      ? await createQuickEditDetectorCandidates({ file, sourceUrl })
-      : [];
-    const outputText = isVideoAnalysis
-      ? await createUploadVideoAnalysisOutputText({
-          detectorCandidates,
-          fallbackImageFile,
-          file,
-          mediaKind,
-          originalName,
-          replicate,
-          sourceSizeBytes,
-          sourceUrl,
-        })
-      : await createUploadImageAnalysisOutputText({
-          file: getUploadAnalysisFormFile(formData, "file"),
-          mediaKind,
-          originalName,
-          replicate,
-        });
+    const analysis = await runAnalysisWithCredit({
+      client: convex,
+      operation: "ai_analysis",
+      secret: getRateLimitApiSecret(),
+      work: async () => {
+        const replicate = createReplicateClient();
+        const detectorCandidates = isVideoAnalysis
+          ? await createQuickEditDetectorCandidates({ file, sourceUrl })
+          : [];
+        const outputText = isVideoAnalysis
+          ? await createUploadVideoAnalysisOutputText({
+              detectorCandidates,
+              fallbackImageFile,
+              file,
+              mediaKind,
+              originalName,
+              replicate,
+              sourceSizeBytes,
+              sourceUrl,
+            })
+          : await createUploadImageAnalysisOutputText({
+              file: getUploadAnalysisFormFile(formData, "file"),
+              mediaKind,
+              originalName,
+              replicate,
+            });
 
-    const analysis = parseUploadAssetAnalysis(outputText, originalName);
+        return {
+          detectorCandidates,
+          parsed: parseUploadAssetAnalysis(outputText, originalName),
+        };
+      },
+    });
 
     return NextResponse.json(
       isVideoAnalysis
         ? mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis({
-            analysis,
-            detectorCandidates,
+            analysis: analysis.parsed,
+            detectorCandidates: analysis.detectorCandidates,
           })
-        : analysis,
+        : analysis.parsed,
     );
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

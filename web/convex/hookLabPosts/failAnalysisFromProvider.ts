@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { assertProviderWorkerSecret } from "../auth/assertProviderWorkerSecret";
 import { mutation } from "../_generated/server";
+import { releaseUsageReservationForOwner } from "../usage/releaseUsageReservation";
 
 export const failAnalysisFromProvider = mutation({
   args: {
@@ -10,6 +11,7 @@ export const failAnalysisFromProvider = mutation({
     ownerId: v.string(),
     secret: v.string(),
     updatedAt: v.string(),
+    usageReservationId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     assertProviderWorkerSecret(args.secret);
@@ -30,6 +32,16 @@ export const failAnalysisFromProvider = mutation({
       status: "failed",
       updatedAt: args.updatedAt,
     });
+
+    if (args.usageReservationId) {
+      await releaseUsageReservationForOwner(
+        ctx,
+        args.ownerId,
+        args.usageReservationId,
+        args.updatedAt,
+        "Hook Lab analysis failed.",
+      );
+    }
 
     return post.id;
   },
