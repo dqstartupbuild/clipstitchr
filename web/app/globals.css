@@ -3958,7 +3958,6 @@
 
 .dashboard-main {
   position: relative;
-  isolation: isolate;
 }
 
 .dashboard-main::before {

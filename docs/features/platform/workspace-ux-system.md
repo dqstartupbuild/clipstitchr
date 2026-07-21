@@ -95,6 +95,15 @@ the panel or a single `min-h-0` content region. Keep the header and close
 control outside an internal scrolling content region when the dialog contains
 a long report or list.
 
+The outer `dashboard-shell` owns the dashboard stacking context. Do not add
+`isolation`, transforms, filters, containment, or other stacking-context
+properties to `dashboard-main`: dialogs are rendered from route content inside
+that element and must be able to layer above the sibling mobile header. The
+mobile header uses `z-30`, while standard dialog viewports begin at `z-50`.
+Trapping a dialog inside a separate main-content stacking context lets the
+header cover the dialog title and close control even when the dialog itself has
+the higher local z-index.
+
 Media cards use `MediaPrimaryAction` for the clearest next action:
 
 - Clips: Use in Stitchr
@@ -148,4 +157,5 @@ signed-in hydration warning. Test the mobile navigation drawer with real open
 and close clicks. Open representative short and tall dashboard dialogs at
 desktop and phone heights. Confirm the top edge and close control are visible
 at scroll position zero, the bottom content is reachable, and returning to the
-top does not stop before the header.
+top does not stop before the header. Confirm the sticky mobile dashboard header
+is visibly dimmed by the modal backdrop and never covers any part of the dialog.
