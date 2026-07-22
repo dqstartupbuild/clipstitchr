@@ -57,13 +57,13 @@ export function HookLabPostCard({
           </p>
         ) : null}
         <div className="mt-4 flex flex-wrap gap-2">
-          {post.status === "ready" && post.analysis ? (
+          {post.analysis && post.status !== "analyzing" ? (
             <Button
               className="flex-1"
               type="button"
               onClick={() => onOpen(post)}
             >
-              Read analysis
+              {post.status === "ready" ? "Read analysis" : "Read previous analysis"}
             </Button>
           ) : null}
           {canRetry ? (

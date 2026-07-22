@@ -20,6 +20,7 @@ post, and receive a complete report in a dialog.
 - Keep the source URL, creator attribution, caption, publication time, public
   metrics, thumbnail, analysis status, and completed report.
 - Open a completed report without leaving Hook Lab.
+- Re-analyze a completed report without deleting or re-importing the saved post.
 - Retry a failed analysis.
 - Delete a saved post and its stored thumbnail.
 
@@ -58,6 +59,13 @@ but is not dependable.
     `HookLabPostAnalysisDialog`.
 12. Temporary local images, rendered/source video, and R2 media are deleted.
     Only the saved post, report, and thumbnail remain.
+
+Completed reports include a `Re-analyze` action and a clear one-credit notice
+in the dialog header. It uses the same owner checks, analysis limits, credit lifecycle, and
+provider-job pipeline as a failed-analysis retry. The saved post and reusable
+social-provider lineage stay in place. The previous report remains stored
+until the replacement succeeds, and the dialog closes after the new job is
+successfully queued so the post card can show live analysis progress.
 
 The completed report uses the same warm dark surface, border, typography,
 header, close control, and shadow treatment as other dashboard dialogs. Its
@@ -152,7 +160,8 @@ credit lifecycle.
 ## Rate limits and abuse protection
 
 The create and retry routes call `consumeHookLabPostAnalysis` before creating a
-provider job. Current limits are 90 analyses per user per day with burst 15 and
+provider job. Completed-post re-analysis uses the retry route and the same
+limits. Current limits are 90 analyses per user per day with burst 15 and
 3,000 globally per day with burst 600 across five shards. The operation also
 reserves shared provider spend. Convex metadata writes, deletes, and signed R2
 operations keep their independent limits and ownership checks.

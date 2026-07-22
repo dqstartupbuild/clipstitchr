@@ -30,14 +30,23 @@ export async function retryHookLabPostRoute(request: Request, id: string) {
 
     convex = createAuthenticatedConvexHttpClient(token);
     const updatedAt = new Date().toISOString();
-    const postId = await convex.mutation(api.hookLabPosts.retry.retry, {
-      id,
-      updatedAt,
-    });
-    analyzingPostId = postId;
+    const post = await convex.query(api.hookLabPosts.get.get, { id });
+
+    if (!post) {
+      throw new Error("Post not found.");
+    }
+
+    if (
+      post.status !== "ready" &&
+      post.status !== "failed" &&
+      post.status !== "needs_attention"
+    ) {
+      throw new Error("This post is already being analyzed.");
+    }
+
     const attemptId = createId();
-    const jobId = `provider:hook-lab-post-analysis:${postId}:${attemptId}`;
-    const idempotencyKey = `${ownerId}:hook-lab-post-analysis:${postId}:${attemptId}`;
+    const jobId = `provider:hook-lab-post-analysis:${post.id}:${attemptId}`;
+    const idempotencyKey = `${ownerId}:hook-lab-post-analysis:${post.id}:${attemptId}`;
     const rateLimitSecret = getRateLimitApiSecret();
 
     await convex.mutation(api.rateLimits.consumeHookLabPostAnalysis, {
@@ -47,7 +56,7 @@ export async function retryHookLabPostRoute(request: Request, id: string) {
     const usage = await convex.mutation(
       anyApi.usage.reserveAnalysisCredit.reserveAnalysisCredit,
       {
-        domainId: postId,
+        domainId: post.id,
         idempotencyKey,
         now: updatedAt,
         operation: "hook_lab_analysis",
@@ -55,6 +64,11 @@ export async function retryHookLabPostRoute(request: Request, id: string) {
       },
     );
     usageReservationId = usage?.reservationId ?? null;
+    const postId = await convex.mutation(api.hookLabPosts.retry.retry, {
+      id: post.id,
+      updatedAt,
+    });
+    analyzingPostId = postId;
     const job = await convex.mutation(api.providerJobs.create, {
       createdAt: updatedAt,
       id: jobId,
@@ -70,7 +84,10 @@ export async function retryHookLabPostRoute(request: Request, id: string) {
     await capturePostHogServerEvent({
       distinctId: ownerId,
       event: "hook_lab_post_analysis_started",
-      properties: { is_retry: true },
+      properties: {
+        is_reanalysis: post.status === "ready",
+        is_retry: true,
+      },
       request,
     });
 

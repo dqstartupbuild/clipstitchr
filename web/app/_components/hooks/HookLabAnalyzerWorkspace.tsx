@@ -20,6 +20,7 @@ export function HookLabAnalyzerWorkspace() {
   const removeAction = useRemoveHookLabPost();
   const [selectedPost, setSelectedPost] = useState<HookLabPost | null>(null);
   const [postToDelete, setPostToDelete] = useState<HookLabPost | null>(null);
+  const [reanalyzeError, setReanalyzeError] = useState<string | null>(null);
   const [pageError, setPageError] = useState<string | null>(null);
 
   return (
@@ -41,7 +42,10 @@ export function HookLabAnalyzerWorkspace() {
           retryingPostId={retryAction.retryingPostId}
           onDelete={setPostToDelete}
           onLoadMore={posts.loadMore}
-          onOpen={setSelectedPost}
+          onOpen={(post) => {
+            setReanalyzeError(null);
+            setSelectedPost(post);
+          }}
           onRetry={(post) => {
             setPageError(null);
             void retryAction
@@ -59,8 +63,24 @@ export function HookLabAnalyzerWorkspace() {
       </div>
       {selectedPost ? (
         <HookLabPostAnalysisDialog
+          isReanalyzing={retryAction.retryingPostId === selectedPost.id}
           post={selectedPost}
+          reanalyzeError={reanalyzeError}
           onClose={() => setSelectedPost(null)}
+          onReanalyze={() => {
+            setReanalyzeError(null);
+            void retryAction
+              .retry(selectedPost.id)
+              .then(() => setSelectedPost(null))
+              .catch((error) =>
+                setReanalyzeError(
+                  getErrorMessage(
+                    error,
+                    "Unable to re-analyze that post.",
+                  ),
+                ),
+              );
+          }}
         />
       ) : null}
       {postToDelete ? (

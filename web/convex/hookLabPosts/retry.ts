@@ -27,18 +27,23 @@ export const retry = mutation({
       throw new Error("Post not found.");
     }
 
-    if (post.status !== "failed" && post.status !== "needs_attention") {
-      throw new Error("This post does not need another analysis right now.");
+    if (
+      post.status !== "failed" &&
+      post.status !== "needs_attention" &&
+      post.status !== "ready"
+    ) {
+      throw new Error("This post is already being analyzed.");
     }
 
+    const isReanalysis = post.status === "ready";
     const shouldRestartImport =
       post.failureCode === "social_import_failed" ||
       post.failureCode === "social_import_start_unconfirmed" ||
       post.failureCode === "source_video_unavailable";
 
     await ctx.db.patch(post._id, {
-      analysis: undefined,
-      analyzedAt: undefined,
+      analysis: isReanalysis ? post.analysis : undefined,
+      analyzedAt: isReanalysis ? post.analyzedAt : undefined,
       failureCode: undefined,
       failureMessage: undefined,
       providerDatasetId: shouldRestartImport

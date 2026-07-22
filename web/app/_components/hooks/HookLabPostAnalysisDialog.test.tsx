@@ -112,7 +112,13 @@ const post: HookLabPost = {
 describe("HookLabPostAnalysisDialog", () => {
   it("renders the complete saved analysis", () => {
     const markup = renderToStaticMarkup(
-      <HookLabPostAnalysisDialog post={post} onClose={() => undefined} />,
+      <HookLabPostAnalysisDialog
+        isReanalyzing={false}
+        post={post}
+        reanalyzeError={null}
+        onClose={() => undefined}
+        onReanalyze={() => undefined}
+      />,
     );
 
     expect(markup).toContain('role="dialog"');
@@ -132,6 +138,8 @@ describe("HookLabPostAnalysisDialog", () => {
     expect(markup).toContain("How the reference works");
     expect(markup).not.toContain("Hooks with a similar job");
     expect(markup).toContain("Use this format");
+    expect(markup).toContain("Re-analyze");
+    expect(markup).toContain("Re-analysis uses 1 creation credit.");
     expect(markup).toContain("Writing for Guppy Calisthenics");
     expect(markup).toContain("Meaning and remake essentials");
     expect(markup).toContain("Expression and body language");
@@ -146,11 +154,29 @@ describe("HookLabPostAnalysisDialog", () => {
   it("does not render before analysis is ready", () => {
     const markup = renderToStaticMarkup(
       <HookLabPostAnalysisDialog
+        isReanalyzing={false}
         post={{ ...post, analysis: undefined, status: "analyzing" }}
+        reanalyzeError={null}
         onClose={() => undefined}
+        onReanalyze={() => undefined}
       />,
     );
 
     expect(markup).toBe("");
+  });
+
+  it("keeps re-analysis errors visible in the open report", () => {
+    const markup = renderToStaticMarkup(
+      <HookLabPostAnalysisDialog
+        isReanalyzing={false}
+        post={post}
+        reanalyzeError="Unable to re-analyze that post."
+        onClose={() => undefined}
+        onReanalyze={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain("Unable to re-analyze that post.");
+    expect(markup).toContain('aria-describedby="hook-lab-reanalyze-cost"');
   });
 });

@@ -1,6 +1,8 @@
 "use client";
 
 import { ExternalLink, X } from "lucide-react";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
+import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 import { getHookLabPostTitle } from "@/lib/clipstitchr/utils/getHookLabPostTitle";
@@ -15,11 +17,17 @@ import { HookLabMeaningSection } from "./HookLabMeaningSection";
 import { HookLabProductAdaptationSection } from "./HookLabProductAdaptationSection";
 
 export function HookLabPostAnalysisDialog({
+  isReanalyzing,
   post,
+  reanalyzeError,
   onClose,
+  onReanalyze,
 }: {
+  isReanalyzing: boolean;
   post: HookLabPost;
+  reanalyzeError: string | null;
   onClose: () => void;
+  onReanalyze: () => void;
 }) {
   if (!post.analysis) {
     return null;
@@ -43,8 +51,8 @@ export function HookLabPostAnalysisDialog({
         className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-[0_5px_10px_rgba(30,24,19,0.16)] sm:max-h-[calc(100dvh-3rem)]"
         role="dialog"
       >
-        <header className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
-          <div className="min-w-0">
+        <header className="flex flex-wrap items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
+          <div className="min-w-0 flex-1 basis-40">
             <p className="text-sm font-semibold text-accent-dark">
               {post.platform === "tiktok" ? "TikTok" : "Instagram"} analysis
             </p>
@@ -54,15 +62,37 @@ export function HookLabPostAnalysisDialog({
             >
               {getHookLabPostTitle(post)}
             </h2>
+            <p
+              className="mt-1 text-xs text-text-tertiary"
+              id="hook-lab-reanalyze-cost"
+            >
+              Re-analysis uses 1 creation credit.
+            </p>
           </div>
-          <IconButton
-            icon={<X aria-hidden className="size-4" />}
-            label="Close post analysis"
-            onClick={onClose}
-          />
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              isLoading={isReanalyzing}
+              aria-describedby="hook-lab-reanalyze-cost"
+              size="sm"
+              type="button"
+              variant="secondary"
+              onClick={onReanalyze}
+            >
+              Re-analyze
+            </Button>
+            <IconButton
+              disabled={isReanalyzing}
+              icon={<X aria-hidden className="size-4" />}
+              label="Close post analysis"
+              onClick={onClose}
+            />
+          </div>
         </header>
 
         <div className="grid min-h-0 gap-8 overflow-y-auto p-4 sm:p-5">
+          {reanalyzeError ? (
+            <DashboardAlert variant="error">{reanalyzeError}</DashboardAlert>
+          ) : null}
           <section aria-labelledby="hook-lab-report-overview">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <h3
