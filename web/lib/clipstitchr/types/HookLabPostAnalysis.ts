@@ -7,11 +7,14 @@ export type HookLabPostAnalysis = {
   caption?: string;
   copyabilityWarnings?: string[];
   contentSummary: string;
+  culturalContext?: string;
   format: string;
   formatDna?: HookLabFormatDna;
+  likelySubtext?: string;
   onScreenText?: string[];
   openingHook: string;
   performance: HookLabPostPerformanceAnalysis;
+  recreationEssentials?: string[];
   timeline: HookLabPostTimelineEntry[];
   transferableLessons: string[];
 };

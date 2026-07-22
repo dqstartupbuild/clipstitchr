@@ -6,5 +6,6 @@ export type UsageOperation =
   | "photo_expansion"
   | "ai_analysis"
   | "hook_lab_analysis"
+  | "hook_lab_script"
   | "clipr_video"
   | "swapr_video";

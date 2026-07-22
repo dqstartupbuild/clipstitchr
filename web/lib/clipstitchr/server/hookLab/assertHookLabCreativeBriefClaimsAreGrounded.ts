@@ -30,7 +30,18 @@ export function assertHookLabCreativeBriefClaimsAreGrounded({
     brief.productProof,
     brief.callToAction,
     ...brief.beatScript,
-  ].join(" ");
+    brief.adaptedCaption,
+    brief.adaptedConcept,
+    brief.closingCta,
+    brief.openingReaction,
+    brief.productDemonstration,
+    ...(brief.onScreenTextByScene ?? []),
+    ...(brief.propsAndInteractions ?? []),
+    ...(brief.sceneBySceneDirections ?? []),
+    ...(brief.spokenLines ?? []),
+  ]
+    .filter(Boolean)
+    .join(" ");
   const unsupportedSignal = findPublicHookClaimSignals(briefClaims).find(
     (signal) => !supportedKinds.has(signal.kind),
   );

@@ -64,9 +64,10 @@ standalone heading-and-card section.
 The July 16, 2026 Privacy Policy and Terms also cover Hook Lab social sources.
 They explain temporary Apify and AI video processing, the source link and
 attribution, text, private thumbnail, and Idea data that may be retained, the
-user's lawful-use responsibility, and the prohibition on identity or
-shot-for-shot cloning. Keep both pages aligned whenever Hook Lab providers,
-retention, or source handling changes.
+user's lawful-use responsibility, and the prohibition on impersonation,
+identity or voice cloning, watermark removal, and unlawful source
+reproduction. Keep both pages aligned whenever Hook Lab providers, retention,
+or source handling changes.
 
 ## Relevant Code
 

@@ -9,12 +9,18 @@ Reviewed on July 21, 2026 from:
 This note is a product and architecture review. Nothing from LazyReel was
 copied into ClipStitchr as part of the Hook Lab implementation.
 
+> Implementation update, July 22, 2026: the original related-template and
+> destination-handoff proposal below has been superseded. The shipped workflow
+> performs a forensic analysis and rewrites the exact scene mechanics for the
+> globally active product inside Hook Lab. See
+> `docs/features/hook-lab/format-to-product-briefs.md` for the current contract.
+
 ## Recommendation in one sentence
 
-The best idea to borrow is a workflow that turns a saved Hook Lab analysis into
-reusable format DNA, then adapts that structure to one of the user's saved
-products for Clipr, Stitchr, or Swipr without copying the source creator's words
-or inventing product claims.
+The implemented direction is a workflow that turns a saved forensic Hook Lab
+analysis into a faithful scene-by-scene adaptation for the globally active
+product without inventing product claims or imitating the source creator's
+identity.
 
 ## What is useful in LazyReel
 
@@ -49,17 +55,17 @@ The most relevant LazyReel files were:
 
 ## Highest-value feature: Use this format for my product
 
-Add a future action to each completed Hook Lab report:
+The current action in each completed Hook Lab report is:
 
 ```text
 Use this format
-  -> choose a saved product
-  -> choose Clipr, Stitchr, or Swipr
-  -> review a generated creative brief
-  -> create the draft in the selected tool
+  -> use the globally active product
+  -> preserve scene, reaction, prop, copy, timing, joke, reveal, and payoff mechanics
+  -> review and edit the saved script in the report
+  -> copy or regenerate without leaving Hook Lab
 ```
 
-The source post should contribute structure only:
+The source post contributes its recognizable creative mechanics:
 
 - the visual question or tension in the opening;
 - the type and timing of the first payoff;
@@ -69,11 +75,15 @@ The source post should contribute structure only:
 - the role and entry point of the product;
 - the CTA style;
 - the signature device that makes the idea memorable.
+- expression and body-language direction;
+- prop placement and interaction order;
+- spoken-copy, on-screen-text, and caption structure.
 
 The saved ClipStitchr product should remain the only source of product facts,
 claims, audience details, pain points, and benefits. The generated draft should
-never reuse the creator's caption, spoken lines, or distinctive phrasing unless
-the user explicitly authored that source material.
+adapt source wording to the selected product. Generic wording may remain, but
+the output must not imitate the creator's identity, likeness, personal
+mannerisms, distinctive catchphrases, or unsupported claims.
 
 ### Suggested format-DNA fields
 

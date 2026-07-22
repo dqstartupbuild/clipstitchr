@@ -6,6 +6,7 @@ function createReport(timeline: unknown[]) {
     callToAction: "Follow for the next part.",
     caption: "The original caption",
     contentSummary: "A creator names a problem, demonstrates it, then closes.",
+    culturalContext: "The untouched drink likely signals a rushed morning.",
     format: "Direct-to-camera with a product demonstration.",
     formatDna: {
       adObviousness: "The product appears after the problem is clear.",
@@ -33,6 +34,7 @@ function createReport(timeline: unknown[]) {
     },
     onScreenText: ["Three steps", "Try this next"],
     openingHook: "The creator starts with a clear problem.",
+    likelySubtext: "The task likely feels absurdly disruptive.",
     performance: {
       confidence: "The video is observed; retention is inferred.",
       engagementExplanation: "Public plays and likes support moderate interest.",
@@ -45,6 +47,7 @@ function createReport(timeline: unknown[]) {
       strengths: ["The opening is immediately understandable."],
     },
     timeline,
+    recreationEssentials: ["Keep the delayed reveal and reaction pause."],
     transferableLessons: ["Name the problem before showing the product."],
   });
 }
@@ -54,8 +57,13 @@ describe("parseHookLabPostAnalysis", () => {
     const analysis = parseHookLabPostAnalysis(
       createReport([
         {
+          actionsAndReactions:
+            "The creator points to the covered result, then looks back at camera.",
           startSeconds: 0,
           endSeconds: 2.5,
+          facialExpressionAndBodyLanguage:
+            "Raised brows settle into a flat stare after the point.",
+          objectsAndPlacement: "The covered result sits left of the creator.",
           visual: "The creator addresses the camera.",
           audio: "Here is the part nobody tells you.",
         },
@@ -79,6 +87,14 @@ describe("parseHookLabPostAnalysis", () => {
     expect(analysis.caption).toBe("The original caption");
     expect(analysis.onScreenText).toEqual(["Three steps", "Try this next"]);
     expect(analysis.formatDna?.proofDevice).toBe("visible demo");
+    expect(analysis.timeline[0]?.actionsAndReactions).toContain("points");
+    expect(analysis.timeline[0]?.facialExpressionAndBodyLanguage).toContain(
+      "flat stare",
+    );
+    expect(analysis.culturalContext).toContain("rushed morning");
+    expect(analysis.recreationEssentials).toContain(
+      "Keep the delayed reveal and reaction pause.",
+    );
   });
 
   it("keeps the source caption when the model omits its copy field", () => {

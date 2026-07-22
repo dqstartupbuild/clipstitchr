@@ -8,11 +8,11 @@ export function HookLabFormatDnaSection({
   return (
     <section aria-labelledby="hook-lab-format-dna">
       <h3 className="text-xl font-bold text-text-primary" id="hook-lab-format-dna">
-        The reusable shape
+        How the reference works
       </h3>
       <p className="mt-2 max-w-4xl text-sm leading-6 text-text-secondary">
-        Keep the structure. Write new words, use your own footage, and ground
-        every product point in your saved product details.
+        This is the reference&apos;s actual structure. The remake keeps its scene
+        mechanics and timing while fitting your selected product.
       </p>
       <dl className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <div>
@@ -58,7 +58,7 @@ export function HookLabFormatDnaSection({
         </div>
       </dl>
       <div className="mt-6 rounded-lg bg-surface-muted p-4">
-        <p className="text-sm font-semibold text-text-primary">Replication formula</p>
+        <p className="text-sm font-semibold text-text-primary">Remake spine</p>
         <p className="mt-2 text-sm leading-6 text-text-secondary">
           {formatDna.replicationFormula}
         </p>

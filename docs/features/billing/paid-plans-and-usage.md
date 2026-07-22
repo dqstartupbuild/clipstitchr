@@ -35,9 +35,11 @@ credits are spent first. Refill grants are then spent in expiry order, with the
 earliest expiry first.
 
 Each successful AI analysis, clip score, Swipr background analysis, or Hook Lab
-post analysis costs 1 creation credit. Failed analysis attempts release the
-held credit. Automated Stitchr, Swipr, and Clipr runs use the same credit or
-shared-video allowance as their direct counterparts.
+post analysis costs 1 creation credit. Each Hook Lab product-adaptation
+generation or regeneration also costs 1 credit; editing and copying an existing
+script are free. Failed analysis or script-generation attempts release the held
+credit. Automated Stitchr, Swipr, and Clipr runs use the same credit or shared-
+video allowance as their direct counterparts.
 
 ## Commercial Billing Policy
 

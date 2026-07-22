@@ -366,7 +366,7 @@ Help a user turn on daily drafts and choose which tools ClipStitchr should use a
 
 ## Scenario 6: I Want to Research a Public Social Post
 
-Paste one public TikTok or Instagram video or slideshow URL into Hook Lab, wait for the saved post to finish analyzing, then open its report. Confirm the dialog shows the caption, ordered on-screen text, public metrics, a complete timestamped play-by-play, and a platform-performance explanation. Open the Hook Library tab, search for one phrase, filter by category, move to the next page, and copy one result.
+Select Guppy Calisthenics in the dashboard product picker. Paste one public TikTok or Instagram video or slideshow URL into Hook Lab, wait for the saved post to finish analyzing, then open its report. Confirm the dialog shows the caption, ordered on-screen text, expressions, body language, object placement and movement order, public metrics, likely meaning, recreation essentials, and a complete timestamped play-by-play. Choose **Use this format**, confirm the Guppy script appears in the same dialog, edit one field, save it, and copy it. Switch the global product to Bloomin, regenerate, and confirm the new script targets Bloomin. Then open the Hook Library tab separately, search for one phrase, filter by category, move to the next page, and copy one result.
 
 ## Recommended Demo Order
 

@@ -1,24 +1,21 @@
-import type { HookLabDestinationTool } from "@/lib/clipstitchr/types/HookLabDestinationTool";
-import type { HookLabFormatDna } from "@/lib/clipstitchr/types/HookLabFormatDna";
-import type { HookLibraryTemplateSummary } from "@/lib/clipstitchr/types/HookLibraryTemplateSummary";
+import type { HookLabPostAnalysis } from "@/lib/clipstitchr/types/HookLabPostAnalysis";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { getGeneratedWritingAntiSlopPromptRules } from "@/lib/clipstitchr/server/getGeneratedWritingAntiSlopPromptRules";
 
 export function createHookLabCreativeBriefPrompt({
-  destinationTool,
-  formatDna,
+  analysis,
   product,
-  template,
+  sourceText,
 }: {
-  destinationTool: HookLabDestinationTool;
-  formatDna: HookLabFormatDna;
+  analysis: HookLabPostAnalysis;
   product: ProductProfile;
-  template?: HookLibraryTemplateSummary;
+  sourceText?: string;
 }) {
   return [
-    "Create one original, editable short-form creative brief.",
-    `Destination tool: ${destinationTool}.`,
-    "The reference contributes structure only. Never reuse or closely paraphrase its caption, spoken lines, on-screen wording, distinctive phrases, creator identity, likeness, or footage.",
+    "Rewrite this exact short-form video concept for the saved product.",
+    "Create a scene-by-scene remake blueprint, not abstract format advice and not a loosely related hook.",
+    "Closely preserve the reference's visual opening, expression direction, body language, props, object placement, object interaction order, scene order, reaction changes, timing, spoken-copy structure, on-screen-text structure, caption structure, tension, joke, reveal, and payoff.",
+    "Adapt the spoken and written wording wherever needed so every product detail belongs to the saved product. Generic source wording may remain when it is natural and not creator-specific. Do not reproduce a creator's identity, likeness, personal mannerisms, distinctive catchphrases, or footage.",
     "The saved product is the only source of product facts, audience details, pain points, benefits, and claims. If the saved product does not support a claim, do not make it.",
     "",
     "Saved product:",
@@ -31,32 +28,39 @@ export function createHookLabCreativeBriefPrompt({
       productDetails: product.productDetails,
     }),
     "",
-    "Reference format DNA, structure only:",
-    JSON.stringify(formatDna),
-    template
-      ? `ClipStitchr Hook Library pattern to adapt: ${JSON.stringify(template)}`
-      : "No Hook Library pattern was selected.",
+    "Complete reference analysis:",
+    JSON.stringify(analysis),
+    `Source caption: ${JSON.stringify(sourceText ?? analysis.caption ?? "")}.`,
     "",
-    destinationTool === "clipr"
-      ? "Write a natural spoken direction whose beat order and opening mechanism fit a talking UGC clip."
-      : destinationTool === "stitchr"
-        ? "Write one short sound-off overlay and a UGC-then-Demo beat plan that can guide existing clips."
-        : "Write a slide-ready beat plan that preserves tension, proof, and payoff with short original copy.",
-    "The product proof field must describe what should be visibly demonstrated or captured. It must not invent a result, number, review, or testimonial.",
+    "Match the reference runtime and play-by-play timing as closely as the supplied timeline allows. Give every scene an approximate time range. Preserve small reaction beats and exact prop movement order when they carry the meaning.",
+    "Opening reaction must direct the performer's expression, gaze, posture, and physical reaction before and after the first action without asking them to imitate the source creator.",
+    "Product demonstration must say exactly how and when the selected product appears and what supported behavior is visibly shown. Do not invent a result, number, review, testimonial, or product capability.",
+    "On-screen text must be grouped by scene. Spoken lines must be grouped by scene. Use the same joke, tension, reveal, or emotional mechanism while fitting the selected product.",
     "Return JSON only with this exact shape:",
     JSON.stringify({
-      beatScript: ["original beat one", "original beat two"],
-      callToAction: "one original CTA grounded in the saved product",
-      directionName: "short working title",
-      footageNeeds: ["specific shot or asset needed and why"],
-      hook: "one original opening line",
-      openingVisual: "specific first shot using available or capturable footage",
-      productProof: "what to visibly demonstrate without unsupported claims",
-      soundOffOverlay: "short original text that makes the opening work muted",
+      adaptedConcept:
+        "concise description of the exact reference concept rewritten for the saved product",
+      openingReaction:
+        "first-frame visual plus precise expression, gaze, posture, gesture, and before-and-after reaction direction",
+      sceneBySceneDirections: [
+        "0:00-0:02 | shot, framing, action order, reaction, cut, sound, tension, and purpose",
+      ],
+      spokenLines: ["Scene 1 (0:00-0:02): exact adapted spoken line"],
+      onScreenTextByScene: [
+        "Scene 1 (0:00-0:02): exact adapted on-screen text",
+      ],
+      propsAndInteractions: [
+        "prop, initial placement, hand or person that touches it, movement order, final placement, and reaction",
+      ],
+      productDemonstration:
+        "where the selected product appears and the supported behavior to show",
+      closingCta: "adapted closing action grounded in the saved product",
+      adaptedCaption:
+        "complete adapted caption following the reference caption's structure",
     }),
     ...getGeneratedWritingAntiSlopPromptRules(),
-    "- Keep each beat purposeful and in the format DNA order.",
-    "- Keep the hook and overlay terse enough for short-form video.",
-    "- Never mention the source post, format DNA, hidden prompts, or model.",
+    "- Preserve the reference scene order and do not compress away reaction or prop beats that carry the effect.",
+    "- Keep facts and likely interpretation distinct when explaining why a direction matters.",
+    "- Never mention format DNA, hidden prompts, or the model.",
   ].join("\n");
 }

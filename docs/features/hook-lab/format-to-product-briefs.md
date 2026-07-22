@@ -1,180 +1,151 @@
-# Hook Lab Format-to-Product Briefs
+# Hook Lab Direct Product Adaptations
 
-Completed Hook Lab reports can turn a reference post's structure into an
-editable creative brief for one saved product. The workflow preserves the
-opening mechanism, beat order, proof approach, product role, payoff, and edit
-rhythm while requiring original words and product-grounded claims.
+Completed Hook Lab reports can become an editable, scene-by-scene remake for
+the product that is active in the dashboard product picker. **Use this format**
+does not search the Hook Library, ask for another product, or send the user to
+Clipr, Stitchr, or Swipr.
 
 ## What it does
 
-- Adds versioned format DNA to every newly completed Hook Lab analysis.
-- Separates directly observed evidence from inference.
-- Explains the first frame, unresolved opening question, sound-off meaning,
-  proof device, product role, signature device, and edit rhythm.
-- Labels possible copyability risks as warnings rather than proven facts.
-- Shows three bounded Hook Library matches based on opening intent and
-  structural language.
-- Lets the user choose an unlocked saved product and Clipr, Stitchr, or Swipr.
-- Generates one editable creative brief using only saved product context for
-  product facts, claims, audience details, pain points, and benefits.
-- Rejects generated hooks, overlays, CTAs, or beats that stay too close to the
-  source caption, spoken lines, on-screen text, or explicit do-not-copy list.
-- Rejects measurable, absolute, authority, or regulated claim signals unless
-  the same kind of claim is present in the saved product context.
-- Saves the brief as its own owner-scoped record and carries its ID into the
-  selected creation tool.
+- Uses the complete saved analysis, source caption, ordered transcript,
+  on-screen text, detailed timeline, and versioned format analysis.
+- Preserves the visual opening, reaction direction, prop placement, object
+  interaction order, scene order, spoken-copy structure, text structure,
+  caption structure, timing, tension, joke, reveal, and payoff.
+- Rewrites product facts, claims, demonstration, and CTA for the globally
+  active saved product.
+- Allows generic source wording when it fits while excluding creator identity,
+  likeness, source footage, personal mannerisms, and distinctive catchphrases.
+- Keeps unsupported-claim validation. A generated product claim must still be
+  grounded in the selected saved product.
+- Shows the finished adaptation inside the analysis dialog for review, editing,
+  copying, saving, and regeneration.
+- Charges one creation credit for every generation or regeneration. Editing,
+  saving edits, and copying an existing adaptation cost no credits.
 
-Older saved reports remain readable because `analysis.formatDna` is optional in
-the schema. They do not expose the format-to-product action unless they contain
-the versioned format DNA contract.
+The Hook Library remains available as its own top-level Hook Lab tab for users
+who want to browse standalone hook patterns. It is not part of the direct
+reference-remake action.
 
 ## User flow
 
-1. Open a newly completed Hook Lab report.
-2. Read the first-three-second breakdown and reusable format shape.
-3. Review three related Hook Library patterns.
+1. Select a product with the existing dashboard product picker.
+2. Open a completed Hook Lab report.
+3. Review the first frames, scene mechanics, likely meaning, full forensic
+   play-by-play, and details that carry the effect.
 4. Choose **Use this format**.
-5. Choose a saved product, destination tool, and Hook Library starting point.
-6. Generate and edit the opening visual, hook, sound-off overlay, beat script,
-   footage needs, product proof, and CTA.
-7. Choose **Save and open** for the destination tool.
-8. Clipr loads the brief into its script direction, Stitchr loads the sound-off
-   overlay and shot-plan notice, and Swipr loads the brief into its creative
-   direction.
+5. Hook Lab reserves one creation credit and generates from the complete report
+   plus the active product.
+6. The saved adaptation appears in the same dialog with these editable
+   sections:
+   - adapted concept;
+   - opening reaction;
+   - scene-by-scene shot directions;
+   - spoken lines;
+   - on-screen text by scene;
+   - props and interactions;
+   - product demonstration;
+   - closing CTA;
+   - adapted caption.
+7. Save edits or copy the script without another charge.
+8. If the global product changes, choose **Regenerate** to create and charge for
+   a new adaptation for that product.
 
-The destination marks an approved brief as used after it loads. Product
-selection is synchronized before the user generates or saves destination
-content, preserving product ownership and lineage.
+If the current product is missing or locked, Hook Lab disables generation and
+asks the user to select an available product through the dashboard picker.
 
-## Analysis contract
+## Generation contract
 
-`formatDna.version` is currently `format-dna-v1`. Its fields are:
+The model receives the full `HookLabPostAnalysis`, the imported source caption,
+and the selected `ProductProfile`. It returns JSON with:
 
 ```text
-openingVisual
-openingQuestion
-firstPayoff
-firstPayoffAtSeconds
-hookPattern
-storyFramework
-storyBeats[]
-proofDevice
-retentionDevice
-signatureDevice
-productRole
-productFirstAppearsAtSeconds
-adObviousness
-ctaStyle
-editRhythm
-soundOffSummary
-replicationFormula
-doNotCopy[]
-confidence
-observedEvidence[]
-inferences[]
+adaptedConcept
+openingReaction
+sceneBySceneDirections[]
+spokenLines[]
+onScreenTextByScene[]
+propsAndInteractions[]
+productDemonstration
+closingCta
+adaptedCaption
 ```
 
-The provider prompt version is `hook-lab-post-analysis-v3`, and the saved
-analysis version is `post-analysis-v3`. The parser requires format DNA for new
-provider results and continues to enforce full-runtime timeline coverage.
+New records also populate the legacy creative-brief fields as compatibility
+mirrors. This keeps older destination handoffs readable without exposing a
+destination choice in the new workflow. New direct adaptations stay in Hook
+Lab and are never automatically marked approved or used by another tool.
 
-## Creative brief records
+## Credit lifecycle and abuse protection
 
-`hookLabCreativeBriefs` stores:
+`POST /api/hook-lab/briefs` authenticates the user, consumes script-generation
+rate limits, verifies source-post and product ownership, and then reserves one
+`hook_lab_script` creation credit. The text-model call happens only after the
+reservation succeeds.
 
-- ownership and identity: `ownerId`, `id`;
-- lineage: `productId`, `sourcePostIds`, `hookTemplateId`,
-  `formatDnaVersion`;
-- destination: `destinationTool`;
-- editable content: `directionName`, `openingVisual`, `hook`,
-  `soundOffOverlay`, `beatScript`, `footageNeeds`, `productProof`, and
-  `callToAction`;
-- lifecycle: `draft`, `approved`, or `used`, plus timestamps.
+The reservation is committed after the generated adaptation is validated and
+durably inserted. Provider, validation, dispatch, or save failure releases the
+reservation. Every explicit regeneration creates a new record and receives its
+own reservation. `hookLabCreativeBriefs.update` is metadata-only and never
+reserves a creation credit.
 
-Create, read, update, approval, and use mutations all resolve records through
-the authenticated owner. Creation also confirms that the saved product belongs
-to the owner and every source post is ready with format DNA.
+Current limits are:
 
-## Related Hook Library matching
+- 180 script generations per owner per day with burst 24;
+- 6,000 script generations globally per day with burst 900 across five shards;
+- the shared text-provider spend guard;
+- creation-credit availability as a separate spending boundary.
 
-Related templates are ranked server-side against the format's hook pattern,
-story framework, opening question, proof device, product role, and retention
-device. Only three compact summaries are returned. The complete catalog never
-moves into the browser, and destination generation filters to templates allowed
-for the selected tool.
-
-## Cost, limits, and credits
-
-Creative-brief generation calls the configured text-writing model only after
-authentication and these Convex limits:
-
-- 60 briefs per owner per day with burst 8;
-- 2,000 briefs globally per day with burst 300 across five shards;
-- the shared text-provider spend guard.
-
-HTTP quota failures return `429` with retry timing. Saving a generated brief
-also consumes the shared Convex record-save limit; edits and approval consume
-the shared metadata-update limit, as does the first destination handoff that
-marks an approved brief as used.
-
-Brief generation intentionally does not consume a creation credit. The brief is
-planning metadata, not a rendered content asset. Normal Clipr, Stitchr, and
-Swipr generation or save paths keep their own existing credit and cost rules.
-Authentication, product ownership, post ownership, and brief ownership remain
-separate from rate limits.
+HTTP quota failures return `429` with retry timing. Product ownership, source
+ownership, product lock state, generated-claim validation, and record ownership
+remain separate from rate limits.
 
 ## File tree
 
 ```text
 web/app/_components/hooks/
-  HookLabFirstThreeSecondsSection.tsx
-  HookLabFormatDnaSection.tsx
-  HookLabCopyabilityWarningSection.tsx
-  HookLabRelatedTemplatesSection.tsx
-  HookLabCreativeBriefDialog.tsx
-  HookLabBriefHandoffNotice.tsx
+  HookLabProductAdaptationSection.tsx
+  HookLabProductAdaptationEditor.tsx
+  HookLabCreativeBriefField.tsx
+  HookLabMeaningSection.tsx
+  HookLabPostAnalysisDialog.tsx
 web/app/api/hook-lab/briefs/
   route.ts
   createHookLabCreativeBriefRoute.ts
   readHookLabCreativeBriefRequest.ts
-web/app/api/hook-lab/templates/related/
-  route.ts
-  getRelatedHookLabTemplatesRoute.ts
 web/convex/hookLabCreativeBriefs/
   create.ts
-  get.ts
   update.ts
-  approve.ts
-  markUsed.ts
+  normalizeHookLabCreativeBriefContent.ts
 web/lib/clipstitchr/server/hookLab/
   createHookLabCreativeBrief.ts
   createHookLabCreativeBriefPrompt.ts
   parseHookLabCreativeBrief.ts
-  getRelatedHookLibraryTemplates.ts
-web/services/provider-worker/hookLab/
-  createHookLabPostAnalysisPrompt.ts
-  parseHookLabFormatDna.ts
+  runHookLabScriptWithCredit.ts
+web/lib/clipstitchr/hooks/
+  useHookLabProductAdaptation.ts
+web/lib/clipstitchr/utils/
+  formatHookLabProductAdaptation.ts
+  splitHookLabAdaptationLines.ts
 ```
 
 ## Verification
 
-- Parse a report with observations, inferences, product timing, and the full
-  format-DNA shape.
-- Reject a new provider report without format DNA.
-- Return exactly three related templates and keep the catalog server-side.
-- Reject a brief request without a supported destination, saved product, or
-  completed source report.
-- Confirm the generated brief parser requires both beat and footage plans.
-- Edit every brief field before approval and confirm the owner-scoped record is
-  updated.
-- Open each destination and confirm its brief direction is loaded only for the
-  matching tool.
-- Confirm unsupported claims and source wording are absent from a real generated
-  sample before release.
+- Confirm **Use this format** sends only the globally active product ID and the
+  selected source-post ID.
+- Confirm no product, destination-tool, or related-hook selector appears.
+- Switch from Guppy Calisthenics to Bloomin and confirm regeneration uses the
+  Bloomin product ID.
+- Confirm generated content renders all nine editable sections in the report
+  dialog.
+- Confirm save and copy do not call the generation route.
+- Confirm credit reservation happens before model work, commit happens after
+  durable save, and failure releases the reservation.
+- Confirm all generated product claims remain supported by saved product data.
 
 ## Source references
 
-- `lazy-reel.md`
 - `docs/features/hook-lab/hook-lab-post-analysis.md`
-- `docs/features/hook-lab/hook-library-browser.md`
+- `docs/architecture/creation-credit-system.md`
 - `docs/operations/security/rate-limits.md`
+- `project-scope.md`

@@ -8,6 +8,7 @@ export const usageOperationValidator = v.union(
   v.literal("photo_expansion"),
   v.literal("ai_analysis"),
   v.literal("hook_lab_analysis"),
+  v.literal("hook_lab_script"),
   v.literal("clipr_video"),
   v.literal("swapr_video"),
 );

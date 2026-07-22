@@ -12,7 +12,7 @@ export function HookLabCreativeBriefField({
       {label}
       <textarea
         className="min-h-24 w-full resize-y rounded-lg border border-border bg-surface px-3 py-2 text-sm font-normal leading-6 text-text-primary outline-none transition-colors focus:border-accent"
-        maxLength={4_000}
+        maxLength={20_000}
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}
       />

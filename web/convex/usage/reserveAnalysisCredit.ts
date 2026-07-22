@@ -12,6 +12,7 @@ export const reserveAnalysisCredit = mutation({
     operation: v.union(
       v.literal("ai_analysis"),
       v.literal("hook_lab_analysis"),
+      v.literal("hook_lab_script"),
     ),
     secret: v.string(),
   },

@@ -106,6 +106,7 @@ is disabled before launch, the account becomes inactive immediately instead.
 | Standalone photo expansion | Creation credits   |   25 | New expanded `photoAssets` result is durably saved             |
 | AI analysis                | Creation credits   |    1 | The requested analysis or score is returned successfully       |
 | Hook Lab post analysis     | Creation credits   |    1 | The completed analysis is durably saved to the Hook Lab post   |
+| Hook Lab product adaptation | Creation credits  |    1 | The generated scene-by-scene adaptation is durably saved       |
 | Clipr video                | AI-video allowance |    1 | Final Clipr `videoClips` result is saved and job is completed  |
 | Swapr video                | AI-video allowance |    1 | Final Swapr `videoClips` result is saved and job is completed  |
 | Clipr required scene still | Included in Clipr  |    0 | Never receives a separate creation-credit reservation          |
@@ -129,6 +130,10 @@ creates a new output is a new billable operation.
 Hook Lab retries use a new credit only when a new analysis completes. Failed
 analysis work releases its reservation. Upload analysis, clip scoring, and
 Swipr background analysis follow the same reserve, commit, and release rule.
+Every Hook Lab product-adaptation generation or regeneration reserves one
+credit before the text-model call, commits it after the script is saved, and
+releases it if provider, validation, or persistence work fails. Editing,
+saving, or copying an existing adaptation is free.
 Automation uses the same durable usage reservations as direct creation:
 Stitchr and Swipr consume creation credits, while Clipr consumes one unit from
 the shared Clipr + Swapr video allowance.

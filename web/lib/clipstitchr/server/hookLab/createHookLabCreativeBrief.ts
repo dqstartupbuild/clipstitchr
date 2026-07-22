@@ -2,9 +2,7 @@ import type { createReplicateClient } from "@/lib/clipstitchr/server/createRepli
 import { createTextWritingPredictionInput } from "@/lib/clipstitchr/server/createTextWritingPredictionInput";
 import { getCliprHookModelId } from "@/lib/clipstitchr/server/getCliprHookModelId";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
-import type { HookLabDestinationTool } from "@/lib/clipstitchr/types/HookLabDestinationTool";
-import type { HookLabFormatDna } from "@/lib/clipstitchr/types/HookLabFormatDna";
-import type { HookLibraryTemplateSummary } from "@/lib/clipstitchr/types/HookLibraryTemplateSummary";
+import type { HookLabPostAnalysis } from "@/lib/clipstitchr/types/HookLabPostAnalysis";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { createHookLabCreativeBriefPrompt } from "./createHookLabCreativeBriefPrompt";
 import { parseHookLabCreativeBrief } from "./parseHookLabCreativeBrief";
@@ -12,33 +10,30 @@ import { parseHookLabCreativeBrief } from "./parseHookLabCreativeBrief";
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 export async function createHookLabCreativeBrief({
-  destinationTool,
-  formatDna,
+  analysis,
   product,
   replicate,
-  template,
+  sourceText,
 }: {
-  destinationTool: HookLabDestinationTool;
-  formatDna: HookLabFormatDna;
+  analysis: HookLabPostAnalysis;
   product: ProductProfile;
   replicate: ReplicateClient;
-  template?: HookLibraryTemplateSummary;
+  sourceText?: string;
 }) {
   const modelId = getCliprHookModelId();
   const prediction = await replicate.predictions.create({
     model: modelId,
     input: createTextWritingPredictionInput({
-      maxCompletionTokens: 1_800,
+      maxCompletionTokens: 5_000,
       modelId,
       prompt: createHookLabCreativeBriefPrompt({
-        destinationTool,
-        formatDna,
+        analysis,
         product,
-        template,
+        sourceText,
       }),
       systemPrompt:
-        "You turn observed short-form structure into original, product-grounded creative briefs. You never copy source language or invent claims. Return JSON only.",
-      temperature: 0.55,
+        "You write faithful, product-grounded short-form remake blueprints from forensic video analysis. You preserve scene mechanics while separating observed facts from likely interpretation and never invent product claims. Return JSON only.",
+      temperature: 0.35,
     }),
   });
   const outputText = await getCompletedReplicatePredictionOutputText({

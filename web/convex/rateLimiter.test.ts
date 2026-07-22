@@ -15,6 +15,27 @@ describe("Pexels import rate-limit configuration", () => {
   });
 });
 
+describe("Hook Lab rate-limit configuration", () => {
+  it("triples analysis and script limits", () => {
+    expect(rateLimiter.limits?.hookLabPostAnalysis).toMatchObject({
+      capacity: 15,
+      rate: 90,
+    });
+    expect(rateLimiter.limits?.hookLabPostAnalysisGlobal).toMatchObject({
+      capacity: 600,
+      rate: 3000,
+    });
+    expect(rateLimiter.limits?.hookLabCreativeBrief).toMatchObject({
+      capacity: 24,
+      rate: 180,
+    });
+    expect(rateLimiter.limits?.hookLabCreativeBriefGlobal).toMatchObject({
+      capacity: 900,
+      rate: 6000,
+    });
+  });
+});
+
 describe("public lead and email rate-limit configuration", () => {
   it("defines every ingress boundary before durable email work", () => {
     const requiredLimits = [

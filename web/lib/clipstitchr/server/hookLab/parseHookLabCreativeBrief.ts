@@ -37,33 +37,55 @@ export function parseHookLabCreativeBrief(
     throw new Error("The creative brief could not be read.");
   }
 
-  const beatScript = readTextList(parsed.beatScript);
-  const footageNeeds = readTextList(parsed.footageNeeds);
+  const sceneBySceneDirections = readTextList(parsed.sceneBySceneDirections);
+  const spokenLines = readTextList(parsed.spokenLines);
+  const onScreenTextByScene = readTextList(parsed.onScreenTextByScene);
+  const propsAndInteractions = readTextList(parsed.propsAndInteractions);
 
-  if (!beatScript.length || !footageNeeds.length) {
-    throw new Error("The creative brief was missing its shot plan.");
+  if (
+    !sceneBySceneDirections.length ||
+    !spokenLines.length ||
+    !onScreenTextByScene.length ||
+    !propsAndInteractions.length
+  ) {
+    throw new Error("The product adaptation was missing its scene plan.");
   }
 
+  const adaptedConcept = readText(
+    parsed.adaptedConcept,
+    "Adapt this reference concept for the selected product.",
+  );
+  const openingReaction = readText(
+    parsed.openingReaction,
+    "Match the reference opening reaction with the selected product in frame.",
+  );
+  const productDemonstration = readText(
+    parsed.productDemonstration,
+    "Show only product behavior supported by the saved product.",
+  );
+  const closingCta = readText(parsed.closingCta, "Show the next clear action.");
+  const adaptedCaption = readText(
+    parsed.adaptedCaption,
+    "Write a caption that follows the reference structure.",
+  );
+
   return {
-    beatScript,
-    callToAction: readText(parsed.callToAction, "No call to action yet."),
-    directionName: readText(parsed.directionName, "Untitled direction").slice(
-      0,
-      120,
-    ),
-    footageNeeds,
-    hook: readText(parsed.hook, "Write an original opening line."),
-    openingVisual: readText(
-      parsed.openingVisual,
-      "Choose a clear first shot.",
-    ),
-    productProof: readText(
-      parsed.productProof,
-      "Show the product doing only what the saved details support.",
-    ),
-    soundOffOverlay: readText(
-      parsed.soundOffOverlay,
-      "Add a short sound-off opening.",
-    ),
+    adaptedCaption,
+    adaptedConcept,
+    beatScript: sceneBySceneDirections,
+    callToAction: closingCta,
+    closingCta,
+    directionName: adaptedConcept.slice(0, 120),
+    footageNeeds: propsAndInteractions,
+    hook: spokenLines[0] ?? openingReaction,
+    onScreenTextByScene,
+    openingReaction,
+    openingVisual: openingReaction,
+    productDemonstration,
+    productProof: productDemonstration,
+    propsAndInteractions,
+    sceneBySceneDirections,
+    soundOffOverlay: onScreenTextByScene[0] ?? "",
+    spokenLines,
   };
 }

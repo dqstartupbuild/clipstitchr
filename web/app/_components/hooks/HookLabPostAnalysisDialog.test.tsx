@@ -1,14 +1,25 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { HookLabPostAnalysisDialog } from "./HookLabPostAnalysisDialog";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
+
+vi.mock("convex/react", () => ({ useMutation: () => vi.fn() }));
+
+vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
+  useDashboardProduct: () => ({
+    activeProduct: { id: "product_1", name: "Guppy Calisthenics" },
+    lockedProductIds: [],
+  }),
+}));
 
 const post: HookLabPost = {
   analysis: {
     callToAction: "Save the post for later.",
     caption: "A quick morning workflow",
     contentSummary: "A creator demonstrates a quick morning workflow.",
+    culturalContext:
+      "This likely uses the familiar untouched-coffee cue to imply a rushed morning.",
     format: "Talking head followed by a screen demonstration.",
     formatDna: {
       adObviousness: "The product appears after the opening problem.",
@@ -36,6 +47,8 @@ const post: HookLabPost = {
     },
     onScreenText: ["Stop doing this manually", "Three quick steps"],
     openingHook: "The creator opens with a direct problem statement.",
+    likelySubtext:
+      "The untouched coffee likely implies that the task has taken over the morning.",
     performance: {
       confidence: "Medium because only public engagement counts are available.",
       engagementExplanation:
@@ -51,9 +64,18 @@ const post: HookLabPost = {
     },
     timeline: [
       {
+        actionsAndReactions:
+          "The creator points to the list, pauses, then looks back at the camera.",
         audio: "The creator states the problem.",
+        editingAndSound: "One hard cut lands after the pause.",
         endSeconds: 3,
+        facialExpressionAndBodyLanguage:
+          "Brows raised before the point, then a flat stare after it.",
+        objectsAndPlacement:
+          "A task list sits left of an untouched coffee mug.",
         onScreenText: "Stop doing this manually",
+        recreationEssentials:
+          "Keep the pause, flat stare, and untouched mug beside the list.",
         startSeconds: 0,
         visual: "The creator speaks directly to camera.",
       },
@@ -63,6 +85,9 @@ const post: HookLabPost = {
         startSeconds: 3,
         visual: "A phone screen shows the workflow.",
       },
+    ],
+    recreationEssentials: [
+      "Keep the untouched coffee beside the task list through the opening pause.",
     ],
     transferableLessons: ["Show the problem before the walkthrough."],
   },
@@ -93,7 +118,9 @@ describe("HookLabPostAnalysisDialog", () => {
     expect(markup).toContain('role="dialog"');
     expect(markup).toContain("dashboard-dialog-viewport");
     expect(markup).toContain("border-b border-border");
-    expect(markup).toContain("bg-white shadow-xl");
+    expect(markup).toContain(
+      "bg-white shadow-[0_5px_10px_rgba(30,24,19,0.16)]",
+    );
     expect(markup).toContain("min-h-0 gap-8 overflow-y-auto");
     expect(markup).not.toContain("--text-primary");
     expect(markup).toContain("Platform numbers");
@@ -102,9 +129,13 @@ describe("HookLabPostAnalysisDialog", () => {
     expect(markup).toContain("Three quick steps");
     expect(markup).toContain("Why it may have performed this way");
     expect(markup).toContain("The first three seconds");
-    expect(markup).toContain("The reusable shape");
-    expect(markup).toContain("Hooks with a similar job");
+    expect(markup).toContain("How the reference works");
+    expect(markup).not.toContain("Hooks with a similar job");
     expect(markup).toContain("Use this format");
+    expect(markup).toContain("Writing for Guppy Calisthenics");
+    expect(markup).toContain("Meaning and remake essentials");
+    expect(markup).toContain("Expression and body language");
+    expect(markup).toContain("Objects and placement");
     expect(markup).toContain("Full play-by-play");
     expect(markup).toContain("0:00-0:03");
     expect(markup).toContain("Stop doing this manually");

@@ -4,12 +4,12 @@ export const hookLabDoc = {
   slug: "hook-lab",
   title: "Hook Lab",
   description:
-    "Study a public post, reuse its format for a saved product, and browse original hook patterns.",
+    "Study every beat of a public post, remake it for your active product, and browse original hook patterns.",
   summary:
-    "Paste one public post link. Hook Lab explains what happens, separates facts from likely takeaways, and turns the reusable shape into an editable brief for your own product.",
+    "Paste one public post link. Hook Lab catches expressions, prop moves, timing, words, and likely meaning, then writes an editable scene-by-scene version for your active product.",
   category: "feature",
   order: 18,
-  updated: "2026-07-21",
+  updated: "2026-07-22",
   sections: [
     {
       title: "Add a post",
@@ -22,7 +22,7 @@ export const hookLabDoc = {
       title: "Read the analysis",
       body: [
         "Open a completed post to see its caption, on-screen text, summary, public engagement numbers, performance explanation, and complete timestamped play-by-play.",
-        "The analysis separates facts visible in the video from conclusions based on the public numbers that were available when the post was saved.",
+        "The play-by-play calls out expressions, body language, important objects, where they sit, the order they move, reactions, cuts, sound, and timing. Likely meaning and cultural context stay clearly labeled as interpretation.",
       ],
     },
     {
@@ -35,9 +35,9 @@ export const hookLabDoc = {
     {
       title: "Use the format for your product",
       body: [
-        "Open a completed report to see what happens in the first three seconds, how the post proves its point, where the product appears, and which moment makes the idea memorable.",
-        "Choose Use this format, pick one of your saved products, then choose Clipr, Stitchr, or Swipr. Review and edit the new brief before opening it in that tool.",
-        "ClipStitchr keeps the structure, but writes new words. Product details come only from the saved product you chose.",
+        "Choose your product with the dashboard product picker, then open a completed report and choose Use this format.",
+        "Hook Lab writes the exact concept for that product, including the opening reaction, scene order, spoken lines, text, props, product demonstration, CTA, and caption. The script stays in the report so you can edit, save, copy, or regenerate it.",
+        "Each generation or regeneration costs 1 creation credit. Editing and copying an existing script are free.",
       ],
     },
     {

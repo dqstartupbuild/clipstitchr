@@ -21,6 +21,30 @@ export function HookLabPostTimeline({
             <p className="text-sm leading-6 text-text-primary">
               {entry.visual}
             </p>
+            {entry.facialExpressionAndBodyLanguage ? (
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                <span className="font-semibold text-text-primary">
+                  Expression and body language:
+                </span>{" "}
+                {entry.facialExpressionAndBodyLanguage}
+              </p>
+            ) : null}
+            {entry.objectsAndPlacement ? (
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                <span className="font-semibold text-text-primary">
+                  Objects and placement:
+                </span>{" "}
+                {entry.objectsAndPlacement}
+              </p>
+            ) : null}
+            {entry.actionsAndReactions ? (
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                <span className="font-semibold text-text-primary">
+                  Actions and reactions:
+                </span>{" "}
+                {entry.actionsAndReactions}
+              </p>
+            ) : null}
             {entry.onScreenText ? (
               <p className="mt-2 text-sm leading-6 text-text-secondary">
                 <span className="font-semibold text-text-primary">
@@ -33,6 +57,30 @@ export function HookLabPostTimeline({
               <p className="mt-2 text-sm leading-6 text-text-secondary">
                 <span className="font-semibold text-text-primary">Audio:</span>{" "}
                 {entry.audio}
+              </p>
+            ) : null}
+            {entry.editingAndSound ? (
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                <span className="font-semibold text-text-primary">
+                  Cuts and sound:
+                </span>{" "}
+                {entry.editingAndSound}
+              </p>
+            ) : null}
+            {entry.likelySubtext ? (
+              <p className="mt-3 rounded-lg bg-surface-muted p-3 text-sm leading-6 text-text-secondary">
+                <span className="font-semibold text-text-primary">
+                  Likely meaning:
+                </span>{" "}
+                {entry.likelySubtext}
+              </p>
+            ) : null}
+            {entry.recreationEssentials ? (
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                <span className="font-semibold text-text-primary">
+                  Essential to the effect:
+                </span>{" "}
+                {entry.recreationEssentials}
               </p>
             ) : null}
           </div>

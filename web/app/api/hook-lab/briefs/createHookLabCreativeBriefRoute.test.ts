@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => {
     createHookLabCreativeBrief: vi.fn(),
     getAuthenticatedConvexToken: vi.fn(),
     getAuthenticatedUserId: vi.fn(),
-    getRelatedHookLibraryTemplates: vi.fn(),
+    runHookLabScriptWithCredit: vi.fn(),
   };
 });
 
@@ -51,10 +51,9 @@ vi.mock("@/lib/clipstitchr/server/hookLab/createHookLabCreativeBrief", () => ({
   createHookLabCreativeBrief: mocks.createHookLabCreativeBrief,
 }));
 
-vi.mock(
-  "@/lib/clipstitchr/server/hookLab/getRelatedHookLibraryTemplates",
-  () => ({ getRelatedHookLibraryTemplates: mocks.getRelatedHookLibraryTemplates }),
-);
+vi.mock("@/lib/clipstitchr/server/hookLab/runHookLabScriptWithCredit", () => ({
+  runHookLabScriptWithCredit: mocks.runHookLabScriptWithCredit,
+}));
 
 vi.mock("@/lib/clipstitchr/utils/createId", () => ({
   createId: () => "brief_1",
@@ -63,8 +62,6 @@ vi.mock("@/lib/clipstitchr/utils/createId", () => ({
 function createRequest() {
   return new Request("https://clipstitchr.test/api/hook-lab/briefs", {
     body: JSON.stringify({
-      destinationTool: "clipr",
-      hookTemplateId: "hook_1",
       productId: "product_1",
       sourcePostId: "post_1",
     }),
@@ -104,6 +101,9 @@ describe("createHookLabCreativeBriefRoute", () => {
     mocks.getAuthenticatedUserId.mockResolvedValue("user_1");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("token");
     mocks.convex.mutation.mockResolvedValue({ id: "brief_1" });
+    mocks.runHookLabScriptWithCredit.mockImplementation(
+      ({ work }: { work: () => Promise<unknown> }) => work(),
+    );
     mocks.convex.query
       .mockResolvedValueOnce({
         analysis: { caption: "", formatDna, onScreenText: [], timeline: [] },
@@ -119,19 +119,25 @@ describe("createHookLabCreativeBriefRoute", () => {
         productDetails: "A saved launch workflow",
         updatedAt: "2026-07-21T00:00:00.000Z",
       });
-    mocks.getRelatedHookLibraryTemplates.mockReturnValue([
-      { id: "hook_1", template: "A product-grounded pattern" },
-    ]);
     mocks.createHookLabCreativeBrief.mockResolvedValue({
       brief: {
+        adaptedCaption: "A better morning workflow.",
+        adaptedConcept: "Morning reset",
         beatScript: ["Problem", "Proof"],
         callToAction: "See the workflow",
+        closingCta: "See the workflow",
         directionName: "Morning reset",
         footageNeeds: ["Task list"],
         hook: "Your morning disappears here",
+        onScreenTextByScene: ["Scene 1: Where the morning goes"],
+        openingReaction: "Look at the task list, then the coffee.",
         openingVisual: "Task list and coffee",
+        productDemonstration: "Show the workflow",
         productProof: "Show the workflow",
+        propsAndInteractions: ["Move the task list beside the coffee."],
+        sceneBySceneDirections: ["0:00-0:02 | Problem", "0:02-0:05 | Proof"],
         soundOffOverlay: "Where the morning goes",
+        spokenLines: ["Scene 1: Your morning disappears here"],
       },
       modelId: "model",
       predictionId: "prediction",
@@ -147,7 +153,13 @@ describe("createHookLabCreativeBriefRoute", () => {
       { secret: "rate-secret" },
     ]);
     expect(mocks.createHookLabCreativeBrief).toHaveBeenCalledWith(
-      expect.objectContaining({ destinationTool: "clipr" }),
+      expect.objectContaining({
+        analysis: expect.objectContaining({ formatDna }),
+        sourceText: undefined,
+      }),
+    );
+    expect(mocks.runHookLabScriptWithCredit).toHaveBeenCalledWith(
+      expect.objectContaining({ client: mocks.convex, secret: "rate-secret" }),
     );
     expect(mocks.convex.mutation).toHaveBeenLastCalledWith(
       api.hookLabCreativeBriefs.create.create,

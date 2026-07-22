@@ -71,12 +71,32 @@ export function parseHookLabPostAnalysis(
 
       const onScreenText = readString(value.onScreenText, "");
       const audio = readString(value.audio, "");
+      const actionsAndReactions = readString(value.actionsAndReactions, "");
+      const editingAndSound = readString(value.editingAndSound, "");
+      const facialExpressionAndBodyLanguage = readString(
+        value.facialExpressionAndBodyLanguage,
+        "",
+      );
+      const likelySubtext = readString(value.likelySubtext, "");
+      const objectsAndPlacement = readString(value.objectsAndPlacement, "");
+      const recreationEssentials = readString(
+        value.recreationEssentials,
+        "",
+      );
 
       return [
         {
+          ...(actionsAndReactions ? { actionsAndReactions } : {}),
           ...(audio ? { audio } : {}),
+          ...(editingAndSound ? { editingAndSound } : {}),
           endSeconds,
+          ...(facialExpressionAndBodyLanguage
+            ? { facialExpressionAndBodyLanguage }
+            : {}),
+          ...(likelySubtext ? { likelySubtext } : {}),
+          ...(objectsAndPlacement ? { objectsAndPlacement } : {}),
           ...(onScreenText ? { onScreenText } : {}),
+          ...(recreationEssentials ? { recreationEssentials } : {}),
           startSeconds,
           visual,
         },
@@ -112,8 +132,10 @@ export function parseHookLabPostAnalysis(
       parsed.contentSummary,
       "No summary was returned.",
     ),
+    culturalContext: readString(parsed.culturalContext, ""),
     format: readString(parsed.format, "Format not identified."),
     formatDna: parseHookLabFormatDna(parsed.formatDna),
+    likelySubtext: readString(parsed.likelySubtext, ""),
     onScreenText: readStringArray(parsed.onScreenText),
     openingHook: readString(
       parsed.openingHook,
@@ -139,6 +161,7 @@ export function parseHookLabPostAnalysis(
       ),
       strengths: readStringArray(rawPerformance.strengths),
     },
+    recreationEssentials: readStringArray(parsed.recreationEssentials),
     timeline,
     transferableLessons: readStringArray(parsed.transferableLessons),
   };

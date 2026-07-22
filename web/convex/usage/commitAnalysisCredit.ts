@@ -11,6 +11,7 @@ export const commitAnalysisCredit = mutation({
     operation: v.union(
       v.literal("ai_analysis"),
       v.literal("hook_lab_analysis"),
+      v.literal("hook_lab_script"),
     ),
     reservationId: v.string(),
     secret: v.string(),

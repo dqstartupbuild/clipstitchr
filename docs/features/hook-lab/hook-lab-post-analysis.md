@@ -49,9 +49,9 @@ but is not dependable.
 8. The source video or rendered slideshow is placed in a temporary private R2
    object so the configured Gemini model can read the complete post.
 9. Gemini returns structured JSON with a complete timestamped timeline,
-   execution scores, metric-grounded performance reasoning, limitations,
-   confidence, transferable lessons, copyability warnings, and versioned
-   format DNA.
+   forensic visual and audio observations, likely subtext, cultural context,
+   recreation essentials, execution scores, metric-grounded performance
+   reasoning, limitations, confidence, and versioned format analysis.
 10. The parser rejects reports that do not cover the video from its opening to
     its ending or that leave a large unexplained timeline gap.
 11. Convex stores the completed report and the UI exposes it through
@@ -82,11 +82,22 @@ The report contains:
 - the explicit or implied call to action;
 - a timestamped play-by-play for the full runtime;
 - timeline-specific on-screen text and audible speech/sound when available;
+- facial expression, gaze, posture, gesture, and body-language changes;
+- every story-relevant object and its placement in the frame;
+- the exact order of touches and object movements plus visible reactions before
+  and after each action;
+- cuts, zooms, speed changes, pauses, music, silence, and sound effects at the
+  beat where they occur;
+- contradictions, awkwardness, surprise, escalation, and comedy when directly
+  visible;
+- likely subtext and cultural context explicitly labeled as interpretation;
+- the exact expressions, props, positions, action order, timing, words, sounds,
+  reveals, and payoffs essential to recreating the effect;
 - overall, opening, pacing, and platform-fit execution scores from 0 to 100;
 - an engagement explanation grounded only in metrics the provider returned;
 - likely retention strengths and drop-off risks labeled as inference;
 - specific strengths, weak spots, missing-data limitations, and confidence;
-- transferable lessons that do not copy the source post.
+- transferable lessons from the source post;
 - a first-three-second breakdown covering the first frame, unresolved tension,
   sound-off meaning, first payoff, and ad obviousness;
 - proof-device and product-role classifications;
@@ -99,6 +110,11 @@ The scores measure short-form execution. They are not percentile rankings and
 do not claim access to private platform analytics. Hook Lab never invents watch
 time, retention curves, impressions, reach, follower count, traffic sources, or
 audience demographics.
+
+The provider prompt version is `hook-lab-post-analysis-v4`, and newly saved
+reports use analysis version `post-analysis-v4`. Older reports remain readable
+because the forensic timeline and meaning fields are optional in the durable
+schema.
 
 ## Model
 
@@ -128,16 +144,16 @@ on the saved post for traceability.
 - ingestion lineage: `providerRunId`, `providerDatasetId`;
 - state: `status`, `failureCode`, `failureMessage`, timestamps.
 
-Generated product briefs are stored separately in the owner-scoped
+Generated product adaptations are stored separately in the owner-scoped
 `hookLabCreativeBriefs` table. See
 `docs/features/hook-lab/format-to-product-briefs.md` for its contract and
-destination handoff.
+credit lifecycle.
 
 ## Rate limits and abuse protection
 
 The create and retry routes call `consumeHookLabPostAnalysis` before creating a
-provider job. Current limits are 30 analyses per user per day with burst 5 and
-1,000 globally per day with burst 200 across five shards. The operation also
+provider job. Current limits are 90 analyses per user per day with burst 15 and
+3,000 globally per day with burst 600 across five shards. The operation also
 reserves shared provider spend. Convex metadata writes, deletes, and signed R2
 operations keep their independent limits and ownership checks.
 

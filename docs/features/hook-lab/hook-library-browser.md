@@ -13,10 +13,10 @@ browser at once.
 - Returns 24 results per page with previous, next, nearby, first, and last page
   controls.
 - Copies an individual template to the clipboard.
-- Shows three server-ranked related templates inside a completed format-DNA
-  report.
 - Keeps the source catalog shared with Clipr, Stitchr, and Swipr so browsing and
   generation do not drift into duplicate template sets.
+- Stays separate from completed-post adaptations. **Use this format** remakes
+  the analyzed reference directly and does not search this catalog.
 
 ## Request flow
 
@@ -38,9 +38,8 @@ are capped at 1,000, and every response contains at most 24 templates. For those
 reasons the endpoint intentionally has no separate rate bucket. Authentication
 and the bounded response remain independent safeguards.
 
-The related-template endpoint is also an authenticated, read-only catalog
-lookup. It reads one owner-scoped report and returns at most three compact
-template summaries, so it intentionally shares the same no-extra-bucket policy.
+The legacy related-template endpoint remains an authenticated, bounded,
+read-only catalog lookup, but the current product-adaptation UI does not call it.
 
 ## File tree
 

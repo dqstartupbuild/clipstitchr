@@ -1,7 +1,6 @@
 "use client";
 
 import { ExternalLink, X } from "lucide-react";
-import { useState } from "react";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 import { getHookLabPostTitle } from "@/lib/clipstitchr/utils/getHookLabPostTitle";
@@ -12,9 +11,8 @@ import { HookLabPostTimeline } from "./HookLabPostTimeline";
 import { HookLabFirstThreeSecondsSection } from "./HookLabFirstThreeSecondsSection";
 import { HookLabFormatDnaSection } from "./HookLabFormatDnaSection";
 import { HookLabCopyabilityWarningSection } from "./HookLabCopyabilityWarningSection";
-import { HookLabRelatedTemplatesSection } from "./HookLabRelatedTemplatesSection";
-import { HookLabCreativeBriefDialog } from "./HookLabCreativeBriefDialog";
-import { useHookLabRelatedTemplates } from "@/lib/clipstitchr/hooks/useHookLabRelatedTemplates";
+import { HookLabMeaningSection } from "./HookLabMeaningSection";
+import { HookLabProductAdaptationSection } from "./HookLabProductAdaptationSection";
 
 export function HookLabPostAnalysisDialog({
   post,
@@ -23,9 +21,6 @@ export function HookLabPostAnalysisDialog({
   post: HookLabPost;
   onClose: () => void;
 }) {
-  const [isCreatingBrief, setIsCreatingBrief] = useState(false);
-  const relatedTemplates = useHookLabRelatedTemplates(post.id);
-
   if (!post.analysis) {
     return null;
   }
@@ -45,7 +40,7 @@ export function HookLabPostAnalysisDialog({
       <article
         aria-labelledby="hook-lab-analysis-title"
         aria-modal="true"
-        className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl sm:max-h-[calc(100dvh-3rem)]"
+        className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-[0_5px_10px_rgba(30,24,19,0.16)] sm:max-h-[calc(100dvh-3rem)]"
         role="dialog"
       >
         <header className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
@@ -125,14 +120,11 @@ export function HookLabPostAnalysisDialog({
                 doNotCopy={analysis.formatDna.doNotCopy}
                 warnings={analysis.copyabilityWarnings ?? []}
               />
-              <HookLabRelatedTemplatesSection
-                isLoading={relatedTemplates.isLoading}
-                templates={relatedTemplates.templates}
-                onUseFormat={() => setIsCreatingBrief(true)}
-              />
+              <HookLabProductAdaptationSection post={post} />
             </>
           ) : null}
 
+          <HookLabMeaningSection analysis={analysis} />
           <HookLabPostCopySummary post={post} />
 
           <section aria-labelledby="hook-lab-report-metrics">
@@ -233,13 +225,6 @@ export function HookLabPostAnalysisDialog({
         </div>
       </article>
       </div>
-      {isCreatingBrief ? (
-        <HookLabCreativeBriefDialog
-          post={post}
-          templates={relatedTemplates.templates}
-          onClose={() => setIsCreatingBrief(false)}
-        />
-      ) : null}
     </>
   );
 }
