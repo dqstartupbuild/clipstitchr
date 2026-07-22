@@ -68,6 +68,8 @@ reduce reserved capacity. They remain separate authorization boundaries:
 
 - a worker reservation may be canceled publicly only before an atomic queue
   link is written;
+- a direct-server reservation cannot be canceled through the public mutation
+  and never satisfies worker-queue provenance;
 - enqueue writes one deterministic queue-entry owner and rejects released,
   committed, foreign, browser-only, ambiguously linked legacy, or differently
   linked reservations, which closes both cancellation and reuse races;
@@ -78,8 +80,8 @@ reduce reserved capacity. They remain separate authorization boundaries:
 
 Usage commit is also an authorization boundary. Before a reserved or committed
 row can be accepted, the save path must match its resource, operation, original
-domain kind and ID, and browser-or-worker provenance. First commit persists the
-commit domain, and later idempotent returns must match it.
+domain kind and ID, and browser, direct-server, or worker provenance. First
+commit persists the commit domain, and later idempotent returns must match it.
 
 AI-video reservations additionally verify that the server time is inside the
 allowance period. The period start is inclusive and its end is exclusive.

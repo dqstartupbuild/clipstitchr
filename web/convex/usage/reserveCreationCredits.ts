@@ -41,6 +41,17 @@ export async function reserveCreationCreditsForOwner(
     throw new Error("Browser reservations are only available for Stitchr.");
   }
 
+  if (
+    args.reservationKind === "server" &&
+    (args.domainKind !== "analysis" ||
+      (args.operation !== "ai_analysis" &&
+        args.operation !== "hook_lab_script"))
+  ) {
+    throw new Error(
+      "Server reservations are only available for direct analysis work.",
+    );
+  }
+
   const existing = await ctx.db
     .query("usageReservations")
     .withIndex("by_idempotency_key", (query) =>

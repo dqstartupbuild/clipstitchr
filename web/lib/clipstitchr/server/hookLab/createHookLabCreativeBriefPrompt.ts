@@ -15,8 +15,7 @@ export function createHookLabCreativeBriefPrompt({
     "Rewrite this exact short-form video concept for the saved product.",
     "Create a scene-by-scene remake blueprint, not abstract format advice and not a loosely related hook.",
     "Closely preserve the reference's visual opening, expression direction, body language, props, object placement, object interaction order, scene order, reaction changes, timing, spoken-copy structure, on-screen-text structure, caption structure, tension, joke, reveal, and payoff.",
-    "Adapt the spoken and written wording wherever needed so every product detail belongs to the saved product. Generic source wording may remain when it is natural and not creator-specific. Do not reproduce a creator's identity, likeness, personal mannerisms, distinctive catchphrases, or footage.",
-    "The saved product is the only source of product facts, audience details, pain points, benefits, and claims. If the saved product does not support a claim, do not make it.",
+    "Adapt the spoken and written wording for the selected product. Generic source wording may remain when it is natural and not creator-specific. Do not reproduce a creator's identity, likeness, personal mannerisms, distinctive catchphrases, or footage.",
     "",
     "Saved product:",
     JSON.stringify({
@@ -34,7 +33,7 @@ export function createHookLabCreativeBriefPrompt({
     "",
     "Match the reference runtime and play-by-play timing as closely as the supplied timeline allows. Give every scene an approximate time range. Preserve small reaction beats and exact prop movement order when they carry the meaning.",
     "Opening reaction must direct the performer's expression, gaze, posture, and physical reaction before and after the first action without asking them to imitate the source creator.",
-    "Product demonstration must say exactly how and when the selected product appears and what supported behavior is visibly shown. Do not invent a result, number, review, testimonial, or product capability.",
+    "Product demonstration must say exactly how and when the selected product appears and what behavior is visibly shown.",
     "On-screen text must be grouped by scene. Spoken lines must be grouped by scene. Use the same joke, tension, reveal, or emotional mechanism while fitting the selected product.",
     "Return JSON only with this exact shape:",
     JSON.stringify({
@@ -53,8 +52,8 @@ export function createHookLabCreativeBriefPrompt({
         "prop, initial placement, hand or person that touches it, movement order, final placement, and reaction",
       ],
       productDemonstration:
-        "where the selected product appears and the supported behavior to show",
-      closingCta: "adapted closing action grounded in the saved product",
+        "where the selected product appears and the behavior to show",
+      closingCta: "adapted closing action for the selected product",
       adaptedCaption:
         "complete adapted caption following the reference caption's structure",
     }),

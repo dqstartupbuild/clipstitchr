@@ -1,6 +1,6 @@
 export function getUsageReservationExpiry(
   createdAt: string,
-  kind: "browser" | "worker",
+  kind: "browser" | "server" | "worker",
 ) {
   const createdAtMs = Date.parse(createdAt);
 
@@ -8,7 +8,8 @@ export function getUsageReservationExpiry(
     throw new Error("Usage reservation time is invalid.");
   }
 
-  const durationMs = kind === "browser" ? 2 * 60 * 60 * 1_000 : 24 * 60 * 60 * 1_000;
+  const durationMs =
+    kind === "worker" ? 24 * 60 * 60 * 1_000 : 2 * 60 * 60 * 1_000;
 
   return new Date(createdAtMs + durationMs).toISOString();
 }

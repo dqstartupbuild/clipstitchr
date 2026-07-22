@@ -95,6 +95,26 @@ const formatDna = {
   version: "format-dna-v1",
 };
 
+const creativeBrief = {
+  adaptedCaption: "A better morning workflow.",
+  adaptedConcept: "Morning reset",
+  beatScript: ["Problem", "Proof"],
+  callToAction: "See the workflow",
+  closingCta: "See the workflow",
+  directionName: "Morning reset",
+  footageNeeds: ["Task list"],
+  hook: "Your morning disappears here",
+  onScreenTextByScene: ["Scene 1: Where the morning goes"],
+  openingReaction: "Look at the task list, then the coffee.",
+  openingVisual: "Task list and coffee",
+  productDemonstration: "Show the workflow",
+  productProof: "Show the workflow",
+  propsAndInteractions: ["Move the task list beside the coffee."],
+  sceneBySceneDirections: ["0:00-0:02 | Problem", "0:02-0:05 | Proof"],
+  soundOffOverlay: "Where the morning goes",
+  spokenLines: ["Scene 1: Your morning disappears here"],
+};
+
 describe("createHookLabCreativeBriefRoute", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -120,25 +140,7 @@ describe("createHookLabCreativeBriefRoute", () => {
         updatedAt: "2026-07-21T00:00:00.000Z",
       });
     mocks.createHookLabCreativeBrief.mockResolvedValue({
-      brief: {
-        adaptedCaption: "A better morning workflow.",
-        adaptedConcept: "Morning reset",
-        beatScript: ["Problem", "Proof"],
-        callToAction: "See the workflow",
-        closingCta: "See the workflow",
-        directionName: "Morning reset",
-        footageNeeds: ["Task list"],
-        hook: "Your morning disappears here",
-        onScreenTextByScene: ["Scene 1: Where the morning goes"],
-        openingReaction: "Look at the task list, then the coffee.",
-        openingVisual: "Task list and coffee",
-        productDemonstration: "Show the workflow",
-        productProof: "Show the workflow",
-        propsAndInteractions: ["Move the task list beside the coffee."],
-        sceneBySceneDirections: ["0:00-0:02 | Problem", "0:02-0:05 | Proof"],
-        soundOffOverlay: "Where the morning goes",
-        spokenLines: ["Scene 1: Your morning disappears here"],
-      },
+      brief: creativeBrief,
       modelId: "model",
       predictionId: "prediction",
     });
@@ -180,5 +182,31 @@ describe("createHookLabCreativeBriefRoute", () => {
     expect(response.status).toBe(401);
     expect(mocks.convex.mutation).not.toHaveBeenCalled();
     expect(mocks.createHookLabCreativeBrief).not.toHaveBeenCalled();
+  });
+
+  it("saves generated product claims without claim validation", async () => {
+    const generatedClaim =
+      "Scene 2: Get 10 times more done in 7 days with this workflow.";
+    mocks.createHookLabCreativeBrief.mockResolvedValueOnce({
+      brief: {
+        ...creativeBrief,
+        productDemonstration: generatedClaim,
+        spokenLines: [creativeBrief.spokenLines[0], generatedClaim],
+      },
+      modelId: "model",
+      predictionId: "prediction",
+    });
+
+    const response = await createHookLabCreativeBriefRoute(createRequest());
+
+    expect(response.status).toBe(200);
+    expect(mocks.convex.mutation).toHaveBeenLastCalledWith(
+      api.hookLabCreativeBriefs.create.create,
+      expect.objectContaining({
+        brief: expect.objectContaining({
+          productDemonstration: generatedClaim,
+        }),
+      }),
+    );
   });
 });

@@ -19,6 +19,8 @@ export const commitAnalysisCredit = mutation({
   handler: async (ctx, { domainId, now, operation, reservationId, secret }) => {
     assertRateLimitApiSecret(secret);
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const isDirectServerOperation =
+      operation === "ai_analysis" || operation === "hook_lab_script";
 
     return await commitUsageReservationForOwner(
       ctx,
@@ -30,7 +32,7 @@ export const commitAnalysisCredit = mutation({
         domainId,
         domainKind: "analysis",
         operation,
-        reservationKind: "worker",
+        reservationKind: isDirectServerOperation ? "server" : "worker",
         resource: "creation_credit",
       },
     );

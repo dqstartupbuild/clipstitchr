@@ -11,7 +11,6 @@ import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLi
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { readHookLabCreativeBriefRequest } from "./readHookLabCreativeBriefRequest";
-import { assertHookLabCreativeBriefClaimsAreGrounded } from "@/lib/clipstitchr/server/hookLab/assertHookLabCreativeBriefClaimsAreGrounded";
 
 export async function createHookLabCreativeBriefRoute(request: Request) {
   if (!(await getAuthenticatedUserId())) {
@@ -59,11 +58,6 @@ export async function createHookLabCreativeBriefRoute(request: Request) {
           product,
           replicate: createReplicateClient(),
           sourceText: post.sourceText,
-        });
-
-        assertHookLabCreativeBriefClaimsAreGrounded({
-          brief: generation.brief,
-          product,
         });
 
         return await convex.mutation(

@@ -412,6 +412,7 @@ import type * as usage_reconcileUsageState from "../usage/reconcileUsageState.js
 import type * as usage_recordZeroCostUsage from "../usage/recordZeroCostUsage.js";
 import type * as usage_releaseAnalysisCredit from "../usage/releaseAnalysisCredit.js";
 import type * as usage_releaseBrowserGenerationSlot from "../usage/releaseBrowserGenerationSlot.js";
+import type * as usage_releaseLegacyDirectAnalysisReservationsForOwner from "../usage/releaseLegacyDirectAnalysisReservationsForOwner.js";
 import type * as usage_releaseUsageReservation from "../usage/releaseUsageReservation.js";
 import type * as usage_releaseUsageReservationsFromProvider from "../usage/releaseUsageReservationsFromProvider.js";
 import type * as usage_reserveAiVideo from "../usage/reserveAiVideo.js";
@@ -993,6 +994,7 @@ declare const fullApi: ApiFromModules<{
   "usage/recordZeroCostUsage": typeof usage_recordZeroCostUsage;
   "usage/releaseAnalysisCredit": typeof usage_releaseAnalysisCredit;
   "usage/releaseBrowserGenerationSlot": typeof usage_releaseBrowserGenerationSlot;
+  "usage/releaseLegacyDirectAnalysisReservationsForOwner": typeof usage_releaseLegacyDirectAnalysisReservationsForOwner;
   "usage/releaseUsageReservation": typeof usage_releaseUsageReservation;
   "usage/releaseUsageReservationsFromProvider": typeof usage_releaseUsageReservationsFromProvider;
   "usage/reserveAiVideo": typeof usage_reserveAiVideo;

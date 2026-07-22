@@ -1,1 +1,1 @@
-export type UsageReservationKind = "browser" | "worker";
+export type UsageReservationKind = "browser" | "server" | "worker";

@@ -25,7 +25,7 @@ function getHandler<Args, Result>(convexFunction: unknown) {
 
 function createContext(reservation: {
   ownerId: string;
-  reservationKind?: "browser" | "worker";
+  reservationKind?: "browser" | "server" | "worker";
   workerQueueLinkedAt?: string;
 }) {
   const indexQuery = { eq: vi.fn() };
@@ -107,6 +107,22 @@ describe("cancelUsageReservation", () => {
     expect(mocks.releaseUsageReservationForOwner).toHaveBeenCalledOnce();
   });
 
+  it("keeps direct-server reservations under the server lifecycle", async () => {
+    const ctx = createContext({
+      ownerId: "owner_123",
+      reservationKind: "server",
+    });
+
+    await expect(
+      getHandler(cancelUsageReservation)(ctx, {
+        now: "2000-01-01T00:00:00.000Z",
+        reason: "Browser cancellation attempt",
+        reservationId: "reservation_1",
+      }),
+    ).rejects.toThrow("cannot be canceled here");
+    expect(mocks.releaseUsageReservationForOwner).not.toHaveBeenCalled();
+  });
+
   it("rejects cancellation after a worker queue has linked the reservation", async () => {
     const ctx = createContext({
       ownerId: "owner_123",
@@ -120,7 +136,7 @@ describe("cancelUsageReservation", () => {
         reason: "Malicious cancellation",
         reservationId: "reservation_1",
       }),
-    ).rejects.toThrow("already queued");
+    ).rejects.toThrow("cannot be canceled here");
     expect(mocks.releaseUsageReservationForOwner).not.toHaveBeenCalled();
   });
 
@@ -133,7 +149,7 @@ describe("cancelUsageReservation", () => {
         reason: "Unknown cancellation",
         reservationId: "reservation_1",
       }),
-    ).rejects.toThrow("already queued");
+    ).rejects.toThrow("cannot be canceled here");
     expect(mocks.releaseUsageReservationForOwner).not.toHaveBeenCalled();
   });
 });

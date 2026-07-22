@@ -161,6 +161,10 @@ describe("validateWorkerQueueUsageReservations", () => {
       { reservationKind: "browser", state: "reserved" },
     ],
     [
+      "a direct-server reservation",
+      { reservationKind: "server", state: "reserved" },
+    ],
+    [
       "a reservation linked to another queue",
       {
         reservationKind: "worker",

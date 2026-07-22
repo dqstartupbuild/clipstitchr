@@ -318,8 +318,9 @@ One reservation per billable output:
 - `domainKind`
 - `domainId`
 - optional provider, media, and automation job IDs
-- optional `reservationKind`: `browser` or `worker`; new reservations always
-  persist it, while legacy rows without it fail closed for public cancellation
+- optional `reservationKind`: `browser`, `server`, or `worker`; new
+  reservations always persist it, while legacy rows without it fail closed for
+  public cancellation
 - optional `workerQueueLinkedAt`, written atomically when a queue entry first
   accepts the reservation
 - optional `workerQueueEntryId`, the exclusive deterministic queue owner; a
@@ -525,7 +526,8 @@ atomic helper called inside that mutation.
 
 1. Load the reservation by idempotency key or reservation ID.
 2. Verify the exact resource, operation, original domain kind and ID, and
-   browser-or-worker reservation provenance expected by the save path.
+   browser, direct-server, or worker reservation provenance expected by the
+   save path.
 3. If already committed, also require the persisted commit domain to match,
    then return success without changing totals.
 4. If released or expired, attempt the documented late-finalization recovery.
@@ -556,7 +558,9 @@ atomically reacquiring the required usage. A new user-requested regeneration
 uses a new idempotency key and a new reservation.
 
 Public cancellation is allowed for browser reservations and for worker
-reservations only before queue linkage. Enqueue validates that every attached
+reservations only before queue linkage. Direct-server reservations remain under
+the authenticated server lifecycle and cannot be canceled through the public
+cancellation mutation. Enqueue validates that every attached
 reservation is still reserved, marks it worker-backed, and writes both
 `workerQueueLinkedAt` and the deterministic `workerQueueEntryId` in the same
 transaction as the queue entry. The same reserved row may be retried only by

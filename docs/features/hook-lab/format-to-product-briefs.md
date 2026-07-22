@@ -16,8 +16,9 @@ Clipr, Stitchr, or Swipr.
   active saved product.
 - Allows generic source wording when it fits while excluding creator identity,
   likeness, source footage, personal mannerisms, and distinctive catchphrases.
-- Keeps unsupported-claim validation. A generated product claim must still be
-  grounded in the selected saved product.
+- Does not reject generated wording based on product-claim, number, measurable-
+  result, testimonial, or capability checks. The user can review and edit the
+  completed adaptation directly in Hook Lab.
 - Shows the finished adaptation inside the analysis dialog for review, editing,
   copying, saving, and regeneration.
 - Charges one creation credit for every generation or regeneration. Editing,
@@ -83,11 +84,16 @@ rate limits, verifies source-post and product ownership, and then reserves one
 `hook_lab_script` creation credit. The text-model call happens only after the
 reservation succeeds.
 
-The reservation is committed after the generated adaptation is validated and
-durably inserted. Provider, validation, dispatch, or save failure releases the
+The reservation is committed after the generated adaptation is parsed and
+durably inserted. Provider, parsing, dispatch, or save failure releases the
 reservation. Every explicit regeneration creates a new record and receives its
 own reservation. `hookLabCreativeBriefs.update` is metadata-only and never
 reserves a creation credit.
+
+Script generation is synchronous server work, so its credit reservation uses
+direct-server provenance. It does not require or imitate a provider worker queue
+entry. Legacy script reservations created with worker provenance but no queue
+entry are released before the next direct analysis reservation is created.
 
 Current limits are:
 
@@ -97,8 +103,8 @@ Current limits are:
 - creation-credit availability as a separate spending boundary.
 
 HTTP quota failures return `429` with retry timing. Product ownership, source
-ownership, product lock state, generated-claim validation, and record ownership
-remain separate from rate limits.
+ownership, product lock state, and record ownership remain separate from rate
+limits. Hook Lab direct adaptations do not run generated-claim validation.
 
 ## File tree
 
@@ -141,7 +147,8 @@ web/lib/clipstitchr/utils/
 - Confirm save and copy do not call the generation route.
 - Confirm credit reservation happens before model work, commit happens after
   durable save, and failure releases the reservation.
-- Confirm all generated product claims remain supported by saved product data.
+- Confirm adaptations containing numbers, measurable results, testimonials, or
+  product capabilities are saved without a generated-claim rejection.
 
 ## Source references
 

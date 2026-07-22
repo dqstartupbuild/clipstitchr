@@ -32,7 +32,7 @@ export async function createHookLabCreativeBrief({
         sourceText,
       }),
       systemPrompt:
-        "You write faithful, product-grounded short-form remake blueprints from forensic video analysis. You preserve scene mechanics while separating observed facts from likely interpretation and never invent product claims. Return JSON only.",
+        "You write faithful short-form remake blueprints from forensic video analysis. You preserve scene mechanics while separating observed facts from likely interpretation. Return JSON only.",
       temperature: 0.35,
     }),
   });

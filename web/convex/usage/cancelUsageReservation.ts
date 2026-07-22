@@ -25,10 +25,11 @@ export const cancelUsageReservation = mutation({
 
     if (
       reservation.reservationKind === undefined ||
+      reservation.reservationKind === "server" ||
       reservation.workerQueueLinkedAt !== undefined
     ) {
       throw new Error(
-        "This creation is already queued and cannot be canceled here.",
+        "This creation cannot be canceled here.",
       );
     }
 

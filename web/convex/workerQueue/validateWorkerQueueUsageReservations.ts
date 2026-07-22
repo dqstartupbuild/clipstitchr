@@ -39,7 +39,8 @@ export async function validateWorkerQueueUsageReservations(
       !reservation ||
       reservation.ownerId !== args.ownerId ||
       reservation.state !== "reserved" ||
-      reservation.reservationKind === "browser" ||
+      (reservation.reservationKind !== undefined &&
+        reservation.reservationKind !== "worker") ||
       (reservation.workerQueueEntryId !== undefined &&
         reservation.workerQueueEntryId !== args.queueEntryId &&
         !isProviderToMediaHandoff) ||

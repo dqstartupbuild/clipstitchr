@@ -11,7 +11,8 @@ than source-controlled values.
 ## What Customers Get
 
 ClipStitchr has three paid monthly plans. Plan names and limits are server-owned
-policy, so a browser or worker cannot substitute a different price or limit.
+policy, so a browser, direct-server route, or worker cannot substitute a
+different price or limit.
 
 | Plan    | Price | Products | Monthly credits | Clipr + Swapr videos | Daily-draft products | Active creations | Queue               |
 | ------- | ----: | -------: | --------------: | -------------------: | -------------------: | ---------------: | ------------------- |
@@ -157,7 +158,8 @@ Every paid creation uses the same durable sequence:
    twice.
 
 The save mutation must present the reservation's exact resource, operation,
-original domain kind and ID, and browser-or-worker provenance. Convex verifies
+original domain kind and ID, and browser, direct-server, or worker provenance.
+Convex verifies
 that binding before returning either a still-reserved or already-committed row,
 and stores the commit domain on first success so a committed reservation cannot
 be replayed across creations.

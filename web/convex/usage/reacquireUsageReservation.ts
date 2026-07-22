@@ -58,7 +58,8 @@ export async function reacquireUsageReservation(
       now,
       operation: reservation.operation,
       source:
-        binding.reservationKind === "browser"
+        binding.reservationKind === "browser" ||
+        binding.reservationKind === "server"
           ? ("user_action" as const)
           : ("worker" as const),
     };

@@ -61,7 +61,7 @@ export function parseHookLabCreativeBrief(
   );
   const productDemonstration = readText(
     parsed.productDemonstration,
-    "Show only product behavior supported by the saved product.",
+    "Show the selected product behavior in the scene.",
   );
   const closingCta = readText(parsed.closingCta, "Show the next clear action.");
   const adaptedCaption = readText(
