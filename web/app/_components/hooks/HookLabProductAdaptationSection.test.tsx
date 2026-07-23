@@ -110,7 +110,7 @@ describe("HookLabProductAdaptationSection", () => {
       productId: "product_guppy",
       sourcePostId: "post_1",
     });
-    expect(container.textContent).toContain("Scene-by-scene shot directions");
+    expect(container.textContent).toContain("Scene-by-scene directions");
     expect(container.textContent).toContain("Adapted caption");
     expect(container.textContent).not.toContain("Clipr");
     expect(container.textContent).not.toContain("Stitchr");
@@ -119,13 +119,21 @@ describe("HookLabProductAdaptationSection", () => {
     const copyButton = Array.from(container.querySelectorAll("button")).find(
       (button) => button.textContent?.includes("Copy script"),
     );
-    const saveButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent?.includes("Save edits"),
+    const editButton = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent?.includes("Edit script"),
     );
 
     await act(async () => {
       copyButton?.click();
       await Promise.resolve();
+      editButton?.click();
+    });
+
+    const saveButton = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent?.includes("Save edits"),
+    );
+
+    await act(async () => {
       saveButton?.click();
       await Promise.resolve();
     });
@@ -153,6 +161,9 @@ describe("HookLabProductAdaptationSection", () => {
 
     mocks.activeProduct.id = "product_bloomin";
     mocks.activeProduct.name = "Bloomin";
+    mocks.createBrief.mockResolvedValueOnce({
+      brief: { ...generatedBrief, productId: "product_bloomin" },
+    });
 
     await act(async () => {
       root.render(
@@ -164,7 +175,7 @@ describe("HookLabProductAdaptationSection", () => {
 
     const regenerateButton = Array.from(
       container.querySelectorAll("button"),
-    ).find((button) => button.textContent?.includes("Regenerate"));
+    ).find((button) => button.textContent?.includes("Remake for Bloomin"));
 
     await act(async () => {
       regenerateButton?.click();
@@ -175,6 +186,6 @@ describe("HookLabProductAdaptationSection", () => {
       productId: "product_bloomin",
       sourcePostId: "post_1",
     });
-    expect(container.textContent).toContain("Writing for Bloomin");
+    expect(container.textContent).toContain("Script for Bloomin");
   });
 });

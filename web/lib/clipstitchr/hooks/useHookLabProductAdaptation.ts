@@ -13,6 +13,7 @@ export function useHookLabProductAdaptation(sourcePostId: string) {
   const products = useDashboardProduct();
   const updateBrief = useMutation(api.hookLabCreativeBriefs.update.update);
   const [brief, setBrief] = useState<HookLabCreativeBrief | null>(null);
+  const [briefProductName, setBriefProductName] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +27,7 @@ export function useHookLabProductAdaptation(sourcePostId: string) {
     activeProduct,
     activeProductIsUsable,
     brief,
+    briefProductName,
     error,
     isGenerating,
     isSaving,
@@ -35,7 +37,7 @@ export function useHookLabProductAdaptation(sourcePostId: string) {
         setError(
           "Select an available product from the dashboard product picker first.",
         );
-        return;
+        return false;
       }
 
       setIsGenerating(true);
@@ -49,7 +51,9 @@ export function useHookLabProductAdaptation(sourcePostId: string) {
         });
 
         setBrief(result.brief);
+        setBriefProductName(activeProduct.name);
         setSavedMessage(`Created for ${activeProduct.name}.`);
+        return true;
       } catch (nextError) {
         setError(
           getErrorMessage(
@@ -57,13 +61,14 @@ export function useHookLabProductAdaptation(sourcePostId: string) {
             "Unable to write this product adaptation.",
           ),
         );
+        return false;
       } finally {
         setIsGenerating(false);
       }
     },
     saveEdits: async () => {
       if (!brief) {
-        return;
+        return false;
       }
 
       setIsSaving(true);
@@ -73,8 +78,10 @@ export function useHookLabProductAdaptation(sourcePostId: string) {
         const updated = await updateBrief({ brief: brief.brief, id: brief.id });
         setBrief(updated as HookLabCreativeBrief);
         setSavedMessage("Your edits are saved. No credit was charged.");
+        return true;
       } catch (nextError) {
         setError(getErrorMessage(nextError, "Unable to save your edits."));
+        return false;
       } finally {
         setIsSaving(false);
       }

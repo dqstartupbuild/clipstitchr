@@ -2,19 +2,11 @@
 
 import { ExternalLink, X } from "lucide-react";
 import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
+import { HookLabAnalysisWorkspace } from "@/app/_components/hooks/HookLabAnalysisWorkspace";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 import { getHookLabPostTitle } from "@/lib/clipstitchr/utils/getHookLabPostTitle";
-import { HookLabPostMetricRow } from "./HookLabPostMetricRow";
-import { HookLabPostCopySummary } from "./HookLabPostCopySummary";
-import { HookLabPostScoreRow } from "./HookLabPostScoreRow";
-import { HookLabPostTimeline } from "./HookLabPostTimeline";
-import { HookLabFirstThreeSecondsSection } from "./HookLabFirstThreeSecondsSection";
-import { HookLabFormatDnaSection } from "./HookLabFormatDnaSection";
-import { HookLabCopyabilityWarningSection } from "./HookLabCopyabilityWarningSection";
-import { HookLabMeaningSection } from "./HookLabMeaningSection";
-import { HookLabProductAdaptationSection } from "./HookLabProductAdaptationSection";
 
 export function HookLabPostAnalysisDialog({
   isReanalyzing,
@@ -33,11 +25,8 @@ export function HookLabPostAnalysisDialog({
     return null;
   }
 
-  const { analysis } = post;
-
   return (
-    <>
-      <div
+    <div
       className="dashboard-dialog-viewport"
       onMouseDown={(event) => {
         if (event.currentTarget === event.target) {
@@ -48,7 +37,7 @@ export function HookLabPostAnalysisDialog({
       <article
         aria-labelledby="hook-lab-analysis-title"
         aria-modal="true"
-        className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-[0_5px_10px_rgba(30,24,19,0.16)] sm:max-h-[calc(100dvh-3rem)]"
+        className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-6xl flex-col overflow-hidden rounded-lg bg-white shadow-lg sm:max-h-[calc(100dvh-3rem)]"
         role="dialog"
       >
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
@@ -57,25 +46,28 @@ export function HookLabPostAnalysisDialog({
               {post.platform === "tiktok" ? "TikTok" : "Instagram"} analysis
             </p>
             <h2
-              className="mt-1 truncate text-xl font-bold text-text-primary"
+              className="mt-1 line-clamp-2 text-balance text-xl font-bold text-text-primary"
               id="hook-lab-analysis-title"
             >
               {getHookLabPostTitle(post)}
             </h2>
-            <p
-              className="mt-1 text-xs text-text-tertiary"
-              id="hook-lab-reanalyze-cost"
-            >
-              Re-analysis uses 1 creation credit.
-            </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <a
+              className="inline-flex min-h-9 items-center gap-2 rounded-md px-2 text-sm font-semibold text-text-secondary hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              href={post.canonicalUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open original
+              <ExternalLink aria-hidden className="size-4" />
+            </a>
             <Button
               isLoading={isReanalyzing}
               aria-describedby="hook-lab-reanalyze-cost"
               size="sm"
               type="button"
-              variant="secondary"
+              variant="subtle"
               onClick={onReanalyze}
             >
               Re-analyze
@@ -87,174 +79,22 @@ export function HookLabPostAnalysisDialog({
               onClick={onClose}
             />
           </div>
+          <p
+            className="basis-full text-pretty text-xs text-text-tertiary"
+            id="hook-lab-reanalyze-cost"
+          >
+            Re-analysis uses 1 creation credit.
+          </p>
         </header>
 
-        <div className="grid min-h-0 gap-8 overflow-y-auto p-4 sm:p-5">
-          {reanalyzeError ? (
+        {reanalyzeError ? (
+          <div className="shrink-0 px-4 pt-4 sm:px-5">
             <DashboardAlert variant="error">{reanalyzeError}</DashboardAlert>
-          ) : null}
-          <section aria-labelledby="hook-lab-report-overview">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <h3
-                className="text-xl font-bold text-text-primary"
-                id="hook-lab-report-overview"
-              >
-                What the post does
-              </h3>
-              <a
-                className="inline-flex items-center gap-2 text-sm font-semibold text-accent-dark transition-colors hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                href={post.canonicalUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
-                Open original
-                <ExternalLink aria-hidden className="size-4" />
-              </a>
-            </div>
-            <p className="mt-4 max-w-4xl text-base leading-7 text-text-secondary">
-              {analysis.contentSummary}
-            </p>
-            <dl className="mt-6 grid gap-5 sm:grid-cols-3">
-              <div>
-                <dt className="text-sm font-semibold text-text-primary">
-                  Opening
-                </dt>
-                <dd className="mt-2 text-sm leading-6 text-text-secondary">
-                  {analysis.openingHook}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-semibold text-text-primary">
-                  Format
-                </dt>
-                <dd className="mt-2 text-sm leading-6 text-text-secondary">
-                  {analysis.format}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-semibold text-text-primary">
-                  Call to action
-                </dt>
-                <dd className="mt-2 text-sm leading-6 text-text-secondary">
-                  {analysis.callToAction}
-                </dd>
-              </div>
-            </dl>
-          </section>
+          </div>
+        ) : null}
 
-          {analysis.formatDna ? (
-            <>
-              <HookLabFirstThreeSecondsSection formatDna={analysis.formatDna} />
-              <HookLabFormatDnaSection formatDna={analysis.formatDna} />
-              <HookLabCopyabilityWarningSection
-                doNotCopy={analysis.formatDna.doNotCopy}
-                warnings={analysis.copyabilityWarnings ?? []}
-              />
-              <HookLabProductAdaptationSection post={post} />
-            </>
-          ) : null}
-
-          <HookLabMeaningSection analysis={analysis} />
-          <HookLabPostCopySummary post={post} />
-
-          <section aria-labelledby="hook-lab-report-metrics">
-            <h3
-              className="text-xl font-bold text-text-primary"
-              id="hook-lab-report-metrics"
-            >
-              Platform numbers
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-text-secondary">
-              These are the public numbers available when this post was
-              analyzed. Missing numbers are left missing.
-            </p>
-            <div className="mt-5">
-              <HookLabPostMetricRow metrics={post.metrics} />
-            </div>
-          </section>
-
-          <section aria-labelledby="hook-lab-report-performance">
-            <h3
-              className="text-xl font-bold text-text-primary"
-              id="hook-lab-report-performance"
-            >
-              Why it may have performed this way
-            </h3>
-            <div className="mt-6">
-              <HookLabPostScoreRow performance={analysis.performance} />
-            </div>
-            <div className="mt-7 grid gap-6 lg:grid-cols-2">
-              <div>
-                <h4 className="font-bold text-text-primary">Engagement</h4>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">
-                  {analysis.performance.engagementExplanation}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-bold text-text-primary">Likely retention</h4>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">
-                  {analysis.performance.retentionExplanation}
-                </p>
-              </div>
-            </div>
-            <div className="mt-7 grid gap-6 lg:grid-cols-2">
-              <div>
-                <h4 className="font-bold text-text-primary">What works</h4>
-                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-text-secondary">
-                  {analysis.performance.strengths.map((strength) => (
-                    <li key={strength}>{strength}</li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-bold text-text-primary">
-                  Limits and weak spots
-                </h4>
-                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-text-secondary">
-                  {analysis.performance.limitations.map((limitation) => (
-                    <li key={limitation}>{limitation}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <p className="mt-6 rounded-lg border border-border bg-surface-muted p-4 text-sm leading-6 text-text-secondary">
-              <span className="font-bold">Confidence:</span>{" "}
-              {analysis.performance.confidence}
-            </p>
-          </section>
-
-          <section aria-labelledby="hook-lab-report-timeline">
-            <h3
-              className="text-xl font-bold text-text-primary"
-              id="hook-lab-report-timeline"
-            >
-              Full play-by-play
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-text-secondary">
-              The timeline follows the video from its first frame to its last
-              meaningful beat.
-            </p>
-            <div className="mt-6">
-              <HookLabPostTimeline timeline={analysis.timeline} />
-            </div>
-          </section>
-
-          <section aria-labelledby="hook-lab-report-lessons">
-            <h3
-              className="text-xl font-bold text-text-primary"
-              id="hook-lab-report-lessons"
-            >
-              Useful takeaways
-            </h3>
-            <ul className="mt-4 list-disc space-y-3 pl-5 text-sm leading-6 text-text-secondary">
-              {analysis.transferableLessons.map((lesson) => (
-                <li key={lesson}>{lesson}</li>
-              ))}
-            </ul>
-          </section>
-        </div>
+        <HookLabAnalysisWorkspace post={post} />
       </article>
-      </div>
-    </>
+    </div>
   );
 }

@@ -110,7 +110,7 @@ const post: HookLabPost = {
 };
 
 describe("HookLabPostAnalysisDialog", () => {
-  it("renders the complete saved analysis", () => {
+  it("renders the quick read before the dense analysis", () => {
     const markup = renderToStaticMarkup(
       <HookLabPostAnalysisDialog
         isReanalyzing={false}
@@ -124,31 +124,24 @@ describe("HookLabPostAnalysisDialog", () => {
     expect(markup).toContain('role="dialog"');
     expect(markup).toContain("dashboard-dialog-viewport");
     expect(markup).toContain("border-b border-border");
-    expect(markup).toContain(
-      "bg-white shadow-[0_5px_10px_rgba(30,24,19,0.16)]",
-    );
-    expect(markup).toContain("min-h-0 gap-8 overflow-y-auto");
+    expect(markup).toContain("bg-white shadow-lg");
     expect(markup).not.toContain("--text-primary");
-    expect(markup).toContain("Platform numbers");
-    expect(markup).toContain("Words used in the post");
-    expect(markup).toContain("A quick morning workflow");
-    expect(markup).toContain("Three quick steps");
-    expect(markup).toContain("Why it may have performed this way");
-    expect(markup).toContain("The first three seconds");
-    expect(markup).toContain("How the reference works");
+    expect(markup).toContain('role="tablist"');
+    expect(markup).toContain("Quick read");
+    expect(markup).toContain("Full breakdown");
+    expect(markup).toContain("Your script");
+    expect(markup).toContain("What happens");
+    expect(markup).toContain("The hook at a glance");
+    expect(markup).toContain("The remake recipe");
+    expect(markup).toContain("What to keep and what to change");
+    expect(markup).toContain("A creator demonstrates a quick morning workflow");
     expect(markup).not.toContain("Hooks with a similar job");
     expect(markup).toContain("Use this format");
     expect(markup).toContain("Re-analyze");
     expect(markup).toContain("Re-analysis uses 1 creation credit.");
-    expect(markup).toContain("Writing for Guppy Calisthenics");
-    expect(markup).toContain("Meaning and remake essentials");
-    expect(markup).toContain("Expression and body language");
-    expect(markup).toContain("Objects and placement");
-    expect(markup).toContain("Full play-by-play");
-    expect(markup).toContain("0:00-0:03");
-    expect(markup).toContain("Stop doing this manually");
-    expect(markup).toContain("Private watch-time data is unavailable.");
-    expect(markup).toContain("Show the problem before the walkthrough.");
+    expect(markup).toContain("Rewrite this exact video for Guppy Calisthenics");
+    expect(markup).not.toContain("Expression and body language");
+    expect(markup).not.toContain("Private watch-time data is unavailable.");
   });
 
   it("does not render before analysis is ready", () => {

@@ -32,13 +32,15 @@ reference-remake action.
 
 1. Select a product with the existing dashboard product picker.
 2. Open a completed Hook Lab report.
-3. Review the first frames, scene mechanics, likely meaning, full forensic
-   play-by-play, and details that carry the effect.
-4. Choose **Use this format**.
+3. Use **Quick read** for the short summary and remake recipe. Open **Full
+   breakdown** only when the frame-by-frame evidence is needed.
+4. Choose **Use this format** from Quick read or the empty **Your script** view.
 5. Hook Lab reserves one creation credit and generates from the complete report
    plus the active product.
-6. The saved adaptation appears in the same dialog with these editable
-   sections:
+6. Hook Lab switches directly to **Your script** and shows a formatted reading
+   view grouped into concept, production plan, and copy.
+7. Choose **Edit script** only when changes are needed. Edit mode exposes these
+   fields:
    - adapted concept;
    - opening reaction;
    - scene-by-scene shot directions;
@@ -48,8 +50,8 @@ reference-remake action.
    - product demonstration;
    - closing CTA;
    - adapted caption.
-7. Save edits or copy the script without another charge.
-8. If the global product changes, choose **Regenerate** to create and charge for
+8. Save edits or copy the script without another charge.
+9. If the global product changes, choose **Regenerate** to create and charge for
    a new adaptation for that product.
 
 If the current product is missing or locked, Hook Lab disables generation and
@@ -110,7 +112,13 @@ limits. Hook Lab direct adaptations do not run generated-claim validation.
 
 ```text
 web/app/_components/hooks/
+  HookLabAnalysisWorkspace.tsx
+  HookLabQuickRead.tsx
+  HookLabFullBreakdown.tsx
+  HookLabBreakdownDisclosure.tsx
+  HookLabScriptWorkspace.tsx
   HookLabProductAdaptationSection.tsx
+  HookLabProductAdaptationPreview.tsx
   HookLabProductAdaptationEditor.tsx
   HookLabCreativeBriefField.tsx
   HookLabMeaningSection.tsx
@@ -143,7 +151,13 @@ web/lib/clipstitchr/utils/
 - Switch from Guppy Calisthenics to Bloomin and confirm regeneration uses the
   Bloomin product ID.
 - Confirm generated content renders all nine editable sections in the report
-  dialog.
+  dialog only after **Edit script** is selected.
+- Confirm generation switches directly to **Your script**, which defaults to a
+  formatted reading view.
+- Confirm an existing script changes the Quick read action to **Open your
+  script** and does not accidentally regenerate or charge another credit.
+- Confirm the tab list supports arrow-key navigation and remains usable on a
+  narrow viewport.
 - Confirm save and copy do not call the generation route.
 - Confirm credit reservation happens before model work, commit happens after
   durable save, and failure releases the reservation.

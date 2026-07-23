@@ -67,12 +67,23 @@ social-provider lineage stay in place. The previous report remains stored
 until the replacement succeeds, and the dialog closes after the new job is
 successfully queued so the post card can show live analysis progress.
 
-The completed report uses the same warm dark surface, border, typography,
-header, close control, and shadow treatment as other dashboard dialogs. Its
-header remains outside the report's scrolling region, so the close control
-stays reachable while reading a long timeline. The shared dashboard dialog
-viewport preserves the report's top edge on short screens and accounts for
-mobile safe areas.
+The completed report is organized as a three-view workspace:
+
+- **Quick read** is the default and keeps the summary, hook, remake recipe,
+  keep/adapt/leave-behind guidance, and product-script action in one short
+  reading path.
+- **Full breakdown** contains the forensic report in four native disclosures:
+  play-by-play, visual mechanics and meaning, source words, and performance.
+  The play-by-play starts open while secondary evidence starts collapsed.
+- **Your script** is isolated from the source analysis and opens in a formatted
+  reading view. Editing is an explicit mode rather than nine text fields shown
+  by default.
+
+The tabs use an accessible Base UI primitive with keyboard navigation. The
+header and view selector remain outside each panel's scrolling region, so the
+close control and report navigation stay reachable on long timelines. The
+shared dashboard dialog viewport preserves the top edge on short screens and
+accounts for mobile safe areas.
 
 ## Analysis contract
 
