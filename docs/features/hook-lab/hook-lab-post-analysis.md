@@ -77,7 +77,8 @@ The completed report is organized as a three-view workspace:
   The play-by-play starts open while secondary evidence starts collapsed.
 - **Your script** is isolated from the source analysis and opens in a formatted
   reading view. Editing is an explicit mode rather than nine text fields shown
-  by default.
+  by default. Reopening the report loads the newest saved adaptation associated
+  with that source post before offering to create another one.
 
 The tabs use an accessible Base UI primitive with keyboard navigation. The
 header and view selector remain outside each panel's scrolling region, so the

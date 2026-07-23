@@ -18,6 +18,19 @@ export function HookLabScriptWorkspace({
 }) {
   const [isEditing, setIsEditing] = useState(false);
 
+  if (adaptation.isLoadingBrief) {
+    return (
+      <div
+        className="mx-auto grid w-full max-w-2xl gap-3 py-6 sm:py-12"
+        role="status"
+      >
+        <div className="h-7 w-48 rounded bg-surface-muted" />
+        <div className="h-4 w-full max-w-lg rounded bg-surface-muted" />
+        <span className="sr-only">Loading your saved script.</span>
+      </div>
+    );
+  }
+
   if (!adaptation.brief) {
     return (
       <div className="mx-auto grid w-full max-w-2xl place-items-start gap-5 py-6 sm:py-12">

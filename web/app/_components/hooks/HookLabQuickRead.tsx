@@ -150,12 +150,16 @@ export function HookLabQuickRead({
             className="text-balance text-lg font-bold text-text-primary"
             id="hook-lab-quick-action"
           >
-            {adaptation.brief
+            {adaptation.isLoadingBrief
+              ? "Checking for your saved script"
+              : adaptation.brief
               ? "Your product script is ready"
               : "Turn this into your product script"}
           </h3>
           <p className="mt-2 text-pretty text-sm leading-6 text-text-secondary">
-            {adaptation.brief
+            {adaptation.isLoadingBrief
+              ? "Your previous work will appear here as soon as it is loaded."
+              : adaptation.brief
               ? `Open the script created for ${adaptation.briefProductName ?? "your product"}.`
               : adaptation.activeProductIsUsable && adaptation.activeProduct
                 ? `Rewrite this exact video for ${adaptation.activeProduct.name}. Generation uses 1 creation credit.`
@@ -164,8 +168,11 @@ export function HookLabQuickRead({
         </div>
         <Button
           className="mt-4 shrink-0 sm:mt-0"
-          disabled={!adaptation.brief && !adaptation.activeProductIsUsable}
-          isLoading={adaptation.isGenerating}
+          disabled={
+            adaptation.isLoadingBrief ||
+            (!adaptation.brief && !adaptation.activeProductIsUsable)
+          }
+          isLoading={adaptation.isGenerating || adaptation.isLoadingBrief}
           type="button"
           onClick={adaptation.brief ? onOpenScript : onGenerate}
         >

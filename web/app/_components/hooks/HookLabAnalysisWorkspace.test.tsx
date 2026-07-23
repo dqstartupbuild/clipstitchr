@@ -10,14 +10,27 @@ Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 
 const mocks = vi.hoisted(() => ({
   createBrief: vi.fn(),
+  savedAdaptation: null as null | {
+    brief: Record<string, unknown>;
+    productName: string | null;
+  },
   updateBrief: vi.fn(),
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
-  api: { hookLabCreativeBriefs: { update: { update: "brief.update" } } },
+  api: {
+    hookLabCreativeBriefs: {
+      getLatestForSourcePost: { getLatestForSourcePost: "brief.latest" },
+      update: { update: "brief.update" },
+    },
+  },
 }));
 
-vi.mock("convex/react", () => ({ useMutation: () => mocks.updateBrief }));
+vi.mock("convex/react", () => ({
+  useConvexAuth: () => ({ isAuthenticated: true }),
+  useMutation: () => mocks.updateBrief,
+  useQuery: () => mocks.savedAdaptation,
+}));
 
 vi.mock("@/lib/clipstitchr/client/createHookLabCreativeBrief", () => ({
   createHookLabCreativeBrief: mocks.createBrief,
@@ -128,6 +141,7 @@ let root: Root;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.savedAdaptation = null;
   mocks.createBrief.mockResolvedValue({ brief: generatedBrief });
   container = document.createElement("div");
   document.body.append(container);
@@ -140,6 +154,32 @@ afterEach(() => {
 });
 
 describe("HookLabAnalysisWorkspace", () => {
+  it("loads a previously saved script without generating it again", async () => {
+    mocks.savedAdaptation = {
+      brief: generatedBrief,
+      productName: "Guppy Calisthenics",
+    };
+
+    await act(async () => {
+      root.render(<HookLabAnalysisWorkspace post={post} />);
+    });
+
+    expect(container.textContent).toContain("Ready");
+    expect(container.textContent).toContain("Open your script");
+
+    const scriptTab = Array.from(container.querySelectorAll('[role="tab"]')).find(
+      (tab) => tab.textContent?.includes("Your script"),
+    );
+
+    await act(async () => {
+      (scriptTab as HTMLButtonElement | undefined)?.click();
+    });
+
+    expect(container.textContent).toContain("The workout reveal");
+    expect(container.textContent).toContain("Script for Guppy Calisthenics");
+    expect(mocks.createBrief).not.toHaveBeenCalled();
+  });
+
   it("separates quick reading, full analysis, and the generated script", async () => {
     await act(async () => {
       root.render(<HookLabAnalysisWorkspace post={post} />);

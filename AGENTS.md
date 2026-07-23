@@ -5,7 +5,7 @@
 ClipStitchr is a browser-local Next.js MVP app under `web/`. The repository root contains project documentation:
 
 - `project-scope.md` defines the MVP, target architecture, routes, data model, and video-processing decisions.
-- `coding-guidelines.md` defines the required Atomic Code Splitting approach.
+- `coding-guidelines.md` defines the required Atomic Code Splitting approach and the Progressive Disclosure and Task-Separated Workspaces UI standard.
 - `docs/references/media-bunny/guides.md` contains the full Media Bunny guide content. Read this first for Media Bunny workflows, recommended patterns, and conceptual guidance.
 - `docs/references/media-bunny/api.md` contains the Media Bunny TypeScript API declarations. Use this as the source of truth for exact class names, option shapes, method signatures, and return types.
 
@@ -149,6 +149,23 @@ Follow `coding-guidelines.md`. This project requires one file, one purpose:
 - Split any file whose name needs "and" to describe its contents.
 
 Use TypeScript for application code. Prefer descriptive PascalCase component names, camelCase functions and hooks, and route/file names that match the feature they own.
+
+## UI/UX Information Architecture
+
+Every user-facing implementation must follow the **Progressive Disclosure and Task-Separated Workspaces** standard in `coding-guidelines.md`.
+
+- Start with the shortest useful answer and one clear primary job.
+- Separate understanding, detailed inspection, creation, and editing when they are distinct user tasks.
+- Keep complete detail available on demand instead of presenting every section at equal weight.
+- Show saved or generated work in a readable state before exposing editing controls.
+- Put actions beside the context needed to choose them and send completed actions directly to their results.
+- Make paid, destructive, and expensive reruns explicit. Prefer **Open** or **View** when a result already exists.
+- Preserve drafts, selections, and generated results when users move between views.
+- Keep loading, success, and error feedback beside the action it belongs to.
+- Use accessible interaction primitives and preserve the same hierarchy on mobile.
+- Test the full workflow in the browser with pointer and keyboard input at desktop and mobile sizes before calling the UI complete.
+
+Do not ship a wall of equally weighted text and controls. If users must understand the entire feature before they can take the next useful action, reorganize the surface before considering it finished.
 
 ## Testing Guidelines
 

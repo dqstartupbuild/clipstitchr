@@ -21,6 +21,9 @@ Clipr, Stitchr, or Swipr.
   completed adaptation directly in Hook Lab.
 - Shows the finished adaptation inside the analysis dialog for review, editing,
   copying, saving, and regeneration.
+- Reloads the newest saved adaptation for the source post whenever its report
+  dialog is reopened. Reopening and reading a saved script does not generate a
+  replacement or charge another credit.
 - Charges one creation credit for every generation or regeneration. Editing,
   saving edits, and copying an existing adaptation cost no credits.
 
@@ -50,8 +53,9 @@ reference-remake action.
    - product demonstration;
    - closing CTA;
    - adapted caption.
-8. Save edits or copy the script without another charge.
-9. If the global product changes, choose **Regenerate** to create and charge for
+8. Close and reopen the report at any time to return to its newest saved script.
+9. Save edits or copy the script without another charge.
+10. If the global product changes, choose **Regenerate** to create and charge for
    a new adaptation for that product.
 
 If the current product is missing or locked, Hook Lab disables generation and
@@ -129,6 +133,7 @@ web/app/api/hook-lab/briefs/
   readHookLabCreativeBriefRequest.ts
 web/convex/hookLabCreativeBriefs/
   create.ts
+  getLatestForSourcePost.ts
   update.ts
   normalizeHookLabCreativeBriefContent.ts
 web/lib/clipstitchr/server/hookLab/
@@ -156,6 +161,8 @@ web/lib/clipstitchr/utils/
   formatted reading view.
 - Confirm an existing script changes the Quick read action to **Open your
   script** and does not accidentally regenerate or charge another credit.
+- Close and reopen the analysis dialog and confirm its newest saved script is
+  loaded from Convex without another model request or credit charge.
 - Confirm the tab list supports arrow-key navigation and remains usable on a
   narrow viewport.
 - Confirm save and copy do not call the generation route.

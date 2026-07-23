@@ -4,7 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 import { HookLabPostAnalysisDialog } from "./HookLabPostAnalysisDialog";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 
-vi.mock("convex/react", () => ({ useMutation: () => vi.fn() }));
+vi.mock("convex/react", () => ({
+  useConvexAuth: () => ({ isAuthenticated: true }),
+  useMutation: () => vi.fn(),
+  useQuery: () => null,
+}));
 
 vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
   useDashboardProduct: () => ({

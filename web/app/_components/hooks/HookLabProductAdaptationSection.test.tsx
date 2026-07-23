@@ -12,14 +12,27 @@ const mocks = vi.hoisted(() => ({
   activeProduct: { id: "product_guppy", name: "Guppy Calisthenics" },
   clipboardWrite: vi.fn(),
   createBrief: vi.fn(),
+  savedAdaptation: null as null | {
+    brief: Record<string, unknown>;
+    productName: string | null;
+  },
   updateBrief: vi.fn(),
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
-  api: { hookLabCreativeBriefs: { update: { update: "brief.update" } } },
+  api: {
+    hookLabCreativeBriefs: {
+      getLatestForSourcePost: { getLatestForSourcePost: "brief.latest" },
+      update: { update: "brief.update" },
+    },
+  },
 }));
 
-vi.mock("convex/react", () => ({ useMutation: () => mocks.updateBrief }));
+vi.mock("convex/react", () => ({
+  useConvexAuth: () => ({ isAuthenticated: true }),
+  useMutation: () => mocks.updateBrief,
+  useQuery: () => mocks.savedAdaptation,
+}));
 
 vi.mock("@/lib/clipstitchr/client/createHookLabCreativeBrief", () => ({
   createHookLabCreativeBrief: mocks.createBrief,
@@ -69,6 +82,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.activeProduct.id = "product_guppy";
   mocks.activeProduct.name = "Guppy Calisthenics";
+  mocks.savedAdaptation = null;
   mocks.createBrief.mockResolvedValue({ brief: generatedBrief });
   mocks.updateBrief.mockResolvedValue(generatedBrief);
   Object.assign(navigator, {

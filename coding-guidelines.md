@@ -77,3 +77,40 @@ export const ListItem = () => (
 
 ### Enforcement
 When submitting PRs or writing new code, review your files against this standard. If a file name cannot accurately and concisely describe everything inside the file without using "and", it likely needs to be split.
+
+## Progressive Disclosure and Task-Separated Workspaces
+
+Every interface must make the user's next useful step feel smaller than the full capability of the feature. Show the shortest useful answer first, separate distinct user jobs into focused views, and reveal deeper detail only when the user asks for it or needs it.
+
+This is an information-architecture rule, not permission to hide essential information. Users must always be able to find the complete result, understand what an action will do, and return to their work without losing context.
+
+### Core Rules
+
+1. **One View, One Primary Job**: Do not mix understanding, detailed inspection, creation, editing, and settings at equal visual priority in one long surface. Give each distinct job a focused view, tab, step, or mode.
+2. **Shortest Useful Answer First**: Lead with the conclusion, status, summary, or most likely next action. Put supporting evidence and exhaustive detail behind clearly named secondary views or disclosures.
+3. **Progressive Detail, Not Information Removal**: Keep advanced information available, complete, and easy to reach. Collapse or relocate it based on priority instead of deleting it or making it obscure.
+4. **Read First, Edit Intentionally**: Present generated or saved work as clean, readable output by default. Enter form controls only after the user explicitly chooses to edit.
+5. **Actions Live With Their Outcomes**: Place a primary action where the user has enough context to decide. After it runs, take the user directly to the result or resulting workspace.
+6. **Protect Costly and Destructive Actions**: Never make a paid, destructive, or expensive rerun look like a harmless navigation action. If a result already exists, offer **Open** or **View** first and keep **Regenerate**, **Replace**, or **Delete** explicit and contextual.
+7. **Preserve Context Across Views**: Switching tabs, modes, or disclosures must not discard drafts, scroll-independent state, selections, or generated results unless the user clearly asks to reset them.
+8. **Keep Feedback Near the Action**: Loading, success, validation, and failure states belong beside the control or result they affect. Do not make users search another part of the interface to learn what happened.
+9. **Use Accessible Interaction Primitives**: Tabs, dialogs, disclosures, and menus must support keyboard navigation, visible focus, correct semantics, and predictable focus return. Prefer the project's existing accessible primitives.
+10. **Preserve the Hierarchy on Every Screen Size**: Mobile may stack or condense the layout, but it must keep the same task separation, primary action, readable output, and access to full detail. Do not solve density by hiding essential content.
+11. **Keep Motion Supportive**: Content is visible by default. Motion may clarify a state change, but it must not gate access to content, delay the task, or become the only explanation of what changed.
+12. **Verify the Real Workflow**: Test every interactive control with a pointer and keyboard at desktop and mobile sizes. Confirm that focus, overflow, scrolling, empty states, loading states, errors, completed results, editing, and return navigation all work.
+
+### Required UI Review
+
+Before considering an interface complete, answer all of the following:
+
+- What is the shortest useful view of this feature?
+- Which distinct user jobs are present, and are they separated?
+- What information is primary, and what can be progressively disclosed?
+- Is saved or generated work easy to read before it becomes a form?
+- Could any costly or destructive action happen accidentally?
+- Does changing views preserve the user's work and context?
+- Are errors and progress shown beside the action that caused them?
+- Does the hierarchy still work with a keyboard and on a narrow screen?
+- Has every visible control been exercised in the browser?
+
+If the interface opens as a wall of equally weighted content, mixes multiple jobs into one scrolling form, or makes the user parse everything before acting, it is not finished.

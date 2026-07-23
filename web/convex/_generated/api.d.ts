@@ -233,6 +233,7 @@ import type * as hookLabCreativeBriefs_create from "../hookLabCreativeBriefs/cre
 import type * as hookLabCreativeBriefs_get from "../hookLabCreativeBriefs/get.js";
 import type * as hookLabCreativeBriefs_getHookLabCreativeBriefForOwner from "../hookLabCreativeBriefs/getHookLabCreativeBriefForOwner.js";
 import type * as hookLabCreativeBriefs_getHookLabCreativeBriefIsComplete from "../hookLabCreativeBriefs/getHookLabCreativeBriefIsComplete.js";
+import type * as hookLabCreativeBriefs_getLatestForSourcePost from "../hookLabCreativeBriefs/getLatestForSourcePost.js";
 import type * as hookLabCreativeBriefs_markUsed from "../hookLabCreativeBriefs/markUsed.js";
 import type * as hookLabCreativeBriefs_normalizeHookLabCreativeBriefContent from "../hookLabCreativeBriefs/normalizeHookLabCreativeBriefContent.js";
 import type * as hookLabCreativeBriefs_update from "../hookLabCreativeBriefs/update.js";
@@ -815,6 +816,7 @@ declare const fullApi: ApiFromModules<{
   "hookLabCreativeBriefs/get": typeof hookLabCreativeBriefs_get;
   "hookLabCreativeBriefs/getHookLabCreativeBriefForOwner": typeof hookLabCreativeBriefs_getHookLabCreativeBriefForOwner;
   "hookLabCreativeBriefs/getHookLabCreativeBriefIsComplete": typeof hookLabCreativeBriefs_getHookLabCreativeBriefIsComplete;
+  "hookLabCreativeBriefs/getLatestForSourcePost": typeof hookLabCreativeBriefs_getLatestForSourcePost;
   "hookLabCreativeBriefs/markUsed": typeof hookLabCreativeBriefs_markUsed;
   "hookLabCreativeBriefs/normalizeHookLabCreativeBriefContent": typeof hookLabCreativeBriefs_normalizeHookLabCreativeBriefContent;
   "hookLabCreativeBriefs/update": typeof hookLabCreativeBriefs_update;
