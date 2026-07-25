@@ -1,9 +1,7 @@
 import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplate";
 import type { StitchrHookOption } from "@/lib/clipstitchr/types/StitchrHookOption";
+import { getStitchrHookTextIsUsable } from "@/lib/clipstitchr/server/getStitchrHookTextIsUsable";
 import { sanitizeGeneratedShortFormText } from "@/lib/clipstitchr/utils/sanitizeGeneratedShortFormText";
-
-const genericHookPattern =
-  /^(the visible change|wait for it|this changes everything|you need to see this)[.!]?$/i;
 
 export function normalizeStitchrHookOptions({
   candidates,
@@ -43,7 +41,7 @@ export function normalizeStitchrHookOptions({
       wordCount < 2 ||
       wordCount > 14 ||
       /{{|}}|\b[a-z]+_[a-z_]+\b/.test(text) ||
-      genericHookPattern.test(text)
+      !getStitchrHookTextIsUsable(text)
     ) {
       return [];
     }

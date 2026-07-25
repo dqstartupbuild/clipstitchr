@@ -346,7 +346,8 @@ The identity challenge expansion also lives in the internal template resources
 as `IC-001` through `IC-115` for Swipr and Stitchr reaction-first ad hooks.
 The polarizing reaction pack lives beside it as `PR-001` through `PR-050` and
 is Stitchr-only so UGC-then-demo overlays can favor sharper comparison,
-callout, and identity-pressure hooks without changing Clipr behavior.
+callout, and identity-pressure hooks without changing Clipr behavior. The UGC
+discovery pack is `UGD-001` through `UGD-300` and is also Stitchr-only.
 
 ## Hook Template Model
 
@@ -363,7 +364,8 @@ type HookTemplate = {
     | "clipstitchr"
     | "app_hook_library"
     | "education_viral_patterns"
-    | "polarizing_reaction_patterns";
+    | "polarizing_reaction_patterns"
+    | "ugc_discovery_patterns";
   emotionalTrigger: string;
   bestFor: string[];
   riskLevel: "safe" | "medium" | "aggressive";
@@ -391,13 +393,13 @@ Implementation details:
 
 ## Hook Asset Integration
 
-The runtime hook engine now has four hidden template sources:
+The runtime hook engine now has five hidden template sources:
 
 - `clipstitchr`: original non-promotional starter templates used by Clipr,
   Swipr, and Stitchr.
 - `education_viral_patterns`: reusable education-style patterns distilled from
   `assets/hooks/46,606 VIRAL HOOKS - by socialgrowthengineers.com -
-  Education.csv`. These are rewritten as placeholder templates rather than
+Education.csv`. These are rewritten as placeholder templates rather than
   shown or copied as raw third-party examples.
 - `app_hook_library`: product/ad hook templates generated from
   `assets/hooks/hook-library.json`. Bracket placeholders such as `[outcome]`
@@ -405,11 +407,15 @@ The runtime hook engine now has four hidden template sources:
   phrases such as "this app" are normalized around `{{product_name}}`.
 - `polarizing_reaction_patterns`: broad Stitchr-only templates for comparison,
   callout, identity challenge, unpopular-opinion, and dare-style overlays.
+- `ugc_discovery_patterns`: 300 Stitchr-only creator-thought patterns for
+  self-callouts, reluctant discoveries, expectation reversals, excuse removal,
+  and identity loops that can resolve into an immediate Demo.
 
 The UI must not expose the source names, template IDs, risk labels, or
 placeholder mechanics. The app-promo library is available only to Swipr and
 Stitchr auto-text because Clipr outputs must remain non-promotional engagement
 clips. The polarizing reaction pack is available only to Stitchr auto-text.
+The UGC discovery pack is also available only to Stitchr auto-text.
 
 ## Style Generation Rules
 
@@ -1128,14 +1134,14 @@ After implementation:
     the remaining slides.
 18. Test Stitchr auto-text fills the single editable overlay.
 19. Test paid-provider routes return `429` before provider calls when limited.
-21. Test Reaction mode creates a 4-10 second silent single-shot Clip and does
+20. Test Reaction mode creates a 4-10 second silent single-shot Clip and does
     not call hook/script, voice, music, or PixVerse lip sync.
-22. Test B-roll mode creates a 4-10 second silent single-shot Clip with a
+21. Test B-roll mode creates a 4-10 second silent single-shot Clip with a
     product-relevant day-in-the-life prompt.
-23. Test Settings automation mode selection defaults to Any and queues Reaction
+22. Test Settings automation mode selection defaults to Any and queues Reaction
     or B-roll jobs with the correct target duration. If Script mode is enabled,
     test Script jobs too.
-24. Review user-facing copy for non-technical language and no unwanted CTAs.
+23. Review user-facing copy for non-technical language and no unwanted CTAs.
 
 ## Approval Decisions
 

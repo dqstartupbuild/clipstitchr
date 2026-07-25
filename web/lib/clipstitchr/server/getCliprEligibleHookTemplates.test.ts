@@ -33,7 +33,9 @@ describe("getCliprEligibleHookTemplates", () => {
       templates.some((template) => template.source === "app_hook_library"),
     ).toBe(true);
     expect(
-      templates.every((template) => template.allowedPurposes.includes("stitchr")),
+      templates.every((template) =>
+        template.allowedPurposes.includes("stitchr"),
+      ),
     ).toBe(true);
   });
 
@@ -45,6 +47,28 @@ describe("getCliprEligibleHookTemplates", () => {
         (template) => template.source === "polarizing_reaction_patterns",
       ),
     ).toBe(true);
+  });
+
+  it("adds all UGC discovery patterns only for Stitchr auto-text", () => {
+    const stitchrTemplates = getCliprEligibleHookTemplates(product, "stitchr");
+    const cliprTemplates = getCliprEligibleHookTemplates(product, "clipr");
+    const swiprTemplates = getCliprEligibleHookTemplates(product, "swipr");
+
+    expect(
+      stitchrTemplates.filter(
+        (template) => template.source === "ugc_discovery_patterns",
+      ),
+    ).toHaveLength(300);
+    expect(
+      cliprTemplates.some(
+        (template) => template.source === "ugc_discovery_patterns",
+      ),
+    ).toBe(false);
+    expect(
+      swiprTemplates.some(
+        (template) => template.source === "ugc_discovery_patterns",
+      ),
+    ).toBe(false);
   });
 
   it("keeps polarizing reaction templates out of Clipr generations", () => {
@@ -71,10 +95,14 @@ describe("getCliprEligibleHookTemplates", () => {
     );
 
     expect(
-      cliprTemplates.some((template) => template.styleKey === "identity_challenge"),
+      cliprTemplates.some(
+        (template) => template.styleKey === "identity_challenge",
+      ),
     ).toBe(true);
     expect(
-      stitchrTemplates.some((template) => template.styleKey === "identity_challenge"),
+      stitchrTemplates.some(
+        (template) => template.styleKey === "identity_challenge",
+      ),
     ).toBe(true);
     expect(
       stitchrTemplates.some((template) => template.riskLevel === "aggressive"),

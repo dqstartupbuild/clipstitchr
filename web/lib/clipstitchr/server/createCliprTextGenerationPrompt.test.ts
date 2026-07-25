@@ -54,7 +54,8 @@ describe("createCliprTextGenerationPrompt", () => {
       fillers: { topic: ["launches"] },
       product,
       purpose: "clipr",
-      scriptIdea: "Open with a founder admitting their launch content was scattered.",
+      scriptIdea:
+        "Open with a founder admitting their launch content was scattered.",
       slideCount: 4,
     });
 
@@ -76,7 +77,8 @@ describe("createCliprTextGenerationPrompt", () => {
         {
           id: "ugc_1",
           name: "Creator surprised by messy launch work",
-          quickEditOverlayTextHint: "The moment I stopped pretending launch chaos was normal",
+          quickEditOverlayTextHint:
+            "The moment I stopped pretending launch chaos was normal",
           quickEditOverlayTextReason: "Matches the visible frustration.",
           role: "ugc",
           tags: ["reaction"],
@@ -91,7 +93,7 @@ describe("createCliprTextGenerationPrompt", () => {
       ],
     });
 
-    expect(prompt).toContain("Write three strong text-overlay options");
+    expect(prompt).toContain("Write three native UGC discovery overlays");
     expect(prompt).toContain("Product truth:");
     expect(prompt).toContain("Selected clips:");
     expect(prompt).toContain("Relevant Hook Library candidates:");
@@ -99,23 +101,37 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain('"templateId":"MG-001"');
     expect(prompt).toContain('"emotionalTrigger":"curiosity"');
     expect(prompt).toContain('"hookOptions"');
-    expect(prompt).toContain(
-      '"caption":"exactly hookOptions[0].caption"',
-    );
+    expect(prompt).toContain('"caption":"exactly hookOptions[0].caption"');
     expect(prompt).toContain('"caption":"short feed caption for this option"');
     expect(prompt).toContain('"hashtags":["#tagone","#tagtwo","#tagthree"]');
     expect(prompt).toContain("return the strongest three distinct options");
     expect(prompt).toContain(
-      "The three options must use meaningfully different angles",
+      "The three options must use meaningfully different creator angles",
     );
-    expect(prompt).toContain("Most should be 3-10 words");
+    expect(prompt).toContain("Most should be 4-11 words");
+    expect(prompt).toContain(
+      "private thought or confession -> genuine reaction -> Demo reveals the discovery",
+    );
+    expect(prompt).toContain(
+      "The viewer should feel that a creator discovered something useful",
+    );
+    expect(prompt).toContain(
+      "The overlay must make sense without the feed caption",
+    );
+    expect(prompt).toContain("run the Demo-closure test");
+    expect(prompt).toContain(
+      "Reject phrases such as 'this is why,' 'here is why,' 'let me explain,'",
+    );
+    expect(prompt).toContain("Do not invent creator history");
     expect(prompt).toContain("hashtags must contain 3-5 lowercase hashtags");
     expect(prompt).toContain("Creator surprised by messy launch work");
     expect(prompt).toContain("A founder looks frustrated at scattered files.");
     expect(prompt).toContain(
       "AI hook hint: The moment I stopped pretending launch chaos was normal",
     );
-    expect(prompt).toContain("AI hook hint reason: Matches the visible frustration.");
+    expect(prompt).toContain(
+      "AI hook hint reason: Matches the visible frustration.",
+    );
     expect(prompt).toContain("Treat an AI hook hint as weak creative evidence");
     expect(prompt).toContain("The demo shows launch assets getting organized.");
     expect(prompt).toContain("Do not merely describe the visible action");
@@ -139,8 +155,12 @@ describe("createCliprTextGenerationPrompt", () => {
       swiprCreativeContext: "Focus on launch-day anxiety for solo founders.",
     });
 
-    expect(prompt).toContain("You write short-form social media carousel slideshows");
-    expect(prompt).toContain("Write one distinct slideshow with exactly 4 slides");
+    expect(prompt).toContain(
+      "You write short-form social media carousel slideshows",
+    );
+    expect(prompt).toContain(
+      "Write one distinct slideshow with exactly 4 slides",
+    );
     expect(prompt).toContain("Write for the viewer first");
     expect(prompt).toContain("The product is context, not the main character");
     expect(prompt).toContain("hook, why it happens, what it costs");

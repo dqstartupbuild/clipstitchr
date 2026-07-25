@@ -141,9 +141,7 @@ describe("parseCliprTextGenerationOutput", () => {
 
     expect(generation.slides).toHaveLength(4);
     expect(generation.slides[0]).toBe(generation.filledHook);
-    expect(generation.slides.slice(1, -1).join(" ")).toContain(
-      "LaunchKit",
-    );
+    expect(generation.slides.slice(1, -1).join(" ")).toContain("LaunchKit");
     expect(generation.slides.at(-1)).toBe("Follow for more launch fixes");
     expect(generation.description).toBe(longDescription);
     expect(generation.socialCaption).toContain(longDescription);
@@ -181,7 +179,7 @@ describe("parseCliprTextGenerationOutput", () => {
     });
 
     expect(generation.filledHook).toBe(
-      "The reason launch content gets scattered",
+      "me realizing launch content gets scattered",
     );
     expect(generation.overlayText).toBe(generation.filledHook);
     expect(generation.script).toBe("");
@@ -208,7 +206,7 @@ describe("parseCliprTextGenerationOutput", () => {
         socialCaption:
           "That reaction tells you everything\n\n#launchkit #creatortips #ugc #productdemo #adcreative",
         templateId: "MG-001",
-        text: "The reason launch content gets scattered",
+        text: "me realizing launch content gets scattered",
       },
     ]);
   });
@@ -219,27 +217,26 @@ describe("parseCliprTextGenerationOutput", () => {
       durationSeconds: 30,
       outputText: JSON.stringify({
         caption: "The reaction makes sense once the workflow gets clearer.",
-        filledHook: "When the messy part finally clicks",
+        filledHook: "not me realizing launch work could feel this clear",
         hashtags: ["launch", "workflow", "founders"],
         hookOptions: [
           {
             angle: "Bold",
             caption: "A launch process should make the next step obvious.",
             templateId: "PB-001",
-            text: "Your launch process should not look this hard",
+            text: "I fear my launch chaos excuse is officially gone",
           },
           {
             angle: "Relatable",
-            caption:
-              "The reaction makes sense once the workflow gets clearer.",
+            caption: "The reaction makes sense once the workflow gets clearer.",
             templateId: "DD-001",
-            text: "When the messy part finally clicks",
+            text: "not me realizing launch work could feel this clear",
           },
           {
             angle: "Curiosity",
             caption: "The calm launch starts before the visible work.",
             templateId: "MG-001",
-            text: "The step nobody sees before launch day",
+            text: "wait... launch day can actually look this calm?",
           },
           {
             angle: "Duplicate",
@@ -248,7 +245,7 @@ describe("parseCliprTextGenerationOutput", () => {
             text: "When the messy part finally clicks",
           },
         ],
-        overlayText: "When the messy part finally clicks",
+        overlayText: "not me realizing launch work could feel this clear",
         templateId: "DD-001",
       }),
       providerModel: "openai/gpt-4.1",
@@ -265,7 +262,7 @@ describe("parseCliprTextGenerationOutput", () => {
         socialCaption:
           "The reaction makes sense once the workflow gets clearer.\n\n#launch #workflow #founders #launchkit #ugc",
         templateId: "DD-001",
-        text: "When the messy part finally clicks",
+        text: "not me realizing launch work could feel this clear",
       },
       {
         angle: "Bold",
@@ -273,7 +270,7 @@ describe("parseCliprTextGenerationOutput", () => {
         socialCaption:
           "A launch process should make the next step obvious.\n\n#launch #workflow #founders #launchkit #ugc",
         templateId: "PB-001",
-        text: "Your launch process should not look this hard",
+        text: "I fear my launch chaos excuse is officially gone",
       },
       {
         angle: "Curiosity",
@@ -281,7 +278,7 @@ describe("parseCliprTextGenerationOutput", () => {
         socialCaption:
           "The calm launch starts before the visible work.\n\n#launch #workflow #founders #launchkit #ugc",
         templateId: "MG-001",
-        text: "The step nobody sees before launch day",
+        text: "wait... launch day can actually look this calm?",
       },
     ]);
   });

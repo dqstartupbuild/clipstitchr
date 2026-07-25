@@ -28,11 +28,11 @@ function createTemplate(
       styleKey === "before_after_arc"
         ? ["process improvement"]
         : ["reaction content"],
-    emotionalTrigger:
-      styleKey === "before_after_arc" ? "progress" : "surprise",
+    emotionalTrigger: styleKey === "before_after_arc" ? "progress" : "surprise",
     id,
     requiredVariables: ["problem"],
-    riskLevel: source === "polarizing_reaction_patterns" ? "aggressive" : "safe",
+    riskLevel:
+      source === "polarizing_reaction_patterns" ? "aggressive" : "safe",
     source,
     styleKey,
     template,
@@ -121,5 +121,51 @@ describe("selectStitchrHookCandidates", () => {
     });
 
     expect(candidates[0]?.id).toBe("BA-SAFE");
+  });
+
+  it("uses twelve discovery mechanisms and six supporting patterns", () => {
+    const discoveryTemplates = Array.from({ length: 24 }, (_, index) =>
+      createTemplate(
+        `UGD-${String(index + 1).padStart(3, "0")}`,
+        (
+          [
+            "vulnerable_reveal",
+            "cold_open_story",
+            "direct_diagnosis",
+            "mystery_gap",
+            "pattern_break",
+            "test_drive",
+          ] as const
+        )[index % 6] ?? "pattern_break",
+        `not me realizing {{problem}} pattern ${index + 1}`,
+        "ugc_discovery_patterns",
+      ),
+    );
+    const supportingTemplates = Array.from({ length: 12 }, (_, index) =>
+      createTemplate(
+        `BASE-${String(index + 1).padStart(3, "0")}`,
+        (["before_after_arc", "anti_advice", "identity_challenge"] as const)[
+          index % 3
+        ] ?? "before_after_arc",
+        `A supporting {{problem}} pattern ${index + 1}`,
+      ),
+    );
+    const candidates = selectStitchrHookCandidates({
+      clipContexts: [],
+      product,
+      templates: [...discoveryTemplates, ...supportingTemplates],
+    });
+
+    expect(candidates).toHaveLength(18);
+    expect(
+      candidates.filter(
+        (template) => template.source === "ugc_discovery_patterns",
+      ),
+    ).toHaveLength(12);
+    expect(
+      candidates.filter(
+        (template) => template.source !== "ugc_discovery_patterns",
+      ),
+    ).toHaveLength(6);
   });
 });

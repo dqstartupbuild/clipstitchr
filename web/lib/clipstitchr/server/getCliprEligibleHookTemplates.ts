@@ -2,9 +2,8 @@ import { cliprHookTemplates } from "@/lib/clipstitchr/resources/clipr/cliprHookT
 import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplate";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import { getStitchrExclusiveHookTemplates } from "@/lib/clipstitchr/server/getStitchrExclusiveHookTemplates";
 import { getCliprTextHasForbiddenCta } from "@/lib/clipstitchr/utils/getCliprTextHasForbiddenCta";
-
-const POLARIZING_REACTION_SOURCE = "polarizing_reaction_patterns";
 
 function getUniqueHookTemplates(templates: CliprHookTemplate[]) {
   const seenIds = new Set<string>();
@@ -17,18 +16,6 @@ function getUniqueHookTemplates(templates: CliprHookTemplate[]) {
     seenIds.add(template.id);
     return true;
   });
-}
-
-function getStitchrPolarizingTemplates(purpose: CliprTextPurpose) {
-  if (purpose !== "stitchr") {
-    return [];
-  }
-
-  return cliprHookTemplates.filter(
-    (template) =>
-      getIsEligibleTemplate(template, purpose) &&
-      template.source === POLARIZING_REACTION_SOURCE,
-  );
 }
 
 function getTemplateMatchesProductPool({
@@ -74,12 +61,17 @@ export function getCliprEligibleHookTemplates(
   product: ProductProfile,
   purpose: CliprTextPurpose,
 ): CliprHookTemplate[] {
-  const eligibleTemplateIds = new Set(product.eligibleCliprHookTemplateIds ?? []);
+  const eligibleTemplateIds = new Set(
+    product.eligibleCliprHookTemplateIds ?? [],
+  );
   const eligibleStyleKeys = new Set(product.eligibleCliprHookStyleKeys ?? []);
   const hasTemplatePool = eligibleTemplateIds.size > 0;
   const hasStylePool = eligibleStyleKeys.size > 0;
   const preferredStyleKey = product.preferredCliprHookStyleKey?.trim();
-  const stitchrPolarizingTemplates = getStitchrPolarizingTemplates(purpose);
+  const stitchrExclusiveTemplates = getStitchrExclusiveHookTemplates({
+    purpose,
+    templates: cliprHookTemplates,
+  }).filter((template) => !getCliprTextHasForbiddenCta(template.template));
   const preferredTemplates = preferredStyleKey
     ? cliprHookTemplates.filter(
         (template) =>
@@ -90,7 +82,7 @@ export function getCliprEligibleHookTemplates(
 
   if (preferredTemplates.length) {
     return getUniqueHookTemplates([
-      ...stitchrPolarizingTemplates,
+      ...stitchrExclusiveTemplates,
       ...preferredTemplates,
     ]);
   }
@@ -110,7 +102,7 @@ export function getCliprEligibleHookTemplates(
   });
 
   const purposeTemplates = getUniqueHookTemplates([
-    ...stitchrPolarizingTemplates,
+    ...stitchrExclusiveTemplates,
     ...templates,
   ]);
 

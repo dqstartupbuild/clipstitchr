@@ -3,6 +3,9 @@
 Stitchr social captions give each stitch one editable caption field that holds
 the feed caption and hashtags together.
 
+The creator-discovery writing and Demo-closure rules are documented in
+[`ugc-discovery-hook-standard.md`](./ugc-discovery-hook-standard.md).
+
 ## What It Does
 
 When Stitchr auto-text runs, the writing model now returns:
@@ -17,31 +20,33 @@ feel connected to the overlay hook and to what appears in the selected Hook/UGC 
 demo clips.
 
 Stitchr retrieves a bounded, diversified set of relevant patterns from the
-shared Hook Library before writing. Retrieval ranks templates against the
-selected Hook/UGC and Demo descriptions, visible reactions and actions, tags,
-product details, audience, pain points, saved product hook preferences,
-placeholder support, risk, and unsupported-claim signals. It no longer forces
-four random polarizing templates into every candidate set.
+shared Hook Library and the 300-pattern Stitchr-only UGC discovery pack before
+writing. Twelve of the 18 model candidates are creator-discovery mechanisms
+when enough compatible patterns are available. The other six preserve useful
+variety from the shared library. Retrieval ranks templates against the selected
+Hook/UGC and Demo descriptions, visible reactions and actions, tags, product
+details, audience, pain points, saved product hook preferences, placeholder
+support, risk, voiceover dependency, brand voice, and unsupported-claim
+signals.
 
 The writing model receives the ranked candidates with their IDs, patterns,
 emotional triggers, intended uses, and risk levels. It identifies the strongest
 UGC tension and Demo proof, drafts and scores several hooks internally, and
-returns three distinct choices:
-
-- relatable recognition;
-- curiosity;
-- a truthful bold challenge or contrast.
+returns three distinct creator angles selected from self-callout, reluctant
+discovery, expectation reversal, excuse removed, identity moment, and discovery
+question.
 
 Each option includes its own matching feed caption. The first hook-caption pair
 is applied automatically. In manual Stitchr, **Choose a hook angle** lets the
 user switch among the three pairs without another generation or creation-credit
 charge. Automated and Batch Stitchr use the first pair.
 
-The overlay must bridge the creator footage into the Demo rather than narrating
-the visible action or paraphrasing the product description. Existing Quick Edit
-hook hints are weak evidence, not instructions, and must be rewritten when
-used. Product behaviors, results, comparisons, and proof must be supported by
-saved product details or an observed clip detail.
+The overlay must sound like the creator's private thought rather than a product
+headline. It must work without voiceover or feed-caption context, and the first
+visible Demo moment must close its specific open loop. Existing Quick Edit hook
+hints are weak evidence, not instructions, and must be rewritten when used.
+Product behaviors, results, comparisons, and proof must be supported by saved
+product details or an observed clip detail.
 
 Copy buttons for this field temporarily swap from the copy icon to a checkmark
 after the clipboard write succeeds.
@@ -87,6 +92,9 @@ when it saves the editable Stitchr draft.
 The prompt and parser live in:
 
 - `web/lib/clipstitchr/server/createStitchrHookGenerationPrompt.ts`
+- `web/lib/clipstitchr/server/createStitchrFallbackHook.ts`
+- `web/lib/clipstitchr/server/getStitchrExclusiveHookTemplates.ts`
+- `web/lib/clipstitchr/server/getStitchrHookTextIsUsable.ts`
 - `web/lib/clipstitchr/server/getStitchrHookTemplateRelevanceScore.ts`
 - `web/lib/clipstitchr/server/selectStitchrHookCandidates.ts`
 - `web/lib/clipstitchr/server/normalizeStitchrHookOptions.ts`
@@ -138,7 +146,12 @@ field.
 - Select another option with a pointer and keyboard and confirm the overlay and
   matching caption update without another provider request.
 - Confirm generic hooks, unresolved placeholders, unsupported numerical claims,
-  and unsupported performance promises are rejected or heavily deprioritized.
+  explanation-dependent hooks, brand headlines, and unsupported performance
+  promises are rejected or heavily deprioritized.
+- Confirm the candidate set contains 12 UGC discovery patterns and 6 supporting
+  shared patterns when both pools are available.
+- Review each overlay without reading its caption and confirm the first Demo
+  moment resolves the exact discovery or realization.
 - Confirm sparse model output still returns one readable fallback option.
 - Run one automated Stitchr task and one Batch task after worker deployment and
   confirm both save the winning hook and social caption.

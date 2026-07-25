@@ -7,6 +7,7 @@ const safeDerivedVariables = new Set([
   "app_label",
   "audience",
   "category",
+  "habit",
   "identity",
   "pain_point",
   "problem",
@@ -22,18 +23,15 @@ const styleContextPatterns: Record<string, RegExp> = {
     /\b(after|before|change|improve|progress|result|transform)\b/i,
   cold_open_story: /\b(confession|day|moment|story|then|when)\b/i,
   cost_alert: /\b(cost|frustrat|lose|pain|problem|struggle|waste)\b/i,
-  direct_diagnosis:
-    /\b(fail|frustrat|mistake|pain|problem|struggle|wrong)\b/i,
+  direct_diagnosis: /\b(fail|frustrat|mistake|pain|problem|struggle|wrong)\b/i,
   identity_challenge:
     /\b(athlete|beginner|creator|founder|identity|people|person|who)\b/i,
   inside_room: /\b(behind|process|screen|show|step|workflow)\b/i,
   mystery_gap: /\b(curious|hidden|reveal|surpris|unexpected|wonder)\b/i,
-  pattern_break:
-    /\b(expression|react|shock|stare|surpris|unexpected|wow)\b/i,
+  pattern_break: /\b(expression|react|shock|stare|surpris|unexpected|wow)\b/i,
   receipt_stack:
     /\b(compare|demo|evidence|progress|proof|result|screen|show)\b/i,
-  test_drive:
-    /\b(compare|demo|test|tried|using|versus|vs)\b/i,
+  test_drive: /\b(compare|demo|test|tried|using|versus|vs)\b/i,
   vulnerable_reveal:
     /\b(confess|embarrass|frustrat|honest|personal|struggle)\b/i,
   viewer_dare: /\b(challenge|rep|test|try|would you|your turn)\b/i,
@@ -41,6 +39,10 @@ const styleContextPatterns: Record<string, RegExp> = {
 
 const unsupportedClaimPattern =
   /\b(100%|guarantee|guaranteed|in \d+ (day|days|hour|hours|minute|minutes)|saves? (me |you )?(a |an |\d+)|the best|data proves?|no human edit)\b/i;
+const voiceoverDependencyPattern =
+  /\b(this is why|here'?s why|let me explain|before I explain|what nobody tells|the reason|here'?s how|let me show you)\b/i;
+const brandVoicePattern =
+  /\b(built for|designed for|helps you|the (easier|smarter|better) way|all-in-one|complete solution|finally comes with)\b/i;
 
 export function getStitchrHookTemplateRelevanceScore({
   clipContexts,
@@ -61,14 +63,15 @@ export function getStitchrHookTemplateRelevanceScore({
     (variable) =>
       !safeDerivedVariables.has(variable) && !savedVariables.has(variable),
   ).length;
-  const metadataWords = [
-    template.emotionalTrigger,
-    ...template.bestFor,
-    template.styleKey.replace(/_/g, " "),
-  ]
-    .join(" ")
-    .toLowerCase()
-    .match(/[a-z0-9]+/g) ?? [];
+  const metadataWords =
+    [
+      template.emotionalTrigger,
+      ...template.bestFor,
+      template.styleKey.replace(/_/g, " "),
+    ]
+      .join(" ")
+      .toLowerCase()
+      .match(/[a-z0-9]+/g) ?? [];
   const metadataMatches = metadataWords.filter(
     (word) => word.length > 3 && contextText.includes(word),
   ).length;
@@ -89,7 +92,12 @@ export function getStitchrHookTemplateRelevanceScore({
   )
     ? 10
     : 0;
-  const sourceBonus = template.source === "app_hook_library" ? 3 : 0;
+  const sourceBonus =
+    template.source === "ugc_discovery_patterns"
+      ? 30
+      : template.source === "app_hook_library"
+        ? 3
+        : 0;
   const polarizingPenalty =
     template.source === "polarizing_reaction_patterns" &&
     !/\b(compare|opinion|react|shock|surpris|versus|vs)\b/i.test(contextText)
@@ -101,6 +109,12 @@ export function getStitchrHookTemplateRelevanceScore({
       ? 8
       : 0;
   const claimPenalty = unsupportedClaimPattern.test(template.template) ? 20 : 0;
+  const voiceoverDependencyPenalty = voiceoverDependencyPattern.test(
+    template.template,
+  )
+    ? 24
+    : 0;
+  const brandVoicePenalty = brandVoicePattern.test(template.template) ? 20 : 0;
 
   return (
     preferredStyleBonus +
@@ -112,6 +126,8 @@ export function getStitchrHookTemplateRelevanceScore({
     unsupportedVariableCount * 5 -
     polarizingPenalty -
     aggressivePenalty -
-    claimPenalty
+    claimPenalty -
+    voiceoverDependencyPenalty -
+    brandVoicePenalty
   );
 }

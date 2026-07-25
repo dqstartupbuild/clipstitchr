@@ -6,11 +6,13 @@ import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose"
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createStitchSocialCaption } from "@/lib/clipstitchr/utils/createStitchSocialCaption";
+import { createStitchrFallbackHook } from "@/lib/clipstitchr/server/createStitchrFallbackHook";
 import { createSwiprPostDescriptionFallback } from "@/lib/clipstitchr/utils/createSwiprPostDescriptionFallback";
 import { createSwiprSocialCaption } from "@/lib/clipstitchr/utils/createSwiprSocialCaption";
 import { getCliprTextHasForbiddenCta } from "@/lib/clipstitchr/utils/getCliprTextHasForbiddenCta";
 import { normalizeSwiprPostDescription } from "@/lib/clipstitchr/utils/normalizeSwiprPostDescription";
 import { normalizeStitchrHookOptions } from "@/lib/clipstitchr/server/normalizeStitchrHookOptions";
+import { getStitchrHookTextIsUsable } from "@/lib/clipstitchr/server/getStitchrHookTextIsUsable";
 import { sanitizeCliprGeneratedText } from "@/lib/clipstitchr/utils/sanitizeCliprGeneratedText";
 import { getCliprJsonText } from "@/lib/clipstitchr/server/getCliprJsonText";
 import { sanitizeGeneratedLongFormText } from "@/lib/clipstitchr/utils/sanitizeGeneratedLongFormText";
@@ -22,7 +24,6 @@ type ParsedCliprScene = {
   scriptText?: unknown;
   visualPrompt?: unknown;
 };
-
 
 function normalizeString(value: unknown, fallback: string) {
   return sanitizeCliprGeneratedText(
@@ -39,10 +40,7 @@ function normalizeSwiprSlideString(value: unknown) {
   });
 }
 
-function getGeneratedHookIsReadable(
-  hook: string,
-  template: CliprHookTemplate,
-) {
+function getGeneratedHookIsReadable(hook: string, template: CliprHookTemplate) {
   const words = hook.split(/\s+/).filter(Boolean);
   const requiredVariableLabels = template.requiredVariables.map((variable) =>
     variable.replace(/_/g, " "),
@@ -87,7 +85,10 @@ function getProductProblemPhrase(product: ProductProfile) {
     .slice(0, 90);
 }
 
-function createFallbackHook(product: ProductProfile, purpose: CliprTextPurpose) {
+function createFallbackHook(
+  product: ProductProfile,
+  purpose: CliprTextPurpose,
+) {
   const problem = getProductProblemPhrase(product);
 
   if (purpose === "clipr") {
@@ -98,7 +99,7 @@ function createFallbackHook(product: ProductProfile, purpose: CliprTextPurpose) 
     return `Start here: ${problem}`.slice(0, 120);
   }
 
-  return `The reason ${problem}`.slice(0, 120);
+  return createStitchrFallbackHook(product);
 }
 
 function normalizeHashtag(value: unknown) {
@@ -137,10 +138,7 @@ function normalizeHashtags(
     "#adcreative",
     "#creatorsoftiktok",
   ];
-  const hashtags = [
-    ...generatedHashtags,
-    ...fallbackHashtags,
-  ].filter(Boolean);
+  const hashtags = [...generatedHashtags, ...fallbackHashtags].filter(Boolean);
 
   return [...new Set(hashtags)].slice(0, 5);
 }
@@ -240,7 +238,10 @@ function normalizeVariables(value: unknown) {
 
   return Object.fromEntries(
     Object.entries(value)
-      .map(([key, entry]) => [key, typeof entry === "string" ? entry.trim() : ""])
+      .map(([key, entry]) => [
+        key,
+        typeof entry === "string" ? entry.trim() : "",
+      ])
       .filter(([, entry]) => entry),
   );
 }
@@ -255,25 +256,23 @@ function normalizeScenePlan(
 ): CliprScenePlan[] {
   const rawScenes = Array.isArray(value) ? value : [];
 
-  return rawScenes
-    .slice(0, 1)
-    .map((scene: ParsedCliprScene, index) => ({
-      id: createId(),
-      index,
-      sceneType: normalizeSceneType(),
-      scriptText: normalizeScriptString(
-        scene.scriptText,
-        "Explain the idea simply.",
-      ),
-      visualPrompt: normalizeString(
-        scene.visualPrompt,
-        "Vertical short-form video, natural light, clear subject, steady camera.",
-      ),
-      estimatedDurationSeconds:
-        typeof scene.estimatedDurationSeconds === "number"
-          ? Math.max(4, scene.estimatedDurationSeconds)
-          : durationSeconds,
-    }));
+  return rawScenes.slice(0, 1).map((scene: ParsedCliprScene, index) => ({
+    id: createId(),
+    index,
+    sceneType: normalizeSceneType(),
+    scriptText: normalizeScriptString(
+      scene.scriptText,
+      "Explain the idea simply.",
+    ),
+    visualPrompt: normalizeString(
+      scene.visualPrompt,
+      "Vertical short-form video, natural light, clear subject, steady camera.",
+    ),
+    estimatedDurationSeconds:
+      typeof scene.estimatedDurationSeconds === "number"
+        ? Math.max(4, scene.estimatedDurationSeconds)
+        : durationSeconds,
+  }));
 }
 
 export function parseCliprTextGenerationOutput({
@@ -310,12 +309,11 @@ export function parseCliprTextGenerationOutput({
     candidates.find((candidate) => candidate.id === parsed.templateId) ??
     candidates[0];
   const candidateFilledHook = normalizeString(parsed.filledHook, "");
-  const filledHook = getGeneratedHookIsReadable(
-    candidateFilledHook,
-    selectedTemplate,
-  )
-    ? candidateFilledHook
-    : createFallbackHook(product, purpose);
+  const filledHook =
+    getGeneratedHookIsReadable(candidateFilledHook, selectedTemplate) &&
+    (purpose !== "stitchr" || getStitchrHookTextIsUsable(candidateFilledHook))
+      ? candidateFilledHook
+      : createFallbackHook(product, purpose);
   const caption =
     purpose === "stitchr" || purpose === "swipr"
       ? normalizeString(parsed.caption, filledHook)

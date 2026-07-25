@@ -36,9 +36,11 @@ Swipr starts as creator/value content and may close with one soft product CTA on
 the final slide. The hook and middle slides should validate the audience claim
 without sounding like product copy.
 
-Stitchr overlays should read like human social hooks. They can sit over a
-UGC-then-demo sequence, but the text should usually be a polarizing or relatable
-audience claim rather than a product line.
+Stitchr overlays should read like a creator's private thought, confession,
+self-callout, or reluctant discovery over a silent Hook/UGC-then-Demo sequence.
+The Demo must visibly close the overlay's specific open loop. The text must not
+depend on voiceover or the feed caption, and it should not read like a product
+headline.
 
 ## Generation Shape
 
