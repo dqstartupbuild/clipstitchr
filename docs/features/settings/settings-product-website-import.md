@@ -11,11 +11,15 @@ context and improve generated marketing ideas.
   internal URLs.
 - The imported context includes page titles, descriptions, keywords, summaries,
   links, and capped markdown content.
-- The enrichment model can use that website context to suggest `productDetails`,
-  `audienceDetails`, and `emotionalNarrative`.
-- User-entered product details, audience details, and emotional narrative always
-  win. AI-filled product details and audience details are saved only when the
-  submitted fields are blank.
+- The enrichment model uses that website context to build a grounded
+  `productDetails` truth summary with the product type, platform, intended
+  user, current features or workflow, meaningful limits, and supported outcome.
+- A website-backed summary can expand vague user-entered product details while
+  preserving the user's positioning and excluding unsupported website
+  inferences. Without a new website import, user-entered product details still
+  win.
+- User-entered audience details and emotional narrative always win. AI-filled
+  audience details are saved only when the submitted field is blank.
 - Raw website context is not saved to Convex product records.
 
 ## Implementation
@@ -29,9 +33,11 @@ context and improve generated marketing ideas.
 - `web/lib/clipstitchr/server/createProductWebsiteDetailsText.ts` combines the
   returned pages into one capped website-context string.
 - `web/lib/clipstitchr/server/createProductEnrichmentPrompt.ts` asks the model
-  for blank-field product and audience prefill candidates.
-- `web/lib/clipstitchr/server/createResolvedProductEnrichmentFields.ts` keeps
-  user-entered fields and applies AI candidates only to blank fields.
+  for a website-grounded product truth summary and blank-field audience
+  prefill.
+- `web/lib/clipstitchr/server/createResolvedProductEnrichmentFields.ts` prefers
+  the grounded product summary only when website import explicitly ran. Other
+  user-entered fields remain authoritative.
 - `web/app/api/settings/products/route.ts` and
   `web/app/api/settings/products/[id]/route.ts` consume the existing product
   enrichment rate limit before Firecrawl and Replicate work.

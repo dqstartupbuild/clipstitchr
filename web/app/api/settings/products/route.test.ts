@@ -208,6 +208,31 @@ describe("POST /api/settings/products", () => {
     );
   });
 
+  it("stores the richer website-backed product truth when import ran", async () => {
+    mocks.createProductEnrichment.mockResolvedValueOnce({
+      emotionalNarrative: "Founders want launch day to feel calm.",
+      inferredPainPoints: ["slow launch"],
+      inferredProblem: "campaigns take too long",
+      productDetails:
+        "Launch Kit gives small teams a launch calendar, approval steps, and a shared campaign checklist.",
+    });
+
+    const response = await POST(createRequest());
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.product.productDetails).toBe(
+      "Launch Kit gives small teams a launch calendar, approval steps, and a shared campaign checklist.",
+    );
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.products.create,
+      expect.objectContaining({
+        productDetails:
+          "Launch Kit gives small teams a launch calendar, approval steps, and a shared campaign checklist.",
+      }),
+    );
+  });
+
   it("returns rate-limit and validation errors", async () => {
     mocks.convex.mutation.mockRejectedValueOnce({
       data: {

@@ -49,6 +49,7 @@ export async function POST(request: Request) {
     const resolvedFields = createResolvedProductEnrichmentFields({
       enrichment,
       input,
+      preferEnrichedProductDetails: Boolean(productInput.websiteDetails),
     });
     const now = new Date().toISOString();
     const product = {

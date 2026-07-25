@@ -46,4 +46,28 @@ describe("createResolvedProductEnrichmentFields", () => {
       productDetails: "User-entered product.",
     });
   });
+
+  it("uses a website-backed summary when website import explicitly ran", () => {
+    expect(
+      createResolvedProductEnrichmentFields({
+        enrichment: {
+          audienceDetails: "Website-inferred buyers.",
+          emotionalNarrative: "Website-inferred emotional story.",
+          inferredPainPoints: [],
+          productDetails:
+            "Guppy gives beginners daily bodyweight workouts, rep targets, rest timers, and progress tracking.",
+        },
+        input: {
+          audienceDetails: "Beginners who train at home.",
+          name: "Guppy",
+          productDetails: "A calisthenics app.",
+        },
+        preferEnrichedProductDetails: true,
+      }),
+    ).toMatchObject({
+      audienceDetails: "Beginners who train at home.",
+      productDetails:
+        "Guppy gives beginners daily bodyweight workouts, rep targets, rest timers, and progress tracking.",
+    });
+  });
 });

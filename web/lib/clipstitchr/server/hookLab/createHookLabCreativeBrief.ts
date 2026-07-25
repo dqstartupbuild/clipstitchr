@@ -32,8 +32,8 @@ export async function createHookLabCreativeBrief({
         sourceText,
       }),
       systemPrompt:
-        "You write original short-form product ads through functional adaptation. The saved product record is the only authority for product behavior and claims. Transfer the reference's communication structure, pacing, and narrative jobs, never its unsupported capabilities or literal product mechanic. Return JSON only.",
-      temperature: 0.35,
+        "You adapt short-form product ads with the minimum necessary change. Preserve every reference element that remains compatible with the saved product, including the hook shape, setting, actions, props, shot order, pacing, progress device, and payoff. Replace only unsupported product claims, causal mechanics, UI behavior, creator identity, and distinctive wording. The saved product record is the only authority for product behavior and claims. Return JSON only.",
+      temperature: 0.25,
     }),
   });
   const outputText = await getCompletedReplicatePredictionOutputText({

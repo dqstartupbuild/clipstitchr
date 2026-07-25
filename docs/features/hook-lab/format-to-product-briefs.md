@@ -10,16 +10,24 @@ Library, ask for another product, or send the user to Clipr, Stitchr, or Swipr.
 
 - Uses the complete saved analysis, source caption, ordered transcript,
   on-screen text, detailed timeline, and versioned format analysis.
-- Transfers the hook function, narrative progression, pacing, shot purpose,
-  proof timing, retention pattern, emotional turn, copy rhythm, and CTA
-  placement.
-- Rebuilds the premise, visual opening, actions, props, joke, demonstration,
-  proof, payoff, wording, and CTA around the globally active saved product.
+- Locks a reference-preservation contract before writing: runtime, beat count,
+  hook archetype, first-frame emotion, setting, shot order, edit rhythm,
+  signature visual, open loop, proof timing, payoff timing, and CTA style.
+- Preserves compatible actions, props, framing, jokes, demonstrations, visual
+  progress devices, and emotional turns so the result is recognizable as the
+  same format.
+- Uses minimum necessary adaptation. It changes source branding, unsupported
+  product behavior, unsupported UI, causal claims, creator-specific wording,
+  and the exact CTA without rebuilding unrelated parts of the ad.
 - Treats `productDetails` as the authority for product capabilities. Audience,
   emotional narrative, inferred problem, and inferred pain points can guide the
   angle but cannot establish that a feature exists.
-- Replaces any reference beat that depends on an unsupported source-product
-  capability with a truthful scene that performs the same narrative job.
+- Replaces only the unsupported cause or result inside a reference beat when
+  the setting, action, prop, or visual device can remain truthful.
+- Distinguishes editor-added overlays from product behavior. A visible rep
+  count can remain as a filming or editing device when the action is visible,
+  but it cannot be described as app tracking unless `productDetails` supports
+  tracking.
 - Allows generic source wording when it fits while excluding creator identity,
   likeness, source footage, personal mannerisms, and distinctive catchphrases.
 - Requires the writing model to audit every spoken line, on-screen line,
@@ -46,9 +54,8 @@ format-to-product action.
 3. Use **Quick read** for the short summary and format recipe. Open **Full
    breakdown** only when the frame-by-frame evidence is needed.
 4. Choose **Use this format** from Quick read or the empty **Your script** view.
-5. Hook Lab reserves one creation credit, maps the reference beats to their
-   communication jobs, and writes new scenes from the complete report plus the
-   active product.
+5. Hook Lab reserves one creation credit, labels reference elements as keep,
+   adapt, or remove, and changes only what conflicts with the active product.
 6. Hook Lab switches directly to **Your script** and shows a formatted reading
    view grouped into concept, production plan, and copy.
 7. Choose **Edit script** only when changes are needed. Edit mode exposes these
@@ -78,14 +85,16 @@ and the selected `ProductProfile`. Generation follows this authority order:
 1. `productDetails` supplies the only product capability and claim truth.
 2. Product audience and inferred context can guide positioning but cannot prove
    a feature.
-3. Format DNA supplies structure, pacing, and narrative roles.
+3. Format DNA supplies a preservation contract for structure, execution,
+   pacing, and narrative roles.
 4. The full forensic report supplies timing evidence but not transferable
    product behavior.
 
-The model first translates each source beat into its communication purpose,
-then writes a new product-specific beat that serves the same purpose. A literal
-source mechanic is retained only when `productDetails` independently supports
-it. The model returns JSON with:
+The model first labels reference elements as keep, adapt, or remove. Compatible
+settings, actions, props, framing, progress devices, and payoffs stay in place.
+If a literal source mechanic is unsupported, the model replaces only the
+unsupported product claim or causal behavior and uses the closest behavior
+supported by `productDetails`. The model returns JSON with:
 
 ```text
 adaptedConcept
@@ -160,6 +169,7 @@ web/convex/hookLabCreativeBriefs/
   update.ts
   normalizeHookLabCreativeBriefContent.ts
 web/lib/clipstitchr/server/hookLab/
+  createHookLabFormatPreservationContract.ts
   createHookLabCreativeBrief.ts
   createHookLabCreativeBriefPrompt.ts
   parseHookLabCreativeBrief.ts
@@ -179,9 +189,14 @@ web/lib/clipstitchr/utils/
 - Switch from Guppy Calisthenics to Bloomin and confirm regeneration uses the
   Bloomin product ID.
 - Analyze a reference whose app exchanges push-ups for screen time. Generate for
-  Guppy and confirm the script can reuse the problem, pacing, demonstration
-  timing, and payoff sequence but never claims that Guppy unlocks or controls
-  screen time.
+  Guppy and confirm the script preserves the original setting, phone reveal,
+  push-up action, shot order, counted completion loop, pacing, and payoff while
+  replacing only the unsupported screen-time or alarm-control claim.
+- Confirm an editor-added rep count is described as an overlay rather than
+  Guppy UI unless the saved product truth explicitly supports automatic rep
+  tracking.
+- Confirm the adaptation does not replace that source with an unrelated mirror
+  or transformation premise.
 - Confirm every generated product behavior can be traced to the selected
   product's `productDetails`, and that inferred pain points are used only for
   positioning.

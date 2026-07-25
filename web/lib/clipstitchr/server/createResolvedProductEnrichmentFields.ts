@@ -5,11 +5,15 @@ import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductP
 export function createResolvedProductEnrichmentFields({
   enrichment,
   input,
+  preferEnrichedProductDetails = false,
 }: {
   enrichment: ProductEnrichment;
   input: ProductProfileCreateInput;
+  preferEnrichedProductDetails?: boolean;
 }) {
-  const productDetails = input.productDetails || enrichment.productDetails || "";
+  const productDetails = preferEnrichedProductDetails
+    ? enrichment.productDetails || input.productDetails || ""
+    : input.productDetails || enrichment.productDetails || "";
   const audienceDetails =
     input.audienceDetails || enrichment.audienceDetails || "";
   const fallbackInput = {

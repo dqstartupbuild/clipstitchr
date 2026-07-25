@@ -4,7 +4,7 @@ import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { createHookLabCreativeBriefPrompt } from "./createHookLabCreativeBriefPrompt";
 
 describe("createHookLabCreativeBriefPrompt", () => {
-  it("treats product details as truth and the reference as structure only", () => {
+  it("preserves compatible execution while replacing unsupported product claims", () => {
     const prompt = createHookLabCreativeBriefPrompt({
       analysis: {
         callToAction: "Download the screen-time app.",
@@ -39,21 +39,34 @@ describe("createHookLabCreativeBriefPrompt", () => {
       } satisfies ProductProfile,
     });
 
-    expect(prompt).toContain(
-      "Saved product facts are the only source of truth",
-    );
+    expect(prompt).toContain("Saved product facts are the only source of truth");
     expect(prompt).toContain(
       "do not claim the saved product has reward-gating or unlocking behavior",
     );
     expect(prompt).toContain(
       "Audience details, emotional narrative, inferred problem, and inferred pain points",
     );
+    expect(prompt).toContain("Use minimum necessary adaptation");
     expect(prompt).toContain(
-      "Replace source-specific actions, props, jokes, screens, and demonstrations",
+      "Preserve product-neutral actions and props when they still fit",
+    );
+    expect(prompt).toContain(
+      "Treat a visible editor-added overlay differently from app UI",
+    );
+    expect(prompt).toContain(
+      "Do not use audience pain points or emotional narrative as permission",
+    );
+    expect(prompt).toContain("label every reference element as KEEP, ADAPT, or REMOVE");
+    expect(prompt).toContain(
+      "keep the distressed wake-up, bedside phone reveal, push-ups",
+    );
+    expect(prompt).toContain(
+      "Do not turn that example into a mirror-transformation ad",
     );
     expect(prompt).toContain(
       "audit every spoken line, on-screen line, demonstration, payoff, and CTA",
     );
+    expect(prompt).toContain("Reference preservation contract:");
     expect(prompt).toContain(
       '"productDetails":"A guided calisthenics workout and progress tracker."',
     );

@@ -24,8 +24,14 @@ describe("createProductEnrichmentPrompt", () => {
     expect(prompt).toContain("Write in plain speech");
     expect(prompt).toContain("Choose every relevant Clipr hook style");
     expect(prompt).toContain("Make the enrichment audience-first");
-    expect(prompt).toContain("prefill candidate only when product details are blank");
+    expect(prompt).toContain("grounded product truth summary");
     expect(prompt).toContain("prefill candidate only when audience details are blank");
+    expect(prompt).toContain(
+      "return an improved productDetails truth summary even when the user already entered product details",
+    );
+    expect(prompt).toContain(
+      "product type, platform, intended user, concrete current features or workflow",
+    );
     expect(prompt).toContain("Infer emotionalNarrative");
     expect(prompt).toContain("desired identity shift");
     expect(prompt).toContain("User-provided emotional narrative");

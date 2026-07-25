@@ -221,6 +221,31 @@ describe("PATCH /api/settings/products/[id]", () => {
     );
   });
 
+  it("stores the richer website-backed product truth when import ran", async () => {
+    mocks.createProductEnrichment.mockResolvedValueOnce({
+      emotionalNarrative: "Founders want launch day to feel calm.",
+      inferredPainPoints: ["slow launch"],
+      inferredProblem: "campaigns take too long",
+      productDetails:
+        "Launch Kit gives small teams a launch calendar, approval steps, and a shared campaign checklist.",
+    });
+
+    const response = await PATCH(createRequest(), createContext());
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.product.productDetails).toBe(
+      "Launch Kit gives small teams a launch calendar, approval steps, and a shared campaign checklist.",
+    );
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.products.update,
+      expect.objectContaining({
+        productDetails:
+          "Launch Kit gives small teams a launch calendar, approval steps, and a shared campaign checklist.",
+      }),
+    );
+  });
+
   it("does not rescrape an unchanged product website URL", async () => {
     mocks.convex.query.mockResolvedValueOnce({
       createdAt: "2026-05-20T00:00:00.000Z",
