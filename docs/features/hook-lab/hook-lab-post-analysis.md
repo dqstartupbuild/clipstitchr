@@ -69,7 +69,7 @@ successfully queued so the post card can show live analysis progress.
 
 The completed report is organized as a three-view workspace:
 
-- **Quick read** is the default and keeps the summary, hook, remake recipe,
+- **Quick read** is the default and keeps the summary, hook, format recipe,
   keep/adapt/leave-behind guidance, and product-script action in one short
   reading path.
 - **Full breakdown** contains the forensic report in four native disclosures:

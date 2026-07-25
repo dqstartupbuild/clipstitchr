@@ -1,24 +1,32 @@
 # Hook Lab Direct Product Adaptations
 
-Completed Hook Lab reports can become an editable, scene-by-scene remake for
-the product that is active in the dashboard product picker. **Use this format**
-does not search the Hook Library, ask for another product, or send the user to
-Clipr, Stitchr, or Swipr.
+Completed Hook Lab reports can become an editable, original scene-by-scene ad
+for the product that is active in the dashboard product picker. **Use this
+format** transfers how the reference communicates without treating its product
+mechanic as a feature of the selected product. It does not search the Hook
+Library, ask for another product, or send the user to Clipr, Stitchr, or Swipr.
 
 ## What it does
 
 - Uses the complete saved analysis, source caption, ordered transcript,
   on-screen text, detailed timeline, and versioned format analysis.
-- Preserves the visual opening, reaction direction, prop placement, object
-  interaction order, scene order, spoken-copy structure, text structure,
-  caption structure, timing, tension, joke, reveal, and payoff.
-- Rewrites product facts, claims, demonstration, and CTA for the globally
-  active saved product.
+- Transfers the hook function, narrative progression, pacing, shot purpose,
+  proof timing, retention pattern, emotional turn, copy rhythm, and CTA
+  placement.
+- Rebuilds the premise, visual opening, actions, props, joke, demonstration,
+  proof, payoff, wording, and CTA around the globally active saved product.
+- Treats `productDetails` as the authority for product capabilities. Audience,
+  emotional narrative, inferred problem, and inferred pain points can guide the
+  angle but cannot establish that a feature exists.
+- Replaces any reference beat that depends on an unsupported source-product
+  capability with a truthful scene that performs the same narrative job.
 - Allows generic source wording when it fits while excluding creator identity,
   likeness, source footage, personal mannerisms, and distinctive catchphrases.
-- Does not reject generated wording based on product-claim, number, measurable-
-  result, testimonial, or capability checks. The user can review and edit the
-  completed adaptation directly in Hook Lab.
+- Requires the writing model to audit every spoken line, on-screen line,
+  demonstration, payoff, and CTA against the saved product details before
+  returning the script. Unsupported features, UI behavior, automations,
+  results, numbers, comparisons, and testimonials must be removed or rewritten.
+- The user can review and edit the completed adaptation directly in Hook Lab.
 - Shows the finished adaptation inside the analysis dialog for review, editing,
   copying, saving, and regeneration.
 - Reloads the newest saved adaptation for the source post whenever its report
@@ -29,17 +37,18 @@ Clipr, Stitchr, or Swipr.
 
 The Hook Library remains available as its own top-level Hook Lab tab for users
 who want to browse standalone hook patterns. It is not part of the direct
-reference-remake action.
+format-to-product action.
 
 ## User flow
 
 1. Select a product with the existing dashboard product picker.
 2. Open a completed Hook Lab report.
-3. Use **Quick read** for the short summary and remake recipe. Open **Full
+3. Use **Quick read** for the short summary and format recipe. Open **Full
    breakdown** only when the frame-by-frame evidence is needed.
 4. Choose **Use this format** from Quick read or the empty **Your script** view.
-5. Hook Lab reserves one creation credit and generates from the complete report
-   plus the active product.
+5. Hook Lab reserves one creation credit, maps the reference beats to their
+   communication jobs, and writes new scenes from the complete report plus the
+   active product.
 6. Hook Lab switches directly to **Your script** and shows a formatted reading
    view grouped into concept, production plan, and copy.
 7. Choose **Edit script** only when changes are needed. Edit mode exposes these
@@ -64,7 +73,19 @@ asks the user to select an available product through the dashboard picker.
 ## Generation contract
 
 The model receives the full `HookLabPostAnalysis`, the imported source caption,
-and the selected `ProductProfile`. It returns JSON with:
+and the selected `ProductProfile`. Generation follows this authority order:
+
+1. `productDetails` supplies the only product capability and claim truth.
+2. Product audience and inferred context can guide positioning but cannot prove
+   a feature.
+3. Format DNA supplies structure, pacing, and narrative roles.
+4. The full forensic report supplies timing evidence but not transferable
+   product behavior.
+
+The model first translates each source beat into its communication purpose,
+then writes a new product-specific beat that serves the same purpose. A literal
+source mechanic is retained only when `productDetails` independently supports
+it. The model returns JSON with:
 
 ```text
 adaptedConcept
@@ -110,7 +131,9 @@ Current limits are:
 
 HTTP quota failures return `429` with retry timing. Product ownership, source
 ownership, product lock state, and record ownership remain separate from rate
-limits. Hook Lab direct adaptations do not run generated-claim validation.
+limits. Hook Lab direct adaptations use prompt-level semantic grounding and a
+final in-model claim audit. They do not add a second provider request or a
+deterministic generated-claim rejection pass.
 
 ## File tree
 
@@ -155,6 +178,13 @@ web/lib/clipstitchr/utils/
 - Confirm no product, destination-tool, or related-hook selector appears.
 - Switch from Guppy Calisthenics to Bloomin and confirm regeneration uses the
   Bloomin product ID.
+- Analyze a reference whose app exchanges push-ups for screen time. Generate for
+  Guppy and confirm the script can reuse the problem, pacing, demonstration
+  timing, and payoff sequence but never claims that Guppy unlocks or controls
+  screen time.
+- Confirm every generated product behavior can be traced to the selected
+  product's `productDetails`, and that inferred pain points are used only for
+  positioning.
 - Confirm generated content renders all nine editable sections in the report
   dialog only after **Edit script** is selected.
 - Confirm generation switches directly to **Your script**, which defaults to a
@@ -168,8 +198,9 @@ web/lib/clipstitchr/utils/
 - Confirm save and copy do not call the generation route.
 - Confirm credit reservation happens before model work, commit happens after
   durable save, and failure releases the reservation.
-- Confirm adaptations containing numbers, measurable results, testimonials, or
-  product capabilities are saved without a generated-claim rejection.
+- Confirm supported numbers, measurable results, testimonials, and product
+  capabilities can still be saved without a deterministic generated-claim
+  rejection.
 
 ## Source references
 

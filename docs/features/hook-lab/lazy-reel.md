@@ -11,16 +11,17 @@ copied into ClipStitchr as part of the Hook Lab implementation.
 
 > Implementation update, July 22, 2026: the original related-template and
 > destination-handoff proposal below has been superseded. The shipped workflow
-> performs a forensic analysis and rewrites the exact scene mechanics for the
-> globally active product inside Hook Lab. See
+> performs a forensic analysis, abstracts each scene into its communication
+> job, and writes original product-specific scenes for the globally active
+> product inside Hook Lab. See
 > `docs/features/hook-lab/format-to-product-briefs.md` for the current contract.
 
 ## Recommendation in one sentence
 
 The implemented direction is a workflow that turns a saved forensic Hook Lab
-analysis into a faithful scene-by-scene adaptation for the globally active
-product without inventing product claims or imitating the source creator's
-identity.
+analysis into an original scene-by-scene ad for the globally active product. It
+transfers the reference's communication structure without inventing product
+claims or imitating the source creator's identity.
 
 ## What is useful in LazyReel
 
@@ -60,7 +61,8 @@ The current action in each completed Hook Lab report is:
 ```text
 Use this format
   -> use the globally active product
-  -> preserve scene, reaction, prop, copy, timing, joke, reveal, and payoff mechanics
+  -> preserve pacing and the narrative job of each reference beat
+  -> replace source product behavior, actions, props, proof, and wording
   -> review and edit the saved script in the report
   -> copy or regenerate without leaving Hook Lab
 ```
@@ -74,16 +76,17 @@ The source post contributes its recognizable creative mechanics:
 - the format and edit pattern;
 - the role and entry point of the product;
 - the CTA style;
-- the signature device that makes the idea memorable.
-- expression and body-language direction;
-- prop placement and interaction order;
-- spoken-copy, on-screen-text, and caption structure.
+- the narrative role of the signature device;
+- the emotional turn of expressions and body language;
+- spoken-copy, on-screen-text, and caption rhythm.
 
-The saved ClipStitchr product should remain the only source of product facts,
-claims, audience details, pain points, and benefits. The generated draft should
-adapt source wording to the selected product. Generic wording may remain, but
-the output must not imitate the creator's identity, likeness, personal
-mannerisms, distinctive catchphrases, or unsupported claims.
+The saved ClipStitchr product remains the only source of product facts and
+claims. `productDetails` must independently support every generated capability,
+demonstration, result, and CTA. Audience details, pain points, and emotional
+context can guide the angle but cannot prove a feature. The generated draft
+replaces any unsupported source mechanic with a truthful scene that performs
+the same narrative job. It must not imitate the creator's identity, likeness,
+personal mannerisms, distinctive catchphrases, or wording.
 
 ### Suggested format-DNA fields
 

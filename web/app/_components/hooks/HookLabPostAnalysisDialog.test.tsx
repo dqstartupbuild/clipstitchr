@@ -136,14 +136,16 @@ describe("HookLabPostAnalysisDialog", () => {
     expect(markup).toContain("Your script");
     expect(markup).toContain("What happens");
     expect(markup).toContain("The hook at a glance");
-    expect(markup).toContain("The remake recipe");
+    expect(markup).toContain("The format recipe");
     expect(markup).toContain("What to keep and what to change");
     expect(markup).toContain("A creator demonstrates a quick morning workflow");
     expect(markup).not.toContain("Hooks with a similar job");
     expect(markup).toContain("Use this format");
     expect(markup).toContain("Re-analyze");
     expect(markup).toContain("Re-analysis uses 1 creation credit.");
-    expect(markup).toContain("Rewrite this exact video for Guppy Calisthenics");
+    expect(markup).toContain(
+      "Create an original Guppy Calisthenics ad from this format",
+    );
     expect(markup).not.toContain("Expression and body language");
     expect(markup).not.toContain("Private watch-time data is unavailable.");
   });

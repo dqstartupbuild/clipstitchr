@@ -86,7 +86,7 @@ export function HookLabQuickRead({
             className="text-balance text-lg font-bold text-text-primary"
             id="hook-lab-quick-recipe"
           >
-            The remake recipe
+            The format recipe
           </h3>
           <p className="mt-3 text-pretty text-base leading-7 text-text-primary">
             {formatDna.replicationFormula}
@@ -124,8 +124,9 @@ export function HookLabQuickRead({
           <div>
             <dt className="text-sm font-semibold text-text-primary">Adapt</dt>
             <dd className="mt-2 text-pretty text-sm leading-6 text-text-secondary">
-              Change the product, demonstration, spoken wording, on-screen copy,
-              and closing action while preserving the scene mechanics.
+              Keep each beat&apos;s purpose and pace. Replace the source&apos;s
+              product behavior, actions, props, wording, and proof with new
+              scenes based only on what your product really does.
             </dd>
           </div>
           <div>
@@ -162,7 +163,7 @@ export function HookLabQuickRead({
               : adaptation.brief
               ? `Open the script created for ${adaptation.briefProductName ?? "your product"}.`
               : adaptation.activeProductIsUsable && adaptation.activeProduct
-                ? `Rewrite this exact video for ${adaptation.activeProduct.name}. Generation uses 1 creation credit.`
+                ? `Create an original ${adaptation.activeProduct.name} ad from this format. Generation uses 1 creation credit.`
                 : "Select an available product with the dashboard product picker first."}
           </p>
         </div>

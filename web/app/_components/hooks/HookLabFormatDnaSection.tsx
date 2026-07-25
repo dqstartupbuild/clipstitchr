@@ -11,8 +11,9 @@ export function HookLabFormatDnaSection({
         How the reference works
       </h3>
       <p className="mt-2 max-w-4xl text-sm leading-6 text-text-secondary">
-        This is the reference&apos;s actual structure. The remake keeps its scene
-        mechanics and timing while fitting your selected product.
+        This is the reference&apos;s communication structure. Your script keeps
+        the pacing and purpose of each beat, then rebuilds the actions around
+        what your product really does.
       </p>
       <dl className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <div>

@@ -32,7 +32,7 @@ export async function createHookLabCreativeBrief({
         sourceText,
       }),
       systemPrompt:
-        "You write faithful short-form remake blueprints from forensic video analysis. You preserve scene mechanics while separating observed facts from likely interpretation. Return JSON only.",
+        "You write original short-form product ads through functional adaptation. The saved product record is the only authority for product behavior and claims. Transfer the reference's communication structure, pacing, and narrative jobs, never its unsupported capabilities or literal product mechanic. Return JSON only.",
       temperature: 0.35,
     }),
   });

@@ -39,9 +39,9 @@ export function HookLabScriptWorkspace({
             Create your product script
           </h3>
           <p className="mt-3 text-pretty text-base leading-7 text-text-secondary">
-            Hook Lab will rewrite this exact video for the product active in
-            your dashboard. The finished script stays here for reading, editing,
-            and copying.
+            Hook Lab will use this video&apos;s storytelling flow to write a new
+            ad based on what your active product really does. The finished
+            script stays here for reading, editing, and copying.
           </p>
           <p className="mt-3 text-pretty text-sm leading-6 text-text-secondary">
             {adaptation.activeProductIsUsable && adaptation.activeProduct

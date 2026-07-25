@@ -228,7 +228,7 @@ Photo slideshows are rendered as three-second beats per slide before analysis.
 | 8 | Caption and ordered on-screen text saved as dedicated report fields | ✅ | ✅ |
 | 9 | Searchable, category-filtered Hook Library with 24-item pagination | ✅ | ✅ |
 | 10 | Versioned forensic analysis with first-three-second, expression, body-language, object-placement, interaction-order, proof, observation, inference, cultural-context, and recreation-essential fields | ✅ | ✅ |
-| 11 | Direct scene-by-scene remake generation for the globally selected product without related-hook lookup | ✅ | ✅ |
+| 11 | Direct scene-by-scene ad generation that transfers the reference's communication structure while grounding every product behavior and claim in the globally selected product | ✅ | ✅ |
 | 12 | Editable, copyable, one-credit product adaptations kept inside the analysis dialog | ✅ | ✅ |
 
 Production social import requires server-side user and global limits, an Apify
