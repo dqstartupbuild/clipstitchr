@@ -10,6 +10,7 @@ import { createSwiprPostDescriptionFallback } from "@/lib/clipstitchr/utils/crea
 import { createSwiprSocialCaption } from "@/lib/clipstitchr/utils/createSwiprSocialCaption";
 import { getCliprTextHasForbiddenCta } from "@/lib/clipstitchr/utils/getCliprTextHasForbiddenCta";
 import { normalizeSwiprPostDescription } from "@/lib/clipstitchr/utils/normalizeSwiprPostDescription";
+import { normalizeStitchrHookOptions } from "@/lib/clipstitchr/server/normalizeStitchrHookOptions";
 import { sanitizeCliprGeneratedText } from "@/lib/clipstitchr/utils/sanitizeCliprGeneratedText";
 import { getCliprJsonText } from "@/lib/clipstitchr/server/getCliprJsonText";
 import { sanitizeGeneratedLongFormText } from "@/lib/clipstitchr/utils/sanitizeGeneratedLongFormText";
@@ -97,7 +98,7 @@ function createFallbackHook(product: ProductProfile, purpose: CliprTextPurpose) 
     return `Start here: ${problem}`.slice(0, 120);
   }
 
-  return `The visible change: ${problem}`.slice(0, 120);
+  return `The reason ${problem}`.slice(0, 120);
 }
 
 function normalizeHashtag(value: unknown) {
@@ -297,6 +298,7 @@ export function parseCliprTextGenerationOutput({
     description?: unknown;
     filledHook?: unknown;
     hashtags?: unknown;
+    hookOptions?: unknown;
     overlayText?: unknown;
     scenePlan?: unknown;
     script?: unknown;
@@ -384,12 +386,29 @@ export function parseCliprTextGenerationOutput({
       : purpose === "stitchr"
         ? createStitchSocialCaption({ caption, hashtags })
         : "";
+  const hookOptions =
+    purpose === "stitchr"
+      ? normalizeStitchrHookOptions({
+          candidates,
+          fallbackCaption: caption,
+          filledHook,
+          selectedTemplate,
+          value: parsed.hookOptions,
+        }).map((option) => ({
+          ...option,
+          socialCaption: createStitchSocialCaption({
+            caption: option.caption,
+            hashtags,
+          }),
+        }))
+      : [];
 
   return {
     filledHook,
     caption,
     description,
     hashtags,
+    hookOptions,
     hookStyleKey: selectedTemplate.styleKey,
     hookTemplateId: selectedTemplate.id,
     overlayText: normalizeString(parsed.overlayText, filledHook),

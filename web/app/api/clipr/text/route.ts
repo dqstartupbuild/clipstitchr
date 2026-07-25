@@ -96,6 +96,7 @@ export async function POST(request: Request) {
       description: generation.description,
       hashtags: generation.hashtags,
       hook: generation.filledHook,
+      hookOptions: generation.hookOptions,
       overlayText: generation.overlayText,
       script: generation.script,
       slides: generation.slides,

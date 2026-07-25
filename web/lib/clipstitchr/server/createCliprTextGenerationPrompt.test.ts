@@ -64,7 +64,7 @@ describe("createCliprTextGenerationPrompt", () => {
     );
   });
 
-  it("uses a simplified source-aware Stitchr text prompt", () => {
+  it("gives Stitchr ranked library candidates and asks for distinct options", () => {
     const prompt = createCliprTextGenerationPrompt({
       candidates: [candidate],
       durationSeconds: 30,
@@ -91,14 +91,24 @@ describe("createCliprTextGenerationPrompt", () => {
       ],
     });
 
-    expect(prompt).toContain("Write one short text overlay");
-    expect(prompt).toContain("Product:");
+    expect(prompt).toContain("Write three strong text-overlay options");
+    expect(prompt).toContain("Product truth:");
     expect(prompt).toContain("Selected clips:");
+    expect(prompt).toContain("Relevant Hook Library candidates:");
     expect(prompt).toContain("There is no generated voiceover.");
-    expect(prompt).toContain('"caption":"short feed caption"');
+    expect(prompt).toContain('"templateId":"MG-001"');
+    expect(prompt).toContain('"emotionalTrigger":"curiosity"');
+    expect(prompt).toContain('"hookOptions"');
+    expect(prompt).toContain(
+      '"caption":"exactly hookOptions[0].caption"',
+    );
+    expect(prompt).toContain('"caption":"short feed caption for this option"');
     expect(prompt).toContain('"hashtags":["#tagone","#tagtwo","#tagthree"]');
-    expect(prompt).toContain("Write one strong result");
-    expect(prompt).toContain("Most overlays should be 3-9 words");
+    expect(prompt).toContain("return the strongest three distinct options");
+    expect(prompt).toContain(
+      "The three options must use meaningfully different angles",
+    );
+    expect(prompt).toContain("Most should be 3-10 words");
     expect(prompt).toContain("hashtags must contain 3-5 lowercase hashtags");
     expect(prompt).toContain("Creator surprised by messy launch work");
     expect(prompt).toContain("A founder looks frustrated at scattered files.");
@@ -106,10 +116,15 @@ describe("createCliprTextGenerationPrompt", () => {
       "AI hook hint: The moment I stopped pretending launch chaos was normal",
     );
     expect(prompt).toContain("AI hook hint reason: Matches the visible frustration.");
-    expect(prompt).toContain("Use a real detail from the selected clips");
+    expect(prompt).toContain("Treat an AI hook hint as weak creative evidence");
     expect(prompt).toContain("The demo shows launch assets getting organized.");
+    expect(prompt).toContain("Do not merely describe the visible action");
+    expect(prompt).toContain(
+      "Every product behavior, result, comparison, and proof point",
+    );
     expect(prompt).toContain("script must be an empty string");
     expect(prompt).toContain("Respond with only this JSON shape");
+    expect(prompt).not.toContain("Optional audience language hints");
   });
 
   it("defines Swipr as an audience-first carousel with natural product placement", () => {

@@ -30,6 +30,7 @@ export function createCliprDemoTextGeneration({
     description: "",
     filledHook: "Demo remix",
     hashtags: [],
+    hookOptions: [],
     hookStyleKey: "demo_remix_source",
     hookTemplateId: "DEMO-001",
     overlayText: "Demo remix",

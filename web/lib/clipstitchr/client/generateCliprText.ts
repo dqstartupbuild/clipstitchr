@@ -1,6 +1,7 @@
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
+import type { StitchrHookOption } from "@/lib/clipstitchr/types/StitchrHookOption";
 import type { SwiprSelectedSlideTextContext } from "@/lib/clipstitchr/types/SwiprSelectedSlideTextContext";
 import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
 
@@ -37,6 +38,7 @@ export async function generateCliprText(options: GenerateCliprTextOptions) {
     description: string;
     hashtags: string[];
     hook: string;
+    hookOptions: StitchrHookOption[];
     overlayText: string;
     script: string;
     slides: string[];

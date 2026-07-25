@@ -152,11 +152,12 @@ automated Stitch.
   Hook/UGC clips, and one editable overlay per output.
 - Keep AI-generated Clipr Hook/UGC and Swaps as UGC-compatible clips that can flow
   into Stitchr.
-- Keep generated overlay text and caption copy editable while hiding hook
-  style/template mechanics.
-- Keep Stitchr hook and caption generation simple and viewer-first, matching
-  the Swipr prompt style while still using selected source context when it is
-  helpful.
+- Keep generated overlay text and caption copy editable while hiding internal
+  hook style and template mechanics.
+- Rank a small, relevant Hook Library candidate set from the selected clips and
+  product before generation. Let the writing model adapt those patterns and
+  return three viewer-first choices instead of improvising one unsupported
+  result.
 - Keep selected, uploaded, or imported sounds editable and separate from the saved stitch.
 - Keep saved stitches reusable even after they are marked posted.
 - Use clip scores as guidance for selection, not as a hard gate that blocks the

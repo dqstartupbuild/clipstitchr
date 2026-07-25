@@ -26,6 +26,7 @@ import { useStitchr } from "@/lib/clipstitchr/hooks/useStitchr";
 import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import type { StitchrLongrSelection } from "@/lib/clipstitchr/types/StitchrLongrSelection";
+import type { StitchrHookOption } from "@/lib/clipstitchr/types/StitchrHookOption";
 import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
@@ -103,6 +104,10 @@ export function StitchrPageClient() {
   >();
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
   const [autoTextMessage, setAutoTextMessage] = useState<string | null>(null);
+  const [autoTextHookOptions, setAutoTextHookOptions] = useState<{
+    contextKey: string;
+    options: StitchrHookOption[];
+  } | null>(null);
   const [ugcTrimRangesByClipId, setUgcTrimRangesByClipId] = useState<
     Record<string, VideoTrimRange>
   >({});
@@ -422,6 +427,14 @@ export function StitchrPageClient() {
   );
   const activeAutoTextProductId =
     products.activeProductId ?? "";
+  const autoTextContextKey =
+    mode === "longr"
+      ? `longr:${selectedLongrMetadata.map((clip) => clip.id).join(",")}`
+      : `normal:${activeUgcMetadata?.id ?? ""}:${selectedDemoMetadata?.id ?? ""}`;
+  const activeAutoTextHookOptions =
+    autoTextHookOptions?.contextKey === autoTextContextKey
+      ? autoTextHookOptions.options
+      : [];
 
   useEffect(() => {
     const brief = handoff.brief;
@@ -1151,6 +1164,10 @@ export function StitchrPageClient() {
       })
       .then((text) => {
         const generatedText = text.overlayText || text.hook;
+        setAutoTextHookOptions({
+          contextKey: autoTextContextKey,
+          options: text.hookOptions ?? [],
+        });
         const baseOverlay =
           previewTextOverlays[0] ?? createDefaultTextOverlay(totalDuration, 0);
         const nextTextOverlays = clampTextOverlays(
@@ -1167,7 +1184,7 @@ export function StitchrPageClient() {
         if (mode === "longr") {
           setLongrTextOverlays(nextTextOverlays);
           setLongrSocialCaption(text.socialCaption || "");
-          setAutoTextMessage("Text and caption generated.");
+          setAutoTextMessage("Hook options and caption generated.");
           return;
         }
 
@@ -1184,7 +1201,7 @@ export function StitchrPageClient() {
         ) {
           setReusedTextOverlays(nextTextOverlays);
           setReusedSocialCaption(text.socialCaption || "");
-          setAutoTextMessage("Text and caption generated.");
+          setAutoTextMessage("Hook options and caption generated.");
           return;
         }
 
@@ -1196,7 +1213,7 @@ export function StitchrPageClient() {
           ...captions,
           [activeUgcMetadata.id]: text.socialCaption || "",
         }));
-        setAutoTextMessage("Text and caption generated.");
+        setAutoTextMessage("Hook options and caption generated.");
       })
       .catch((error) => {
         setAutoTextMessage(
@@ -1206,6 +1223,7 @@ export function StitchrPageClient() {
       .finally(() => setIsGeneratingAutoText(false));
   }, [
     activeAutoTextProductId,
+    autoTextContextKey,
     activeUgcMetadata,
     mode,
     previewTextOverlays,
@@ -1215,6 +1233,61 @@ export function StitchrPageClient() {
     textOverlaysByUgcId,
     totalDuration,
   ]);
+
+  const handleHookOptionSelect = useCallback(
+    (option: StitchrHookOption) => {
+      const baseOverlay =
+        previewTextOverlays[0] ?? createDefaultTextOverlay(totalDuration, 0);
+      const nextTextOverlays = clampTextOverlays(
+        [
+          {
+            ...baseOverlay,
+            text: option.text,
+          },
+          ...previewTextOverlays.slice(1),
+        ],
+        totalDuration,
+      );
+      handleSocialCaptionChange(option.socialCaption);
+
+      if (mode === "longr") {
+        setLongrTextOverlays(nextTextOverlays);
+        setAutoTextMessage("Hook updated.");
+        return;
+      }
+
+      if (!activeUgcMetadata) {
+        return;
+      }
+
+      if (
+        reusedTextOverlays !== null &&
+        !Object.prototype.hasOwnProperty.call(
+          textOverlaysByUgcId,
+          activeUgcMetadata.id,
+        )
+      ) {
+        setReusedTextOverlays(nextTextOverlays);
+        setAutoTextMessage("Hook updated.");
+        return;
+      }
+
+      setTextOverlaysByUgcId((overlays) => ({
+        ...overlays,
+        [activeUgcMetadata.id]: nextTextOverlays,
+      }));
+      setAutoTextMessage("Hook updated.");
+    },
+    [
+      activeUgcMetadata,
+      handleSocialCaptionChange,
+      mode,
+      previewTextOverlays,
+      reusedTextOverlays,
+      textOverlaysByUgcId,
+      totalDuration,
+    ],
+  );
 
   const handleActiveUgcChange = useCallback((id: string) => {
     setActivePreviewUgcId(id);
@@ -1507,12 +1580,15 @@ export function StitchrPageClient() {
                 />
               ) : null}
               <StitchrAutoTextPanel
+                hookOptions={activeAutoTextHookOptions}
                 products={activeProducts}
+                selectedHookText={previewTextOverlays[0]?.text ?? ""}
                 selectedProductId={activeAutoTextProductId}
                 isGenerating={isGeneratingAutoText}
                 message={autoTextMessage}
                 onProductChange={() => undefined}
                 onGenerate={handleGenerateAutoText}
+                onHookOptionSelect={handleHookOptionSelect}
               />
               {mode === "longr" || activeUgcMetadata ? (
                 <StitchrSocialCaptionPanel

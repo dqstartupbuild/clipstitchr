@@ -8,6 +8,7 @@ import { getCliprTextSystemPrompt } from "@/lib/clipstitchr/server/getCliprTextS
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { parseCliprTextGenerationOutput } from "@/lib/clipstitchr/server/parseCliprTextGenerationOutput";
 import { selectCliprHookCandidates } from "@/lib/clipstitchr/server/selectCliprHookCandidates";
+import { selectStitchrHookCandidates } from "@/lib/clipstitchr/server/selectStitchrHookCandidates";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
@@ -41,10 +42,16 @@ export async function createCliprTextGeneration({
   swiprSelectedSlideTextContext?: SwiprSelectedSlideTextContext;
 }) {
   const providerModel = getCliprHookModelId();
-  const candidates = selectCliprHookCandidates(
-    getCliprEligibleHookTemplates(product, purpose),
-    purpose,
-  );
+  const fillers = getCliprProductPlaceholderFillers(product);
+  const eligibleTemplates = getCliprEligibleHookTemplates(product, purpose);
+  const candidates =
+    purpose === "stitchr"
+      ? selectStitchrHookCandidates({
+          clipContexts: stitchrClipContexts,
+          product,
+          templates: eligibleTemplates,
+        })
+      : selectCliprHookCandidates(eligibleTemplates);
   const prediction = await replicate.predictions.create({
     model: providerModel,
     input: createTextWritingPredictionInput({
@@ -54,7 +61,7 @@ export async function createCliprTextGeneration({
       prompt: createCliprTextGenerationPrompt({
         candidates,
         durationSeconds,
-        fillers: getCliprProductPlaceholderFillers(product),
+        fillers,
         product,
         purpose,
         scriptIdea,

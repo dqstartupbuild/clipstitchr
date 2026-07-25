@@ -184,8 +184,8 @@ main product promise.
 | 6 | Clipr can select reusable shared-library music or upload a separate background music asset for export-time mixing | ✅ | ✅ |
 
 Clipr uses hidden non-promotional hook templates only. Broader internal hook
-assets can support Swipr and Stitchr auto-text, but direct product/ad hook
-patterns must not leak into Clipr outputs.
+assets support Swipr and relevance-ranked Stitchr auto-text, but direct
+product/ad hook patterns must not leak into Clipr outputs.
 
 Clipr currently shows Reaction, B-roll, and Demo modes. Script mode stays hidden
 behind the Clipr script flag until re-enabled. Reaction and B-roll create one

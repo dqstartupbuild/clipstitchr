@@ -88,6 +88,16 @@ describe("POST /api/clipr/text", () => {
       description: "Long post description",
       filledHook: "Stop wasting launch time",
       hashtags: ["#launchkit", "#ugc", "#demo"],
+      hookOptions: [
+        {
+          angle: "Relatable",
+          caption: "This is where the launch changes",
+          socialCaption:
+            "This is where the launch changes\n\n#launchkit #ugc #demo",
+          templateId: "DD-001",
+          text: "Stop wasting launch time",
+        },
+      ],
       overlayText: "Launch faster",
       script: "Full script",
       slides: [{ text: "Slide one" }],
@@ -134,6 +144,16 @@ describe("POST /api/clipr/text", () => {
       description: "Long post description",
       hashtags: ["#launchkit", "#ugc", "#demo"],
       hook: "Stop wasting launch time",
+      hookOptions: [
+        {
+          angle: "Relatable",
+          caption: "This is where the launch changes",
+          socialCaption:
+            "This is where the launch changes\n\n#launchkit #ugc #demo",
+          templateId: "DD-001",
+          text: "Stop wasting launch time",
+        },
+      ],
       overlayText: "Launch faster",
       script: "Full script",
       slides: [{ text: "Slide one" }],

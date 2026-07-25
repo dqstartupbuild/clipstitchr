@@ -43,6 +43,7 @@ export function createCliprVisualTextGeneration({
     description: "",
     filledHook: label,
     hashtags: [],
+    hookOptions: [],
     hookStyleKey: mode === "reaction" ? "reaction_source" : "broll_source",
     hookTemplateId: mode === "reaction" ? "REACTION-001" : "BROLL-001",
     overlayText: label,

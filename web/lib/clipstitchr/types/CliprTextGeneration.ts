@@ -1,4 +1,5 @@
 import type { CliprScenePlan } from "@/lib/clipstitchr/types/CliprScenePlan";
+import type { StitchrHookOption } from "@/lib/clipstitchr/types/StitchrHookOption";
 
 export type CliprTextGeneration = {
   caption: string;
@@ -7,6 +8,7 @@ export type CliprTextGeneration = {
   hashtags: string[];
   hookStyleKey: string;
   hookTemplateId: string;
+  hookOptions: StitchrHookOption[];
   overlayText: string;
   providerModel: string;
   providerPredictionId?: string;

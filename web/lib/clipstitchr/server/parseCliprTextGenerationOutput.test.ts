@@ -16,6 +16,30 @@ const candidates: CliprHookTemplate[] = [
     styleKey: "mystery_gap",
     template: "The thing nobody tells you about {{topic}}",
   },
+  {
+    active: true,
+    allowedPurposes: ["stitchr"],
+    bestFor: ["reaction content"],
+    emotionalTrigger: "recognition",
+    id: "DD-001",
+    requiredVariables: ["problem"],
+    riskLevel: "medium",
+    source: "clipstitchr",
+    styleKey: "direct_diagnosis",
+    template: "This is why {{problem}} keeps happening",
+  },
+  {
+    active: true,
+    allowedPurposes: ["stitchr"],
+    bestFor: ["comparison content"],
+    emotionalTrigger: "surprise",
+    id: "PB-001",
+    requiredVariables: ["thing"],
+    riskLevel: "medium",
+    source: "clipstitchr",
+    styleKey: "pattern_break",
+    template: "I did not expect {{thing}} to look like this",
+  },
 ];
 const product: ProductProfile = {
   id: "product_1",
@@ -157,7 +181,7 @@ describe("parseCliprTextGenerationOutput", () => {
     });
 
     expect(generation.filledHook).toBe(
-      "The visible change: launch content gets scattered",
+      "The reason launch content gets scattered",
     );
     expect(generation.overlayText).toBe(generation.filledHook);
     expect(generation.script).toBe("");
@@ -177,6 +201,89 @@ describe("parseCliprTextGenerationOutput", () => {
     expect(generation.variablesUsed).toEqual({
       topic: "launch ops",
     });
+    expect(generation.hookOptions).toEqual([
+      {
+        angle: "Best match",
+        caption: "That reaction tells you everything",
+        socialCaption:
+          "That reaction tells you everything\n\n#launchkit #creatortips #ugc #productdemo #adcreative",
+        templateId: "MG-001",
+        text: "The reason launch content gets scattered",
+      },
+    ]);
+  });
+
+  it("keeps three distinct grounded Stitchr options with the winner first", () => {
+    const generation = parseCliprTextGenerationOutput({
+      candidates,
+      durationSeconds: 30,
+      outputText: JSON.stringify({
+        caption: "The reaction makes sense once the workflow gets clearer.",
+        filledHook: "When the messy part finally clicks",
+        hashtags: ["launch", "workflow", "founders"],
+        hookOptions: [
+          {
+            angle: "Bold",
+            caption: "A launch process should make the next step obvious.",
+            templateId: "PB-001",
+            text: "Your launch process should not look this hard",
+          },
+          {
+            angle: "Relatable",
+            caption:
+              "The reaction makes sense once the workflow gets clearer.",
+            templateId: "DD-001",
+            text: "When the messy part finally clicks",
+          },
+          {
+            angle: "Curiosity",
+            caption: "The calm launch starts before the visible work.",
+            templateId: "MG-001",
+            text: "The step nobody sees before launch day",
+          },
+          {
+            angle: "Duplicate",
+            caption: "Duplicate caption.",
+            templateId: "DD-001",
+            text: "When the messy part finally clicks",
+          },
+        ],
+        overlayText: "When the messy part finally clicks",
+        templateId: "DD-001",
+      }),
+      providerModel: "openai/gpt-4.1",
+      product,
+      purpose: "stitchr",
+      slideCount: 1,
+    });
+
+    expect(generation.hookTemplateId).toBe("DD-001");
+    expect(generation.hookOptions).toEqual([
+      {
+        angle: "Relatable",
+        caption: "The reaction makes sense once the workflow gets clearer.",
+        socialCaption:
+          "The reaction makes sense once the workflow gets clearer.\n\n#launch #workflow #founders #launchkit #ugc",
+        templateId: "DD-001",
+        text: "When the messy part finally clicks",
+      },
+      {
+        angle: "Bold",
+        caption: "A launch process should make the next step obvious.",
+        socialCaption:
+          "A launch process should make the next step obvious.\n\n#launch #workflow #founders #launchkit #ugc",
+        templateId: "PB-001",
+        text: "Your launch process should not look this hard",
+      },
+      {
+        angle: "Curiosity",
+        caption: "The calm launch starts before the visible work.",
+        socialCaption:
+          "The calm launch starts before the visible work.\n\n#launch #workflow #founders #launchkit #ugc",
+        templateId: "MG-001",
+        text: "The step nobody sees before launch day",
+      },
+    ]);
   });
 
   it("falls back Stitchr captions and hashtags when the model omits them", () => {

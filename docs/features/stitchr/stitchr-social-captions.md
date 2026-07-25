@@ -7,7 +7,7 @@ the feed caption and hashtags together.
 
 When Stitchr auto-text runs, the writing model now returns:
 
-- the visual overlay hook
+- three visual overlay hook options with one selected as the best match
 - a caption hook that relates to the overlay
 - 3-5 normalized hashtags
 - one combined caption/hashtag text block for editing and copying
@@ -16,12 +16,32 @@ The caption is meant to be another hook for TikTok, Reels, or Shorts. It should
 feel connected to the overlay hook and to what appears in the selected Hook/UGC and
 demo clips.
 
-The Stitchr writing prompt intentionally follows the simpler Swipr-style prompt
-shape: account context, source context, a compact JSON contract, and short
-viewer-first copy rules. Selected Hook/UGC/demo descriptions and
-hook hints are used when they add real context, but the prompt avoids heavy
-internal hook framework lists and falls back to product/audience context when
-source details are thin.
+Stitchr retrieves a bounded, diversified set of relevant patterns from the
+shared Hook Library before writing. Retrieval ranks templates against the
+selected Hook/UGC and Demo descriptions, visible reactions and actions, tags,
+product details, audience, pain points, saved product hook preferences,
+placeholder support, risk, and unsupported-claim signals. It no longer forces
+four random polarizing templates into every candidate set.
+
+The writing model receives the ranked candidates with their IDs, patterns,
+emotional triggers, intended uses, and risk levels. It identifies the strongest
+UGC tension and Demo proof, drafts and scores several hooks internally, and
+returns three distinct choices:
+
+- relatable recognition;
+- curiosity;
+- a truthful bold challenge or contrast.
+
+Each option includes its own matching feed caption. The first hook-caption pair
+is applied automatically. In manual Stitchr, **Choose a hook angle** lets the
+user switch among the three pairs without another generation or creation-credit
+charge. Automated and Batch Stitchr use the first pair.
+
+The overlay must bridge the creator footage into the Demo rather than narrating
+the visible action or paraphrasing the product description. Existing Quick Edit
+hook hints are weak evidence, not instructions, and must be rewritten when
+used. Product behaviors, results, comparisons, and proof must be supported by
+saved product details or an observed clip detail.
 
 Copy buttons for this field temporarily swap from the copy icon to a checkmark
 after the clipboard write succeeds.
@@ -29,12 +49,13 @@ after the clipboard write succeeds.
 ## User Flow
 
 1. Select Stitchr source clips.
-2. Generate text from the Stitchr auto-text panel.
-3. Review or edit the generated overlay and the caption and hashtags.
-4. Create the stitch.
-5. Open the saved stitch details later to read or copy the same caption and
+2. Generate hooks from the Stitchr auto-text panel.
+3. Review the three hook angles and choose one.
+4. Review or edit the applied overlay and the caption and hashtags.
+5. Create the stitch.
+6. Open the saved stitch details later to read or copy the same caption and
    hashtags.
-6. Open the saved stitch editor later to edit or copy the same field.
+7. Open the saved stitch editor later to edit or copy the same field.
 
 For reused stitches, normal Stitchr mode treats the saved caption like reused
 overlay text. It stays available even if the original Hook/UGC clip is
@@ -66,6 +87,9 @@ when it saves the editable Stitchr draft.
 The prompt and parser live in:
 
 - `web/lib/clipstitchr/server/createStitchrHookGenerationPrompt.ts`
+- `web/lib/clipstitchr/server/getStitchrHookTemplateRelevanceScore.ts`
+- `web/lib/clipstitchr/server/selectStitchrHookCandidates.ts`
+- `web/lib/clipstitchr/server/normalizeStitchrHookOptions.ts`
 - `web/lib/clipstitchr/server/parseCliprTextGenerationOutput.ts`
 - `web/lib/clipstitchr/utils/createStitchSocialCaption.ts`
 - `web/lib/clipstitchr/utils/getStitchrSocialCaptionForUgcId.ts`
@@ -79,6 +103,11 @@ inside `web/app/_components/stitchr/StitchrSocialCaptionPanel.tsx`; saved
 stitches use it inside `web/app/_components/dashboard/StitchEditDialog.tsx`.
 The read-only detail view renders and copies the same saved text in
 `web/app/_components/dashboard/StitchDetailsDialog.tsx`.
+
+Manual hook choices render through:
+
+- `web/app/_components/stitchr/StitchrAutoTextPanel.tsx`
+- `web/app/_components/stitchr/StitchrHookOptions.tsx`
 
 ## Abuse Protection
 
@@ -97,3 +126,19 @@ Because automated Stitchr captions run in the provider and media workers,
 deploying Convex alone is not enough after changing this path. Redeploy both
 worker images so queued automation can generate and save the caption/hashtag
 field.
+
+## Verification
+
+- Use UGC with a visible reaction and a Demo with clear product proof, then
+  confirm all returned options connect those two moments.
+- Confirm the model-selected `templateId` belongs to the supplied ranked
+  candidate set.
+- Confirm the three options are distinct and the first hook-caption pair is
+  applied.
+- Select another option with a pointer and keyboard and confirm the overlay and
+  matching caption update without another provider request.
+- Confirm generic hooks, unresolved placeholders, unsupported numerical claims,
+  and unsupported performance promises are rejected or heavily deprioritized.
+- Confirm sparse model output still returns one readable fallback option.
+- Run one automated Stitchr task and one Batch task after worker deployment and
+  confirm both save the winning hook and social caption.

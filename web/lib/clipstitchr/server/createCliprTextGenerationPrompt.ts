@@ -108,7 +108,7 @@ export function createCliprTextGenerationPrompt({
 }: CreateCliprTextGenerationPromptOptions) {
   if (purpose === "stitchr") {
     return createStitchrHookGenerationPrompt({
-      fillers,
+      candidates,
       product,
       stitchrClipContexts,
     });
