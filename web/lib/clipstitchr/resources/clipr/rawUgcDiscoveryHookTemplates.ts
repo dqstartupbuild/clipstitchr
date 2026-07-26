@@ -1,17 +1,5 @@
 import type { RawCliprHookTemplate } from "@/lib/clipstitchr/types/RawCliprHookTemplate";
-
-const selfCalloutOpeners = [
-  "not me",
-  "me, apparently,",
-  "POV: you are",
-  "the way I am",
-  "okay, I am",
-  "I fear I am",
-  "somehow I am",
-  "caught myself",
-  "why am I",
-  "tell me why I am",
-];
+import { ugcDiscoveryHookOpenerFamilies } from "@/lib/clipstitchr/resources/clipr/ugcDiscoveryHookOpenerFamilies";
 
 const selfCalloutDiscoveries = [
   "realizing {{habit}} was making {{problem}} harder",
@@ -32,19 +20,6 @@ const selfCalloutStyleKeys = [
   "direct_diagnosis",
 ] as const;
 
-const reluctantDiscoveryOpeners = [
-  "wait, so",
-  "hold on, so",
-  "you're telling me",
-  "so you're saying",
-  "okay, apparently",
-  "why did nobody tell me",
-  "am I really just finding out",
-  "not me discovering",
-  "the way I just learned",
-  "I fear",
-];
-
 const reluctantDiscoveries = [
   "{{workflow}} can actually start this simply",
   "{{problem}} does not require another restart",
@@ -63,19 +38,6 @@ const reluctantDiscoveryStyleKeys = [
   "pattern_break",
   "test_drive",
 ] as const;
-
-const expectationOpeners = [
-  "I expected",
-  "I genuinely thought",
-  "me thinking",
-  "POV: you assume",
-  "not me assuming",
-  "the way I thought",
-  "apparently I believed",
-  "I was fully convinced",
-  "tell me why I thought",
-  "I fear I assumed",
-];
 
 const expectationReversals = [
   "{{topic}} had to feel harder than this",
@@ -97,13 +59,13 @@ const expectationStyleKeys = [
 ] as const;
 
 const sourcePatterns = [
-  ...selfCalloutOpeners.flatMap((opener) =>
+  ...ugcDiscoveryHookOpenerFamilies[0].flatMap((opener) =>
     selfCalloutDiscoveries.map((discovery) => `${opener} ${discovery}`),
   ),
-  ...reluctantDiscoveryOpeners.flatMap((opener) =>
+  ...ugcDiscoveryHookOpenerFamilies[1].flatMap((opener) =>
     reluctantDiscoveries.map((discovery) => `${opener} ${discovery}`),
   ),
-  ...expectationOpeners.flatMap((opener) =>
+  ...ugcDiscoveryHookOpenerFamilies[2].flatMap((opener) =>
     expectationReversals.map((reversal) => `${opener} ${reversal}`),
   ),
 ];

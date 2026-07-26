@@ -85,10 +85,17 @@ function getProductProblemPhrase(product: ProductProfile) {
     .slice(0, 90);
 }
 
-function createFallbackHook(
-  product: ProductProfile,
-  purpose: CliprTextPurpose,
-) {
+function createFallbackHook({
+  candidates,
+  product,
+  purpose,
+  stitchrHookVariationSeed,
+}: {
+  candidates: CliprHookTemplate[];
+  product: ProductProfile;
+  purpose: CliprTextPurpose;
+  stitchrHookVariationSeed?: string;
+}) {
   const problem = getProductProblemPhrase(product);
 
   if (purpose === "clipr") {
@@ -99,7 +106,11 @@ function createFallbackHook(
     return `Start here: ${problem}`.slice(0, 120);
   }
 
-  return createStitchrFallbackHook(product);
+  return createStitchrFallbackHook({
+    candidates,
+    product,
+    variationSeed: stitchrHookVariationSeed,
+  });
 }
 
 function normalizeHashtag(value: unknown) {
@@ -283,6 +294,7 @@ export function parseCliprTextGenerationOutput({
   product,
   purpose,
   slideCount,
+  stitchrHookVariationSeed,
 }: {
   candidates: CliprHookTemplate[];
   durationSeconds: CliprDurationSeconds;
@@ -291,8 +303,19 @@ export function parseCliprTextGenerationOutput({
   product: ProductProfile;
   purpose: CliprTextPurpose;
   slideCount: number;
+  stitchrHookVariationSeed?: string;
 }): CliprTextGeneration {
-  const parsed = JSON.parse(getCliprJsonText(outputText)) as {
+  const parsedValue: unknown = JSON.parse(getCliprJsonText(outputText));
+
+  if (
+    !parsedValue ||
+    typeof parsedValue !== "object" ||
+    Array.isArray(parsedValue)
+  ) {
+    throw new SyntaxError("Clipr text generation must return one JSON object.");
+  }
+
+  const parsed = parsedValue as {
     caption?: unknown;
     description?: unknown;
     filledHook?: unknown;
@@ -313,7 +336,12 @@ export function parseCliprTextGenerationOutput({
     getGeneratedHookIsReadable(candidateFilledHook, selectedTemplate) &&
     (purpose !== "stitchr" || getStitchrHookTextIsUsable(candidateFilledHook))
       ? candidateFilledHook
-      : createFallbackHook(product, purpose);
+      : createFallbackHook({
+          candidates,
+          product,
+          purpose,
+          stitchrHookVariationSeed,
+        });
   const caption =
     purpose === "stitchr" || purpose === "swipr"
       ? normalizeString(parsed.caption, filledHook)
@@ -409,7 +437,10 @@ export function parseCliprTextGenerationOutput({
     hookOptions,
     hookStyleKey: selectedTemplate.styleKey,
     hookTemplateId: selectedTemplate.id,
-    overlayText: normalizeString(parsed.overlayText, filledHook),
+    overlayText:
+      purpose === "stitchr"
+        ? filledHook
+        : normalizeString(parsed.overlayText, filledHook),
     providerModel,
     scenePlan: finalScenePlan,
     script: finalScript,

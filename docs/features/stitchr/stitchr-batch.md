@@ -10,7 +10,7 @@ ad" unless it is directly explaining the UI label.
 
 ## What It Does
 
-- Queues 10 Stitch drafts per run when plan credits are available.
+- Queues 10 Stitch drafts per run when plan access, credits, and capacity allow.
 - Can run repeatedly on the same day. Each button press creates a distinct run.
 - Reuses the best available Hook/UGC and Demo pairs after unique combinations
   run out, so one eligible clip of each kind can fill the requested batch.
@@ -26,6 +26,10 @@ ad" unless it is directly explaining the UI label.
   outputs.
 - Uses the active product and selected source descriptions when it generates
   text for drafts.
+- Assigns the 10 tasks different Hook Library winner lanes so one conversational
+  opener cannot take over the whole run.
+- Recovers malformed or truncated writing responses with one bounded retry and
+  a product-grounded fallback instead of dropping that draft from the Batch.
 - Leaves Normal and Longr Stitchr modes available for manual editing.
 
 ## User Flow
@@ -82,6 +86,35 @@ Internal request/snapshot fields remain named `templateId` during the rollback
 window. The resolver reads an Idea recipe first and falls back to a legacy
 Template with the same owner checks.
 
+## Hook Diversity And Completion
+
+Every Batch task ID ends with its one-based position from 1 through 10. The
+provider worker passes that stable ID into the shared Stitchr writer.
+
+The writer uses the position to assign a different winner lane across the three
+UGC discovery families and ten opener positions. It still ranks the ten
+discovery patterns inside that lane against the selected Hook/UGC reaction,
+Demo evidence, and product details. This preserves clip and product relevance
+without letting lexicographically early `not me` templates win every task.
+
+The writing response path is also fail-soft:
+
+1. Request compact JSON with no visible analysis.
+2. Accept a complete JSON object even if provider prose appears before it.
+3. Verify the returned winner uses the assigned Hook Library ID and exact
+   conversational opener words.
+4. Force the rendered Stitchr overlay to the validated winner text so an
+   alternate `overlayText` field cannot bypass the hook check.
+5. Retry malformed, truncated, noncompliant, or failed writing once with a
+   terse JSON-only instruction.
+6. If the second attempt still cannot provide a compliant response, fill the
+   assigned mechanism locally with product facts when available and an
+   opener-safe creator thought otherwise, then continue to media finalization.
+
+The retry ceiling is two provider predictions per task. The fallback makes no
+provider call. Failures after text generation still follow the durable queue's
+normal failure behavior.
+
 ## Pair History Behavior
 
 The batch planner builds eligible Hook/UGC and Demo candidates from the user's clip
@@ -116,6 +149,11 @@ The scheduled automation planner still respects its daily generation window.
 The Stitchr Batch tab does not. A signed-in user can press the batch button
 again after a run is queued or completed, subject to plan credits and the
 separate abuse ceiling.
+
+Starter and Pro reserve the configured Stitch creation credits per planned
+output. Agency currently has a zero-credit Stitch policy, so its tasks record
+zero-cost usage events and do not create credit reservations. That is expected
+billing behavior and is separate from whether all ten tasks finish.
 
 The API route converts Convex rate-limit errors into HTTP `429` responses with
 retry timing. The current limits and verification notes are tracked in
@@ -183,6 +221,16 @@ The JSON response includes `providerDispatchStatus`:
   selection across available clips.
 - `web/lib/clipstitchr/constants/stitchrBatchGenerationLimits.ts` stores the
   daily and global Batch generation limits.
+- `web/lib/clipstitchr/server/getStitchrHookVariationIndex.ts` maps the task
+  position to a stable Hook Library winner lane.
+- `web/lib/clipstitchr/server/selectStitchrHookCandidates.ts` builds the
+  opener-balanced candidate set.
+- `web/lib/clipstitchr/server/getStitchrHookMatchesAssignedOpener.ts` enforces
+  the assigned opener after model output is parsed.
+- `web/lib/clipstitchr/server/createCliprTextGeneration.ts` owns the bounded
+  malformed-response retry and final grounded fallback.
+- `web/services/provider-worker/runProviderWorker.ts` passes the Batch task ID
+  into the shared Stitchr writer.
 
 ## File Tree
 
@@ -198,7 +246,13 @@ web/lib/clipstitchr/client/generateStitchrBatch.ts
 web/lib/clipstitchr/client/getBrowserTimeZone.ts
 web/lib/clipstitchr/constants/stitchrBatchGenerationLimits.ts
 web/lib/clipstitchr/constants/stitchrBatchProviderFallbackLaunchDelayMs.ts
+web/lib/clipstitchr/server/createStitchrAssignedOpenerFallbackHook.ts
+web/lib/clipstitchr/server/createCliprTextGeneration.ts
+web/lib/clipstitchr/server/createStitchrFallbackGenerationOutputText.ts
+web/lib/clipstitchr/server/getStitchrHookMatchesAssignedOpener.ts
+web/lib/clipstitchr/server/getStitchrHookVariationIndex.ts
 web/lib/clipstitchr/server/readStitchrBatchGenerateRequest.ts
+web/lib/clipstitchr/server/selectStitchrHookCandidates.ts
 web/lib/clipstitchr/server/stitchr/dispatchStitchrBatchProviderWorkerFromApi.ts
 web/lib/clipstitchr/server/stitchr/getStitchrBatchDate.ts
 web/lib/clipstitchr/server/stitchr/getStitchrBatchDate.test.ts
@@ -214,6 +268,7 @@ web/convex/workerLaunch.ts
 web/lib/clipstitchr/server/stitchr/getStitchrBatchRateLimitKey.ts
 web/convex/stitchrBatch.ts
 web/convex/stitchrBatchRunId.ts
+web/services/provider-worker/runProviderWorker.ts
 ```
 
 ## Maintenance Notes
@@ -225,3 +280,8 @@ web/convex/stitchrBatchRunId.ts
   `docs/operations/security/rate-limits.md` in the same change.
 - If persisted stitch modes change, keep `SavedStitchrMode` separate from
   `StitchrMode` so Batch remains a page mode, not a saved stitch render mode.
+- Keep the task-position seed stable across retries. Changing it would make a
+  retry drift into a different creator mechanism and could reintroduce repeated
+  openers.
+- Keep the malformed-response retry bounded. Any increase changes worst-case
+  provider cost and must be reflected in the rate-limit operations guide.

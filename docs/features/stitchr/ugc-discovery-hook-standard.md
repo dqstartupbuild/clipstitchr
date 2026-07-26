@@ -290,6 +290,12 @@ These templates are available only when `allowedPurposes` includes `stitchr`.
 They use audience behavior and clip evidence more often than product-name or
 feature placeholders.
 
+The IDs encode three creator families, ten conversational openers per family,
+and ten discovery patterns per opener. Retrieval uses those coordinates instead
+of sorting equal scores by ID. A full candidate set contains 12 discovery
+patterns balanced across the three families, avoids repeating the same opener
+coordinate, and adds 6 supporting shared patterns.
+
 ### Filter the shared library
 
 Shared templates may still enter the Stitchr candidate pool when they can be
@@ -316,13 +322,16 @@ Stitchr generation uses this order:
 1. Read the selected Hook/UGC clip for visible emotion, expression, action, and
    relatable tension.
 2. Read the Demo for the strongest concrete product behavior it visibly proves.
-3. Retrieve format-compatible discovery mechanisms from the Hook Library.
-4. Draft multiple first-person or creator-perspective thoughts.
-5. Remove product names and polished benefit language unless essential.
-6. Score each draft for creator voice, viewer recognition, visual fit,
+3. Retrieve an opener-balanced set of format-compatible discovery mechanisms
+   from the Hook Library.
+4. Use the stable task or clip seed to assign one varied winning mechanism.
+5. Draft multiple first-person or creator-perspective thoughts.
+6. Remove product names and polished benefit language unless essential.
+7. Score each draft for creator voice, viewer recognition, visual fit,
    Demo closure, readability, and product truth.
-7. Reject any draft that needs voiceover or caption context.
-8. Return distinct options from the strongest compatible mechanisms.
+8. Reject any draft that needs voiceover or caption context.
+9. Return compact JSON with distinct options and no visible analysis, notes,
+   scoring, drafts, or checklist.
 
 The option labels describe creator angles rather than generic marketing
 categories. Available directions include:
@@ -353,6 +362,22 @@ A final overlay should ship only when all answers are yes:
 The last question is a creator-voice test, not a rule that the product must
 always remain unnamed.
 
+## Output Resilience
+
+Stitchr asks the writing model for compact JSON and gives it a Stitchr-specific
+completion allowance. A complete JSON object can still be extracted when the
+provider adds prose before it.
+
+If the provider returns malformed or token-truncated JSON, ignores the assigned
+winner ID or opener, or fails to complete the writing request, the same task can
+make one additional JSON-only writing attempt. The server validates the assigned
+ID and exact opener words after parsing, so valid JSON cannot bypass Batch
+diversity. If the second attempt also fails its response contract, the server
+creates a deterministic fallback from the assigned Hook Library mechanism. It
+uses product facts when they are available and preserves the assigned opener
+with a safe creator thought when sparse product data cannot fill the mechanism.
+No third provider call is made.
+
 ## Guppy Pairing Examples
 
 These examples show why the Demo determines whether a hook works.
@@ -374,13 +399,24 @@ The current Stitchr hook path is implemented in:
 ```text
 web/lib/clipstitchr/resources/clipr/
   rawUgcDiscoveryHookTemplates.ts
+  ugcDiscoveryHookOpenerFamilies.ts
   cliprHookTemplates.ts
 web/lib/clipstitchr/server/
+  StitchrHookContractError.ts
+  createStitchrAssignedOpenerFallbackHook.ts
+  createCliprTextGeneration.ts
+  createStitchrFallbackGenerationOutputText.ts
   createStitchrHookGenerationPrompt.ts
   createStitchrFallbackHook.ts
+  getCliprJsonText.ts
+  getStitchrHookMatchesAssignedOpener.ts
+  getStitchrHookVariationIndex.ts
   getStitchrExclusiveHookTemplates.ts
   getStitchrHookTextIsUsable.ts
   getStitchrHookTemplateRelevanceScore.ts
+  getUgcDiscoveryHookCoordinates.ts
+  getUgcDiscoveryHookOpener.ts
+  normalizeStitchrHookOpenerText.ts
   selectStitchrHookCandidates.ts
   normalizeStitchrHookOptions.ts
   formatStitchrTextGenerationClipContext.ts
@@ -408,14 +444,25 @@ The existing behavior and caption contract are documented in:
 - Reuse the same prompt and evaluation contract for manual, automated, and Batch
   Stitchr so hook quality does not vary by entry point.
 - The candidate selector sends 12 discovery patterns and 6 supporting shared
-  patterns to the model when enough of each are available.
+  patterns to the model when enough of each are available. The discovery set
+  uses 4 candidates from each creator family without repeating an opener
+  coordinate.
+- Batch task IDs end in their one-based position. That position assigns a stable
+  winner lane, so tasks 1 through 10 do not all inherit the first library
+  opener, while a retry of the same task keeps the same creative direction.
 - The text quality gate rejects explanation-dependent hooks, empty curiosity,
   common brand language, vague demonstrative openings, and text without a
   creator-perspective signal.
-- The existing server-side generation rate limit remains in front of the paid
-  model call. This feature does not add a new paid operation.
-- The Next app and both workers must use the same release because automated
-  Stitchr generation imports the shared writing path.
+- The server also rejects a winner whose template ID or exact opener does not
+  match its assigned lane. That rejection uses the same one-retry ceiling.
+- The existing server-side generation and Batch limits remain in front of the
+  task. One output can make at most two writing predictions, so the current
+  ceilings bound worst-case writing attempts to 200 per owner-local day and
+  2,000 globally per day. The retry does not consume a second output quota or
+  creation credit.
+- The Next app and provider worker must use the same release because automated
+  Stitchr generation imports the shared writing path. The media worker does not
+  import or execute hook generation.
 
 ## Verification
 
@@ -434,6 +481,17 @@ Use a matrix of Hook/UGC reactions and Demo proof types:
    framing without changing product truth.
 9. Test manual Stitchr, automated Stitchr, and Batch Stitchr with the same clip
    pairs.
+10. Generate candidate sets for Batch positions 1 through 10 and confirm all ten
+    assigned winner IDs differ and no opener dominates the run.
+11. Feed the parser a provider preamble followed by complete JSON and confirm the
+    JSON is recovered.
+12. Simulate two truncated responses and confirm the task returns a usable,
+    scriptless fallback without making a third provider call.
+13. Return valid JSON with a `not me` winner for a different assigned opener
+    and confirm the server rejects it, retries once, and then uses the assigned
+    fallback if necessary.
+14. Fail the provider during the repair attempt and confirm the task still
+    returns its grounded fallback.
 
 ## Sources
 

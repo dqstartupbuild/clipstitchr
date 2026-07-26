@@ -453,6 +453,15 @@ Optional Replicate model overrides:
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, and new `swipes.save` records | 3,000/hour/user, burst 500 |
 | Convex metadata updates | Avatar, product, automation, video clip, stitch, Clipr preference, and existing Swipe update mutations | 5,000/hour/user, burst 1,000 |
 
+For Stitchr Batch, "every output" in the table means every output with a
+non-zero plan cost. Agency currently records a zero-cost usage event without a
+credit reservation. Each task can make at most two writing predictions when the
+first response fails, is malformed or truncated, or ignores its assigned Hook
+Library opener, then uses a local grounded fallback. The retry does not consume
+a second output quota or creation credit. The 100-output owner-local daily cap
+and 1,000-output global daily cap therefore bound this path to at most 200 and
+2,000 writing attempts respectively.
+
 Changing an avatar's linked product uses `avatars.update` and patches the
 avatar's photo records to the same product under the shared Convex metadata
 update limit.

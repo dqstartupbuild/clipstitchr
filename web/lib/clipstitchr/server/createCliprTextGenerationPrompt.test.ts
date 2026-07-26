@@ -104,7 +104,7 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain('"caption":"exactly hookOptions[0].caption"');
     expect(prompt).toContain('"caption":"short feed caption for this option"');
     expect(prompt).toContain('"hashtags":["#tagone","#tagtwo","#tagthree"]');
-    expect(prompt).toContain("return the strongest three distinct options");
+    expect(prompt).toContain("Return the strongest three distinct options");
     expect(prompt).toContain(
       "The three options must use meaningfully different creator angles",
     );
@@ -118,7 +118,17 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain(
       "The overlay must make sense without the feed caption",
     );
-    expect(prompt).toContain("run the Demo-closure test");
+    expect(prompt).toContain("Only keep options whose private thought");
+    expect(prompt).toContain("Assigned winner candidate:");
+    expect(prompt).toContain(
+      "Start hookOptions[0].text with the candidate's exact conversational opener words",
+    );
+    expect(prompt).toContain(
+      "Do not default hookOptions[0] to a 'not me' self-callout",
+    );
+    expect(prompt).toContain(
+      "Do not show analysis, notes, scoring, drafts, or a checklist",
+    );
     expect(prompt).toContain(
       "Reject phrases such as 'this is why,' 'here is why,' 'let me explain,'",
     );

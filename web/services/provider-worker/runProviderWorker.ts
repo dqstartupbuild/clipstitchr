@@ -1824,6 +1824,7 @@ async function processStitchr({
       replicate: createReplicateClient(),
       slideCount: 1,
       stitchrClipContexts,
+      stitchrHookVariationSeed: task.id,
     });
 
   const textOverlay =

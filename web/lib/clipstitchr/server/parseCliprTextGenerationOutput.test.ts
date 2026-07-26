@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getStitchrHookTextIsUsable } from "@/lib/clipstitchr/server/getStitchrHookTextIsUsable";
 import { parseCliprTextGenerationOutput } from "@/lib/clipstitchr/server/parseCliprTextGenerationOutput";
 import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplate";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
@@ -57,6 +58,22 @@ const longDescription = Array.from(
 ).join(" ");
 
 describe("parseCliprTextGenerationOutput", () => {
+  it("rejects null and other non-object JSON responses as malformed", () => {
+    for (const outputText of ["null", "[]", '"finished"', "42"]) {
+      expect(() =>
+        parseCliprTextGenerationOutput({
+          candidates,
+          durationSeconds: 30,
+          outputText,
+          providerModel: "openai/gpt-4.1",
+          product,
+          purpose: "stitchr",
+          slideCount: 1,
+        }),
+      ).toThrow(SyntaxError);
+    }
+  });
+
   it("keeps the full avatar script instead of truncating it like hook copy", () => {
     const script = [
       "The thing nobody tells you about training is that progress is easier to keep when the next step is obvious.",
@@ -178,9 +195,7 @@ describe("parseCliprTextGenerationOutput", () => {
       slideCount: 2,
     });
 
-    expect(generation.filledHook).toBe(
-      "me realizing launch content gets scattered",
-    );
+    expect(getStitchrHookTextIsUsable(generation.filledHook)).toBe(true);
     expect(generation.overlayText).toBe(generation.filledHook);
     expect(generation.script).toBe("");
     expect(generation.scenePlan).toEqual([]);
@@ -206,7 +221,7 @@ describe("parseCliprTextGenerationOutput", () => {
         socialCaption:
           "That reaction tells you everything\n\n#launchkit #creatortips #ugc #productdemo #adcreative",
         templateId: "MG-001",
-        text: "me realizing launch content gets scattered",
+        text: generation.filledHook,
       },
     ]);
   });
@@ -245,7 +260,7 @@ describe("parseCliprTextGenerationOutput", () => {
             text: "When the messy part finally clicks",
           },
         ],
-        overlayText: "not me realizing launch work could feel this clear",
+        overlayText: "not me repeating the same unassigned hook",
         templateId: "DD-001",
       }),
       providerModel: "openai/gpt-4.1",
@@ -255,6 +270,7 @@ describe("parseCliprTextGenerationOutput", () => {
     });
 
     expect(generation.hookTemplateId).toBe("DD-001");
+    expect(generation.overlayText).toBe(generation.filledHook);
     expect(generation.hookOptions).toEqual([
       {
         angle: "Relatable",
