@@ -82,9 +82,12 @@ The Convex deployment needs the same rate-limit secret:
 
 ```bash
 cd web
-npx convex env set RATE_LIMIT_API_SECRET '<RATE_LIMIT_API_SECRET>'
+npx convex env set --prod RATE_LIMIT_API_SECRET
 npx convex deploy
 ```
+
+The environment command prompts for the value so the secret does not enter
+shell history.
 
 The deployment adds or updates:
 
