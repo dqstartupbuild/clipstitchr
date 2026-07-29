@@ -24,7 +24,7 @@ describe("extractBlogHeadings", () => {
     ]);
   });
 
-  it("captures heading levels from h1 through h6", () => {
+  it("captures table-of-contents heading levels from h2 through h6", () => {
     const html = [
       "<h1>One</h1>",
       "<h2>Two</h2>",
@@ -36,7 +36,7 @@ describe("extractBlogHeadings", () => {
 
     const headings = extractBlogHeadings(html);
 
-    expect(headings.map((heading) => heading.level)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(headings.map((heading) => heading.level)).toEqual([2, 3, 4, 5, 6]);
   });
 
   it("strips inline html from heading text", () => {

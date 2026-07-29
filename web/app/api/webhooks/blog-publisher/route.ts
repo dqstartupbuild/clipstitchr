@@ -43,28 +43,36 @@ export async function POST(request: Request) {
       articleCount: normalizedArticles.length,
     });
 
-    const publishedSlugs: string[] = [];
+    const publishedSlugs = new Set<string>();
 
     for (const normalizedArticle of normalizedArticles) {
       const article = await copyBlogArticleImages(normalizedArticle);
 
-      await convex.mutation(api.blogPosts.upsertPublishedArticle, {
-        secret: rateLimitSecret,
-        slug: article.slug,
-        externalId: article.externalId,
-        title: article.title,
-        metaDescription: article.metaDescription,
-        contentFormat: article.contentFormat,
-        content: article.content,
-        contentHtml: article.contentHtml,
-        imageUrl: article.imageUrl,
-        tags: article.tags,
-        source: article.source,
-        createdAt: article.createdAt,
-        updatedAt: article.updatedAt,
-      });
+      const result = await convex.mutation(
+        api.blogPosts.upsertPublishedArticle,
+        {
+          secret: rateLimitSecret,
+          slug: article.slug,
+          externalId: article.externalId,
+          title: article.title,
+          seoTitle: article.seoTitle,
+          metaDescription: article.metaDescription,
+          contentFormat: article.contentFormat,
+          content: article.content,
+          contentHtml: article.contentHtml,
+          imageUrl: article.imageUrl,
+          tags: article.tags,
+          source: article.source,
+          createdAt: article.createdAt,
+          updatedAt: article.updatedAt,
+        },
+      );
 
-      publishedSlugs.push(article.slug);
+      publishedSlugs.add(article.slug);
+
+      for (const replacedSlug of result.replacedSlugs) {
+        publishedSlugs.add(replacedSlug);
+      }
     }
 
     revalidatePath("/blog");

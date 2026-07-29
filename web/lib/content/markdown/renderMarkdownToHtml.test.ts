@@ -134,4 +134,13 @@ describe("renderMarkdownToHtml", () => {
 
     expect(html).toContain('<h2 id="custom-id">Getting Started</h2>');
   });
+
+  it("gives repeated headings stable unique ids", () => {
+    const html = renderMarkdownToHtml(
+      "## Results\n\nBody\n\n## Results\n\nMore body",
+    );
+
+    expect(html).toContain('<h2 id="results">Results</h2>');
+    expect(html).toContain('<h2 id="results-2">Results</h2>');
+  });
 });

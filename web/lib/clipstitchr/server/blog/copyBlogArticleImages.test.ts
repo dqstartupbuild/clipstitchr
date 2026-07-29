@@ -14,6 +14,8 @@ const baseArticle: NormalizedBlogArticle = {
   slug: "a-helpful-blog-title",
   externalId: "blog-id",
   title: "A Helpful Blog Title",
+  seoTitle:
+    "A Helpful Blog Title for Search Results With Clear Next Steps",
   metaDescription: "A short plain-language summary.",
   contentFormat: "mdx",
   content: [
@@ -28,7 +30,7 @@ const baseArticle: NormalizedBlogArticle = {
   ].join("\n"),
   imageUrl: "https://blogger.test/hero.jpg",
   tags: ["keyword"],
-  source: "Blogger",
+  source: "Blogr",
   createdAt: "2026-06-23T15:30:00.000Z",
   updatedAt: "2026-06-23T15:45:00.000Z",
 };

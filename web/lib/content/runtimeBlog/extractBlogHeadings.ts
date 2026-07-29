@@ -6,7 +6,7 @@ export type BlogHeading = {
   level: number;
 };
 
-const headingPattern = /<h([1-6])(?:\s[^>]*)?>([\s\S]*?)<\/h\1>/gi;
+const headingPattern = /<h([2-6])(?:\s[^>]*)?>([\s\S]*?)<\/h\1>/gi;
 
 function decodeHtmlEntities(value: string) {
   return value

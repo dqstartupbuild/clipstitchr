@@ -3,6 +3,7 @@ import { estimateBlogPostReadingTimeMinutes } from "./estimateBlogPostReadingTim
 type BlogPostCardFieldSource = {
   slug: string;
   title: string;
+  seoTitle?: string;
   metaDescription: string;
   content: string;
   imageUrl?: string;
@@ -17,6 +18,7 @@ export function getBlogPostCardFields(post: BlogPostCardFieldSource) {
   return {
     slug: post.slug,
     title: post.title,
+    seoTitle: post.seoTitle ?? post.title,
     metaDescription: post.metaDescription,
     imageUrl: post.imageUrl,
     tags: post.tags,

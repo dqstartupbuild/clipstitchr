@@ -7,13 +7,15 @@ import {
 const basePost: ConvexBlogPost = {
   slug: "a-helpful-blog-title",
   title: "A Helpful Blog Title",
+  seoTitle:
+    "A Helpful Blog Title for Search Results With Clear Next Steps",
   metaDescription: "A short plain-language summary.",
   contentFormat: "markdown",
   content: "# Heading\n\nBody paragraph with several words to count.",
   contentHtml: undefined,
   imageUrl: "https://example.com/image.jpg",
   tags: ["keyword"],
-  source: "Blogger",
+  source: "Blogr",
   publishedAt: "2026-06-23T16:00:00.000Z",
   createdAt: "2026-06-23T15:30:00.000Z",
   updatedAt: "2026-06-23T15:45:00.000Z",
@@ -26,6 +28,9 @@ describe("toRuntimeBlogPostFromConvex", () => {
     expect(runtimePost.slug).toBe("a-helpful-blog-title");
     expect(runtimePost.url).toBe("/blog/a-helpful-blog-title");
     expect(runtimePost.title).toBe("A Helpful Blog Title");
+    expect(runtimePost.seoTitle).toBe(
+      "A Helpful Blog Title for Search Results With Clear Next Steps",
+    );
     expect(runtimePost.description).toBe("A short plain-language summary.");
     expect(runtimePost.image).toBe("https://example.com/image.jpg");
     expect(runtimePost.source).toBe("convex");
@@ -34,7 +39,14 @@ describe("toRuntimeBlogPostFromConvex", () => {
     expect(runtimePost.readingTimeMinutes).toBeGreaterThanOrEqual(1);
   });
 
-  it("falls back to a default author and category when source is absent", () => {
+  it("uses the publisher label as the category, not the article author", () => {
+    const runtimePost = toRuntimeBlogPostFromConvex(basePost);
+
+    expect(runtimePost.category).toBe("Blogr");
+    expect(runtimePost.author).toBe("ClipStitchr");
+  });
+
+  it("falls back to a default category when source is absent", () => {
     const runtimePost = toRuntimeBlogPostFromConvex({
       ...basePost,
       source: undefined,

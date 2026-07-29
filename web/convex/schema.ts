@@ -742,6 +742,7 @@ export default defineSchema({
     slug: v.string(),
     externalId: v.optional(v.string()),
     title: v.string(),
+    seoTitle: v.optional(v.string()),
     metaDescription: v.string(),
     contentFormat: blogPostContentFormatValidator,
     content: v.string(),
@@ -754,10 +755,12 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_slug", ["slug"])
+    .index("by_external_id", ["externalId"])
     .index("by_published", ["publishedAt"]),
   blogPostCards: defineTable({
     slug: v.string(),
     title: v.string(),
+    seoTitle: v.optional(v.string()),
     metaDescription: v.string(),
     imageUrl: v.optional(v.string()),
     tags: v.array(v.string()),

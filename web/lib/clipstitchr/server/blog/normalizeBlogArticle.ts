@@ -5,6 +5,7 @@ export type NormalizedBlogArticle = {
   slug: string;
   externalId?: string;
   title: string;
+  seoTitle: string;
   metaDescription: string;
   contentFormat: "mdx" | "markdown" | "html";
   content: string;
@@ -93,6 +94,7 @@ export function normalizeBlogArticle(
     slug,
     externalId: article.id?.trim() || undefined,
     title: article.title.trim(),
+    seoTitle: article.seo_title?.trim() || article.title.trim(),
     metaDescription,
     contentFormat,
     content,

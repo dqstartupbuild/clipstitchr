@@ -1,24 +1,12 @@
-type R2Environment = {
-  accountId: string;
-  bucketName: string;
-  accessKeyId: string;
-  secretAccessKey: string;
-};
-
-function getRequiredR2EnvironmentValue(name: string) {
-  const value = process.env[name];
-
-  if (!value) {
-    throw new Error(`Missing ${name}.`);
-  }
-
-  return value;
-}
+import type { R2Environment } from "./R2Environment";
+import { getRequiredR2EnvironmentValue } from "./getRequiredR2EnvironmentValue";
+import { resolveR2BucketName } from "./resolveR2BucketName";
+import { resolveR2Endpoint } from "./resolveR2Endpoint";
 
 export function getR2Environment(): R2Environment {
   return {
-    accountId: getRequiredR2EnvironmentValue("R2_ACCOUNT_ID"),
-    bucketName: getRequiredR2EnvironmentValue("R2_BUCKET_NAME"),
+    endpoint: resolveR2Endpoint(process.env),
+    bucketName: resolveR2BucketName(process.env),
     accessKeyId: getRequiredR2EnvironmentValue("R2_ACCESS_KEY_ID"),
     secretAccessKey: getRequiredR2EnvironmentValue("R2_SECRET_ACCESS_KEY"),
   };
