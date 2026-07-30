@@ -162,7 +162,7 @@ Create or rotate the provider bindings with the existing
 
 ```bash
 create_or_update_secret \
-  clipstitchr-social-token-encryption-keys \
+  SOCIAL_TOKEN_ENCRYPTION_KEYS \
   "$SOCIAL_TOKEN_ENCRYPTION_KEYS"
 create_or_update_secret \
   clipstitchr-tiktok-client-key \
