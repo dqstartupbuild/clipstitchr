@@ -11,11 +11,16 @@ import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
 export async function renderSwiprSlideBlob(
   backgroundBlob: Blob,
   slide: SwiprSlide,
+  options: {
+    height?: number;
+    mimeType?: "image/jpeg" | "image/png";
+    width?: number;
+  } = {},
 ) {
   const background = await loadImageFromBlob(backgroundBlob);
   const canvas = document.createElement("canvas");
-  canvas.width = TIKTOK_OUTPUT_WIDTH;
-  canvas.height = TIKTOK_OUTPUT_HEIGHT;
+  canvas.width = options.width ?? TIKTOK_OUTPUT_WIDTH;
+  canvas.height = options.height ?? TIKTOK_OUTPUT_HEIGHT;
 
   const context = canvas.getContext("2d");
 
@@ -25,5 +30,8 @@ export async function renderSwiprSlideBlob(
 
   drawSwiprSlideToCanvas(context, background, slide);
 
-  return createBlobFromCanvas(canvas, SWIPR_EXPORT_MIME_TYPE);
+  return createBlobFromCanvas(
+    canvas,
+    options.mimeType ?? SWIPR_EXPORT_MIME_TYPE,
+  );
 }

@@ -9,8 +9,15 @@ import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct
 import { useAutomationPreferences } from "@/lib/clipstitchr/hooks/useAutomationPreferences";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import { getAccountSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getAccountSwiprLibraryPacks";
+import type { SocialPublishingProvider } from "@/lib/clipstitchr/social/types/SocialPublishingProvider";
 
-export function SettingsPageClient() {
+type SettingsPageClientProps = {
+  socialPublishingProvider: SocialPublishingProvider;
+};
+
+export function SettingsPageClient({
+  socialPublishingProvider,
+}: SettingsPageClientProps) {
   const products = useDashboardProduct();
   const swiprLibrary = useSwiprLibrary();
   const automation = useAutomationPreferences(products.activeProduct?.id);
@@ -44,6 +51,7 @@ export function SettingsPageClient() {
           restoringProductId={products.restoringProductId}
           savingProductId={products.savingProductId}
           swiprPacks={swiprPacks}
+          socialPublishingProvider={socialPublishingProvider}
           onDeleteProduct={products.deleteProduct}
           onSaveAutomation={automation.savePreferences}
           onRestoreProduct={products.restoreProduct}
@@ -54,6 +62,7 @@ export function SettingsPageClient() {
         <SettingsAccountSection
           isProductActionDisabled={products.isLoading || products.isSaving}
           products={products.products}
+          socialPublishingProvider={socialPublishingProvider}
         />
       </div>
     </DashboardShell>

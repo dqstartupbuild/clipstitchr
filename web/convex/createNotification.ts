@@ -12,6 +12,7 @@ type CreateNotificationArgs = {
     | "photo"
     | "stitch"
     | "stitchr-batch"
+    | "social-post"
     | "swipe"
     | "video-clip";
   sourceId?: string;

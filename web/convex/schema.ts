@@ -110,6 +110,20 @@ import { usageResourceValidator } from "./validators/usageResource";
 import { workerQueueSourceKindValidator } from "./validators/workerQueueSourceKind";
 import { workerQueueStatusValidator } from "./validators/workerQueueStatus";
 import { workerQueueWorkerValidator } from "./validators/workerQueueWorker";
+import { socialAccountStatusValidator } from "./validators/socialAccountStatus";
+import { socialAnalyticsRefreshRunStatusValidator } from "./validators/socialAnalyticsRefreshRunStatus";
+import { socialAssetKindValidator } from "./validators/socialAssetKind";
+import { socialDataDeletionStatusValidator } from "./validators/socialDataDeletionStatus";
+import { socialExternalPublicationStatusValidator } from "./validators/socialExternalPublicationStatus";
+import { socialOAuthStateStatusValidator } from "./validators/socialOAuthStateStatus";
+import { socialPlatformValidator } from "./validators/socialPlatform";
+import { socialPostStatusValidator } from "./validators/socialPostStatus";
+import { socialPostTargetStatusValidator } from "./validators/socialPostTargetStatus";
+import { socialPublishAttemptStatusValidator } from "./validators/socialPublishAttemptStatus";
+import { socialPublishModeValidator } from "./validators/socialPublishMode";
+import { socialScheduleModeValidator } from "./validators/socialScheduleMode";
+import { socialWebhookDispositionValidator } from "./validators/socialWebhookDisposition";
+import { socialWeeklySlotValidator } from "./validators/socialWeeklySlot";
 
 export default defineSchema({
   billingEntitlements: defineTable({
@@ -1037,6 +1051,320 @@ export default defineSchema({
     .index("by_owner_product", ["ownerId", "productId"])
     .index("by_owner_post", ["ownerId", "postId"])
     .index("by_owner_source", ["ownerId", "sourceType", "sourceId"]),
+  socialAccounts: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    platform: socialPlatformValidator,
+    externalAccountId: v.string(),
+    username: v.string(),
+    displayName: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
+    accountType: v.optional(v.string()),
+    status: socialAccountStatusValidator,
+    scopes: v.array(v.string()),
+    accessTokenCiphertext: v.string(),
+    accessTokenExpiresAt: v.optional(v.string()),
+    refreshTokenCiphertext: v.optional(v.string()),
+    refreshTokenExpiresAt: v.optional(v.string()),
+    tokenEncryptionVersion: v.number(),
+    tokenRefreshLockId: v.optional(v.string()),
+    tokenRefreshLockedUntil: v.optional(v.string()),
+    capabilitySnapshotJson: v.optional(v.string()),
+    capabilityCheckedAt: v.optional(v.string()),
+    lastRefreshedAt: v.optional(v.string()),
+    lastErrorCode: v.optional(v.string()),
+    lastErrorMessage: v.optional(v.string()),
+    disconnectedAt: v.optional(v.string()),
+    revokedAt: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner", ["ownerId"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_platform", ["ownerId", "platform"])
+    .index("by_owner_platform_external", [
+      "ownerId",
+      "platform",
+      "externalAccountId",
+    ])
+    .index("by_platform_external", ["platform", "externalAccountId"])
+    .index("by_owner_status", ["ownerId", "status"]),
+  productSocialAccounts: defineTable({
+    ownerId: v.string(),
+    productId: v.string(),
+    socialAccountId: v.string(),
+    platform: socialPlatformValidator,
+    isDefault: v.boolean(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_product", ["ownerId", "productId"])
+    .index("by_owner_account", ["ownerId", "socialAccountId"])
+    .index("by_owner_product_account", [
+      "ownerId",
+      "productId",
+      "socialAccountId",
+    ]),
+  productSocialQueues: defineTable({
+    ownerId: v.string(),
+    productId: v.string(),
+    timezone: v.string(),
+    weeklySlots: v.array(socialWeeklySlotValidator),
+    paused: v.boolean(),
+    defaultCaption: v.optional(v.string()),
+    defaultTargetSnapshotJson: v.optional(v.string()),
+    schedulingHorizonDays: v.number(),
+    revision: v.number(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_product", ["ownerId", "productId"])
+    .index("by_owner", ["ownerId"]),
+  socialPosts: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    productId: v.string(),
+    sourceType: v.string(),
+    sourceId: v.string(),
+    title: v.string(),
+    caption: v.string(),
+    scheduleMode: socialScheduleModeValidator,
+    scheduledFor: v.string(),
+    queueRevision: v.optional(v.number()),
+    queueSlotKey: v.optional(v.string()),
+    targetSnapshotJson: v.string(),
+    approvedAt: v.string(),
+    consentMetadataJson: v.string(),
+    status: socialPostStatusValidator,
+    heldReason: v.optional(v.string()),
+    needsAttentionReason: v.optional(v.string()),
+    lastErrorMessage: v.optional(v.string()),
+    publishedAt: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_product_scheduled", [
+      "ownerId",
+      "productId",
+      "scheduledFor",
+    ])
+    .index("by_owner_status_scheduled", ["ownerId", "status", "scheduledFor"])
+    .index("by_product_queue_slot", ["productId", "queueSlotKey"]),
+  socialPostAssets: defineTable({
+    ownerId: v.string(),
+    postId: v.string(),
+    id: v.string(),
+    order: v.number(),
+    kind: socialAssetKindValidator,
+    objectKey: v.string(),
+    contentType: v.string(),
+    sizeBytes: v.number(),
+    checksum: v.optional(v.string()),
+    width: v.optional(v.number()),
+    height: v.optional(v.number()),
+    durationSeconds: v.optional(v.number()),
+    createdAt: v.string(),
+  })
+    .index("by_owner_post", ["ownerId", "postId"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_post_order", ["postId", "order"]),
+  socialPostTargets: defineTable({
+    ownerId: v.string(),
+    postId: v.string(),
+    id: v.string(),
+    socialAccountId: v.string(),
+    platform: socialPlatformValidator,
+    externalAccountIdSnapshot: v.string(),
+    usernameSnapshot: v.string(),
+    publishMode: socialPublishModeValidator,
+    controlsJson: v.string(),
+    capabilitySnapshotJson: v.optional(v.string()),
+    scheduledFor: v.string(),
+    nextAttemptAt: v.optional(v.string()),
+    status: socialPostTargetStatusValidator,
+    entitlementDecisionJson: v.optional(v.string()),
+    providerJobId: v.optional(v.string()),
+    claimKey: v.optional(v.string()),
+    claimedAt: v.optional(v.string()),
+    lastAttemptAt: v.optional(v.string()),
+    nextStatusCheckAt: v.optional(v.string()),
+    outcomeUnknownAt: v.optional(v.string()),
+    needsAttentionReason: v.optional(v.string()),
+    lastErrorCode: v.optional(v.string()),
+    lastErrorMessage: v.optional(v.string()),
+    publishedAt: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_post", ["ownerId", "postId"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_target_id", ["id"])
+    .index("by_owner_status_scheduled", ["ownerId", "status", "scheduledFor"])
+    .index("by_status_scheduled", ["status", "scheduledFor"])
+    .index("by_status_next_check", ["status", "nextStatusCheckAt"])
+    .index("by_account_status", ["socialAccountId", "status"])
+    .index("by_provider_job", ["providerJobId"]),
+  socialPublishAttempts: defineTable({
+    ownerId: v.string(),
+    postId: v.string(),
+    targetId: v.string(),
+    id: v.string(),
+    attemptNumber: v.number(),
+    status: socialPublishAttemptStatusValidator,
+    stage: v.string(),
+    retrySafety: v.optional(v.string()),
+    idempotencyKey: v.string(),
+    providerRequestId: v.optional(v.string()),
+    providerPublishId: v.optional(v.string()),
+    providerContainerId: v.optional(v.string()),
+    providerResponseJson: v.optional(v.string()),
+    errorCode: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
+    startedAt: v.string(),
+    updatedAt: v.string(),
+    completedAt: v.optional(v.string()),
+  })
+    .index("by_owner_target", ["ownerId", "targetId"])
+    .index("by_target_attempt", ["targetId", "attemptNumber"])
+    .index("by_idempotency_key", ["idempotencyKey"])
+    .index("by_provider_publish", ["providerPublishId"]),
+  socialExternalPublications: defineTable({
+    ownerId: v.string(),
+    postId: v.string(),
+    targetId: v.string(),
+    socialAccountId: v.string(),
+    platform: socialPlatformValidator,
+    id: v.string(),
+    externalPublicationId: v.string(),
+    status: socialExternalPublicationStatusValidator,
+    permalink: v.optional(v.string()),
+    publishedAt: v.optional(v.string()),
+    lastReconciledAt: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_post", ["ownerId", "postId"])
+    .index("by_target", ["targetId"])
+    .index("by_platform_external", ["platform", "externalPublicationId"])
+    .index("by_account_published", ["socialAccountId", "publishedAt"]),
+  socialAnalyticsSnapshots: defineTable({
+    ownerId: v.string(),
+    productId: v.string(),
+    postId: v.string(),
+    targetId: v.string(),
+    publicationId: v.string(),
+    socialAccountId: v.string(),
+    platform: socialPlatformValidator,
+    capturedAt: v.string(),
+    source: v.string(),
+    views: v.union(v.number(), v.null()),
+    reach: v.union(v.number(), v.null()),
+    likes: v.union(v.number(), v.null()),
+    comments: v.union(v.number(), v.null()),
+    shares: v.union(v.number(), v.null()),
+    saves: v.union(v.number(), v.null()),
+    watchTimeSeconds: v.union(v.number(), v.null()),
+    availabilityJson: v.string(),
+    refreshRunId: v.string(),
+    createdAt: v.string(),
+  })
+    .index("by_owner_captured", ["ownerId", "capturedAt"])
+    .index("by_owner_product_captured", ["ownerId", "productId", "capturedAt"])
+    .index("by_publication_captured", ["publicationId", "capturedAt"])
+    .index("by_refresh_run", ["refreshRunId"]),
+  socialAnalyticsRefreshRuns: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    productId: v.optional(v.string()),
+    socialAccountId: v.optional(v.string()),
+    rangeStart: v.optional(v.string()),
+    rangeEnd: v.optional(v.string()),
+    includeTikTokSaves: v.boolean(),
+    status: socialAnalyticsRefreshRunStatusValidator,
+    source: v.string(),
+    publicationIdsJson: v.string(),
+    requestedPublicationCount: v.number(),
+    completedPublicationCount: v.number(),
+    failedPublicationCount: v.number(),
+    progress: v.number(),
+    providerJobId: v.optional(v.string()),
+    apifyMaximumTotalChargeUsd: v.optional(v.number()),
+    apifyRunCount: v.optional(v.number()),
+    rateLimitDiagnosticsJson: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    completedAt: v.optional(v.string()),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_status", ["ownerId", "status"]),
+  socialOAuthStates: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    platform: socialPlatformValidator,
+    stateHash: v.string(),
+    codeVerifierCiphertext: v.optional(v.string()),
+    redirectUri: v.string(),
+    returnPath: v.string(),
+    status: socialOAuthStateStatusValidator,
+    expiresAt: v.string(),
+    consumedAt: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_state_hash", ["stateHash"])
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_status_expires", ["status", "expiresAt"]),
+  socialWebhookEvents: defineTable({
+    platform: socialPlatformValidator,
+    id: v.string(),
+    externalEventId: v.string(),
+    eventType: v.string(),
+    externalAccountId: v.optional(v.string()),
+    signatureTimestamp: v.optional(v.string()),
+    payloadHash: v.string(),
+    disposition: socialWebhookDispositionValidator,
+    errorMessage: v.optional(v.string()),
+    receivedAt: v.string(),
+    processedAt: v.optional(v.string()),
+  })
+    .index("by_platform_external_event", ["platform", "externalEventId"])
+    .index("by_platform_payload_hash", ["platform", "payloadHash"])
+    .index("by_event_id", ["id"])
+    .index("by_disposition_received", ["disposition", "receivedAt"]),
+  socialMediaAccessGrants: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    targetId: v.string(),
+    objectKey: v.string(),
+    tokenHash: v.string(),
+    expiresAt: v.string(),
+    revokedAt: v.optional(v.string()),
+    createdAt: v.string(),
+  })
+    .index("by_token_hash", ["tokenHash"])
+    .index("by_owner_target", ["ownerId", "targetId"])
+    .index("by_expires", ["expiresAt"]),
+  socialDataDeletionRequests: defineTable({
+    ownerId: v.optional(v.string()),
+    platform: socialPlatformValidator,
+    id: v.string(),
+    externalAccountId: v.optional(v.string()),
+    confirmationCode: v.string(),
+    status: socialDataDeletionStatusValidator,
+    requestedAt: v.string(),
+    updatedAt: v.string(),
+    completedAt: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
+  })
+    .index("by_confirmation_code", ["confirmationCode"])
+    .index("by_status_requested", ["status", "requestedAt"]),
   productPreferences: defineTable({
     ownerId: v.string(),
     defaultProductId: v.optional(v.string()),

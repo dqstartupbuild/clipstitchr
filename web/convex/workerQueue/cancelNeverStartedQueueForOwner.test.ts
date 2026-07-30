@@ -2,11 +2,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { cancelNeverStartedQueueForOwner } from "./cancelNeverStartedQueueForOwner";
 
 const mocks = vi.hoisted(() => ({
+  holdNeverStartedSocialTargetsForOwner: vi.fn(),
   patchCanceledWorkerQueueSource: vi.fn(),
   releaseGenerationSlot: vi.fn(),
   releaseUsageReservationForOwner: vi.fn(),
 }));
 
+vi.mock("../socialPublishing/holdNeverStartedSocialTargetsForOwner", () => ({
+  holdNeverStartedSocialTargetsForOwner:
+    mocks.holdNeverStartedSocialTargetsForOwner,
+}));
 vi.mock("./patchCanceledWorkerQueueSource", () => ({
   patchCanceledWorkerQueueSource: mocks.patchCanceledWorkerQueueSource,
 }));
@@ -70,6 +75,13 @@ describe("cancelNeverStartedQueueForOwner", () => {
       "queue_1",
       expect.objectContaining({ status: "canceled" }),
     );
+    expect(mocks.holdNeverStartedSocialTargetsForOwner).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({
+        ownerId: "owner_1",
+        reason: expect.stringContaining("scheduled posts held"),
+      }),
+    );
   });
 
   it("preserves a queued media continuation with an inherited slot", async () => {
@@ -93,5 +105,9 @@ describe("cancelNeverStartedQueueForOwner", () => {
 
     expect(mocks.releaseUsageReservationForOwner).not.toHaveBeenCalled();
     expect(ctx.db.patch).not.toHaveBeenCalled();
+    expect(mocks.holdNeverStartedSocialTargetsForOwner).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({ ownerId: "owner_1" }),
+    );
   });
 });

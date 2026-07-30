@@ -1,67 +1,49 @@
 # Schedule Page
 
-ClipStitchr has a Schedule page at `/dashboard/schedule` for reviewing Post
-Bridge posting activity.
+`/dashboard/schedule` shows the selected product's in-house social queue when
+`SOCIAL_PUBLISHING_PROVIDER=in_house`.
 
-## How It Works
+The workspace starts with the product's next open slot and a readable list of
+logical posts. Opening a post reveals its independent TikTok and Instagram
+deliveries, provider status, and account-specific problem. A successful target
+is never reset when another target fails.
 
-The page loads the active product's locally mapped Post Bridge posts through
-`GET /api/post-bridge/posts?productId=...`. It also tries to load supported
-TikTok, Instagram, and YouTube accounts through `GET /api/post-bridge/accounts`
-so scheduled rows can show account names when possible. Queue-scheduled rows
-display Post Bridge's returned `scheduled_at`, while immediate post-now rows
-fall back to Post Bridge's `created_at` time instead of showing an empty
-schedule time.
+Available actions stay beside the affected post:
 
-The user-supplied Post Bridge API key and product account links live in Settings.
-The Schedule page focuses on posting activity only.
+- edit title, caption, or a future exact time before work starts;
+- refresh TikTok posting choices when a saved capability is stale;
+- review and resume held work;
+- move a missed queue post to its next open product slot;
+- choose a new time for a missed exact-time post;
+- reconcile `outcome_unknown` without repeating the final provider call; and
+- cancel remaining not-started deliveries.
 
-## Fetching And Pagination
+`Waiting for you in TikTok` means TikTok accepted an inbox upload but the user
+must open TikTok and finish. It is not counted as published.
 
-`listPostBridgePosts` follows Post Bridge's documented `offset`, `limit`, and
-`meta.total` pagination until every post has been loaded. There is no fixed page
-or post cap. The shared paginator dedupes rows by ID and stops if a provider
-page repeats without making progress.
+Queue configuration belongs in Product settings. Exact-time posts never move
+when the queue changes. Future, not-started queue posts move only after the
+user explicitly confirms reflow.
 
-The panel sorts the full list by scheduled (or created) time and renders 10
-posts per page (`postBridgeListPageSize`) through the shared `usePagination`
-hook and `PaginationControls`. `ScheduledPostsSummary` still receives the full
-list, so status counts stay global across pages.
+## Legacy history
 
-Post Bridge's
-[API reference](https://api.post-bridge.com/reference#tag/Posts/GET/v1/posts)
-is the source of truth for the posts pagination contract.
+With the in-house provider active, `/dashboard/schedule?legacy=1` opens the old
+Post Bridge view in read-only mode. It can refresh visible provider history but
+cannot create or edit Post Bridge posts. The Post Bridge key must remain
+available until its retained history is no longer needed.
 
-## Use Cases
-
-- Check whether a post is scheduled, processing, posted, or failed.
-- See which connected accounts a queued post is using.
-- Refresh Post Bridge status without going to Analytics.
-
-When Post Bridge accepts a post-now or scheduled submission, ClipStitchr marks
-the source Stitch or Swipe as posted automatically and stores a local
-Post-Bridge-post-to-product mapping. The Schedule page uses that mapping to keep
-each product's posting activity separate.
-
-## Source Files
+## Source files
 
 - `web/app/dashboard/schedule/page.tsx`
-- `web/app/dashboard/schedule/SchedulePageClient.tsx`
-- `web/app/_components/schedule/ScheduledPostsPanel.tsx`
-- `web/app/_components/schedule/ScheduledPostsSummary.tsx`
-- `web/app/_components/schedule/ScheduledPostCard.tsx`
-- `web/app/_components/schedule/ScheduledPostAccountList.tsx`
-- `web/app/_components/schedule/ScheduledPostStatusBadge.tsx`
-- `web/convex/postBridgePostProductMappings.ts`
-- `web/lib/clipstitchr/constants/postBridgeListPageSize.ts`
-- `web/lib/clipstitchr/server/postBridge/filterPostBridgePostsByMappedPostIds.ts`
-- `web/lib/clipstitchr/server/postBridge/listAllPostBridgePages.ts`
-- `web/lib/clipstitchr/server/postBridge/listPostBridgePosts.ts`
-- `web/lib/clipstitchr/utils/getPostBridgePostTimeLabel.ts`
+- `web/app/dashboard/schedule/SocialSchedulePageClient.tsx`
+- `web/app/_components/social/SocialScheduledPostCard.tsx`
+- `web/app/_components/social/SocialPostActions.tsx`
+- `web/app/_components/social/SocialPostTargetControlsEditor.tsx`
+- `web/convex/socialPosts/listSocialPostsForProduct.ts`
+- `web/convex/socialPosts/reviewAndResumeSocialPost.ts`
+- `web/convex/productSocialQueues/reflowFutureProductQueuePosts.ts`
 
-## Rate Limits
-
-The page uses existing Post Bridge read routes. Both account and post reads are
-authenticated, resolve the user's encrypted Post Bridge key server-side, read
-the local product mapping, and consume the Post Bridge read rate limit before
-calling Post Bridge.
+Related behavior is documented in
+`docs/features/social-publishing/product-social-queues.md`,
+`docs/features/social-publishing/subscription-holds-and-resume.md`, and
+`docs/features/social-publishing/post-bridge-migration.md`.

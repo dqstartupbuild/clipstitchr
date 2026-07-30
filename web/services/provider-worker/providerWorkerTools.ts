@@ -4,6 +4,7 @@ export const PROVIDER_TOOLS = [
   "clipr",
   "avatar-photo",
   "swipr",
+  "social",
 ] as const;
 
 export type ProviderTool = (typeof PROVIDER_TOOLS)[number];
