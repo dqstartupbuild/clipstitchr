@@ -8,6 +8,11 @@ snapshot while it runs, and shows the returned nickname and privacy options.
 Privacy starts blank. Comments, Duet, and Stitch start off, and unavailable
 interactions are disabled. The user can edit title, caption, hashtags,
 disclosure choices, and visibility before approving.
+For direct videos, the review also asks whether the video was generated or
+significantly edited with AI. When selected, ClipStitchr sends TikTok's
+`is_aigc` flag so TikTok can apply its AI-generated content label. Photo posts
+and inbox delivery omit that field because their current provider contracts do
+not accept it.
 Paid branded content cannot use TikTok's `SELF_ONLY` visibility. The compose
 controls remove that choice while the disclosure is selected, the save
 mutation rejects an invalid combination, and the worker checks it again before

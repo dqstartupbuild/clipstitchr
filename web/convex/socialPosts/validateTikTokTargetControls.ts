@@ -24,6 +24,10 @@ export function validateTikTokTargetControls(
     }
   }
 
+  if (controls.isAigc !== undefined && typeof controls.isAigc !== "boolean") {
+    throw new Error("TikTok AI content disclosure is invalid.");
+  }
+
   if (
     !getTikTokBrandedContentPrivacyIsCompatible(
       controls.brandContentToggle === true,

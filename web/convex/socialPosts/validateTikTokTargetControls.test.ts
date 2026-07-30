@@ -50,4 +50,28 @@ describe("validateTikTokTargetControls", () => {
       ),
     ).toThrow("cannot use Only you visibility");
   });
+
+  it("accepts a manual AI disclosure and rejects malformed values", () => {
+    expect(
+      validateTikTokTargetControls(
+        JSON.stringify({
+          consentAcknowledged: true,
+          isAigc: true,
+          privacyLevel: "PUBLIC_TO_EVERYONE",
+        }),
+        "direct",
+      ),
+    ).toMatchObject({ isAigc: true });
+
+    expect(() =>
+      validateTikTokTargetControls(
+        JSON.stringify({
+          consentAcknowledged: true,
+          isAigc: "yes",
+          privacyLevel: "PUBLIC_TO_EVERYONE",
+        }),
+        "direct",
+      ),
+    ).toThrow("AI content disclosure is invalid");
+  });
 });

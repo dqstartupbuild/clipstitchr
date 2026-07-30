@@ -6,5 +6,6 @@ export type TikTokTargetControls = {
   brandContentToggle: boolean;
   brandOrganicToggle: boolean;
   consentAcknowledged: boolean;
+  isAigc: boolean;
   privacyLevel?: string;
 };

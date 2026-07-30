@@ -35,6 +35,11 @@ test("completes the platform-aware compose workflow without clipping", async ({
   await page
     .getByRole("combobox", { name: "Who can watch" })
     .selectOption("PUBLIC_TO_EVERYONE");
+  const aiDisclosure = page.getByRole("checkbox", {
+    name: /generated or significantly edited with AI/,
+  });
+  await aiDisclosure.check();
+  await expect(aiDisclosure).toBeChecked();
 
   const scrollMetrics = await dialog.evaluate((element) => ({
     clientHeight: element.clientHeight,
@@ -51,6 +56,7 @@ test("completes the platform-aware compose workflow without clipping", async ({
     .toBeGreaterThan(scrollMetrics.scrollTop);
 
   await page.getByRole("radio", { name: "Photo slideshow" }).check();
+  await expect(aiDisclosure).toBeHidden();
   const soundCheckbox = page.getByRole("checkbox", {
     name: "Let TikTok pick a sound",
   });
@@ -59,15 +65,18 @@ test("completes the platform-aware compose workflow without clipping", async ({
 
   await page.getByRole("radio", { name: "Video" }).check();
   await expect(soundCheckbox).toBeHidden();
+  await expect(aiDisclosure).toBeChecked();
   await page
     .getByRole("combobox", { name: "Delivery" })
     .selectOption("draft");
+  await expect(aiDisclosure).toBeHidden();
   await expect(
     page.getByRole("combobox", { name: "Who can watch" }),
   ).toBeHidden();
   await page
     .getByRole("combobox", { name: "Delivery" })
     .selectOption("direct");
+  await expect(aiDisclosure).not.toBeChecked();
   await page
     .getByRole("combobox", { name: "Who can watch" })
     .selectOption("PUBLIC_TO_EVERYONE");

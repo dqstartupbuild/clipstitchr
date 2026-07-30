@@ -7,9 +7,10 @@ Convex, R2, or a paid provider.
 ## What it covers
 
 - pointer operation for account selection, TikTok direct and inbox modes,
-  slideshow sound, privacy, exact-time scheduling, consent, and submission
+  slideshow sound, privacy, direct-video AI disclosure, exact-time scheduling,
+  consent, and submission
 - keyboard opening, form operation, Escape handling, focus trapping, and focus
-  restoration
+  restoration, including toggling the direct-video AI disclosure
 - responsive compose-dialog width and full-page horizontal-overflow checks
 - modal centering and real wheel scrolling through long content
 - product queue add and remove controls

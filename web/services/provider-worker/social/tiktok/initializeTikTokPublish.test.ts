@@ -10,6 +10,7 @@ const controls = {
   brandContentToggle: false,
   brandOrganicToggle: true,
   consentAcknowledged: true,
+  isAigc: true,
   privacyLevel: "SELF_ONLY",
 };
 
@@ -55,6 +56,7 @@ describe("initializeTikTokPublish", () => {
       expect(body.post_info).toBeUndefined();
     } else {
       expect(body.post_info.privacy_level).toBe("SELF_ONLY");
+      expect(body.post_info.is_aigc).toBe(true);
     }
   });
 
@@ -83,6 +85,7 @@ describe("initializeTikTokPublish", () => {
       expect(body.post_info.auto_add_music).toBe(autoAddMusic);
       expect(body.post_info.disable_duet).toBeUndefined();
       expect(body.post_info.disable_stitch).toBeUndefined();
+      expect(body.post_info.is_aigc).toBeUndefined();
     },
   );
 

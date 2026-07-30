@@ -76,6 +76,7 @@ export function SocialTikTokTargetControls({
                     publishMode === "draft"
                       ? false
                       : target.commercialContentEnabled,
+                  isAigc: publishMode === "draft" ? false : target.isAigc,
                 });
               }}
             >
@@ -167,6 +168,27 @@ export function SocialTikTokTargetControls({
                 </label>
               ))}
             </div>
+            {!isPhotoPost ? (
+              <label className="flex items-start gap-2 text-sm text-text-primary">
+                <input
+                  className="mt-1"
+                  type="checkbox"
+                  checked={target.isAigc}
+                  onChange={(event) =>
+                    onChange({
+                      ...target,
+                      isAigc: event.currentTarget.checked,
+                    })
+                  }
+                />
+                <span>
+                  This video was generated or significantly edited with AI
+                  <span className="mt-1 block text-xs leading-5 text-text-secondary">
+                    TikTok will add its AI-generated content label.
+                  </span>
+                </span>
+              </label>
+            ) : null}
             {isPhotoPost ? (
               <label className="flex items-start gap-2 text-sm text-text-primary">
                 <input
