@@ -3,8 +3,8 @@
 import { Check, ChevronDown, Lock, Package, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ProductCreateDialog } from "@/app/_components/products/ProductCreateDialog";
+import { ProductLogo } from "@/app/_components/products/ProductLogo";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
-import { getProductInitials } from "@/lib/clipstitchr/utils/getProductInitials";
 
 export function DashboardProductSwitcher() {
   const {
@@ -43,13 +43,18 @@ export function DashboardProductSwitcher() {
     <div ref={containerRef} className="dashboard-product-switcher relative min-w-0">
       <button
         type="button"
+        aria-controls="dashboard-product-switcher-options"
+        aria-expanded={isOpen}
         className="dashboard-product-switcher-trigger flex w-full min-w-0 items-center gap-3 rounded-lg border border-border bg-surface-muted px-3 py-2 text-left transition-colors hover:border-border-hover"
         disabled={isLoading}
         onClick={() => setIsOpen((current) => !current)}
       >
-        <span className="dashboard-product-switcher-mark flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-sm font-bold text-accent-dark">
+        <span className="dashboard-product-switcher-mark flex size-9 shrink-0 items-center justify-center">
           {activeProduct ? (
-            getProductInitials(activeProduct.name)
+            <ProductLogo
+              name={activeProduct.name}
+              websiteUrl={activeProduct.websiteUrl}
+            />
           ) : (
             <Package aria-hidden className="h-4 w-4" />
           )}
@@ -65,7 +70,12 @@ export function DashboardProductSwitcher() {
         <ChevronDown aria-hidden className="h-4 w-4 shrink-0 text-text-tertiary" />
       </button>
       {isOpen ? (
-        <div className="dashboard-product-switcher-menu absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-border bg-surface shadow-2xl shadow-black/30">
+        <div
+          aria-label="Choose a product"
+          className="dashboard-product-switcher-menu absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-border bg-surface shadow-lg shadow-black/20"
+          id="dashboard-product-switcher-options"
+          role="group"
+        >
           <div className="max-h-72 overflow-y-auto py-1">
             {products.map((product) => {
               const isActive = activeProduct?.id === product.id;
@@ -90,8 +100,11 @@ export function DashboardProductSwitcher() {
                     }
                   }}
                 >
-                  <span className="dashboard-product-switcher-option-mark flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-surface-muted text-xs font-bold text-accent-dark">
-                    {getProductInitials(product.name)}
+                  <span className="dashboard-product-switcher-option-mark block size-8 shrink-0">
+                    <ProductLogo
+                      name={product.name}
+                      websiteUrl={product.websiteUrl}
+                    />
                   </span>
                   <span className="min-w-0 flex-1 truncate">{product.name}</span>
                   {isLocked ? (

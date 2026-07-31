@@ -8,6 +8,9 @@ Stitchr, Clipr, Swipr, and Swapr.
 
 - The sidebar product switcher shows the active product and lets the user switch
   products globally.
+- Products with a saved website show that website's icon in the active-product
+  trigger and product menu. Products without a usable website icon keep the
+  initials fallback, so every product remains easy to identify.
 - The same switcher can create a new product. New products become active right
   away.
 - Settings has a Product settings section for editing saved products,
@@ -37,6 +40,13 @@ Stitchr, Clipr, Swipr, and Swapr.
   backfill when needed.
 - `web/app/_components/dashboard/DashboardProductSwitcher.tsx` renders the
   sidebar switcher and product creation entry point.
+- `web/app/_components/products/ProductLogo.tsx` renders each website icon over
+  an initials fallback. It reads the icon directly from the saved website
+  origin, sends no referrer, and hides an image that fails to load. HTTP-only
+  websites keep the initials fallback because browsers block their images on
+  the HTTPS dashboard.
+- `web/lib/clipstitchr/utils/getProductLogoUrl.ts` resolves a saved product
+  website to its conventional `/favicon.ico` URL.
 - `web/app/_components/products/ProductCreateDialog.tsx` is the shared product
   creation dialog.
 - `web/app/dashboard/settings/SettingsPageClient.tsx` renders product settings
@@ -66,6 +76,7 @@ Stitchr, Clipr, Swipr, and Swapr.
 ## File Tree
 
 - `web/app/_components/dashboard/DashboardProductSwitcher.tsx`
+- `web/app/_components/products/ProductLogo.tsx`
 - `web/app/_components/products/ProductCreateDialog.tsx`
 - `web/app/_components/settings/SettingsProductSection.tsx`
 - `web/app/_components/settings/SettingsAccountSection.tsx`
@@ -75,6 +86,7 @@ Stitchr, Clipr, Swipr, and Swapr.
 - `web/app/dashboard/settings/SettingsPageClient.tsx`
 - `web/lib/clipstitchr/context/DashboardProductContext.ts`
 - `web/lib/clipstitchr/hooks/useDashboardProduct.ts`
+- `web/lib/clipstitchr/utils/getProductLogoUrl.ts`
 - `web/lib/clipstitchr/types/DashboardProductContextValue.ts`
 - `web/convex/assignLegacyRecordsToProduct.ts`
 - `web/convex/getRequiredVideoClipProductId.ts`
