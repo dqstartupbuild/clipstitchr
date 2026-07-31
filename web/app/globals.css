@@ -4096,8 +4096,6 @@
   background: var(--surface-elevated);
 }
 
-.dashboard-product-switcher-mark,
-.dashboard-product-switcher-option-mark,
 .dashboard-upload-option-icon,
 .dashboard-stat-icon {
   width: auto;
@@ -4108,12 +4106,28 @@
   color: var(--accent-dark);
 }
 
+.dashboard-product-switcher-mark,
+.dashboard-product-switcher-option-mark {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--accent-dark);
+}
+
 .dashboard-product-switcher-mark {
-  min-width: 1.6rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  flex: 0 0 2.25rem;
 }
 
 .dashboard-product-switcher-option-mark {
-  min-width: 1.4rem;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
+  flex: 0 0 2rem;
 }
 
 .dashboard-product-switcher-menu,

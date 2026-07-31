@@ -11,6 +11,9 @@ Stitchr, Clipr, Swipr, and Swapr.
 - Products with a saved website show that website's icon in the active-product
   trigger and product menu. Products without a usable website icon keep the
   initials fallback, so every product remains easy to identify.
+- The active product icon stays inside a fixed 36px slot, while product menu
+  icons use fixed 32px slots. The slots keep their dimensions in flexible
+  sidebar layouts, including Safari.
 - The same switcher can create a new product. New products become active right
   away.
 - Settings has a Product settings section for editing saved products,
@@ -41,10 +44,10 @@ Stitchr, Clipr, Swipr, and Swapr.
 - `web/app/_components/dashboard/DashboardProductSwitcher.tsx` renders the
   sidebar switcher and product creation entry point.
 - `web/app/_components/products/ProductLogo.tsx` renders each website icon over
-  an initials fallback. It reads the icon directly from the saved website
-  origin, sends no referrer, and hides an image that fails to load. HTTP-only
-  websites keep the initials fallback because browsers block their images on
-  the HTTPS dashboard.
+  an initials fallback. The initials remain visible until the icon finishes
+  loading. It reads the icon directly from the saved website origin, sends no
+  referrer, and hides an image that fails to load. HTTP-only websites keep the
+  initials fallback because browsers block their images on the HTTPS dashboard.
 - `web/lib/clipstitchr/utils/getProductLogoUrl.ts` resolves a saved product
   website to its conventional `/favicon.ico` URL.
 - `web/app/_components/products/ProductCreateDialog.tsx` is the shared product

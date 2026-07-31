@@ -47,6 +47,9 @@ describe("ProductLogo", () => {
 
     const image = container.querySelector("img") as HTMLImageElement;
 
+    await act(async () => image.dispatchEvent(new Event("load")));
+    expect(image.hidden).toBe(false);
+
     await act(async () => image.dispatchEvent(new Event("error")));
 
     expect(image.hidden).toBe(true);
