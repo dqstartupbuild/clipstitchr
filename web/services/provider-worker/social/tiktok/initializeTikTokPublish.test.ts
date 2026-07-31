@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { SocialApiError } from "../SocialApiError";
 import { SocialOutcomeUnknownError } from "../SocialOutcomeUnknownError";
 import { initializeTikTokPublish } from "./initializeTikTokPublish";
 
@@ -90,7 +91,10 @@ describe("initializeTikTokPublish", () => {
   );
 
   it("marks an interrupted final request as outcome unknown", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new Error("lost"))));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Promise.reject(new Error("lost"))),
+    );
 
     await expect(
       initializeTikTokPublish({
@@ -103,5 +107,42 @@ describe("initializeTikTokPublish", () => {
         isPhotoPost: false,
       }),
     ).rejects.toBeInstanceOf(SocialOutcomeUnknownError);
+  });
+
+  it("explains the unaudited-client restriction without blaming the connection", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json(
+          {
+            error: {
+              code: "unaudited_client_can_only_post_to_private_accounts",
+              message:
+                "Please review our integration guidelines at https://developers.tiktok.com/doc/content-sharing-guidelines/",
+            },
+          },
+          { status: 403 },
+        ),
+      ),
+    );
+
+    const error = await initializeTikTokPublish({
+      accessToken: "token",
+      caption: "Caption",
+      controls,
+      mediaUrls: ["https://media.example.com/video"],
+      publishMode: "direct",
+      title: "Title",
+      isPhotoPost: false,
+    }).catch((nextError: unknown) => nextError);
+
+    expect(error).toBeInstanceOf(SocialApiError);
+    expect(error).toMatchObject({
+      providerCode: "unaudited_client_can_only_post_to_private_accounts",
+      responseStatus: 403,
+    });
+    expect((error as Error).message).toContain(
+      "choose Send to TikTok for finishing",
+    );
   });
 });

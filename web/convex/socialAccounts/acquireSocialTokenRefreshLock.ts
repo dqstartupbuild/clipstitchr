@@ -21,7 +21,10 @@ export const acquireSocialTokenRefreshLock = mutation({
       )
       .unique();
 
-    if (!account || account.status !== "connected") {
+    if (
+      !account ||
+      !["connected", "needs_attention"].includes(account.status)
+    ) {
       return false;
     }
 

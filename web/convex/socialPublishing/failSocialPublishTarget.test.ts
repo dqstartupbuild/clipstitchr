@@ -86,7 +86,9 @@ describe("failSocialPublishTarget", () => {
       postId: "post_1",
       targetId: "target_1",
       attemptId: "attempt_1",
+      errorCode: "provider_policy_error",
       errorMessage: "Provider rejected this post.",
+      providerResponseJson: '{"error":{"code":"provider_policy_error"}}',
       now: "2026-08-01T00:00:00.000Z",
     });
 
@@ -99,6 +101,12 @@ describe("failSocialPublishTarget", () => {
     expect(ctx.db.patch).toHaveBeenCalledWith(
       "target_doc",
       expect.objectContaining({ status: "failed" }),
+    );
+    expect(ctx.db.patch).toHaveBeenCalledWith(
+      "attempt_doc",
+      expect.objectContaining({
+        providerResponseJson: '{"error":{"code":"provider_policy_error"}}',
+      }),
     );
   });
 

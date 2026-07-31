@@ -23,7 +23,7 @@ export const requestTikTokCreatorInfoRefresh = mutation({
     if (
       !account ||
       account.platform !== "tiktok" ||
-      account.status !== "connected"
+      !["connected", "needs_attention"].includes(account.status)
     ) {
       throw new Error("Reconnect TikTok before loading posting choices.");
     }

@@ -53,6 +53,21 @@ The worker records `publish_id` before polling. Network loss or a server error
 around an initialization that may have succeeded becomes `outcome_unknown`.
 Only status reconciliation is permitted from that point.
 
+TikTok provider errors keep their structured `error.code` in redacted,
+server-only attempt diagnostics. Authentication codes such as
+`access_token_invalid` and `scope_not_authorized` place the account and its
+future deliveries on hold. A Direct Post policy rejection applies only to that
+delivery and does not disconnect an otherwise valid TikTok account.
+
+In particular,
+`unaudited_client_can_only_post_to_private_accounts` means the TikTok account
+itself must be private while the API client is unaudited. Selecting `SELF_ONLY`
+for a post from a public account does not satisfy that restriction. ClipStitchr
+explains that the creator can make the TikTok account private or, for a video,
+change Delivery to **Send to TikTok for finishing**. A successful creator-info
+query or token refresh restores an account that an older worker incorrectly
+marked as needing attention after this policy response.
+
 Implementation:
 
 ```text
@@ -65,4 +80,5 @@ Official references:
 [direct post](https://developers.tiktok.com/doc/content-posting-api-reference-direct-post),
 [upload video](https://developers.tiktok.com/doc/content-posting-api-reference-upload-video),
 [creator info](https://developers.tiktok.com/doc/content-posting-api-reference-query-creator-info),
-and [status](https://developers.tiktok.com/doc/content-posting-api-reference-get-video-status).
+[status](https://developers.tiktok.com/doc/content-posting-api-reference-get-video-status),
+and [content-sharing guidelines](https://developers.tiktok.com/doc/content-sharing-guidelines/).

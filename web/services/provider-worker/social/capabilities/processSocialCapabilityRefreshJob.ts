@@ -30,7 +30,7 @@ export async function processSocialCapabilityRefreshJob({
   if (
     !account ||
     account.platform !== "tiktok" ||
-    account.status !== "connected"
+    !["connected", "needs_attention"].includes(account.status)
   ) {
     throw new Error(
       "TikTok must be reconnected before loading posting choices.",

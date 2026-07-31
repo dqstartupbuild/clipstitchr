@@ -40,6 +40,8 @@ export const saveRefreshedSocialTokens = mutation({
       tokenRefreshLockId: undefined,
       tokenRefreshLockedUntil: undefined,
       lastRefreshedAt: args.now,
+      status:
+        account.status === "needs_attention" ? "connected" : account.status,
       lastErrorCode: undefined,
       lastErrorMessage: undefined,
       updatedAt: args.now,

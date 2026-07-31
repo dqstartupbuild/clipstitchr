@@ -36,9 +36,21 @@ redacts token-, authorization-, cookie-, signature-, and secret-shaped fields,
 including those embedded in strings. Support should still treat all provider
 diagnostics as sensitive server-only data. Social provider-job failures use
 the same sanitizer before retry state, failure state, or worker logs receive
-the message. When worker retries are exhausted after an irreversible request or
-a saved provider publish reference, the target remains `outcome_unknown` and
+the message. Failed HTTP responses also preserve the provider's structured
+error code and redacted response body on the attempt. Authentication failures
+can hold the account; policy and content rejections fail only the affected
+target. A generic HTTP 403 is not enough to classify a connection as broken.
+When worker retries are exhausted after an irreversible request or a saved
+provider publish reference, the target remains `outcome_unknown` and
 reconciliation-only. It never becomes an ordinary resumable failure.
+
+For TikTok's
+`unaudited_client_can_only_post_to_private_accounts` response, keep the account
+connected. The creator can make the TikTok account private and retry a direct
+post, or change a video target to **Send to TikTok for finishing**. A
+creator-info refresh is allowed for an account already marked
+`needs_attention`; a successful creator-info query or token refresh clears the
+stale account error and restores `connected`.
 
 For an incident:
 

@@ -31,6 +31,16 @@ export const saveSocialCapabilitySnapshot = mutation({
       capabilityCheckedAt: args.now,
       displayName: args.displayName ?? account.displayName,
       avatarUrl: args.avatarUrl ?? account.avatarUrl,
+      status:
+        account.status === "needs_attention" ? "connected" : account.status,
+      lastErrorCode:
+        account.status === "needs_attention"
+          ? undefined
+          : account.lastErrorCode,
+      lastErrorMessage:
+        account.status === "needs_attention"
+          ? undefined
+          : account.lastErrorMessage,
       updatedAt: args.now,
     });
   },

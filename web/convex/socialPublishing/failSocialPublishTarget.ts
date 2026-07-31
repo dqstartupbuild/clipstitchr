@@ -16,6 +16,7 @@ export const failSocialPublishTarget = mutation({
     errorMessage: v.string(),
     needsAttention: v.optional(v.boolean()),
     outcomeUnknown: v.optional(v.boolean()),
+    providerResponseJson: v.optional(v.string()),
     now: v.string(),
   },
   handler: async (ctx, args) => {
@@ -70,6 +71,8 @@ export const failSocialPublishTarget = mutation({
         : "review_before_retry",
       errorCode: args.errorCode,
       errorMessage: args.errorMessage,
+      providerResponseJson:
+        args.providerResponseJson ?? attempt.providerResponseJson,
       updatedAt: args.now,
       completedAt: args.now,
     });
@@ -77,9 +80,7 @@ export const failSocialPublishTarget = mutation({
       status,
       nextAttemptAt: undefined,
       outcomeUnknownAt: args.outcomeUnknown ? args.now : undefined,
-      needsAttentionReason: args.needsAttention
-        ? args.errorMessage
-        : undefined,
+      needsAttentionReason: args.needsAttention ? args.errorMessage : undefined,
       lastErrorCode: args.errorCode,
       lastErrorMessage: args.errorMessage,
       updatedAt: args.now,
