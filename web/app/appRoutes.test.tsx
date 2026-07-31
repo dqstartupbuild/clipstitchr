@@ -123,7 +123,23 @@ vi.mock("@/app/_components/onboarding/OnboardingBillingGate", () => ({
 }));
 
 vi.mock("@/app/dashboard/settings/SettingsPageClient", () => ({
-  SettingsPageClient: () => <main>Settings client</main>,
+  SettingsPageClient: ({
+    socialConnectionPlatform,
+    socialConnectionReason,
+    socialConnectionStatus,
+  }: {
+    socialConnectionPlatform?: string;
+    socialConnectionReason?: string;
+    socialConnectionStatus?: string;
+  }) => (
+    <main
+      data-social-platform={socialConnectionPlatform}
+      data-social-reason={socialConnectionReason}
+      data-social-status={socialConnectionStatus}
+    >
+      Settings client
+    </main>
+  ),
 }));
 
 vi.mock("@/app/dashboard/stitchr/StitchrPageClient", () => ({
@@ -181,6 +197,7 @@ describe("app route wrappers", () => {
   it("renders dashboard page wrapper clients and provider layout", async () => {
     const libraryPage = await LibraryPage();
     const onboardingPage = await OnboardingPage();
+    const settingsPage = await SettingsPage({});
     const markup = renderToStaticMarkup(
       <DashboardLayout>
         <DashboardPage />
@@ -188,7 +205,7 @@ describe("app route wrappers", () => {
         <HookLabPage />
         {libraryPage}
         {onboardingPage}
-        <SettingsPage />
+        {settingsPage}
         <StitchrPage />
         <SwaprPage />
         <SwiprPage />
@@ -214,6 +231,21 @@ describe("app route wrappers", () => {
     expect(() => StitchesPage()).toThrow(
       "REDIRECT:/dashboard/library?tab=stitches",
     );
+  });
+
+  it("passes a social connection result to settings", async () => {
+    const settingsPage = await SettingsPage({
+      searchParams: Promise.resolve({
+        platform: "tiktok",
+        reason: "token_exchange",
+        social: "connection_failed",
+      }),
+    });
+    const markup = renderToStaticMarkup(settingsPage);
+
+    expect(markup).toContain('data-social-platform="tiktok"');
+    expect(markup).toContain('data-social-reason="token_exchange"');
+    expect(markup).toContain('data-social-status="connection_failed"');
   });
 
   it("returns robots metadata and renders shared button links", () => {

@@ -8,12 +8,18 @@ import { SettingsSocialAccountsPanel } from "@/app/_components/settings/Settings
 type SettingsAccountSectionProps = {
   isProductActionDisabled: boolean;
   products: ProductProfile[];
+  socialConnectionPlatform?: string;
+  socialConnectionReason?: string;
+  socialConnectionStatus?: string;
   socialPublishingProvider: SocialPublishingProvider;
 };
 
 export function SettingsAccountSection({
   isProductActionDisabled,
   products,
+  socialConnectionPlatform,
+  socialConnectionReason,
+  socialConnectionStatus,
   socialPublishingProvider,
 }: SettingsAccountSectionProps) {
   return (
@@ -30,7 +36,11 @@ export function SettingsAccountSection({
         </p>
       </div>
       {socialPublishingProvider === "in_house" ? (
-        <SettingsSocialAccountsPanel />
+        <SettingsSocialAccountsPanel
+          connectionPlatform={socialConnectionPlatform}
+          connectionReason={socialConnectionReason}
+          connectionStatus={socialConnectionStatus}
+        />
       ) : (
         <SettingsPostBridgePanel
           isProductActionDisabled={isProductActionDisabled}

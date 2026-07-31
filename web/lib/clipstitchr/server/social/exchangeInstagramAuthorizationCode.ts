@@ -28,17 +28,18 @@ export async function exchangeInstagramAuthorizationCode({
     throw new Error("Instagram connection is not configured.");
   }
 
+  const tokenRequest = new FormData();
+  tokenRequest.set("client_id", clientId);
+  tokenRequest.set("client_secret", clientSecret);
+  tokenRequest.set("code", code);
+  tokenRequest.set("grant_type", "authorization_code");
+  tokenRequest.set("redirect_uri", redirectUri);
+
   const shortResponse = await fetch(
     "https://api.instagram.com/oauth/access_token",
     {
       method: "POST",
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        code,
-        grant_type: "authorization_code",
-        redirect_uri: redirectUri,
-      }),
+      body: tokenRequest,
     },
   );
   const shortToken =

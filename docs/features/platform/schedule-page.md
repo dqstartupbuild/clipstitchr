@@ -3,10 +3,15 @@
 `/dashboard/schedule` shows the selected product's in-house social queue when
 `SOCIAL_PUBLISHING_PROVIDER=in_house`.
 
-The workspace starts with the product's next open slot and a readable list of
-logical posts. Opening a post reveals its independent TikTok and Instagram
-deliveries, provider status, and account-specific problem. A successful target
-is never reset when another target fails.
+The in-house provider keeps the established Post Bridge schedule presentation:
+four status totals followed by one `Scheduled content` results surface. The
+next open product time sits in that surface's header. Provider-specific detail
+does not create a second visual system.
+
+Each result row keeps the familiar status, title, caption, time, and account
+layout. Its independent TikTok and Instagram delivery states and recovery
+actions stay inside the same row. A successful target is never reset when
+another target fails.
 
 Available actions stay beside the affected post:
 
@@ -36,6 +41,7 @@ available until its retained history is no longer needed.
 
 - `web/app/dashboard/schedule/page.tsx`
 - `web/app/dashboard/schedule/SocialSchedulePageClient.tsx`
+- `web/app/_components/social/SocialScheduledPostsPanel.tsx`
 - `web/app/_components/social/SocialScheduledPostCard.tsx`
 - `web/app/_components/social/SocialPostActions.tsx`
 - `web/app/_components/social/SocialPostTargetControlsEditor.tsx`

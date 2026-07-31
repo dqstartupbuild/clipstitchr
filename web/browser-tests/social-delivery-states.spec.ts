@@ -32,5 +32,28 @@ test("shows loading and independent partial-failure results", async ({
       "Instagram needs you to reconnect before this post can continue.",
     ),
   ).toBeVisible();
+
+  const confirmationSection = page.getByRole("region", {
+    name: "Destructive action confirmation",
+  });
+  await confirmationSection
+    .getByRole("button", { name: "Review confirmation" })
+    .click();
+  const confirmationDialog = page.getByRole("alertdialog", {
+    name: "Continue with this action?",
+  });
+  await expect(confirmationDialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(confirmationDialog).toBeHidden();
+
+  await confirmationSection
+    .getByRole("button", { name: "Review confirmation" })
+    .click();
+  await confirmationDialog
+    .getByRole("button", { name: "Confirm action" })
+    .click();
+  await expect(confirmationSection.getByRole("status")).toHaveText(
+    "Action confirmed.",
+  );
   await expectNoHorizontalOverflow(page);
 });

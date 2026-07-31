@@ -57,7 +57,7 @@ export function SocialAnalyticsRefreshPanel({
 
   return (
     <section
-      className="rounded-lg bg-surface-elevated p-4"
+      className="rounded-lg border border-border bg-white p-4"
       aria-labelledby="manual-analytics-refresh"
     >
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
@@ -103,7 +103,7 @@ export function SocialAnalyticsRefreshPanel({
             <p className="font-semibold text-text-primary">
               {latestRun.status.replaceAll("_", " ")}
             </p>
-            <p className="text-text-secondary">
+            <p className="tabular-nums text-text-secondary">
               {latestRun.completedPublicationCount +
                 latestRun.failedPublicationCount}
               /{latestRun.requestedPublicationCount} posts
@@ -116,17 +116,17 @@ export function SocialAnalyticsRefreshPanel({
             />
           </div>
           {latestRun.errorMessage ? (
-            <p className="mt-2 text-sm text-amber-200">
+            <p className="mt-2 text-sm text-amber-800">
               {latestRun.errorMessage}
             </p>
           ) : null}
         </div>
       ) : null}
       {message ? (
-        <p className="mt-3 text-sm font-semibold text-emerald-300">{message}</p>
+        <p className="mt-3 text-sm font-semibold text-emerald-700">{message}</p>
       ) : null}
       {error ? (
-        <p className="mt-3 text-sm font-semibold text-red-300" role="alert">
+        <p className="mt-3 text-sm font-semibold text-red-700" role="alert">
           {error}
         </p>
       ) : null}

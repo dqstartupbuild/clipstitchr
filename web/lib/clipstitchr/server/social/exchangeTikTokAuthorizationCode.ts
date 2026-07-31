@@ -55,7 +55,7 @@ export async function exchangeTikTokAuthorizationCode({
   const profileUrl = new URL("https://open.tiktokapis.com/v2/user/info/");
   profileUrl.searchParams.set(
     "fields",
-    "open_id,avatar_url,display_name,username",
+    "open_id,avatar_url,display_name",
   );
   const profileResponse = await fetch(profileUrl, {
     headers: {
@@ -68,7 +68,6 @@ export async function exchangeTikTokAuthorizationCode({
         avatar_url?: string;
         display_name?: string;
         open_id?: string;
-        username?: string;
       };
     };
   };
@@ -98,7 +97,6 @@ export async function exchangeTikTokAuthorizationCode({
       .map((scope) => scope.trim())
       .filter(Boolean),
     username:
-      user.username?.trim() ||
       user.display_name?.trim() ||
       `TikTok ${token.open_id.slice(-6)}`,
   };
