@@ -1,7 +1,10 @@
 node_modules
 .next
+.next-browser-tests
+.next-validation
 coverage
 coverage-json
+test-results
 .env*
 !.env.worker.example
 *.log

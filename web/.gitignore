@@ -12,9 +12,12 @@
 
 # testing
 /coverage
+/test-results/
 
 # next.js
 /.next/
+/.next-browser-tests/
+/.next-validation/
 /out/
 /.content-collections/
 
