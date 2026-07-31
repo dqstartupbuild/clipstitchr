@@ -1,11 +1,12 @@
 import type { SocialOAuthAccountProfile } from "./SocialOAuthAccountProfile";
 import { getInstagramGraphApiVersion } from "../../social/getInstagramGraphApiVersion";
+import { normalizeInstagramPermissions } from "./normalizeInstagramPermissions";
 
 type InstagramShortTokenResponse = {
   access_token?: string;
   data_access_expiration_time?: number;
-  permissions?: string;
-  user_id?: number;
+  permissions?: string | string[];
+  user_id?: number | string;
 };
 
 type InstagramLongTokenResponse = {
@@ -104,10 +105,7 @@ export async function exchangeInstagramAuthorizationCode({
     displayName: profile.name,
     externalAccountId: profile.id,
     platform: "instagram",
-    scopes: (shortToken.permissions || "")
-      .split(",")
-      .map((scope) => scope.trim())
-      .filter(Boolean),
+    scopes: normalizeInstagramPermissions(shortToken.permissions),
     username: profile.username,
   };
 }

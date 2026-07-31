@@ -15,10 +15,11 @@ Connected rows expose only account identity, status, scopes, and posting
 capabilities.
 
 Instagram's authorization-code exchange is sent as multipart form data, as
-required by its token endpoint. TikTok's initial profile lookup requests only
-`open_id`, avatar, and display name because those fields are covered by
-`user.info.basic`; it does not request the separately protected `username`
-field.
+required by its token endpoint. Instagram may return granted permissions as an
+array or a comma-separated string; both forms are normalized before the account
+is saved. TikTok's initial profile lookup requests only `open_id`, avatar, and
+display name because those fields are covered by `user.info.basic`; it does not
+request the separately protected `username` field.
 
 The callback records a `social_oauth_callback_failed` server log with the
 platform, failed stage, and error type only. It never records the authorization
