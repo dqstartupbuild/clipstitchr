@@ -14,6 +14,11 @@ import { getSwiprSlideFileName } from "@/lib/clipstitchr/utils/getSwiprSlideFile
 type CreateSwiprPostBridgeScheduleMediaOptions =
   PostBridgeScheduleRenderOptions & {
     backgroundsById: Map<string, SwiprBackgroundAsset>;
+    imageProfile?: {
+      height: number;
+      mimeType: "image/jpeg" | "image/png";
+      width: number;
+    };
     loadBackgroundBlob: (id: string) => Promise<Blob>;
     onPrimaryBackgroundLoaded?: (id: string, blob: Blob) => void;
     swipe: SwiprSwipe;
@@ -21,6 +26,7 @@ type CreateSwiprPostBridgeScheduleMediaOptions =
 
 export async function createSwiprPostBridgeScheduleMedia({
   backgroundsById,
+  imageProfile,
   loadBackgroundBlob,
   musicTrack,
   onPrimaryBackgroundLoaded,
@@ -51,8 +57,8 @@ export async function createSwiprPostBridgeScheduleMedia({
     slideBackgroundBlobs[slide.id] =
       backgroundId === primaryBackground.id
         ? primaryBlob
-        : slideBackgroundAsset.blob ??
-          (await loadBackgroundBlob(slideBackgroundAsset.id));
+        : (slideBackgroundAsset.blob ??
+          (await loadBackgroundBlob(slideBackgroundAsset.id)));
   }
 
   if (
@@ -68,12 +74,15 @@ export async function createSwiprPostBridgeScheduleMedia({
       const slideBlob = await renderSwiprSlideBlob(
         slideBackgroundBlobs[slide.id],
         slide,
+        imageProfile,
       );
 
       mediaFiles.push({
         blob: slideBlob,
-        fileName: getSwiprSlideFileName(index),
+        fileName: getSwiprSlideFileName(index, imageProfile?.mimeType),
+        height: imageProfile?.height ?? 1_920,
         mediaKind: "image" as const,
+        width: imageProfile?.width ?? 1_080,
       });
       onProgress((index + 1) / swipe.slides.length);
     }

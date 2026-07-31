@@ -5,7 +5,6 @@ import { ArticleHeader } from "@/app/_components/content/ArticleHeader";
 import { RuntimeBlogArticle } from "@/app/_components/content/RuntimeBlogArticle";
 import {
   getBlogPostBySlug,
-  getPublishedBlogPosts,
   getRelatedBlogPosts,
 } from "@/lib/content/queries";
 import {
@@ -16,6 +15,7 @@ import {
 import { mdxComponents } from "@/lib/content/mdx-components";
 import { fetchConvexBlogPostBySlug } from "@/lib/content/runtimeBlog/fetchConvexBlogPostBySlug";
 import { createRuntimeBlogPostMetadata } from "@/lib/content/runtimeBlog/createRuntimeBlogPostMetadata";
+import { getBlogPostCards } from "@/lib/content/runtimeBlog/getBlogPostCards";
 import { toRuntimeBlogPostFromConvex } from "@/lib/content/runtimeBlog/toRuntimeBlogPostFromConvex";
 
 export const revalidate = 3600;
@@ -25,8 +25,10 @@ type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return getPublishedBlogPosts().map((post) => ({
+export async function generateStaticParams() {
+  const posts = await getBlogPostCards();
+
+  return posts.map((post) => ({
     slug: post.slug,
   }));
 }

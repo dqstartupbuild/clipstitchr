@@ -53,6 +53,8 @@ import { POST } from "@/app/api/webhooks/blog-publisher/route";
 const baseArticle = {
   id: "blog-id",
   title: "A Helpful Blog Title",
+  seo_title:
+    "A Helpful Blog Title for Search Results With Clear Next Steps",
   slug: "a-helpful-blog-title",
   meta_description: "A short plain-language summary.",
   content_format: "mdx",
@@ -61,7 +63,7 @@ const baseArticle = {
   content_html: "",
   image_url: "https://example.com/image.jpg",
   tags: ["keyword"],
-  source: "Blogger",
+  source: "Blogr",
   created_at: "2026-06-23T15:30:00.000Z",
   updated_at: "2026-06-23T15:45:00.000Z",
 };
@@ -77,7 +79,11 @@ function createRequest(body: unknown) {
 describe("POST /api/webhooks/blog-publisher", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.convex.mutation.mockResolvedValue(undefined);
+    mocks.convex.mutation.mockImplementation(async (name) =>
+      name === "blogPosts.upsertPublishedArticle"
+        ? { replacedSlugs: [], slug: baseArticle.slug, status: "created" }
+        : undefined,
+    );
     mocks.copyBlogArticleImages.mockImplementation(async (article) => article);
   });
 
@@ -131,6 +137,9 @@ describe("POST /api/webhooks/blog-publisher", () => {
       "blogPosts.upsertPublishedArticle",
       expect.objectContaining({
         slug: "a-helpful-blog-title",
+        externalId: "blog-id",
+        seoTitle:
+          "A Helpful Blog Title for Search Results With Clear Next Steps",
         contentFormat: "mdx",
         content:
           "![Hero](https://clipstitchr.test/blog-images/a-helpful-blog-title/hero.jpg)",
@@ -163,6 +172,42 @@ describe("POST /api/webhooks/blog-publisher", () => {
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       "rateLimits.consumeBlogPublishWebhook",
       expect.objectContaining({ articleCount: 1 }),
+    );
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      "blogPosts.upsertPublishedArticle",
+      expect.objectContaining({
+        externalId: "blog-id",
+        seoTitle:
+          "A Helpful Blog Title for Search Results With Clear Next Steps",
+      }),
+    );
+  });
+
+  it("revalidates a replaced slug after an id-based update", async () => {
+    mocks.getIsAuthorizedBlogPublishRequest.mockReturnValue(true);
+    mocks.convex.mutation.mockImplementation(async (name) =>
+      name === "blogPosts.upsertPublishedArticle"
+        ? {
+            replacedSlugs: ["the-original-slug"],
+            slug: baseArticle.slug,
+            status: "updated",
+          }
+        : undefined,
+    );
+
+    const response = await POST(
+      createRequest({
+        event_type: "update_article",
+        data: { article: baseArticle },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
+      "/blog/the-original-slug",
+    );
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
+      "/blog/a-helpful-blog-title",
     );
   });
 

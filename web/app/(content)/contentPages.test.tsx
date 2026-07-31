@@ -69,7 +69,7 @@ describe("content pages", () => {
       }),
     );
 
-    expect(generateBlogPostStaticParams()).toContainEqual({
+    await expect(generateBlogPostStaticParams()).resolves.toContainEqual({
       slug: firstPost.slug,
     });
     await expect(

@@ -13,6 +13,7 @@ export const retryAfterFailure = mutation({
     id: v.string(),
     ownerId: v.string(),
     secret: v.string(),
+    continuationDelayMs: v.optional(v.number()),
     updatedAt: v.string(),
   },
   handler: async (ctx, args) => {
@@ -40,6 +41,14 @@ export const retryAfterFailure = mutation({
       return false;
     }
 
+    const continuationDelayMs =
+      args.continuationDelayMs === undefined
+        ? undefined
+        : Math.min(
+            Math.max(Math.round(args.continuationDelayMs), 1_000),
+            10 * 60_000,
+          );
+
     await ctx.db.patch(job._id, {
       error: args.error.trim().slice(0, 500),
       lockedBy: undefined,
@@ -56,6 +65,7 @@ export const retryAfterFailure = mutation({
 
     await upsertWorkerJobSummary(ctx, "provider", queuedJob);
     await updateWorkerQueueEntryStatus(ctx, {
+      continuationDelayMs,
       error: args.error.trim().slice(0, 500),
       now: args.updatedAt,
       releaseLock: true,
@@ -65,6 +75,7 @@ export const retryAfterFailure = mutation({
     });
     await requestWorkerLaunch({
       ctx,
+      delayMs: continuationDelayMs,
       now: args.updatedAt,
       worker: "provider",
     });

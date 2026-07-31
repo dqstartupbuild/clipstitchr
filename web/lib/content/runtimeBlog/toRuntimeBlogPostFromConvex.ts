@@ -7,6 +7,7 @@ import type { RuntimeBlogPost } from "./runtimeBlogPost";
 export type ConvexBlogPost = {
   slug: string;
   title: string;
+  seoTitle?: string;
   metaDescription: string;
   contentFormat: "mdx" | "markdown" | "html";
   content: string;
@@ -28,10 +29,11 @@ export function toRuntimeBlogPostFromConvex(
     slug: post.slug,
     url,
     title: post.title,
+    seoTitle: post.seoTitle,
     description: post.metaDescription,
     category: post.source?.trim() || "Articles",
     tags: post.tags,
-    author: post.source?.trim() || "ClipStitchr",
+    author: "ClipStitchr",
     date: getRuntimeBlogDateString(post.createdAt ?? post.publishedAt),
     updated: getRuntimeBlogDateString(post.updatedAt),
     image: post.imageUrl,

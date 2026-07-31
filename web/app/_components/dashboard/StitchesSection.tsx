@@ -5,6 +5,7 @@ import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyS
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import { PostBridgeBatchQueueDialog } from "@/app/_components/postBridge/PostBridgeBatchQueueDialog";
+import { useSocialPublishingProvider } from "@/app/dashboard/useSocialPublishingProvider";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
@@ -110,6 +111,7 @@ export function StitchesSection({
   onUpdateTextOverlay,
   ugcClips,
 }: StitchesSectionProps) {
+  const socialPublishingProvider = useSocialPublishingProvider();
   const pagination = usePagination(stitches, {
     pageSize: uploadLibraryPageSize,
   });
@@ -168,9 +170,13 @@ export function StitchesSection({
               onDeleteSelected={() => {
                 void batchDelete.deleteSelectedItems();
               }}
-              onQueueSelected={() => {
-                batchQueue.openBatchQueueDialog();
-              }}
+              onQueueSelected={
+                socialPublishingProvider === "post_bridge"
+                  ? () => {
+                      batchQueue.openBatchQueueDialog();
+                    }
+                  : undefined
+              }
               onSelectVisible={batchDelete.selectVisibleItems}
               onStartSelecting={batchDelete.startSelecting}
               onStopSelecting={batchDelete.stopSelecting}
@@ -247,7 +253,8 @@ export function StitchesSection({
           </Button>
         </div>
       ) : null}
-      {batchQueue.isBatchQueueDialogOpen ? (
+      {socialPublishingProvider === "post_bridge" &&
+      batchQueue.isBatchQueueDialogOpen ? (
         <PostBridgeBatchQueueDialog
           items={batchQueue.queuedItems.map((stitch) => ({
             caption: stitch.socialCaption ?? "",

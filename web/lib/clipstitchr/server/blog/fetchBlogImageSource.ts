@@ -1,8 +1,8 @@
-import { assertBlogImageByteLength } from "./assertBlogImageByteLength";
 import { assertBlogImageContentLength } from "./assertBlogImageContentLength";
 import { assertBlogImageContentType } from "./assertBlogImageContentType";
 import { assertValidBlogImageSourceUrl } from "./assertValidBlogImageSourceUrl";
 import { blogImageFetchTimeoutMs } from "./blogImageCopyLimits";
+import { readBlogImageResponseBody } from "./readBlogImageResponseBody";
 
 export type FetchedBlogImageSource = {
   body: ArrayBuffer;
@@ -31,9 +31,7 @@ export async function fetchBlogImageSource(
 
     assertBlogImageContentLength(response.headers.get("content-length"));
 
-    const body = await response.arrayBuffer();
-
-    assertBlogImageByteLength(body.byteLength);
+    const body = await readBlogImageResponseBody(response);
 
     return {
       body,

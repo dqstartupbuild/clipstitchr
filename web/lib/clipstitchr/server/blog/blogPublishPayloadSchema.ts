@@ -4,6 +4,7 @@ const articleSchema = z
   .object({
     id: z.string().trim().optional(),
     title: z.string().trim().min(1),
+    seo_title: z.string().trim().optional(),
     slug: z.string().trim().optional(),
     meta_description: z.string().trim().optional(),
     content_format: z.string().trim().optional(),

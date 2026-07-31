@@ -69,4 +69,20 @@ describe("fetchBlogImageSource", () => {
       fetchBlogImageSource("https://blogger.test/image.jpg"),
     ).rejects.toThrow("Blog image is larger than the 10 MB limit.");
   });
+
+  it("stops reading an oversized image without a content-length header", async () => {
+    const oversizedBody = new Uint8Array(blogImageMaxBytes + 1);
+
+    fetchMock.mockResolvedValue(
+      new Response(oversizedBody, {
+        headers: {
+          "content-type": "image/jpeg",
+        },
+      }),
+    );
+
+    await expect(
+      fetchBlogImageSource("https://blogr.test/image.jpg"),
+    ).rejects.toThrow("Blog image is larger than the 10 MB limit.");
+  });
 });

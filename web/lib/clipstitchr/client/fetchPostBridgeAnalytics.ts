@@ -4,14 +4,21 @@ import type { PostBridgeAnalyticsLoadResult } from "@/lib/clipstitchr/types/Post
 
 type FetchPostBridgeAnalyticsOptions = {
   productId?: string;
+  readOnly?: boolean;
 };
 
 export async function fetchPostBridgeAnalytics({
   productId,
+  readOnly = false,
 }: FetchPostBridgeAnalyticsOptions = {}) {
-  const response = await fetch(
-    createPostBridgeProductUrl("/api/post-bridge/analytics", productId),
+  const baseUrl = createPostBridgeProductUrl(
+    "/api/post-bridge/analytics",
+    productId,
   );
+  const requestUrl = readOnly
+    ? `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}readOnly=1`
+    : baseUrl;
+  const response = await fetch(requestUrl);
 
   if (!response.ok) {
     throw new Error(

@@ -2,8 +2,8 @@ import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { mutation, query } from "./_generated/server";
-import type { MutationCtx } from "./_generated/server";
 import { upsertBlogPostCardBySlug } from "./blogPostCards/upsertBlogPostCardBySlug";
+import { upsertBlogPost } from "./blogPosts/upsertBlogPost";
 import { blogPostContentFormatValidator } from "./validators/blogPostContentFormat";
 
 const BLOG_POST_CARD_LIST_LIMIT = 100;
@@ -14,6 +14,7 @@ const upsertArgs = {
   slug: v.string(),
   externalId: v.optional(v.string()),
   title: v.string(),
+  seoTitle: v.optional(v.string()),
   metaDescription: v.string(),
   contentFormat: blogPostContentFormatValidator,
   content: v.string(),
@@ -25,79 +26,12 @@ const upsertArgs = {
   updatedAt: v.optional(v.string()),
 };
 
-type UpsertArgs = {
-  slug: string;
-  externalId?: string;
-  title: string;
-  metaDescription: string;
-  contentFormat: "mdx" | "markdown" | "html";
-  content: string;
-  contentHtml?: string;
-  imageUrl?: string;
-  tags: string[];
-  source?: string;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-async function upsertBlogPostBySlug(ctx: MutationCtx, args: UpsertArgs) {
-  const now = new Date().toISOString();
-
-  const existing = await ctx.db
-    .query("blogPosts")
-    .withIndex("by_slug", (q) => q.eq("slug", args.slug))
-    .unique();
-
-  const fields = {
-    slug: args.slug,
-    externalId: args.externalId,
-    title: args.title,
-    metaDescription: args.metaDescription,
-    contentFormat: args.contentFormat,
-    content: args.content,
-    contentHtml: args.contentHtml,
-    imageUrl: args.imageUrl,
-    tags: args.tags,
-    source: args.source,
-  };
-
-  if (existing) {
-    const patchFields = {
-      ...fields,
-      publishedAt: existing.publishedAt,
-      createdAt: existing.createdAt,
-      updatedAt: args.updatedAt ?? now,
-    };
-    const patchedPost = {
-      ...existing,
-      ...patchFields,
-    };
-
-    await ctx.db.patch(existing._id, patchFields);
-    await upsertBlogPostCardBySlug(ctx, patchedPost);
-
-    return { slug: args.slug, status: "updated" as const };
-  }
-
-  const post = {
-    ...fields,
-    publishedAt: now,
-    createdAt: args.createdAt ?? now,
-    updatedAt: args.updatedAt ?? now,
-  };
-
-  await ctx.db.insert("blogPosts", post);
-  await upsertBlogPostCardBySlug(ctx, post);
-
-  return { slug: args.slug, status: "created" as const };
-}
-
 export const upsertPublishedArticle = mutation({
   args: upsertArgs,
   handler: async (ctx, { secret, ...args }) => {
     assertRateLimitApiSecret(secret);
 
-    return upsertBlogPostBySlug(ctx, args);
+    return upsertBlogPost(ctx, args);
   },
 });
 
@@ -113,6 +47,7 @@ export const listPublishedBlogPostCards = query({
     return cards.map((card) => ({
       slug: card.slug,
       title: card.title,
+      seoTitle: card.seoTitle ?? card.title,
       metaDescription: card.metaDescription,
       imageUrl: card.imageUrl,
       tags: card.tags,
@@ -178,6 +113,7 @@ export const getPublishedBlogPostBySlug = query({
     return {
       slug: post.slug,
       title: post.title,
+      seoTitle: post.seoTitle ?? post.title,
       metaDescription: post.metaDescription,
       contentFormat: post.contentFormat,
       content: post.content,

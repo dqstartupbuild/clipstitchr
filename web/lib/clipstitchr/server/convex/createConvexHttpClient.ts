@@ -1,11 +1,6 @@
 import { ConvexHttpClient } from "convex/browser";
+import { resolveConvexCloudUrl } from "./resolveConvexCloudUrl";
 
 export function createConvexHttpClient() {
-  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-
-  if (!convexUrl) {
-    throw new Error("Missing NEXT_PUBLIC_CONVEX_URL.");
-  }
-
-  return new ConvexHttpClient(convexUrl);
+  return new ConvexHttpClient(resolveConvexCloudUrl());
 }

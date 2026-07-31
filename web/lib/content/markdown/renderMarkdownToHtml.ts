@@ -1,4 +1,5 @@
 import { escapeHtml } from "./escapeHtml";
+import { createUniqueMarkdownHeadingId } from "./createUniqueMarkdownHeadingId";
 import { isMarkdownTableDelimiter } from "./isMarkdownTableDelimiter";
 import { isMarkdownTableRow } from "./isMarkdownTableRow";
 import { parseMarkdownHeadingText } from "./parseMarkdownHeadingText";
@@ -62,6 +63,7 @@ export function renderMarkdownToHtml(markdown: string) {
   let listItems: string[] = [];
   let listOrdered = false;
   let quoteLines: string[] = [];
+  const headingIdCounts = new Map<string, number>();
 
   function flushParagraph() {
     if (paragraph.length > 0) {
@@ -169,7 +171,10 @@ export function renderMarkdownToHtml(markdown: string) {
       const inner = renderInlineMarkdown(heading.text);
       const explicitId = heading.id;
       const autoId = slugifyHeadingText(heading.text);
-      const idValue = explicitId ?? (autoId ? autoId : null);
+      const baseId = explicitId ?? (autoId ? autoId : null);
+      const idValue = baseId
+        ? createUniqueMarkdownHeadingId(baseId, headingIdCounts)
+        : null;
       const id = idValue ? ` id="${escapeHtml(idValue)}"` : "";
       blocks.push(`<h${level}${id}>${inner}</h${level}>`);
       continue;

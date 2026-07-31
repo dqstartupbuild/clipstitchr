@@ -109,4 +109,27 @@ describe("providerJobAttempts.retryAfterFailure", () => {
     expect(ctx.db.patch).not.toHaveBeenCalled();
     expect(mocks.requestWorkerLaunch).not.toHaveBeenCalled();
   });
+
+  it("delays a provider retry when the provider asks for a pause", async () => {
+    const ctx = createContext({
+      _id: "job-document",
+      attempt: 1,
+      id: "job-1",
+      ownerId: "owner-1",
+      status: "running",
+    });
+
+    await getHandler()(ctx, {
+      continuationDelayMs: 45_000,
+      error: "Provider rate limited",
+      id: "job-1",
+      ownerId: "owner-1",
+      secret: "secret",
+      updatedAt: "2026-07-12T12:00:00.000Z",
+    });
+
+    expect(mocks.requestWorkerLaunch).toHaveBeenCalledWith(
+      expect.objectContaining({ delayMs: 45_000 }),
+    );
+  });
 });

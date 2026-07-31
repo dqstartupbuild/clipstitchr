@@ -1,5 +1,5 @@
 import path from "node:path";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   resolve: {
@@ -13,6 +13,12 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    exclude: [
+      ...configDefaults.exclude,
+      ".next-browser-tests/**",
+      ".next-validation/**",
+      "browser-tests/**",
+    ],
     coverage: {
       include: [
         "app/**/*.{ts,tsx}",
@@ -23,7 +29,12 @@ export default defineConfig({
         "**/*.test.{ts,tsx}",
         ".content-collections/**",
         ".next/**",
+        ".next-browser-tests/**",
+        ".next-validation/**",
+        "app/_components/browser-tests/**",
+        "app/browser-tests/**",
         "app/**/*.png",
+        "browser-tests/**",
         "convex/_generated/**",
         "coverage/**",
         "next-env.d.ts",

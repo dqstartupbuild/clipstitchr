@@ -8,9 +8,15 @@ type ConvexFunction<Args, Result> = {
   handler: (ctx: unknown, args: Args) => Promise<Result>;
 };
 
-type QueryResult = {
-  collect?: unknown[];
-  unique?: unknown;
+type StoredDocument = {
+  _id: string;
+  _creationTime: number;
+  [key: string]: unknown;
+};
+
+type BlogTestState = {
+  blogPosts: StoredDocument[];
+  blogPostCards: StoredDocument[];
 };
 
 const mocks = vi.hoisted(() => ({
@@ -32,25 +38,117 @@ function getHandler<Args, Result>(convexFunction: unknown) {
   return (convexFunction as ConvexFunction<Args, Result>).handler;
 }
 
-function createQueryChain(result: QueryResult = {}) {
-  const indexQuery = {
-    eq: vi.fn(() => indexQuery),
+function createBlogTestContext(initialState?: Partial<BlogTestState>) {
+  const state: BlogTestState = {
+    blogPosts: [...(initialState?.blogPosts ?? [])],
+    blogPostCards: [...(initialState?.blogPostCards ?? [])],
   };
-  const chain = {
-    collect: vi.fn(async () => result.collect ?? []),
-    order: vi.fn(() => chain),
-    take: vi.fn(async () => result.collect ?? []),
-    unique: vi.fn(async () => result.unique ?? null),
-    withIndex: vi.fn(
-      (_index: string, callback?: (q: typeof indexQuery) => void) => {
-        callback?.(indexQuery);
+  let nextId = 1;
 
-        return chain;
+  function createQueryChain(documents: StoredDocument[]) {
+    const chain = {
+      collect: vi.fn(async () =>
+        documents.map((document) => ({ ...document })),
+      ),
+      order: vi.fn(() => chain),
+      take: vi.fn(async (limit: number) =>
+        documents.slice(0, limit).map((document) => ({ ...document })),
+      ),
+      unique: vi.fn(async () =>
+        documents[0] ? { ...documents[0] } : null,
+      ),
+    };
+
+    return chain;
+  }
+
+  const db = {
+    delete: vi.fn(async (id: string) => {
+      for (const table of Object.values(state)) {
+        const index = table.findIndex((document) => document._id === id);
+
+        if (index >= 0) {
+          table.splice(index, 1);
+          return;
+        }
+      }
+    }),
+    insert: vi.fn(
+      async (tableName: keyof BlogTestState, fields: Record<string, unknown>) => {
+        const id = `${tableName}_${nextId++}`;
+
+        state[tableName].push({
+          _id: id,
+          _creationTime: Date.now(),
+          ...fields,
+        });
+
+        return id;
       },
     ),
+    patch: vi.fn(async (id: string, fields: Record<string, unknown>) => {
+      for (const table of Object.values(state)) {
+        const document = table.find((candidate) => candidate._id === id);
+
+        if (document) {
+          Object.assign(document, fields);
+          return;
+        }
+      }
+    }),
+    query: vi.fn((tableName: keyof BlogTestState) => ({
+      withIndex: (
+        _indexName: string,
+        applyIndex?: (query: {
+          eq: (field: string, value: unknown) => unknown;
+        }) => void,
+      ) => {
+        let field: string | undefined;
+        let value: unknown;
+        const indexQuery = {
+          eq: (nextField: string, nextValue: unknown) => {
+            field = nextField;
+            value = nextValue;
+            return indexQuery;
+          },
+        };
+
+        applyIndex?.(indexQuery);
+
+        const indexField = field;
+        const documents =
+          indexField === undefined
+            ? [...state[tableName]]
+            : state[tableName].filter(
+                (document) => document[indexField] === value,
+              );
+
+        return createQueryChain(documents);
+      },
+    })),
   };
 
-  return chain;
+  return { ctx: { db }, db, state };
+}
+
+function createPublishArgs(
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+  return {
+    secret: "secret",
+    slug: "runtime-blog",
+    externalId: "blog-id",
+    title: "Runtime Blog",
+    seoTitle: "Runtime Blog SEO Title With Clear Search Intent and Next Steps",
+    metaDescription: "A short summary.",
+    contentFormat: "markdown",
+    content: "# Runtime Blog\n\nBody",
+    tags: ["keyword"],
+    source: "Blogr",
+    createdAt: "2026-06-23T15:30:00.000Z",
+    updatedAt: "2026-06-23T15:45:00.000Z",
+    ...overrides,
+  };
 }
 
 describe("blogPosts", () => {
@@ -59,67 +157,191 @@ describe("blogPosts", () => {
   });
 
   it("writes compact blog card rows when publishing articles", async () => {
-    const blogPostQueryChain = createQueryChain({ unique: null });
-    const blogPostCardQueryChain = createQueryChain({ unique: null });
-    const ctx = {
-      db: {
-        insert: vi.fn(async () => "doc_1"),
-        query: vi.fn((tableName: string) =>
-          tableName === "blogPostCards"
-            ? blogPostCardQueryChain
-            : blogPostQueryChain,
-        ),
-      },
-    };
+    const { ctx, state } = createBlogTestContext();
 
     await expect(
-      getHandler(upsertPublishedArticle)(ctx, {
-        secret: "secret",
-        slug: "runtime-blog",
-        title: "Runtime Blog",
-        metaDescription: "A short summary.",
-        contentFormat: "markdown",
-        content: "# Runtime Blog\n\nBody",
-        tags: ["keyword"],
-        source: "Blogger",
-      }),
-    ).resolves.toEqual({ slug: "runtime-blog", status: "created" });
+      getHandler(upsertPublishedArticle)(ctx, createPublishArgs()),
+    ).resolves.toEqual({
+      slug: "runtime-blog",
+      replacedSlugs: [],
+      status: "created",
+    });
 
     expect(mocks.assertRateLimitApiSecret).toHaveBeenCalledWith("secret");
-    expect(ctx.db.insert).toHaveBeenCalledWith(
-      "blogPosts",
-      expect.objectContaining({
-        content: "# Runtime Blog\n\nBody",
-        slug: "runtime-blog",
+    expect(state.blogPosts).toHaveLength(1);
+    expect(state.blogPosts[0]).toMatchObject({
+      content: "# Runtime Blog\n\nBody",
+      slug: "runtime-blog",
+      seoTitle: "Runtime Blog SEO Title With Clear Search Intent and Next Steps",
+    });
+    expect(state.blogPostCards).toHaveLength(1);
+    expect(state.blogPostCards[0]).toMatchObject({
+      slug: "runtime-blog",
+      title: "Runtime Blog",
+      seoTitle: "Runtime Blog SEO Title With Clear Search Intent and Next Steps",
+      metaDescription: "A short summary.",
+      readingTimeMinutes: 1,
+    });
+    expect(state.blogPostCards[0]).not.toHaveProperty("content");
+  });
+
+  it("matches by stable Blogr id before slug and removes stale records", async () => {
+    const originalCreatedAt = "2026-01-10T09:00:00.000Z";
+    const { ctx, state } = createBlogTestContext({
+      blogPosts: [
+        {
+          _id: "post_original",
+          _creationTime: 1,
+          slug: "old-slug",
+          externalId: "blog-id",
+          title: "Old title",
+          seoTitle: "Old SEO title",
+          metaDescription: "Old description.",
+          contentFormat: "markdown",
+          content: "Old body",
+          tags: [],
+          source: "Blogr",
+          publishedAt: "2026-01-11T09:00:00.000Z",
+          createdAt: originalCreatedAt,
+          updatedAt: "2026-01-12T09:00:00.000Z",
+        },
+        {
+          _id: "post_slug_duplicate",
+          _creationTime: 2,
+          slug: "new-slug",
+          externalId: "different-id",
+          title: "Duplicate",
+          metaDescription: "Duplicate.",
+          contentFormat: "markdown",
+          content: "Duplicate body",
+          tags: [],
+          publishedAt: "2026-01-13T09:00:00.000Z",
+          createdAt: "2026-01-13T09:00:00.000Z",
+          updatedAt: "2026-01-13T09:00:00.000Z",
+        },
+      ],
+      blogPostCards: [
+        {
+          _id: "card_old",
+          _creationTime: 1,
+          slug: "old-slug",
+        },
+        {
+          _id: "card_duplicate",
+          _creationTime: 2,
+          slug: "new-slug",
+        },
+      ],
+    });
+
+    await expect(
+      getHandler(upsertPublishedArticle)(
+        ctx,
+        createPublishArgs({
+          slug: "new-slug",
+          title: "Updated visible title",
+          seoTitle:
+            "Updated SEO Title With Better Search Intent and Clear Next Steps",
+          content: "# Updated body",
+          createdAt: "2026-07-01T10:00:00.000Z",
+          updatedAt: "2026-07-29T18:00:00.000Z",
+        }),
+      ),
+    ).resolves.toEqual({
+      slug: "new-slug",
+      replacedSlugs: ["old-slug"],
+      status: "updated",
+    });
+
+    expect(state.blogPosts).toHaveLength(1);
+    expect(state.blogPosts[0]).toMatchObject({
+      _id: "post_original",
+      slug: "new-slug",
+      title: "Updated visible title",
+      seoTitle:
+        "Updated SEO Title With Better Search Intent and Clear Next Steps",
+      content: "# Updated body",
+      createdAt: originalCreatedAt,
+      updatedAt: "2026-07-29T18:00:00.000Z",
+    });
+    expect(state.blogPostCards).toHaveLength(1);
+    expect(state.blogPostCards[0]).toMatchObject({
+      slug: "new-slug",
+      title: "Updated visible title",
+      seoTitle:
+        "Updated SEO Title With Better Search Intent and Clear Next Steps",
+    });
+  });
+
+  it("falls back to slug for a legacy article without a Blogr id", async () => {
+    const { ctx, state } = createBlogTestContext({
+      blogPosts: [
+        {
+          _id: "legacy_post",
+          _creationTime: 1,
+          slug: "runtime-blog",
+          title: "Legacy title",
+          metaDescription: "Legacy description.",
+          contentFormat: "markdown",
+          content: "Legacy body",
+          tags: [],
+          publishedAt: "2026-01-11T09:00:00.000Z",
+          createdAt: "2026-01-10T09:00:00.000Z",
+          updatedAt: "2026-01-12T09:00:00.000Z",
+        },
+      ],
+    });
+
+    await getHandler(upsertPublishedArticle)(ctx, createPublishArgs());
+
+    expect(state.blogPosts).toHaveLength(1);
+    expect(state.blogPosts[0]).toMatchObject({
+      _id: "legacy_post",
+      externalId: "blog-id",
+      slug: "runtime-blog",
+      title: "Runtime Blog",
+    });
+  });
+
+  it("keeps exactly one article and card after republishing", async () => {
+    const { ctx, state } = createBlogTestContext();
+    const handler = getHandler(upsertPublishedArticle);
+
+    await handler(ctx, createPublishArgs());
+    await handler(
+      ctx,
+      createPublishArgs({
+        slug: "renamed-runtime-blog",
+        content: "# Updated after republish",
+        updatedAt: "2026-07-29T18:00:00.000Z",
       }),
     );
-    expect(ctx.db.insert).toHaveBeenCalledWith(
-      "blogPostCards",
-      expect.objectContaining({
-        slug: "runtime-blog",
-        title: "Runtime Blog",
-        metaDescription: "A short summary.",
-        readingTimeMinutes: 1,
-      }),
-    );
-    expect(ctx.db.insert).not.toHaveBeenCalledWith(
-      "blogPostCards",
-      expect.objectContaining({
-        content: expect.any(String),
-      }),
-    );
+
+    expect(state.blogPosts).toHaveLength(1);
+    expect(state.blogPostCards).toHaveLength(1);
+    expect(state.blogPosts[0]).toMatchObject({
+      slug: "renamed-runtime-blog",
+      content: "# Updated after republish",
+    });
+    expect(state.blogPostCards[0]).toMatchObject({
+      slug: "renamed-runtime-blog",
+    });
   });
 
   it("lists published blog cards without article bodies", async () => {
-    const blogPostCardQueryChain = createQueryChain({
-      collect: [
+    const { ctx } = createBlogTestContext({
+      blogPostCards: [
         {
+          _id: "card_1",
+          _creationTime: 1,
           slug: "runtime-blog",
           title: "Runtime Blog",
+          seoTitle:
+            "Runtime Blog SEO Title With Clear Search Intent and Next Steps",
           metaDescription: "A short summary.",
           imageUrl: undefined,
           tags: ["keyword"],
-          source: "Blogger",
+          source: "Blogr",
           readingTimeMinutes: 1,
           publishedAt: "2026-06-23T16:00:00.000Z",
           createdAt: "2026-06-23T15:30:00.000Z",
@@ -127,26 +349,22 @@ describe("blogPosts", () => {
         },
       ],
     });
-    const ctx = {
-      db: {
-        query: vi.fn(() => blogPostCardQueryChain),
-      },
-    };
 
     await expect(getHandler(listPublishedBlogPostCards)(ctx, {})).resolves.toEqual([
       {
         slug: "runtime-blog",
         title: "Runtime Blog",
+        seoTitle:
+          "Runtime Blog SEO Title With Clear Search Intent and Next Steps",
         metaDescription: "A short summary.",
         imageUrl: undefined,
         tags: ["keyword"],
-        source: "Blogger",
+        source: "Blogr",
         readingTimeMinutes: 1,
         publishedAt: "2026-06-23T16:00:00.000Z",
         createdAt: "2026-06-23T15:30:00.000Z",
         updatedAt: "2026-06-23T15:45:00.000Z",
       },
     ]);
-    expect(ctx.db.query).toHaveBeenCalledWith("blogPostCards");
   });
 });

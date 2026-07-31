@@ -205,7 +205,7 @@ fall back to a live provider call.
 
 - Required in the Next.js runtime environment to use
   `POST /api/webhooks/blog-publisher`.
-- Authorizes the external blog publisher (Blogger) to upsert published posts
+- Authorizes the external blog publisher (Blogr) to upsert published posts
   with `Authorization: Bearer <token>`.
 - Compared in constant time. Missing or wrong tokens return `401` with
   `{ "error": "Invalid access token." }`.
@@ -367,6 +367,77 @@ Optional Replicate model overrides:
   product details.
 - The key must not be prefixed with `NEXT_PUBLIC_`.
 
+## Direct Social Publishing Limits
+
+Direct TikTok and Instagram operations keep authentication, ownership,
+entitlement, and rate limits as separate checks. The default buckets are fixed
+in `web/convex/rateLimiter.ts`; changing one requires a code review and this
+document to change in the same commit.
+
+| Operation | Owner or account default | Global default | Enforcement point |
+| --- | ---: | ---: | --- |
+| OAuth start | 20/hour/owner, burst 5 | 1,000/hour, burst 100 | Before an OAuth state or provider URL is created |
+| Account disconnect | 20/hour/owner, burst 5 | 1,000/hour, burst 100 | Before provider revocation or local disconnection |
+| TikTok capability refresh | 30/hour/owner, burst 10 | 2,000/hour, burst 200 | Each time a selected TikTok account is rendered in compose, before a paid-entitlement-checked creator-info provider job is queued |
+| Schedule create | 60/minute/owner, burst 20, plus 500/day/owner | 10,000/day, burst 1,000 | Inside the owner-authorized Convex create mutation |
+| Analytics refresh | 6/hour/owner, burst 2 | 200/hour, burst 40 | Before a durable refresh run or provider job is created |
+| TikTok publish | 15/day/account, burst 5 | 10,000/day, burst 1,000 | In the provider worker before initialization |
+| Instagram publish | 25/day/account, burst 5 | 10,000/day, burst 1,000 | In the provider worker before container creation |
+| Any social publish | 200/day/owner, burst 40 | Platform bucket above | Consumed with the account and platform buckets |
+| Status check | 600/hour/account, burst 100 | 20,000/hour, burst 2,000 | Before a provider status request |
+| Opaque media-grant creation | 500/hour/owner, burst 100 | 20,000/hour, burst 2,000 | Before an exact-asset grant is stored |
+| Provider media fetch | 500/hour/owner, burst 100 | 20,000/hour, burst 2,000 | Before the grant redirects to an R2 signed URL |
+| Signed webhook or deletion callback | 600/minute/platform, burst 100 | 10,000/hour, burst 1,000 | After the streamed 64 KiB body cap and signature validation, before durable mutation |
+
+Each accepted analytics refresh stores the names and timestamp of its successful
+owner/global bucket checks in the durable refresh run. Optional Apify enrichment
+also stores its configured maximum charge and completed run count so support can
+audit cost and throttling without exposing tokens.
+
+Transient social provider responses also honor `Retry-After` in either seconds
+or HTTP-date form. The provider worker stores a matching queue `notBefore`,
+schedules a delayed relaunch, and caps one delay at ten minutes so the normal
+recovery loop remains active.
+
+Schedule creation also enforces the independently configurable abuse controls
+below before inserting rows:
+
+- `SOCIAL_SCHEDULING_HORIZON_DAYS`: 90 by default, valid range 1-365.
+- `SOCIAL_MAX_SCHEDULED_POSTS_PER_OWNER`: 500 by default, valid range 1-5,000.
+- `SOCIAL_MAX_PENDING_DELIVERIES_PER_OWNER`: 2,000 by default, valid range
+  1-20,000.
+- `SOCIAL_MAX_ASSET_BYTES`: 500 MiB by default, capped at 4 GiB.
+- `SOCIAL_MAX_POST_BYTES`: 1 GiB by default, capped at 4 GiB.
+
+The user-triggered OAuth, disconnect, analytics, media-fetch, webhook, and
+deletion HTTP routes convert Convex rate-limit errors to `429` and include
+`Retry-After` plus `retryAfterSeconds`. Direct Convex schedule and product
+configuration mutations surface their rate-limit error beside the initiating
+control.
+
+The social security and provider variables are:
+
+- `SOCIAL_PUBLISHING_PROVIDER`: `post_bridge` by default; `in_house` only after
+  the production launch gate.
+- `SOCIAL_PUBLIC_BASE_URL`: clean HTTPS production origin used for opaque
+  provider-fetch URLs.
+- `SOCIAL_TOKEN_ENCRYPTION_KEYS`: server-only JSON key ring of version to
+  32-byte base64 key.
+- `SOCIAL_TOKEN_ENCRYPTION_CURRENT_VERSION`: version used for new ciphertext.
+- `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`, and `TIKTOK_REDIRECT_URI`.
+- `INSTAGRAM_CLIENT_ID`, `INSTAGRAM_CLIENT_SECRET`,
+  `INSTAGRAM_REDIRECT_URI`, and `INSTAGRAM_WEBHOOK_VERIFY_TOKEN`.
+- `INSTAGRAM_GRAPH_API_VERSION`: provider-worker Graph version, currently
+  `v25.0`.
+- `SOCIAL_ANALYTICS_TIKTOK_APIFY_ACTOR_ID`,
+  `SOCIAL_ANALYTICS_APIFY_URL_LIMIT` (100 by default, at most 500), and
+  `SOCIAL_ANALYTICS_APIFY_MAX_TOTAL_CHARGE_USD` (USD 0.50 by default, clamped
+  to USD 0.50-2.00).
+
+`APIFY_TOKEN` is required only when the user opts into TikTok save enrichment.
+The capped run can write only the missing saves field; a failure preserves
+official analytics.
+
 ## Enforcement Map
 
 | Surface                                                             | Enforcement Point                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Limit                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
@@ -415,7 +486,7 @@ Optional Replicate model overrides:
 | Public App Hook Generator                                           | `POST /api/tools/app-hook-generator` before deterministic hook assembly                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | 30 requests/hour/client fingerprint, burst 10; shared global bucket 3,000 requests/hour, burst 300 across 5 shards. The route accepts at most 8 KB, validates bounded inputs before consuming quota, and returns exactly 8 template-backed hooks per accepted request. It creates no provider, R2, or application-data write cost. The client key is a SHA-256 digest of `cf-connecting-ip`, then `x-real-ip`, then the last valid `x-forwarded-for` value; browser user-agent data is not included, and raw addresses are not stored in the rate-limit key. Rejections return `429` with `Retry-After` before catalog selection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | TikTok Events API forwarding                                        | `POST /api/analytics/tiktok/events` after marketing-cookie consent                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | IndexNow sitemap submission                                         | `POST /api/indexnow` with `INDEXNOW_SUBMIT_SECRET`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Submits all public sitemap URLs only, excludes authenticated dashboard/API routes, requires a public `NEXT_PUBLIC_SITE_URL`, consumes 500 submitted URLs/hour/client fingerprint, burst 500; shared global bucket 5,000 submitted URLs/hour, burst 500                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Blog publish webhook                                                | `POST /api/webhooks/blog-publisher` with `BLOG_PUBLISH_WEBHOOK_TOKEN`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Bearer-token authorized only; rejects missing/wrong tokens with `401` before any work. Consumes 120 published articles/hour/client fingerprint, burst 30; shared global bucket 600 published articles/hour, burst 120 across 5 shards. The rate-limit consume runs before source-image downloads, R2 writes, and any `blogPosts.upsertPublishedArticle` Convex write. Upserts posts by slug into the `blogPosts` table, rewrites copied image URLs to `/blog-images/...`, and revalidates `/blog`, `/feed.xml`, `/sitemap.xml`, and each published `/blog/{slug}` path.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Blog publish webhook                                                | `POST /api/webhooks/blog-publisher` with `BLOG_PUBLISH_WEBHOOK_TOKEN`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Bearer-token authorized only; rejects missing/wrong tokens with `401` before any work. Consumes 120 published articles/hour/client fingerprint, burst 30; shared global bucket 600 published articles/hour, burst 120 across 5 shards. The rate-limit consume runs before source-image downloads, R2 writes, and any `blogPosts.upsertPublishedArticle` Convex write. Upserts posts by stable Blogr ID first and slug as the legacy fallback, refreshes the compact `blogPostCards` read model, rewrites copied image URLs to `/blog-images/...`, and revalidates `/blog`, `/feed.xml`, `/sitemap.xml`, plus current and replaced `/blog/{slug}` paths.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | Product enrichment and website import | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour. The route consumes this limit before Firecrawl website crawling and before the Replicate product enrichment call. Website import is capped at 15 Firecrawl pages per create/update. |
 | Hook Lab post analysis | `POST /api/hook-lab/posts` and `POST /api/hook-lab/posts/{id}/retry` | Creating, retrying a failure, or re-analyzing a completed saved post consumes 90 analyses/day/user with burst 15, 3,000/day globally with burst 600 across 5 shards, and the shared provider-spend guard before Apify or Gemini work. Each attempt reserves 1 creation credit, commits it after the replacement analysis is saved, and releases it on dispatch or provider failure. Re-analysis preserves the saved post and previous report until replacement succeeds. The import is capped at one result, 100 MiB, 180 seconds, 20 slideshow images, and a bounded Actor charge. A matching request key does not reserve the same work twice. HTTP rejection returns `429` with `Retry-After`. |
 | Hook Lab product adaptation | `POST /api/hook-lab/briefs` | Generation consumes 180 scripts/day/user with burst 24, 6,000/day globally with burst 900 across 5 shards, and the shared provider-spend guard before the text-model call. The route separately verifies the owner-scoped ready source report and globally selected saved product. It reserves 1 `hook_lab_script` creation credit before the model call, commits after the adaptation is saved, and releases on provider, validation, or save failure. Editing and copying existing scripts do not consume generation quota or credits. HTTP rejection returns `429` with `Retry-After`. |
@@ -505,6 +576,13 @@ Aggregate library count reads through `libraryCounts.get` are authenticated,
 read-only Convex queries backed by the Aggregate component. They do not create
 storage, bandwidth, provider, or external API cost, so they are not
 rate-limited.
+
+`GET /api/social/data-deletion/status/{code}` is intentionally not assigned an
+owner bucket. Meta needs a stable read-only status lookup, and there is no
+authenticated owner at that callback boundary. The route requires a random UUID
+confirmation code, calls a server-secret-protected capped query, creates no
+write or provider cost, and returns `private, no-store`. The signed mutating
+deletion callback is covered by both webhook buckets above.
 
 Operator-only maintenance backfills such as
 `aggregateBackfills.backfillVideoClipLibraryKinds` are guarded by
@@ -823,3 +901,16 @@ per-photo or per-object delete limits.
     `409` acceptance, retryable `429`/`5xx`/network outcomes, permanent `4xx`
     dead-lettering, the seven-attempt cap, and the twenty-four-hour ambiguous
     outcome cutoff without sending to a production subscriber.
+21. In an isolated development deployment, reduce
+    `socialAnalyticsRefresh` to one request, request two refreshes, and confirm
+    the second response is `429` with a rounded-up `Retry-After` value before a
+    provider job is stored.
+22. Reduce `socialMediaGrantCreate`, queue a controlled publish with more
+    grants than the bucket allows, and confirm no extra opaque grant or R2
+    signed redirect is created.
+23. Reduce one platform account publish bucket and confirm the worker defers or
+    fails safe before TikTok initialization or Instagram container creation.
+    Restore the bucket before testing with a live provider.
+24. Send a valid signed webhook twice and confirm the second delivery records
+    no duplicate effect. Confirm an invalid signature is rejected before either
+    webhook bucket or any durable provider mutation.

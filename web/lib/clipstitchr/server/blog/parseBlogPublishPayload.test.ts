@@ -12,7 +12,7 @@ const baseArticle = {
   content_html: "",
   image_url: "https://example.com/image.jpg",
   tags: ["keyword"],
-  source: "Blogger",
+  source: "Blogr",
   created_at: "2026-06-23T15:30:00.000Z",
   updated_at: "2026-06-23T15:45:00.000Z",
 };

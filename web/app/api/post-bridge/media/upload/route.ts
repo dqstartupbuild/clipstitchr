@@ -4,6 +4,7 @@ import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/co
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { assertPostBridgeSourceMediaKind } from "@/lib/clipstitchr/server/postBridge/assertPostBridgeSourceMediaKind";
+import { getPostBridgeLegacyWriteResponse } from "@/lib/clipstitchr/server/postBridge/getPostBridgeLegacyWriteResponse";
 import { readPostBridgeMediaUploadRequest } from "@/lib/clipstitchr/server/postBridge/readPostBridgeMediaUploadRequest";
 import { resolvePostBridgeApiKey } from "@/lib/clipstitchr/server/postBridge/resolvePostBridgeApiKey";
 import { uploadPostBridgeMediaFromR2Object } from "@/lib/clipstitchr/server/postBridge/uploadPostBridgeMediaFromR2Object";
@@ -17,6 +18,12 @@ export async function POST(request: Request) {
 
   if (!userId) {
     return createAuthenticationRequiredResponse();
+  }
+
+  const legacyWriteResponse = getPostBridgeLegacyWriteResponse();
+
+  if (legacyWriteResponse) {
+    return legacyWriteResponse;
   }
 
   try {

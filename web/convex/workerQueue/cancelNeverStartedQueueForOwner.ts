@@ -3,6 +3,7 @@ import { releaseUsageReservationForOwner } from "../usage/releaseUsageReservatio
 import { getQueueUsageReservationIds } from "./getQueueUsageReservationIds";
 import { patchCanceledWorkerQueueSource } from "./patchCanceledWorkerQueueSource";
 import { releaseGenerationSlot } from "./releaseGenerationSlot";
+import { holdNeverStartedSocialTargetsForOwner } from "../socialPublishing/holdNeverStartedSocialTargetsForOwner";
 
 export async function cancelNeverStartedQueueForOwner(
   ctx: MutationCtx,
@@ -63,6 +64,12 @@ export async function cancelNeverStartedQueueForOwner(
       sourceKind: entry.sourceKind,
     });
   }
+
+  await holdNeverStartedSocialTargetsForOwner(ctx, {
+    now: args.now,
+    ownerId: args.ownerId,
+    reason: "Subscription inactive - scheduled posts held.",
+  });
 
   return { canceledCount: cancelableEntries.length };
 }

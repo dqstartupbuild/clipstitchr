@@ -1,5 +1,11 @@
 # Post Bridge Analytics
 
+> **Legacy migration path.** This page is active only while
+> `SOCIAL_PUBLISHING_PROVIDER=post_bridge`. After in-house cutover,
+> `/dashboard/analytics?legacy=1` keeps old records readable and disables both
+> load-triggered and manual Post Bridge sync. See
+> `docs/features/social-publishing/post-bridge-migration.md`.
+
 ClipStitchr has an Analytics page at `/dashboard/analytics` for reviewing the
 performance data synced from Post Bridge.
 
@@ -36,6 +42,10 @@ ranges because ClipStitchr cannot safely place them in time.
 Post Bridge only stores analytics snapshots; each row carries a
 `last_synced_at` timestamp. There is no cron or background sync — snapshots
 refresh when a user loads the page or clicks `Sync analytics`.
+
+The behavior below applies only while Post Bridge is the active provider.
+Legacy read-only mode sends `readOnly=1`; it returns the last available rows
+without triggering `/v1/analytics/sync`.
 
 `GET /api/post-bridge/analytics` compares the latest `last_synced_at` across the
 rows it is about to return against a 15-minute staleness threshold

@@ -5,6 +5,8 @@ import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
 import type { ProductLimitDialogReason } from "@/lib/clipstitchr/types/ProductLimitDialogReason";
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
+import type { SocialPublishingProvider } from "@/lib/clipstitchr/social/types/SocialPublishingProvider";
+import { SettingsSocialProductPanel } from "@/app/_components/settings/SettingsSocialProductPanel";
 
 type SettingsProductSectionProps = {
   automationError: string | null;
@@ -22,6 +24,7 @@ type SettingsProductSectionProps = {
   savingProductId: string | null;
   restoringProductId?: string | null;
   swiprPacks: SwiprLibraryPack[];
+  socialPublishingProvider: SocialPublishingProvider;
   onDeleteProduct: (id: string) => Promise<void>;
   onSaveAutomation: (preferences: AutomationPreferencesInput) => Promise<void>;
   onSetActiveProduct: (product: ProductProfile) => Promise<void>;
@@ -49,6 +52,7 @@ export function SettingsProductSection({
   savingProductId,
   restoringProductId = null,
   swiprPacks,
+  socialPublishingProvider,
   onDeleteProduct,
   onSaveAutomation,
   onSetActiveProduct,
@@ -89,6 +93,12 @@ export function SettingsProductSection({
         onRestore={onRestoreProduct}
         onUpdate={onUpdateProduct}
       />
+      {socialPublishingProvider === "in_house" ? (
+        <SettingsSocialProductPanel
+          productId={activeProductId}
+          productName={activeProductName}
+        />
+      ) : null}
       <SettingsAutomationPanel
         error={automationError}
         isLoading={isAutomationLoading}

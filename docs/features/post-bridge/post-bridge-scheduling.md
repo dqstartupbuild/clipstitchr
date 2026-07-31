@@ -1,5 +1,12 @@
 # Post Bridge Scheduling
 
+> **Legacy migration path.** This remains available only while
+> `SOCIAL_PUBLISHING_PROVIDER=post_bridge`. The in-house compose path does not
+> call Post Bridge, copy its credentials, or dual-publish. After cutover, old
+> schedule records remain visible at `/dashboard/schedule?legacy=1` until the
+> documented queue and retention audit is complete. See
+> `docs/features/social-publishing/post-bridge-migration.md`.
+
 ClipStitchr can post now or schedule saved Stitches and saved Swipes through
 Post Bridge. The supported posting targets are TikTok, Instagram, and YouTube
 Shorts.

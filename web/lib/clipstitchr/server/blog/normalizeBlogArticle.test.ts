@@ -4,6 +4,8 @@ import { normalizeBlogArticle } from "./normalizeBlogArticle";
 const baseArticle = {
   id: "blog-id",
   title: "A Helpful Blog Title",
+  seo_title:
+    "A Helpful Blog Title for Search Results With Clear Next Steps",
   slug: "a-helpful-blog-title",
   meta_description: "A short plain-language summary.",
   content_format: "mdx",
@@ -12,7 +14,7 @@ const baseArticle = {
   content_html: "",
   image_url: "https://example.com/image.jpg",
   tags: ["keyword", "keyword", " spaced "],
-  source: "Blogger",
+  source: "Blogr",
   created_at: "2026-06-23T15:30:00.000Z",
   updated_at: "2026-06-23T15:45:00.000Z",
 };
@@ -23,12 +25,31 @@ describe("normalizeBlogArticle", () => {
 
     expect(normalized.contentFormat).toBe("mdx");
     expect(normalized.content).toBe("# MDX body");
+    expect(normalized.seoTitle).toBe(baseArticle.seo_title);
+  });
+
+  it("keeps the visible title separate from the seo title", () => {
+    const normalized = normalizeBlogArticle(baseArticle);
+
+    expect(normalized.title).toBe("A Helpful Blog Title");
+    expect(normalized.seoTitle).toBe(
+      "A Helpful Blog Title for Search Results With Clear Next Steps",
+    );
+  });
+
+  it("falls back to the visible title when seo_title is absent", () => {
+    const normalized = normalizeBlogArticle({
+      ...baseArticle,
+      seo_title: undefined,
+    });
+
+    expect(normalized.seoTitle).toBe("A Helpful Blog Title");
   });
 
   it("does not keep stale html when mdx is the source of truth", () => {
     const normalized = normalizeBlogArticle({
       ...baseArticle,
-      content_html: "<p>Stale Blogger HTML</p>",
+      content_html: "<p>Stale Blogr HTML</p>",
     });
 
     expect(normalized.contentHtml).toBeUndefined();

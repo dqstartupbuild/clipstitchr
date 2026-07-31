@@ -4,6 +4,7 @@ export type RuntimeBlogPost = {
   slug: string;
   url: string;
   title: string;
+  seoTitle?: string;
   description: string;
   category: string;
   tags: string[];

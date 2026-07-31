@@ -8,6 +8,7 @@ export function toRssPostFromConvexBlogPostCard(
 ): RssPost {
   return {
     title: post.title,
+    seoTitle: post.seoTitle,
     canonical: createCanonicalUrl(`/blog/${post.slug}`),
     date: getRuntimeBlogDateString(post.createdAt ?? post.publishedAt),
     description: post.metaDescription,

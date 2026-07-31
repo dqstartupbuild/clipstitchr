@@ -6,7 +6,7 @@ export function createRuntimeBlogPostMetadata(
   runtimePost: RuntimeBlogPost,
 ): Metadata {
   const metadata = createPageMetadata({
-    title: runtimePost.title,
+    title: runtimePost.seoTitle ?? runtimePost.title,
     description: runtimePost.description,
     canonical: runtimePost.canonical,
     keywords: runtimePost.tags,

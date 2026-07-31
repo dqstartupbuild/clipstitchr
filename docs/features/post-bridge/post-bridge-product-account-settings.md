@@ -1,5 +1,11 @@
 # Post Bridge Product Account Settings
 
+> **Legacy migration path.** These account IDs belong to Post Bridge and are
+> never copied into the in-house tables. Users reconnect TikTok and Instagram
+> directly and choose new product defaults in Settings. The Post Bridge panel
+> appears only while `SOCIAL_PUBLISHING_PROVIDER=post_bridge`. See
+> `docs/features/social-publishing/post-bridge-migration.md`.
+
 Post Bridge product account links live in Settings so users can review and edit
 every product's posting defaults in one place.
 
