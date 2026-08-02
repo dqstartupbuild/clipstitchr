@@ -51,10 +51,7 @@ export function SettingsPageClient() {
           onShowProductPlanLimit={products.showProductPlanLimitDialog}
           onUpdateProduct={products.updateProduct}
         />
-        <SettingsAccountSection
-          isProductActionDisabled={products.isLoading || products.isSaving}
-          products={products.products}
-        />
+        <SettingsAccountSection />
       </div>
     </DashboardShell>
   );

@@ -47,7 +47,6 @@ export function createStitchFromConvexDocument({
     socialCaption: stitch.socialCaption,
     stitchScore: stitch.stitchScore,
     firstStitchScore: stitch.firstStitchScore,
-    postBridgePosts: stitch.postBridgePosts,
     isPosted: stitch.isPosted,
     postedAt: stitch.postedAt,
     createdAt: stitch.createdAt,

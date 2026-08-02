@@ -8,7 +8,6 @@ const R2_OBJECT_KINDS = new Set<R2ObjectKind>([
   "photo",
   "photo-original",
   "photo-thumbnail",
-  "post-bridge-media",
   "swapr-segment-video",
   "stitch-video",
   "stitch-poster",

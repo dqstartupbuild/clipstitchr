@@ -179,26 +179,33 @@ export const rateLimitsDoc = {
       ],
     },
     {
-      title: "Post Bridge",
+      title: "Publishing",
       rows: [
         {
-          action: "Post Bridge reads",
-          limit: "120 per hour; up to 30 at once",
-          note: "Used for connected accounts, Settings config, scheduled posts, analytics, and key checks. Calls are gently spaced to stay under Post Bridge's own limit.",
+          action: "Connect an Instagram or TikTok account",
+          limit: "10 connection starts per 10 minutes",
+          note: "Applies before the provider sign-in redirect.",
         },
         {
-          action: "Post Bridge media uploads",
-          limit: "2 GB per day",
-          note: "Counts rendered media sent from ClipStitchr to Post Bridge.",
+          action: "Publishing drafts",
+          limit: "120 saves per hour",
         },
         {
-          action: "Post Bridge post creates",
-          limit: "100 per hour and 1,000 per day; up to 60 at once",
-          note: "Uses your saved Post Bridge key. Bulk queue sends posts one at a time and can continue from the first unfinished post.",
+          action: "Publish now",
+          limit: "20 posts per hour",
         },
         {
-          action: "Post Bridge analytics sync",
-          limit: "12 per hour; up to 3 at once",
+          action: "Scheduled posts",
+          limit: "100 schedules per hour",
+        },
+        {
+          action: "Post retries",
+          limit: "30 retries per hour",
+          note: "Applies when you retry a failed post.",
+        },
+        {
+          action: "Analytics refreshes",
+          limit: "12 per hour",
         },
       ],
     },

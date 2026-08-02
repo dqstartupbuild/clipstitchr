@@ -1,17 +1,7 @@
-import { SettingsPostBridgePanel } from "@/app/_components/settings/SettingsPostBridgePanel";
 import { SettingsSubscriptionPanel } from "@/app/_components/settings/SettingsSubscriptionPanel";
 import { SettingsSupportPanel } from "@/app/_components/settings/SettingsSupportPanel";
-import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 
-type SettingsAccountSectionProps = {
-  isProductActionDisabled: boolean;
-  products: ProductProfile[];
-};
-
-export function SettingsAccountSection({
-  isProductActionDisabled,
-  products,
-}: SettingsAccountSectionProps) {
+export function SettingsAccountSection() {
   return (
     <section className="flex flex-col gap-4" aria-labelledby="account-settings">
       <div>
@@ -25,10 +15,6 @@ export function SettingsAccountSection({
           These stay the same no matter which product is active.
         </p>
       </div>
-      <SettingsPostBridgePanel
-        isProductActionDisabled={isProductActionDisabled}
-        products={products}
-      />
       <SettingsSubscriptionPanel />
       <SettingsSupportPanel />
     </section>

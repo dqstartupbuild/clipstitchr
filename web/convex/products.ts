@@ -9,7 +9,6 @@ import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
 import { deleteProductCard } from "./deleteProductCard";
 import { upsertProductCard } from "./upsertProductCard";
-import { normalizePostBridgeSocialAccountIds } from "../lib/clipstitchr/utils/normalizePostBridgeSocialAccountIds";
 import { assertProductLimit } from "./products/assertProductLimit";
 import { disableProductAutomation } from "./products/disableProductAutomation";
 
@@ -404,42 +403,6 @@ export const get = query({
       .unique();
 
     return product?.archivedAt ? null : product;
-  },
-});
-
-export const updatePostBridgeSocialAccountIds = mutation({
-  args: {
-    id: v.string(),
-    socialAccountIds: v.array(v.number()),
-    updatedAt: v.string(),
-  },
-  handler: async (ctx, { id, socialAccountIds, updatedAt }) => {
-    const ownerId = await getAuthenticatedOwnerId(ctx);
-
-    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
-      key: ownerId,
-      throws: true,
-    });
-
-    const product = await ctx.db
-      .query("products")
-      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
-      .unique();
-
-    if (!product) {
-      throw new Error("Product not found.");
-    }
-
-    await ctx.db.patch(product._id, {
-      postBridgeSocialAccountIds:
-        normalizePostBridgeSocialAccountIds(socialAccountIds),
-      updatedAt,
-    });
-    const updatedProduct = await ctx.db.get(product._id);
-
-    if (updatedProduct) {
-      await upsertProductCard(ctx, updatedProduct);
-    }
   },
 });
 
