@@ -27,19 +27,13 @@ vi.mock("../socialPublishing/enqueueSocialTargetProviderJob", () => ({
   enqueueSocialTargetProviderJob: mocks.enqueueSocialTargetProviderJob,
 }));
 
-function createContext({
-  capabilityCheckedAt,
-  status = "connected",
-}: {
-  capabilityCheckedAt?: string;
-  status?: string;
-} = {}) {
+function createContext(capabilityCheckedAt?: string) {
   const account = {
     _id: "social_account_1",
     id: "account_1",
     ownerId: "owner_1",
     platform: "tiktok",
-    status,
+    status: "connected",
     capabilityCheckedAt,
   };
   const index = { eq: vi.fn(() => index) };
@@ -70,9 +64,7 @@ describe("requestTikTokCreatorInfoRefresh", () => {
   });
 
   it("queues a current creator-info query even when the prior snapshot is fresh", async () => {
-    const ctx = createContext({
-      capabilityCheckedAt: "2026-08-01T00:04:00.000Z",
-    });
+    const ctx = createContext("2026-08-01T00:04:00.000Z");
     const handler = (
       requestTikTokCreatorInfoRefresh as unknown as ConvexFunction
     ).handler;
@@ -95,7 +87,8 @@ describe("requestTikTokCreatorInfoRefresh", () => {
     expect(mocks.enqueueSocialTargetProviderJob).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        idempotencyKey: "social-capability:account_1:2026-08-01T00:05:00.000Z",
+        idempotencyKey:
+          "social-capability:account_1:2026-08-01T00:05:00.000Z",
       }),
     );
   });
@@ -114,21 +107,6 @@ describe("requestTikTokCreatorInfoRefresh", () => {
     ).resolves.toMatchObject({ queued: true, providerJobId: "job_1" });
     expect(mocks.assertOwnerCanPublishSocial).toHaveBeenCalledOnce();
     expect(mocks.limit).toHaveBeenCalledTimes(2);
-    expect(mocks.enqueueSocialTargetProviderJob).toHaveBeenCalledOnce();
-  });
-
-  it("queues a verification refresh for an account marked after a provider policy error", async () => {
-    const ctx = createContext({ status: "needs_attention" });
-    const handler = (
-      requestTikTokCreatorInfoRefresh as unknown as ConvexFunction
-    ).handler;
-
-    await expect(
-      handler(ctx, {
-        id: "account_1",
-        now: "2026-08-01T00:05:00.000Z",
-      }),
-    ).resolves.toMatchObject({ queued: true, providerJobId: "job_1" });
     expect(mocks.enqueueSocialTargetProviderJob).toHaveBeenCalledOnce();
   });
 });

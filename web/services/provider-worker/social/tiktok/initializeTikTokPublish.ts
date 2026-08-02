@@ -2,7 +2,6 @@ import { SocialApiError } from "../SocialApiError";
 import { SocialOutcomeUnknownError } from "../SocialOutcomeUnknownError";
 import { readSocialApiResponse } from "../readSocialApiResponse";
 import type { TikTokTargetControls } from "./TikTokTargetControls";
-import { getTikTokPublishErrorMessage } from "./getTikTokPublishErrorMessage";
 
 type TikTokInitializeResponse = {
   data: {
@@ -103,18 +102,6 @@ export async function initializeTikTokPublish({
     if (error instanceof SocialApiError && error.responseStatus >= 500) {
       throw new SocialOutcomeUnknownError(
         "TikTok may have accepted this post, but its result is unclear. ClipStitchr will not send it again automatically.",
-      );
-    }
-    if (error instanceof SocialApiError) {
-      throw new SocialApiError(
-        getTikTokPublishErrorMessage({
-          fallbackMessage: error.message,
-          providerCode: error.providerCode,
-        }),
-        error.responseStatus,
-        error.responseBody,
-        error.retryAfterMs,
-        error.providerCode,
       );
     }
     throw error;

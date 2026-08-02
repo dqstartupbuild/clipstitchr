@@ -1,7 +1,6 @@
 import { SocialApiError } from "./SocialApiError";
 import { redactSocialDiagnosticString } from "@/lib/clipstitchr/server/social/redactSocialDiagnosticString";
 import { getSocialRetryAfterMs } from "./getSocialRetryAfterMs";
-import { getSocialProviderErrorCode } from "./getSocialProviderErrorCode";
 
 export async function readSocialApiResponse<T>(
   response: Response,
@@ -32,7 +31,6 @@ export async function readSocialApiResponse<T>(
       response.status,
       redactSocialDiagnosticString(body),
       getSocialRetryAfterMs(response.headers.get("Retry-After")),
-      getSocialProviderErrorCode(body),
     );
   }
 

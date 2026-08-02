@@ -16,8 +16,6 @@ import { selectSocialPublishAttempt } from "./selectSocialPublishAttempt";
 import { processInstagramPublish } from "./instagram/processInstagramPublish";
 import { processTikTokPublish } from "./tiktok/processTikTokPublish";
 import { redactSocialDiagnosticString } from "@/lib/clipstitchr/server/social/redactSocialDiagnosticString";
-import { getSocialPublishErrorCode } from "./getSocialPublishErrorCode";
-import { isSocialAccountAuthorizationError } from "./isSocialAccountAuthorizationError";
 
 export async function processSocialPublishJob({
   client,
@@ -198,9 +196,10 @@ export async function processSocialPublishJob({
     });
   } catch (error) {
     const outcomeUnknown = error instanceof SocialOutcomeUnknownError;
-    const accountNeedsAttention = isSocialAccountAuthorizationError(error);
     const needsAttention =
-      error instanceof SocialNeedsAttentionError || accountNeedsAttention;
+      error instanceof SocialNeedsAttentionError ||
+      (error instanceof SocialApiError &&
+        (error.responseStatus === 401 || error.responseStatus === 403));
     const isDefinitiveProviderFailure =
       error instanceof SocialApiError &&
       error.responseStatus >= 400 &&
@@ -215,7 +214,7 @@ export async function processSocialPublishJob({
       error instanceof Error ? error.message : "Social publishing failed.",
     );
 
-    if (accountNeedsAttention) {
+    if (needsAttention) {
       await client
         .mutation(
           api.socialAccounts.markSocialAccountNeedsAttentionFromProvider
@@ -239,14 +238,13 @@ export async function processSocialPublishJob({
         postId: input.postId,
         targetId: input.targetId,
         attemptId: attempt.id,
-        errorCode: getSocialPublishErrorCode(error),
+        errorCode:
+          error instanceof SocialApiError
+            ? `provider_http_${error.responseStatus}`
+            : undefined,
         errorMessage: message,
         needsAttention,
         outcomeUnknown,
-        providerResponseJson:
-          error instanceof SocialApiError
-            ? redactSocialDiagnosticString(error.responseBody)
-            : undefined,
         now: new Date().toISOString(),
       },
     );
