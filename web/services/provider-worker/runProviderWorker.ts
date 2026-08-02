@@ -398,8 +398,7 @@ async function loadEnvFile(path: string) {
 }
 
 async function loadWorkerEnv() {
-  await loadEnvFile(join(packageRoot, ".env.provider.local"));
-  await loadEnvFile(join(packageRoot, ".env.worker.local"));
+  await loadEnvFile(join(packageRoot, ".env.local"));
 }
 
 function getRequiredEnv(name: string) {

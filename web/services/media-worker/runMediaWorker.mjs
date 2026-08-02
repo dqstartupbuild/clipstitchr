@@ -44,7 +44,7 @@ function readArgs() {
 }
 
 async function loadWorkerEnv() {
-  const envPath = join(packageRoot, ".env.worker.local");
+  const envPath = join(packageRoot, ".env.local");
 
   try {
     const contents = await readFile(envPath, "utf8");

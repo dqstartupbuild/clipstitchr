@@ -50,7 +50,7 @@ The implementation uses:
 - Worker-only mutation auth through `MEDIA_WORKER_SECRET`.
 - A media worker entry point at
   `web/services/media-worker/runMediaWorker.mjs`.
-- Worker env examples in `web/.env.worker.example`.
+- Worker env values are documented in the canonical `web/.env.example`.
 
 Current worker execution supports fallback `upload-normalization` jobs that
 process raw uploaded source videos when browser normalization is unavailable,

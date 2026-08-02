@@ -28,13 +28,13 @@ There are three separate environment stores:
 | --- | --- | --- |
 | Next.js app | `web/.env.local` | Vercel project environment variables |
 | Convex functions | `npx convex env set ...` or Convex dashboard | Convex deployment environment variables |
-| Media worker | `web/.env.worker.local` loaded by `npm run media-worker` | The worker host's secrets/env system |
-| Provider worker | `web/.env.provider.local` loaded by `npm run provider-worker` | Google Cloud Run / Secret Manager / IAM |
-| Automation experiments | `web/.env.automation.local` | Google Cloud Run / Secret Manager / IAM |
+| Media worker | `web/.env.local` loaded by `npm run media-worker` | The worker host's secrets/env system |
+| Provider worker | `web/.env.local` loaded by `npm run provider-worker` | Google Cloud Run / Secret Manager / IAM |
+| Automation experiments | `web/.env.local` | Google Cloud Run / Secret Manager / IAM |
 
 Do not rely on Vercel secrets for the worker. Vercel secrets are only available
 to the Vercel-hosted Next.js runtime. Do not rely on `web/.env.local` for the
-worker either. The local worker command loads `web/.env.worker.local`; production
+worker either. The local worker command loads `web/.env.local`; production
 worker hosts must receive the same values through their own secret/env system.
 
 ## Local Worker Env
@@ -43,7 +43,7 @@ Copy the tracked example:
 
 ```bash
 cd web
-cp .env.worker.example .env.worker.local
+cp .env.example .env.local
 ```
 
 Fill in:
@@ -77,7 +77,7 @@ For Cloud Run-style bounded execution, run:
 npm run media-worker -- --once --max-jobs=3
 ```
 
-`MEDIA_WORKER_SECRET` must be the same value in `web/.env.worker.local` and in
+`MEDIA_WORKER_SECRET` must be the same value in `web/.env.local` and in
 the Convex deployment when processing automation-owned media jobs.
 `REPLICATE_API_TOKEN` is optional for public `replicate.delivery` output URLs
 and required only when a Swapr finalization job must fetch an authenticated
@@ -187,7 +187,7 @@ For ClipStitchr, that means one of these deployment shapes:
 
 If using Cloudflare Containers, store secrets with Workers Secrets or Secret
 Store, then pass them to the container as environment variables. The container
-must receive the same variables listed in `web/.env.worker.example`.
+must receive the same variables listed in `web/.env.example`.
 
 ## Free Tier Reality
 

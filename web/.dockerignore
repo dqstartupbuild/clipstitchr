@@ -6,6 +6,6 @@ coverage
 coverage-json
 test-results
 .env*
-!.env.worker.example
+!.env.example
 *.log
 tsconfig.tsbuildinfo

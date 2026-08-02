@@ -68,7 +68,7 @@ npm run provider-worker -- --check
 New local env template:
 
 ```bash
-web/.env.provider.example
+web/.env.example
 ```
 
 New container entrypoint:

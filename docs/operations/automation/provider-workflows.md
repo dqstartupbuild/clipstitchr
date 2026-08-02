@@ -172,10 +172,10 @@ Convex state ledger
 
 ## Environment And Credentials
 
-The planned Google execution path has a dedicated example file:
+The planned Google execution path uses the canonical environment file:
 
 ```bash
-web/.env.automation.example
+web/.env.example
 ```
 
 Use it as the local template for provider executors, Cloud Run dispatchers, and
@@ -183,7 +183,7 @@ autopilot experiments:
 
 ```bash
 cd web
-cp .env.automation.example .env.automation.local
+cp .env.example .env.local
 ```
 
 The production values live in separate places:
@@ -194,7 +194,7 @@ The production values live in separate places:
 | Convex verification secrets | Convex dashboard or `npx convex env set` |
 | Cloud Run provider services/jobs | Google Secret Manager or Cloud Run env/secrets |
 | Cloud Tasks / Scheduler OIDC identity | Google IAM service accounts |
-| Local automation experiments | `web/.env.automation.local` |
+| Local automation experiments | `web/.env.local` |
 
 Secrets that must match across runtimes:
 
@@ -215,7 +215,7 @@ If an external host such as Vercel must call Google APIs directly, use Workload
 Identity Federation where possible. A base64 service-account key env var is a
 fallback, not the preferred production path.
 
-The shipped provider-worker runtime uses `web/.env.provider.example`. Hook Lab
+The shipped provider-worker runtime uses `web/.env.example`. Hook Lab
 adds `APIFY_TOKEN` plus optional Actor, cost, media, model, and ffprobe settings
 documented there. `PROVIDER_WORKER_TOOLS=stitchr` already authorizes both Hook
 Lab provider job types, so deployment does not add a separate tool name.
@@ -224,11 +224,11 @@ For local verification:
 
 ```bash
 cd web
-cp .env.provider.example .env.provider.local
+cp .env.example .env.local
 npm run provider-worker -- --check
 ```
 
-Do not commit `.env.provider.local` or copy secret values into deployment
+Do not commit `.env.local` or copy secret values into deployment
 documentation.
 
 ## Hook Lab Durable Workflow
