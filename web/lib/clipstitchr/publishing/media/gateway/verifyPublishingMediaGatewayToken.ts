@@ -1,1 +1,1 @@
-export { verifyPublishingMediaGatewayToken } from "@/services/publishing-service/src/media-gateway/verifyPublishingMediaGatewayToken";
+export { verifyPublishingMediaGatewayToken } from "@clipstitchr/publishing-service";

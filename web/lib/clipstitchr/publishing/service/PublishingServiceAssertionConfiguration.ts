@@ -1,4 +1,4 @@
-import type { ServiceAssertionSigningKey } from "@/services/publishing-service/src/assertions/ServiceAssertionSigningKey";
+import type { ServiceAssertionSigningKey } from "@clipstitchr/publishing-service";
 
 export type PublishingServiceAssertionConfiguration = {
   audience: string;

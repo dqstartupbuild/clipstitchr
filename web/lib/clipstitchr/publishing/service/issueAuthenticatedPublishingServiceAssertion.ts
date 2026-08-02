@@ -4,7 +4,7 @@ import type { IssueAuthenticatedPublishingServiceAssertionInput } from "@/lib/cl
 import { getAuthenticatedPublishingTenantIdentity } from "@/lib/clipstitchr/publishing/identity/getAuthenticatedPublishingTenantIdentity";
 import { createPublishingServiceClerkTenantIdentity } from "@/lib/clipstitchr/publishing/service/createPublishingServiceClerkTenantIdentity";
 import { readPublishingServiceAssertionConfiguration } from "@/lib/clipstitchr/publishing/service/readPublishingServiceAssertionConfiguration";
-import { issueServiceAssertion } from "@/services/publishing-service/src/assertions/issueServiceAssertion";
+import { issueServiceAssertion } from "@clipstitchr/publishing-service";
 
 export async function issueAuthenticatedPublishingServiceAssertion({
   action,

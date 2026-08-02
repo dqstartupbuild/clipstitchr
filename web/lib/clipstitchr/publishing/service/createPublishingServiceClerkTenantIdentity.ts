@@ -1,5 +1,5 @@
 import type { PublishingTenantIdentity } from "@/lib/clipstitchr/publishing/identity/PublishingTenantIdentity";
-import type { ClerkTenantIdentity } from "@/services/publishing-service/src/identity/ClerkTenantIdentity";
+import type { ClerkTenantIdentity } from "@clipstitchr/publishing-service";
 
 export function createPublishingServiceClerkTenantIdentity(
   identity: PublishingTenantIdentity,

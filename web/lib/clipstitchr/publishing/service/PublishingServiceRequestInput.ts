@@ -1,4 +1,4 @@
-import type { ServiceAssertionAction } from "@/services/publishing-service/src/assertions/ServiceAssertionAction";
+import type { ServiceAssertionAction } from "@clipstitchr/publishing-service";
 
 export type PublishingServiceRequestInput = Readonly<{
   action: ServiceAssertionAction;

@@ -2,7 +2,7 @@ import "server-only";
 
 import type { PublishingServiceAssertionConfiguration } from "@/lib/clipstitchr/publishing/service/PublishingServiceAssertionConfiguration";
 import { PublishingServiceConfigurationError } from "@/lib/clipstitchr/publishing/service/PublishingServiceConfigurationError";
-import { createServiceAssertionSigningKey } from "@/services/publishing-service/src/assertions/createServiceAssertionSigningKey";
+import { createServiceAssertionSigningKey } from "@clipstitchr/publishing-service";
 
 export function readPublishingServiceAssertionConfiguration(): PublishingServiceAssertionConfiguration {
   const audience = process.env.PUBLISHING_SERVICE_AUDIENCE?.trim();

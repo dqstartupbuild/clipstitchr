@@ -1,1 +1,1 @@
-export type { PublishingMediaGatewayTokenClaims } from "@/services/publishing-service/src/media-gateway/PublishingMediaGatewayTokenClaims";
+export type { PublishingMediaGatewayTokenClaims } from "@clipstitchr/publishing-service";

@@ -12,6 +12,15 @@ export type { ServiceAssertionVerificationInput } from "./assertions/ServiceAsse
 export { createServiceAssertionSigningKey } from "./assertions/createServiceAssertionSigningKey.js";
 export { issueServiceAssertion } from "./assertions/issueServiceAssertion.js";
 export { verifyServiceAssertion } from "./assertions/verifyServiceAssertion.js";
+export type { PublishingMediaGatewayTokenClaims } from "./media-gateway/PublishingMediaGatewayTokenClaims.js";
+export {
+  PublishingMediaGatewayTokenError,
+  type PublishingMediaGatewayTokenErrorCode,
+} from "./media-gateway/PublishingMediaGatewayTokenError.js";
+export { normalizePublishingMediaPublicOrigin } from "./media-gateway/normalizePublishingMediaPublicOrigin.js";
+export { sealPublishingMediaGatewayToken } from "./media-gateway/sealPublishingMediaGatewayToken.js";
+export { validatePublishingMediaGatewayTokenClaims } from "./media-gateway/validatePublishingMediaGatewayTokenClaims.js";
+export { verifyPublishingMediaGatewayToken } from "./media-gateway/verifyPublishingMediaGatewayToken.js";
 export type { PublishingServiceEnvironment } from "./config/PublishingServiceEnvironment.js";
 export { parsePublishingServiceEnvironment } from "./config/parsePublishingServiceEnvironment.js";
 export { InvalidPublishingTenantError } from "./errors/InvalidPublishingTenantError.js";
