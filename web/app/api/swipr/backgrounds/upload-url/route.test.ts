@@ -104,6 +104,7 @@ describe("POST /api/swipr/backgrounds/upload-url", () => {
       },
     );
     expect(mocks.getR2UploadSignedUrl).toHaveBeenCalledWith({
+      contentLength: 123,
       contentType: "image/jpeg",
       key: "users/user_123/swipr-backgrounds/background_1/image.jpg",
     });

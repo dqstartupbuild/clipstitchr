@@ -28,12 +28,15 @@ export const readOwnedPublishingApiIntegrations = async (
   const byId = new Map(integrations.map((integration) => [integration.id, integration]));
   for (const destination of destinations) {
     const integration = byId.get(destination.integrationId);
+    if (integration === undefined) {
+      throw new PublishingResourceOwnershipError();
+    }
     const matches =
       destination.provider === "tiktok"
-        ? integration?.providerIdentifier === "tiktok"
-        : integration?.providerIdentifier === "instagram" ||
-          integration?.providerIdentifier === "instagram-standalone";
-    if (!matches || integration?.type !== integration.providerIdentifier) {
+        ? integration.providerIdentifier === "tiktok"
+        : integration.providerIdentifier === "instagram" ||
+          integration.providerIdentifier === "instagram-standalone";
+    if (!matches || integration.type !== integration.providerIdentifier) {
       throw new PublishingResourceOwnershipError();
     }
   }
