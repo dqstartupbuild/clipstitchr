@@ -119,28 +119,4 @@ describe("renderSwiprSlideBlob", () => {
       renderSwiprSlideBlob(new Blob(["background"]), createSlide()),
     ).rejects.toThrow("Unable to create Swipr slide canvas.");
   });
-
-  it("uses an explicit JPEG quality for publishing renders", async () => {
-    const canvas = {
-      getContext: vi.fn(() => ({ drawImage: vi.fn() })),
-      height: 0,
-      width: 0,
-    };
-
-    vi.stubGlobal("document", {
-      createElement: vi.fn(() => canvas),
-    });
-
-    await renderSwiprSlideBlob(
-      new Blob(["background"]),
-      createSlide(),
-      { mimeType: "image/jpeg", quality: 0.92 },
-    );
-
-    expect(mocks.createBlobFromCanvas).toHaveBeenCalledWith(
-      canvas,
-      "image/jpeg",
-      0.92,
-    );
-  });
 });

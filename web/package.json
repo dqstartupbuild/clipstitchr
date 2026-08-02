@@ -2,28 +2,19 @@
   "name": "web",
   "version": "0.1.0",
   "private": true,
-  "license": "AGPL-3.0-only",
-  "workspaces": [
-    "services/publishing-service"
-  ],
   "scripts": {
     "content:build": "node ./scripts/build-content-collections.mjs",
     "content:watch": "node ./scripts/watch-content-collections.mjs",
     "dev": "node ./scripts/run-dev-server.mjs",
     "dev:webpack": "node ./scripts/run-dev-server.mjs --webpack",
-    "build": "npm run content:build && npm run publishing-service:build && next build",
+    "build": "npm run content:build && next build",
     "start": "next start",
     "lint": "npm run content:build && eslint .",
     "media-worker": "node ./services/media-worker/runMediaWorker.mjs",
-    "postiz:validate": "node ./vendor/postiz/scripts/validate-import.mjs",
-    "publishing-service:build": "npm run build --workspace @clipstitchr/publishing-service",
-    "publishing-service:test": "npm test --workspace @clipstitchr/publishing-service",
-    "publishing-service:test:redis": "npm run test:redis --workspace @clipstitchr/publishing-service",
-    "publishing-service:typecheck": "npm run typecheck --workspace @clipstitchr/publishing-service",
     "provider-worker": "tsx ./services/provider-worker/runProviderWorker.ts",
     "submit:indexnow": "node --env-file-if-exists=.env.local ./scripts/submit-indexnow.mjs",
-    "typecheck": "npm run content:build && tsc --noEmit && npm run publishing-service:typecheck",
-    "test": "npm run content:build && vitest run --coverage && npm run publishing-service:test"
+    "typecheck": "npm run content:build && tsc --noEmit",
+    "test": "npm run content:build && vitest run --coverage"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1045.0",
@@ -42,7 +33,7 @@
     "loops": "^7.0.0",
     "lucide-react": "^1.14.0",
     "mediabunny": "^1.44.0",
-    "next": "16.2.12",
+    "next": "16.2.6",
     "posthog-js": "^1.373.5",
     "posthog-node": "^5.34.2",
     "react": "19.2.4",
@@ -59,25 +50,16 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^4.1.4",
-    "esbuild": "^0.28.1",
     "eslint": "^9",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "16.2.6",
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.4"
   },
   "overrides": {
-    "dompurify": "^3.4.12",
-    "js-yaml": "^4.3.1",
-    "minimatch@^3.0.0": {
-      "brace-expansion": "^1.1.18"
-    },
-    "minimatch@^10.0.0": {
-      "brace-expansion": "^5.0.9"
-    },
-    "postcss": "^8.5.25",
-    "sharp": "^0.35.3",
+    "js-yaml": "^4.1.2",
+    "postcss": "^8.5.10",
     "uuid": "^11.1.1",
     "ws": "^8.20.2"
   }

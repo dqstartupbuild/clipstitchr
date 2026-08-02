@@ -16,8 +16,6 @@ export function createSwipeCardFields(swipe: Doc<"swipes">) {
     hashtags: swipe.hashtags,
     socialCaption: swipe.socialCaption,
     slides: swipe.slides,
-    publishingRevision: swipe.publishingRevision,
-    publishingBundle: swipe.publishingBundle,
     searchText: getSwipeCardSearchText(swipe),
     posterObject: swipe.posterObject,
     posterVersion: swipe.posterVersion,

@@ -50,8 +50,6 @@ import { stitchSequenceSegmentValidator } from "./validators/stitchSequenceSegme
 import { swiprBackgroundSourceValidator } from "./validators/swiprBackgroundSource";
 import { swiprProductSourceTypeValidator } from "./validators/swiprProductSourceType";
 import { swiprSlideValidator } from "./validators/swiprSlide";
-import { swipePublishingBundleValidator } from "./validators/swipePublishingBundle";
-import { swipePublishingUploadAttemptStatusValidator } from "./validators/swipePublishingUploadAttemptStatus";
 import { swiprCallToActionStyleValidator } from "./validators/swiprCallToActionStyle";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
@@ -1331,8 +1329,6 @@ export default defineSchema({
     rationale: v.optional(v.string()),
     socialCaption: v.optional(v.string()),
     slides: v.array(swiprSlideValidator),
-    publishingRevision: v.optional(v.string()),
-    publishingBundle: v.optional(swipePublishingBundleValidator),
     posterObject: v.optional(r2ObjectValidator),
     posterVersion: v.optional(v.number()),
     postBridgePosts: v.optional(v.array(postBridgePostReferenceValidator)),
@@ -1370,8 +1366,6 @@ export default defineSchema({
     hashtags: v.optional(v.array(v.string())),
     socialCaption: v.optional(v.string()),
     slides: v.array(swiprSlideValidator),
-    publishingRevision: v.optional(v.string()),
-    publishingBundle: v.optional(swipePublishingBundleValidator),
     searchText: v.string(),
     posterObject: v.optional(r2ObjectValidator),
     posterVersion: v.optional(v.number()),
@@ -1396,30 +1390,6 @@ export default defineSchema({
       "updatedAt",
     ])
     .index("by_owner_id", ["ownerId", "id"]),
-  swipePublishingUploadAttempts: defineTable({
-    ownerId: v.string(),
-    attemptId: v.string(),
-    swipeId: v.string(),
-    bundle: swipePublishingBundleValidator,
-    status: swipePublishingUploadAttemptStatusValidator,
-    expiresAt: v.string(),
-    committedAt: v.optional(v.string()),
-    createdAt: v.string(),
-    updatedAt: v.string(),
-  })
-    .index("by_owner_attempt", ["ownerId", "attemptId"])
-    .index("by_owner_created", ["ownerId", "createdAt"])
-    .index("by_status_expires", ["status", "expiresAt"]),
-  swipePublishingBundleHistory: defineTable({
-    ownerId: v.string(),
-    swipeId: v.string(),
-    revision: v.string(),
-    bundle: swipePublishingBundleValidator,
-    createdAt: v.string(),
-    lastCommittedAt: v.string(),
-  })
-    .index("by_owner_swipe_revision", ["ownerId", "swipeId", "revision"])
-    .index("by_owner_created", ["ownerId", "createdAt"]),
   replicateJobs: defineTable({
     ownerId: v.string(),
     predictionId: v.string(),

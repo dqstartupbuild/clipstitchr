@@ -275,12 +275,7 @@ npm run build
 
 1. Create a private R2 bucket.
 2. Create an R2 API token with object read/write permissions scoped to that bucket.
-3. Add a CORS rule allowing the app origin to `PUT` and `GET` with
-   `Content-Type`. Swipe publishing also requires
-   `If-None-Match`, `x-amz-checksum-sha256`, and
-   `x-amz-meta-checksum-sha256`; the signed request also binds the user-agent
-   supplied `Content-Length`. Expose `ETag` and `x-amz-version-id` when optional
-   browser-side object versions should be recorded.
+3. Add a CORS rule allowing the app origin to `PUT` and `GET` with `Content-Type`.
 4. Copy account ID, bucket name, access key ID, and secret access key into `.env.local` and production secrets.
 5. Do not enable public bucket access for private user media.
 

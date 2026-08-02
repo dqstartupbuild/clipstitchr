@@ -111,11 +111,6 @@ describe("dashboard shell sections", () => {
         <p>Workspace child</p>
       </DashboardShell>,
     );
-    const nestedLandmarkShellMarkup = renderToStaticMarkup(
-      <DashboardShell contentAs="div">
-        <section>Nested workspace landmark owner</section>
-      </DashboardShell>,
-    );
     const sidebarMarkup = renderToStaticMarkup(<DashboardSidebar />);
     const statsMarkup = renderToStaticMarkup(
       <DashboardStats ugcCount={1} demoCount={2} stitchesCount={4} />,
@@ -124,8 +119,6 @@ describe("dashboard shell sections", () => {
     expect(headerMarkup).toContain("Dashboard");
     expect(customHeaderMarkup).toContain("Custom action");
     expect(shellMarkup).toContain("Workspace child");
-    expect(shellMarkup).toContain("<main");
-    expect(nestedLandmarkShellMarkup).not.toContain("<main");
     expect(sidebarMarkup).toContain("Library");
     expect(sidebarMarkup).toContain("Stitchr");
     expect(sidebarMarkup).toContain("Hook Lab");

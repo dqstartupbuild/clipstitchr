@@ -11,9 +11,6 @@ import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
 export async function renderSwiprSlideBlob(
   backgroundBlob: Blob,
   slide: SwiprSlide,
-  output: { mimeType: string; quality?: number } = {
-    mimeType: SWIPR_EXPORT_MIME_TYPE,
-  },
 ) {
   const background = await loadImageFromBlob(backgroundBlob);
   const canvas = document.createElement("canvas");
@@ -28,7 +25,5 @@ export async function renderSwiprSlideBlob(
 
   drawSwiprSlideToCanvas(context, background, slide);
 
-  return output.quality === undefined
-    ? createBlobFromCanvas(canvas, output.mimeType)
-    : createBlobFromCanvas(canvas, output.mimeType, output.quality);
+  return createBlobFromCanvas(canvas, SWIPR_EXPORT_MIME_TYPE);
 }

@@ -15,8 +15,6 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "convex/_generated/**",
     "next-env.d.ts",
-    "services/publishing-service/**",
-    "vendor/postiz/**",
   ]),
 ]);
 

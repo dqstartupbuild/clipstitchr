@@ -157,7 +157,6 @@ describe("POST /api/r2/upload-url", () => {
       },
     );
     expect(mocks.getR2UploadSignedUrl).toHaveBeenCalledWith({
-      contentLength: 1025,
       contentType: "video/mp4",
       key: VIDEO_CLIP_KEY,
     });
@@ -172,7 +171,6 @@ describe("POST /api/r2/upload-url", () => {
       request: expect.any(Request),
     });
   });
-
 
   it("returns 429 with retry timing when upload quota is exceeded", async () => {
     mocks.convex.mutation.mockRejectedValue({

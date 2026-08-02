@@ -7,17 +7,11 @@ import { getR2SignedUrlExpiresSeconds } from "@/lib/clipstitchr/server/r2/getR2S
 type GetR2UploadSignedUrlOptions = {
   key: string;
   contentType: string;
-  checksumSha256?: string;
-  contentLength?: number;
-  preventOverwrite?: boolean;
 };
 
 export async function getR2UploadSignedUrl({
   key,
   contentType,
-  checksumSha256,
-  contentLength,
-  preventOverwrite,
 }: GetR2UploadSignedUrlOptions) {
   const expiresIn = getR2SignedUrlExpiresSeconds();
   const environment = getR2Environment();
@@ -25,16 +19,6 @@ export async function getR2UploadSignedUrl({
     Bucket: environment.bucketName,
     Key: key,
     ContentType: contentType,
-    ...(contentLength !== undefined ? { ContentLength: contentLength } : {}),
-    ...(preventOverwrite ? { IfNoneMatch: "*" } : {}),
-    ...(checksumSha256
-      ? {
-          ChecksumSHA256: checksumSha256,
-          Metadata: {
-            "checksum-sha256": checksumSha256,
-          },
-        }
-      : {}),
   });
   const url = await getSignedUrl(createR2Client(), command, { expiresIn });
 

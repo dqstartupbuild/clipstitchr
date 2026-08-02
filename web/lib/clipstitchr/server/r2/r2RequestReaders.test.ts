@@ -94,7 +94,6 @@ describe("R2 request readers", () => {
         }),
       ),
     ).rejects.toThrow("Missing R2 upload size.");
-
   });
 
   it("reads single download URL requests", async () => {

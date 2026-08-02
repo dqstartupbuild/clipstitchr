@@ -10,7 +10,6 @@ import {
 } from "../lib/clipstitchr/constants/stitchrBatchGenerationLimits";
 
 const GIGABYTE = 1024 * 1024 * 1024;
-const TERABYTE = 1024 * GIGABYTE;
 const MONTH = 30 * DAY;
 
 export const rateLimiter = new RateLimiter(components.rateLimiter, {
@@ -59,25 +58,11 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     period: HOUR,
     capacity: 500,
   },
-  r2UploadUrlGlobal: {
-    kind: "token bucket",
-    rate: 100_000,
-    period: HOUR,
-    capacity: 10_000,
-    shards: 10,
-  },
   r2UploadBytes: {
     kind: "token bucket",
     rate: 10 * GIGABYTE,
     period: DAY,
     capacity: 10 * GIGABYTE,
-  },
-  r2UploadBytesGlobal: {
-    kind: "token bucket",
-    rate: TERABYTE,
-    period: DAY,
-    capacity: TERABYTE,
-    shards: 10,
   },
   r2UploadBytesMonthly: {
     kind: "token bucket",
@@ -85,69 +70,11 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     period: MONTH,
     capacity: 500 * GIGABYTE,
   },
-  r2UploadBytesMonthlyGlobal: {
-    kind: "token bucket",
-    rate: 20 * TERABYTE,
-    period: MONTH,
-    capacity: 20 * TERABYTE,
-    shards: 10,
-  },
-  swipePublishingPrepare: {
-    kind: "token bucket",
-    rate: 600,
-    period: HOUR,
-    capacity: 60,
-  },
-  swipePublishingPrepareGlobal: {
-    kind: "token bucket",
-    rate: 20_000,
-    period: HOUR,
-    capacity: 2_000,
-    shards: 5,
-  },
   r2DownloadUrl: {
     kind: "token bucket",
     rate: 5000,
     period: HOUR,
     capacity: 1000,
-  },
-  publishingMediaReadRequestsByGrant: {
-    kind: "token bucket",
-    rate: 600,
-    period: HOUR,
-    capacity: 120,
-  },
-  publishingMediaReadRequestsByQuota: {
-    kind: "token bucket",
-    rate: 5_000,
-    period: HOUR,
-    capacity: 1_000,
-  },
-  publishingMediaReadRequestsGlobal: {
-    kind: "token bucket",
-    rate: 100_000,
-    period: HOUR,
-    capacity: 10_000,
-    shards: 10,
-  },
-  publishingMediaReadBytesByGrant: {
-    kind: "token bucket",
-    rate: 10 * GIGABYTE,
-    period: DAY,
-    capacity: 10 * GIGABYTE,
-  },
-  publishingMediaReadBytesByQuota: {
-    kind: "token bucket",
-    rate: 50 * GIGABYTE,
-    period: DAY,
-    capacity: 50 * GIGABYTE,
-  },
-  publishingMediaReadBytesGlobal: {
-    kind: "token bucket",
-    rate: 10 * TERABYTE,
-    period: DAY,
-    capacity: 10 * TERABYTE,
-    shards: 10,
   },
   r2DeleteObjects: {
     kind: "token bucket",

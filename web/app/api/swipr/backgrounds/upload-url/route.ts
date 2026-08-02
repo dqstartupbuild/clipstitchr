@@ -41,7 +41,6 @@ export async function POST(request: Request) {
     });
     const signedUrl = await getR2UploadSignedUrl({
       key,
-      contentLength: body.sizeBytes,
       contentType: body.contentType,
     });
 

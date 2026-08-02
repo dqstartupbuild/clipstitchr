@@ -195,22 +195,16 @@ Deployment details live in:
 - `docs/operations/automation/provider-workflows.md`
 - `docs/operations/reliability/durable-workflows.md`
 
-### Publishing And Analytics
+### Scheduling And Analytics
 
-ClipStitchr is replacing Post Bridge with a first-party Instagram and TikTok
-publishing workspace. The replacement uses a bounded, modified Postiz source
-import for the provider and scheduling engine while keeping Clerk identity,
-ClipStitchr media ownership, product navigation, and user-facing copy.
-
-The migration is still in progress. Existing Post Bridge work is removed only
-after pending schedules have an explicit disposition and retained history has a
-safe home.
+Post Bridge integrations support scheduling and analytics surfaces. Dashboard
+routes include schedule and analytics pages, with backend docs covering API
+configuration, stored post state, media upload behavior, and analytics sync.
 
 Relevant docs:
 
-- `docs/features/publishing/post-bridge-cutover.md`
-- `docs/architecture/postiz-publishing-source-boundary.md`
-- `postiz-source-integration.md`
+- `docs/features/post-bridge/post-bridge-scheduling.md`
+- `docs/features/post-bridge/post-bridge-analytics.md`
 
 ### Content, SEO, And Marketing Pages
 
@@ -238,15 +232,13 @@ The application code lives under `web/`.
 | UI | React 19, Tailwind CSS 4, lucide-react |
 | Auth | Clerk |
 | Backend/database | Convex |
-| Publishing data | PostgreSQL with Prisma |
-| Publishing coordination | Redis security state and a PostgreSQL transactional outbox |
 | Object storage | Cloudflare R2 |
 | Browser media processing | Media Bunny |
 | AI/provider workflows | Replicate and configurable model IDs |
 | Analytics | PostHog and Vercel Analytics |
 | Content | Content Collections, MDX, remark-gfm |
 | Testing | Vitest, Testing Library patterns, coverage |
-| Workers | Provider/media Cloud Run Jobs plus a long-running publishing Cloud Run service |
+| Workers | Node/tsx workers packaged as Cloud Run Jobs |
 
 ## Architecture
 
@@ -276,29 +268,6 @@ Cloud Run workers and provider APIs
   v
 Saved library assets
 ```
-
-The publishing migration adds a server-side service boundary for Instagram and
-TikTok:
-
-```text
-Clerk-authenticated ClipStitchr request
-  |
-  | tenant-scoped service assertion
-  v
-ClipStitchr publishing gateway
-  |
-  | durable post, destination, media, and outbox records
-  v
-PostgreSQL transactional outbox + Redis
-  |
-  | just-in-time provider media access
-  v
-Instagram or TikTok
-```
-
-Postiz-derived source is confined to `web/vendor/postiz/`. ClipStitchr-owned
-identity, security, media, route, and deployment adapters stay outside that
-directory.
 
 ## Media Processing Model
 
@@ -396,14 +365,8 @@ Dashboard routes:
 | `/dashboard/swipr` | Swipr carousel creation |
 | `/dashboard/swapr` | Swapr motion-transfer studio |
 | `/dashboard/hooks` | Hook Lab |
-| `/dashboard/publishing` | Retained publishing shell, entering at Calendar |
-| `/dashboard/publishing/compose` | Create an immediate or scheduled post |
-| `/dashboard/publishing/calendar` | Scheduled-post calendar |
-| `/dashboard/publishing/posts` | Draft, queue, result, failure, and retry review |
-| `/dashboard/publishing/analytics` | Supported Instagram and TikTok analytics |
-| `/dashboard/publishing/integrations` | Instagram and TikTok connections |
-| `/dashboard/schedule` | Compatibility entry point during publishing cutover |
-| `/dashboard/analytics` | Compatibility entry point during publishing cutover |
+| `/dashboard/schedule` | Scheduling workspace |
+| `/dashboard/analytics` | Post Bridge analytics |
 | `/dashboard/settings` | Product and account settings |
 | `/dashboard/onboarding` | First-run onboarding |
 | `/dashboard/uploads` | Redirect to Library |
@@ -416,10 +379,6 @@ Dashboard routes:
 .
 |-- README.md
 |-- AGENTS.md
-|-- LICENSE
-|-- THIRD_PARTY_NOTICES.md
-|-- MODIFICATIONS.md
-|-- TRADEMARKS.md
 |-- project-scope.md
 |-- coding-guidelines.md
 |-- docs/
@@ -446,8 +405,6 @@ Dashboard routes:
     |-- public/
     |-- scripts/
     |-- services/
-    |-- vendor/
-    |   `-- postiz/
     |-- package.json
     `-- README.md
 ```
@@ -465,7 +422,6 @@ Dashboard routes:
 | `web/convex/` | Convex schema-facing functions, queries, mutations, actions, validators |
 | `web/services/provider-worker/` | Provider worker job runner |
 | `web/services/media-worker/` | Media worker job runner |
-| `web/vendor/postiz/` | Bounded, provenance-tracked Postiz source import |
 | `web/content/` | MDX content collections |
 | `resources/clipr/` | Internal hook and template resources |
 | `docs/README.md` | Documentation map and filing rules |
@@ -530,8 +486,7 @@ Major configuration groups:
 - Cloudflare R2: account, bucket, access key, secret key, signed URL TTL
 - Replicate/provider models: token and model IDs
 - Rate limits: `RATE_LIMIT_API_SECRET`
-- Publishing: PostgreSQL, Redis, transactional-outbox service assertion, token
-  encryption, R2 media gateway, Instagram, and TikTok values
+- Post Bridge: API key encryption secret, base URL, media limits
 - TikTok: pixel and Events API values
 - PostHog: project token and host
 - IndexNow and blog publish webhook secrets
@@ -578,12 +533,6 @@ Core rules:
 - every new capability needs a matching feature doc
 - user-facing copy must be simple, human, and non-technical
 
-One narrow exception applies to provenance-tracked Postiz files under
-`web/vendor/postiz/` when preserving upstream organization is necessary for
-license review or safe updates. All ClipStitchr-owned publishing adapters and
-new behavior remain subject to the atomic rules. See
-`docs/architecture/postiz-publishing-source-boundary.md`.
-
 Read `coding-guidelines.md` before adding or restructuring code.
 
 ## Feature Documentation
@@ -603,9 +552,8 @@ Start here:
 - `docs/features/editor/quick-edit.md` for non-destructive source edits
 - `docs/features/stitchr/stitchr-batch.md` for automated draft creation
 - `docs/features/hook-lab/hook-lab-post-analysis.md` for public post analysis
-- `docs/features/publishing/post-bridge-cutover.md` for the publishing cutover
-- `docs/architecture/postiz-publishing-source-boundary.md` for provenance,
-  update, and network-source requirements
+- `docs/features/post-bridge/post-bridge-scheduling.md` for scheduling
+- `docs/features/post-bridge/post-bridge-analytics.md` for analytics
 - `docs/operations/security/rate-limits.md` for backend cost protection
 - `docs/operations/reliability/durable-workflows.md` for provider workflow recovery
 - `docs/operations/deployment/media-worker.md` for worker deployment
@@ -665,22 +613,13 @@ Before production deploys:
 - configure R2
 - configure provider secrets and model IDs
 - configure rate-limit secrets
-- configure publishing PostgreSQL, Redis, outbox lease controls, service
-  assertion, token encryption, Instagram, and TikTok values when publishing is
-  enabled
-- configure the exact verified `PUBLISHING_MEDIA_PUBLIC_ORIGIN`, distinct
-  publishing-media token and quota secrets, and the matching Convex read
-  limiter before provider URL fetches are enabled
-- configure PostHog and IndexNow values only when those features are enabled
+- configure Post Bridge, TikTok, PostHog, and IndexNow values only when those
+  features are enabled
 - deploy Cloud Run worker jobs when worker code or shared worker backend code
   changes
 
 Cloud Run worker deployment commands and smoke checks are documented in
 `AGENTS.md` and backend deployment docs.
-
-The provider-readable media route has a separate production gate in
-`docs/operations/deployment/publishing-media-gateway.md`. Implemented code is not
-evidence that the public origin or a live provider fetch is ready.
 
 ## Security Notes
 
@@ -701,28 +640,3 @@ browser processing, dashboard routes, content routes, workers, tests, and
 feature documentation. Some planning documents still describe phased rollout
 items, so use the implementation files and feature docs together when checking
 current behavior.
-
-The Post Bridge to ClipStitchr Publishing migration is in progress. Do not
-describe the new Instagram and TikTok publishing path as complete until the
-cutover gates in `docs/features/publishing/post-bridge-cutover.md` pass.
-
-## License and Source
-
-The combined ClipStitchr source distribution is provided under the
-[GNU Affero General Public License version 3 only](LICENSE), except for
-third-party material that carries its own compatible license or notice.
-
-Selected publishing code is derived from
-[Postiz](https://github.com/gitroomhq/postiz-app) at audited commit
-`cf4c432c00c9db775ea1b1f12480a8e2b89aec32`. Attribution and material change
-categories are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and
-[MODIFICATIONS.md](MODIFICATIONS.md). File-level origin and modification state
-are recorded inside the bounded `web/vendor/postiz/` import. Brand rights are
-explained in [TRADEMARKS.md](TRADEMARKS.md).
-
-When a modified AGPL-covered version is available to users over a network, the
-deployment must give those users a prominent way to obtain the exact
-Corresponding Source for the running version. A moving branch that may not
-match production is not sufficient. Release and source-offer requirements are
-documented in
-`docs/architecture/postiz-publishing-source-boundary.md`.

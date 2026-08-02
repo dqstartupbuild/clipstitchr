@@ -4,8 +4,6 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
-import { consumeR2UploadLimits } from "./rateLimits/consumeR2UploadLimits";
-import { consumePublishingMediaReadLimits } from "./rateLimits/consumePublishingMediaReadLimits";
 
 function getPositiveCount(count: number, name: string) {
   if (!Number.isFinite(count) || count <= 0) {
@@ -45,27 +43,18 @@ export const consumeR2Upload = mutation({
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const uploadBytes = getPositiveCount(sizeBytes, "Upload size");
 
-    await consumeR2UploadLimits(ctx, {
-      objectCount: 1,
-      ownerId,
-      totalBytes: uploadBytes,
-    });
-  },
-});
-
-export const consumeSwipePublishingPrepare = mutation({
-  args: {
-    secret: v.string(),
-  },
-  handler: async (ctx, { secret }) => {
-    assertRateLimitApiSecret(secret);
-    const ownerId = await getAuthenticatedOwnerId(ctx);
-
-    await rateLimiter.limit(ctx, "swipePublishingPrepare", {
+    await rateLimiter.limit(ctx, "r2UploadUrl", {
       key: ownerId,
       throws: true,
     });
-    await rateLimiter.limit(ctx, "swipePublishingPrepareGlobal", {
+    await rateLimiter.limit(ctx, "r2UploadBytes", {
+      key: ownerId,
+      count: uploadBytes,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "r2UploadBytesMonthly", {
+      key: ownerId,
+      count: uploadBytes,
       throws: true,
     });
   },
@@ -83,27 +72,6 @@ export const consumeR2Download = mutation({
     await rateLimiter.limit(ctx, "r2DownloadUrl", {
       key: ownerId,
       throws: true,
-    });
-  },
-});
-
-export const consumePublishingMediaRead = mutation({
-  args: {
-    grantKey: v.string(),
-    quotaIdentity: v.string(),
-    readBytes: v.number(),
-    secret: v.string(),
-  },
-  handler: async (
-    ctx,
-    { grantKey, quotaIdentity, readBytes, secret },
-  ) => {
-    assertRateLimitApiSecret(secret);
-
-    await consumePublishingMediaReadLimits(ctx, {
-      grantKey,
-      quotaIdentity,
-      readBytes,
     });
   },
 });
