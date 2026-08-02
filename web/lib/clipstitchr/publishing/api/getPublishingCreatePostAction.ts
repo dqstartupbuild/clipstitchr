@@ -1,5 +1,5 @@
 import type { PublishingPostIntent } from "@/lib/clipstitchr/publishing/client/contracts/PublishingPostIntent";
-import type { ServiceAssertionAction } from "@clipstitchr/publishing-service";
+import type { ServiceAssertionAction } from "@/services/publishing-service/src/assertions/ServiceAssertionAction";
 
 export function getPublishingCreatePostAction(
   intent: PublishingPostIntent,

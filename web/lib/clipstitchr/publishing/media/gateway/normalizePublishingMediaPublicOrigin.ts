@@ -1,1 +1,1 @@
-export { normalizePublishingMediaPublicOrigin } from "@clipstitchr/publishing-service";
+export { normalizePublishingMediaPublicOrigin } from "@/services/publishing-service/src/media-gateway/normalizePublishingMediaPublicOrigin";

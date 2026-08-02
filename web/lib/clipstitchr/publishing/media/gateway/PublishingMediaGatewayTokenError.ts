@@ -1,4 +1,4 @@
 export {
   PublishingMediaGatewayTokenError,
   type PublishingMediaGatewayTokenErrorCode,
-} from "@clipstitchr/publishing-service";
+} from "@/services/publishing-service/src/media-gateway/PublishingMediaGatewayTokenError";

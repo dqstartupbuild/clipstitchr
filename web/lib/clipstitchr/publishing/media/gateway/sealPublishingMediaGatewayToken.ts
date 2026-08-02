@@ -1,1 +1,1 @@
-export { sealPublishingMediaGatewayToken } from "@clipstitchr/publishing-service";
+export { sealPublishingMediaGatewayToken } from "@/services/publishing-service/src/media-gateway/sealPublishingMediaGatewayToken";
