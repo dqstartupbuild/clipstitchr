@@ -13,7 +13,7 @@ export function SocialAnalyticsRollupTable({
   showSign,
 }: SocialAnalyticsRollupTableProps) {
   return (
-    <details className="rounded-lg border border-border bg-white">
+    <details className="rounded-lg bg-surface">
       <summary className="cursor-pointer p-4 text-sm font-bold text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
         {label} ({rollups.length})
       </summary>
@@ -37,15 +37,12 @@ export function SocialAnalyticsRollupTable({
                   {rollup.label}
                 </th>
                 <td className="px-4 py-3 text-text-secondary">
-                  <span className="tabular-nums">{rollup.publicationCount}</span>
+                  {rollup.publicationCount}
                 </td>
                 {(
                   ["views", "likes", "comments", "shares", "saves"] as const
                 ).map((metric) => (
-                  <td
-                    key={metric}
-                    className="px-4 py-3 tabular-nums text-text-secondary"
-                  >
+                  <td key={metric} className="px-4 py-3 text-text-secondary">
                     {formatSocialAnalyticsValue(
                       rollup.metrics[metric].value,
                       showSign,

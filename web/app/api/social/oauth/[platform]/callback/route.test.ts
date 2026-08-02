@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 
 const mocks = vi.hoisted(() => ({
@@ -47,7 +47,6 @@ vi.mock(
 describe("GET /api/social/oauth/[platform]/callback", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
     mocks.getAuthenticatedUserId.mockResolvedValue("owner_1");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex_token");
     mocks.createSocialSecretHash.mockReturnValue("state_hash");
@@ -63,10 +62,6 @@ describe("GET /api/social/oauth/[platform]/callback", () => {
       scopes: ["user.info.basic", "video.publish"],
       username: "creator",
     });
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
   });
 
   it("uses the owner-bound state's exact redirect URI before saving tokens", async () => {
@@ -123,51 +118,7 @@ describe("GET /api/social/oauth/[platform]/callback", () => {
 
     expect(mocks.exchangeSocialAuthorizationCode).not.toHaveBeenCalled();
     expect(response.headers.get("location")).toBe(
-      "https://clipstitchr.com/dashboard/settings?social=connection_failed&platform=tiktok&reason=state",
-    );
-    expect(console.error).toHaveBeenCalledWith(
-      "social_oauth_callback_failed",
-      expect.objectContaining({
-        platform: "tiktok",
-        stage: "state",
-      }),
-    );
-  });
-
-  it("reports the token-exchange stage without exposing callback credentials", async () => {
-    const mutation = vi.fn().mockResolvedValueOnce({
-      redirectUri:
-        "https://clipstitchr.com/api/social/oauth/tiktok/callback",
-      returnPath: "/dashboard/settings",
-    });
-    mocks.createAuthenticatedConvexHttpClient.mockReturnValue({ mutation });
-    mocks.exchangeSocialAuthorizationCode.mockRejectedValue(
-      new Error("Provider rejected the token exchange."),
-    );
-
-    const response = await GET(
-      new Request(
-        "https://clipstitchr.com/api/social/oauth/tiktok/callback?state=raw-state&code=authorization-code",
-      ),
-      { params: Promise.resolve({ platform: "tiktok" }) },
-    );
-
-    expect(response.headers.get("location")).toBe(
-      "https://clipstitchr.com/dashboard/settings?social=connection_failed&platform=tiktok&reason=token_exchange",
-    );
-    expect(console.error).toHaveBeenCalledWith(
-      "social_oauth_callback_failed",
-      {
-        platform: "tiktok",
-        stage: "token_exchange",
-        errorName: "Error",
-      },
-    );
-    expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toContain(
-      "authorization-code",
-    );
-    expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toContain(
-      "raw-state",
+      "https://clipstitchr.com/dashboard/settings?social=connection_failed&platform=tiktok",
     );
   });
 });

@@ -87,9 +87,9 @@ export function SocialAnalyticsPageClient() {
     <DashboardShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <DashboardPageHeader
-          eyebrow="Analytics"
+          eyebrow="Results"
           title="Analytics"
-          description="Review post performance across connected channels."
+          description="Read saved post results first, then refresh only when you need newer counts."
           actions={null}
         />
         <SocialAnalyticsFilters
@@ -113,35 +113,21 @@ export function SocialAnalyticsPageClient() {
           onSocialAccountChange={setSocialAccountId}
           onViewChange={setView}
         />
-        {range.isValid ? (
-          <SocialAnalyticsRefreshPanel
-            latestRun={report?.latestRefreshRun ?? null}
-            productId={selectedProductId || undefined}
-            socialAccountId={socialAccountId || undefined}
-            rangeStart={range.rangeStart}
-            rangeEnd={range.rangeEnd}
-          />
-        ) : null}
-        <section
-          className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
-          aria-labelledby="analytics-view-title"
-        >
-          <div>
-            <h2
-              className="text-lg font-bold text-text-primary"
-              id="analytics-view-title"
-            >
-              {showSign ? "Growth during period" : "Posts published in period"}
-            </h2>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-text-secondary">
-              {showSign
-                ? "Compare the newest saved count with the closest saved count at the start of this range."
-                : "See the latest saved totals for posts published in this range."}
-            </p>
-          </div>
+        <section aria-labelledby="analytics-view-title">
+          <h2
+            className="text-xl font-bold text-text-primary"
+            id="analytics-view-title"
+          >
+            {showSign ? "Growth during period" : "Posts published in period"}
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-text-secondary">
+            {showSign
+              ? "Each value compares the newest saved count with the closest saved count at or before the range start. Signed corrections are kept."
+              : "Only posts published inside the range are included. Each uses its latest cumulative saved metrics."}
+          </p>
           {report?.combinesMultiplePlatforms ||
           report?.combinesMultipleAccounts ? (
-            <p className="text-sm font-semibold text-amber-800">
+            <p className="mt-2 text-sm font-semibold text-amber-200">
               These totals combine{" "}
               {report.combinesMultiplePlatforms
                 ? "multiple platforms"
@@ -155,28 +141,21 @@ export function SocialAnalyticsPageClient() {
           ) : null}
         </section>
         {!range.isValid ? (
-          <p
-            className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700"
-            role="alert"
-          >
+          <p className="rounded-lg bg-surface p-4 text-sm font-semibold text-red-300" role="alert">
             Choose a valid custom date range.
           </p>
         ) : report === undefined ? (
-          <p className="rounded-lg border border-border bg-white p-4 text-sm font-semibold text-text-secondary">
+          <p className="rounded-lg bg-surface p-4 text-sm font-semibold text-text-secondary">
             Loading saved analytics...
           </p>
         ) : !hasGrowthBaseline ? (
-          <p className="rounded-lg border border-border bg-white p-4 text-sm font-bold text-text-primary">
+          <p className="rounded-lg bg-surface p-4 text-sm font-bold text-text-primary">
             Not enough history
           </p>
         ) : (
           <>
             <SocialAnalyticsMetricGrid
               metrics={report.allProducts.metrics}
-              showSign={showSign}
-            />
-            <SocialAnalyticsPublicationList
-              publications={report.publications}
               showSign={showSign}
             />
             <div className="grid gap-3">
@@ -195,9 +174,22 @@ export function SocialAnalyticsPageClient() {
                 rollups={report.logicalPosts}
                 showSign={showSign}
               />
+              <SocialAnalyticsPublicationList
+                publications={report.publications}
+                showSign={showSign}
+              />
             </div>
           </>
         )}
+        {range.isValid ? (
+          <SocialAnalyticsRefreshPanel
+            latestRun={report?.latestRefreshRun ?? null}
+            productId={selectedProductId || undefined}
+            socialAccountId={socialAccountId || undefined}
+            rangeStart={range.rangeStart}
+            rangeEnd={range.rangeEnd}
+          />
+        ) : null}
       </div>
     </DashboardShell>
   );

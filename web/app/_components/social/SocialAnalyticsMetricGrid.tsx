@@ -27,12 +27,9 @@ export function SocialAnalyticsMetricGrid({
         const summary = metrics[metric];
 
         return (
-          <div
-            key={metric}
-            className="rounded-lg border border-border bg-white p-4"
-          >
+          <div key={metric} className="rounded-lg bg-surface p-4">
             <p className="text-sm font-semibold text-text-secondary">{label}</p>
-            <p className="mt-2 text-2xl font-bold tabular-nums text-text-primary">
+            <p className="mt-2 text-2xl font-bold text-text-primary">
               {formatSocialAnalyticsValue(summary.value, showSign)}
             </p>
             <p className="mt-1 text-xs text-text-tertiary">

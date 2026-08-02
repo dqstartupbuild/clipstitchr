@@ -12,16 +12,10 @@ import { getAccountSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getAccountS
 import type { SocialPublishingProvider } from "@/lib/clipstitchr/social/types/SocialPublishingProvider";
 
 type SettingsPageClientProps = {
-  socialConnectionPlatform?: string;
-  socialConnectionReason?: string;
-  socialConnectionStatus?: string;
   socialPublishingProvider: SocialPublishingProvider;
 };
 
 export function SettingsPageClient({
-  socialConnectionPlatform,
-  socialConnectionReason,
-  socialConnectionStatus,
   socialPublishingProvider,
 }: SettingsPageClientProps) {
   const products = useDashboardProduct();
@@ -68,9 +62,6 @@ export function SettingsPageClient({
         <SettingsAccountSection
           isProductActionDisabled={products.isLoading || products.isSaving}
           products={products.products}
-          socialConnectionPlatform={socialConnectionPlatform}
-          socialConnectionReason={socialConnectionReason}
-          socialConnectionStatus={socialConnectionStatus}
           socialPublishingProvider={socialPublishingProvider}
         />
       </div>

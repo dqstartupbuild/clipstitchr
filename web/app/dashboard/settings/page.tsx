@@ -12,28 +12,9 @@ export const metadata: Metadata = createPageMetadata({
   noIndex: true,
 });
 
-export default async function SettingsPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{
-    platform?: string | string[];
-    reason?: string | string[];
-    social?: string | string[];
-  }>;
-}) {
-  const params = searchParams ? await searchParams : {};
-
+export default function SettingsPage() {
   return (
     <SettingsPageClient
-      socialConnectionPlatform={
-        typeof params.platform === "string" ? params.platform : undefined
-      }
-      socialConnectionReason={
-        typeof params.reason === "string" ? params.reason : undefined
-      }
-      socialConnectionStatus={
-        typeof params.social === "string" ? params.social : undefined
-      }
       socialPublishingProvider={getSocialPublishingProvider()}
     />
   );

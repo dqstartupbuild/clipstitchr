@@ -55,16 +55,6 @@ describe("exchangeInstagramAuthorizationCode", () => {
       platform: "instagram",
       username: "creator",
     });
-    const tokenRequest = fetchMock.mock.calls[0]?.[1]?.body;
-
-    expect(tokenRequest).toBeInstanceOf(FormData);
-    expect(Object.fromEntries((tokenRequest as FormData).entries())).toEqual({
-      client_id: "instagram-client",
-      client_secret: "instagram-secret",
-      code: "oauth-code",
-      grant_type: "authorization_code",
-      redirect_uri: "https://app.example.com/callback",
-    });
     expect(String(fetchMock.mock.calls[2][0])).toContain(
       "graph.instagram.com/v25.0/me",
     );

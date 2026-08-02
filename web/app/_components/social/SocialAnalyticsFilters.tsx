@@ -1,5 +1,3 @@
-import type { ChangeEvent } from "react";
-import { SelectInput } from "@/app/_components/ui/SelectInput";
 import type { SocialAnalyticsRangePreset } from "@/lib/clipstitchr/social/analytics/SocialAnalyticsRangePreset";
 
 type SocialAnalyticsFiltersProps = {
@@ -43,77 +41,78 @@ export function SocialAnalyticsFilters({
   onViewChange,
 }: SocialAnalyticsFiltersProps) {
   return (
-    <section
-      className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
-      aria-label="Analytics filters"
-    >
-      <SelectInput
-        className="bg-white"
-        label="What to measure"
-        value={view}
-        options={[
-          {
-            label: "Posts published in period",
-            value: "published_in_period",
-          },
-          { label: "Growth during period", value: "growth_during_period" },
-        ]}
-        onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-          onViewChange(
-            event.currentTarget.value as
-              | "published_in_period"
-              | "growth_during_period",
-          )
-        }
-      />
-      <SelectInput
-        className="bg-white"
-        label="Time range"
-        value={rangePreset}
-        options={[
-          { label: "Last 24 hours", value: "24_hours" },
-          { label: "Last 7 days", value: "7_days" },
-          { label: "Last 30 days", value: "30_days" },
-          { label: "Custom range", value: "custom" },
-        ]}
-        onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-          onRangePresetChange(
-            event.currentTarget.value as SocialAnalyticsRangePreset,
-          )
-        }
-      />
-      <SelectInput
-        className="bg-white"
-        label="Product"
-        value={productId}
-        options={[
-          { label: "All products", value: "" },
-          ...products.map((product) => ({
-            label: product.name,
-            value: product.id,
-          })),
-        ]}
-        onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-          onProductChange(event.currentTarget.value)
-        }
-      />
-      <SelectInput
-        className="bg-white"
-        label="Account"
-        value={socialAccountId}
-        options={[
-          { label: "All accounts", value: "" },
-          ...accounts.map((account) => ({
-            label: `${account.displayName || account.username} - ${
-              account.platform === "tiktok" ? "TikTok" : "Instagram"
-            }`,
-            value: account.id,
-          })),
-        ]}
-        onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-          onSocialAccountChange(event.currentTarget.value)
-        }
-      />
+    <section className="grid gap-4 rounded-lg bg-surface p-4 sm:grid-cols-2 xl:grid-cols-4">
+      <label>
+        <span className="text-sm font-semibold text-text-primary">
+          What to measure
+        </span>
+        <select
+          className="mt-1.5 h-10 w-full rounded-lg border border-border bg-surface-elevated px-3 text-sm text-text-primary outline-none focus:border-accent"
+          value={view}
+          onChange={(event) =>
+            onViewChange(
+              event.currentTarget.value as
+                | "published_in_period"
+                | "growth_during_period",
+            )
+          }
+        >
+          <option value="published_in_period">Posts published in period</option>
+          <option value="growth_during_period">Growth during period</option>
+        </select>
+      </label>
+      <label>
+        <span className="text-sm font-semibold text-text-primary">
+          Time range
+        </span>
+        <select
+          className="mt-1.5 h-10 w-full rounded-lg border border-border bg-surface-elevated px-3 text-sm text-text-primary outline-none focus:border-accent"
+          value={rangePreset}
+          onChange={(event) =>
+            onRangePresetChange(
+              event.currentTarget.value as SocialAnalyticsRangePreset,
+            )
+          }
+        >
+          <option value="24_hours">Last 24 hours</option>
+          <option value="7_days">Last 7 days</option>
+          <option value="30_days">Last 30 days</option>
+          <option value="custom">Custom range</option>
+        </select>
+      </label>
+      <label>
+        <span className="text-sm font-semibold text-text-primary">Product</span>
+        <select
+          className="mt-1.5 h-10 w-full rounded-lg border border-border bg-surface-elevated px-3 text-sm text-text-primary outline-none focus:border-accent"
+          value={productId}
+          onChange={(event) => onProductChange(event.currentTarget.value)}
+        >
+          <option value="">All products</option>
+          {products.map((product) => (
+            <option key={product.id} value={product.id}>
+              {product.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span className="text-sm font-semibold text-text-primary">Account</span>
+        <select
+          className="mt-1.5 h-10 w-full rounded-lg border border-border bg-surface-elevated px-3 text-sm text-text-primary outline-none focus:border-accent"
+          value={socialAccountId}
+          onChange={(event) =>
+            onSocialAccountChange(event.currentTarget.value)
+          }
+        >
+          <option value="">All accounts</option>
+          {accounts.map((account) => (
+            <option key={account.id} value={account.id}>
+              {account.displayName || account.username} (
+              {account.platform === "tiktok" ? "TikTok" : "Instagram"})
+            </option>
+          ))}
+        </select>
+      </label>
       {rangePreset === "custom" ? (
         <>
           <label>
@@ -121,7 +120,7 @@ export function SocialAnalyticsFilters({
               Start
             </span>
             <input
-              className="mt-2 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary outline-none focus:border-accent"
+              className="mt-1.5 h-10 w-full rounded-lg border border-border bg-surface-elevated px-3 text-sm text-text-primary outline-none focus:border-accent"
               type="datetime-local"
               value={customStart}
               onChange={(event) =>
@@ -132,7 +131,7 @@ export function SocialAnalyticsFilters({
           <label>
             <span className="text-sm font-semibold text-text-primary">End</span>
             <input
-              className="mt-2 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary outline-none focus:border-accent"
+              className="mt-1.5 h-10 w-full rounded-lg border border-border bg-surface-elevated px-3 text-sm text-text-primary outline-none focus:border-accent"
               type="datetime-local"
               value={customEnd}
               onChange={(event) =>

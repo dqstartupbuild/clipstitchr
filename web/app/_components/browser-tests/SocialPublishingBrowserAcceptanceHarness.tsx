@@ -1,9 +1,7 @@
 import { SocialPublishingAnalyticsFixture } from "./SocialPublishingAnalyticsFixture";
 import { SocialPublishingComposeFixture } from "./SocialPublishingComposeFixture";
-import { SocialPublishingConfirmationFixture } from "./SocialPublishingConfirmationFixture";
 import { SocialPublishingDeliveryFixture } from "./SocialPublishingDeliveryFixture";
 import { SocialPublishingQueueFixture } from "./SocialPublishingQueueFixture";
-import { SocialPublishingScheduleFixture } from "./SocialPublishingScheduleFixture";
 
 export function SocialPublishingBrowserAcceptanceHarness() {
   return (
@@ -21,9 +19,7 @@ export function SocialPublishingBrowserAcceptanceHarness() {
         </header>
         <SocialPublishingComposeFixture />
         <SocialPublishingQueueFixture />
-        <SocialPublishingScheduleFixture />
         <SocialPublishingDeliveryFixture />
-        <SocialPublishingConfirmationFixture />
         <SocialPublishingAnalyticsFixture />
       </div>
     </main>

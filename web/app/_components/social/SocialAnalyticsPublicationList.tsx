@@ -12,15 +12,11 @@ export function SocialAnalyticsPublicationList({
   showSign,
 }: SocialAnalyticsPublicationListProps) {
   return (
-    <section className="rounded-lg border border-border bg-white">
-      <div className="border-b border-border p-4">
-        <h2 className="text-lg font-bold text-text-primary">Results</h2>
-        <p className="mt-1 text-sm font-semibold text-text-secondary">
-          {publications.length} post{publications.length === 1 ? "" : "s"} with
-          saved results
-        </p>
-      </div>
-      <div className="divide-y divide-border">
+    <details className="rounded-lg bg-surface">
+      <summary className="cursor-pointer p-4 text-sm font-bold text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+        Individual posts ({publications.length})
+      </summary>
+      <div className="divide-y divide-border border-t border-border">
         {publications.length > 0 ? (
           publications.map((publication) => (
             <article
@@ -42,7 +38,7 @@ export function SocialAnalyticsPublicationList({
                 </p>
                 {publication.permalink ? (
                   <a
-                    className="mt-2 inline-block text-sm font-semibold text-accent-dark hover:text-text-primary"
+                    className="mt-2 inline-block text-sm font-semibold text-accent-dark hover:text-white"
                     href={publication.permalink}
                     rel="noreferrer"
                     target="_blank"
@@ -57,7 +53,7 @@ export function SocialAnalyticsPublicationList({
                 ).map((metric) => (
                   <div key={metric}>
                     <dt className="capitalize text-text-tertiary">{metric}</dt>
-                    <dd className="font-semibold tabular-nums text-text-primary">
+                    <dd className="font-semibold text-text-primary">
                       {formatSocialAnalyticsValue(
                         publication.metrics[metric],
                         showSign,
@@ -69,11 +65,11 @@ export function SocialAnalyticsPublicationList({
             </article>
           ))
         ) : (
-          <p className="p-4 text-sm font-semibold text-text-secondary">
-            No post results in this time range.
+          <p className="p-4 text-sm text-text-secondary">
+            No tracked publications match this view.
           </p>
         )}
       </div>
-    </section>
+    </details>
   );
 }

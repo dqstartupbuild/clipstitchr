@@ -10,13 +10,7 @@ they want a provider update. The durable run shows progress and partial
 failures beside that action.
 
 Filters include product, account, view, and 24-hour, 7-day, 30-day, or custom
-dates. Every dropdown uses the same shared `SelectInput` as the retained Post
-Bridge analytics page. The in-house view also keeps the established stat-card
-and single `Results` surface instead of introducing a separate dashboard
-language. Provider-specific saves, refresh progress, and rollups are added
-inside that structure.
-
-`Posts published in period` sums the latest cumulative metrics for posts
+dates. `Posts published in period` sums the latest cumulative metrics for posts
 published in the range. `Growth during period` compares snapshots and says
 `Not enough history` when no baseline exists. Missing metrics render as
 unavailable, never as zero.

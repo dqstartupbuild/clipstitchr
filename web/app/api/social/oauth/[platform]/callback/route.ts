@@ -7,7 +7,6 @@ import { createSocialSecretHash } from "@/lib/clipstitchr/server/social/createSo
 import { encryptSocialToken } from "@/lib/clipstitchr/server/social/encryptSocialToken";
 import { exchangeSocialAuthorizationCode } from "@/lib/clipstitchr/server/social/exchangeSocialAuthorizationCode";
 import { assertInHouseSocialPublishingEnabled } from "@/lib/clipstitchr/social/assertInHouseSocialPublishingEnabled";
-import type { SocialOAuthCallbackStage } from "@/lib/clipstitchr/social/types/SocialOAuthCallbackStage";
 import type { SocialPlatform } from "@/lib/clipstitchr/social/types/SocialPlatform";
 
 export const runtime = "nodejs";
@@ -23,7 +22,6 @@ export async function GET(
       ? (platformValue as SocialPlatform)
       : undefined;
   const fallback = new URL("/dashboard/settings", requestUrl.origin);
-  let stage: SocialOAuthCallbackStage = "configuration";
 
   if (!platform) {
     fallback.searchParams.set("social", "connection_failed");
@@ -32,7 +30,6 @@ export async function GET(
 
   try {
     assertInHouseSocialPublishingEnabled();
-    stage = "session";
 
     const userId = await getAuthenticatedUserId();
 
@@ -50,7 +47,6 @@ export async function GET(
       throw new Error("This connection link is incomplete.");
     }
 
-    stage = "state";
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const consumed = await convex.mutation(
       api.socialOAuth.consumeSocialOAuthState.consumeSocialOAuthState,
@@ -62,20 +58,17 @@ export async function GET(
     );
 
     if (!code || requestUrl.searchParams.has("error")) {
-      stage = "authorization";
       const canceled = new URL(consumed.returnPath, requestUrl.origin);
       canceled.searchParams.set("social", "connection_canceled");
       canceled.searchParams.set("platform", platform);
       return Response.redirect(canceled);
     }
 
-    stage = "token_exchange";
     const profile = await exchangeSocialAuthorizationCode({
       code,
       platform,
       redirectUri: consumed.redirectUri,
     });
-    stage = "token_encryption";
     const accessEnvelope = encryptSocialToken(profile.accessToken);
     const refreshEnvelope = profile.refreshToken
       ? encryptSocialToken(profile.refreshToken)
@@ -88,7 +81,6 @@ export async function GET(
       throw new Error("Social token encryption changed during connection.");
     }
 
-    stage = "account_save";
     await convex.mutation(
       api.socialAccounts.upsertSocialAccountFromOAuth
         .upsertSocialAccountFromOAuth,
@@ -114,15 +106,9 @@ export async function GET(
     success.searchParams.set("social", "connected");
     success.searchParams.set("platform", platform);
     return Response.redirect(success);
-  } catch (error) {
-    console.error("social_oauth_callback_failed", {
-      platform,
-      stage,
-      errorName: error instanceof Error ? error.name : "UnknownError",
-    });
+  } catch {
     fallback.searchParams.set("social", "connection_failed");
     fallback.searchParams.set("platform", platform);
-    fallback.searchParams.set("reason", stage);
     return Response.redirect(fallback);
   }
 }

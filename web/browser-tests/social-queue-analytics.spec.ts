@@ -25,18 +25,6 @@ test("operates queue and analytics controls at the active viewport", async ({
     "Queue has 2 posting times.",
   );
 
-  const scheduledContentSection = page.getByRole("region", {
-    name: "Scheduled content",
-  });
-  await expect(
-    scheduledContentSection.getByRole("region", {
-      name: "Schedule summary",
-    }),
-  ).toBeVisible();
-  await expect(
-    scheduledContentSection.getByText("No scheduled content yet."),
-  ).toBeVisible();
-
   const analyticsSection = page.getByRole("region", {
     name: "Manual analytics",
   });

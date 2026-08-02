@@ -1,50 +1,32 @@
-import type { SocialSchedulePost } from "@/lib/clipstitchr/social/types/SocialSchedulePost";
-
 type SocialScheduleSummaryProps = {
-  posts: SocialSchedulePost[];
+  nextSlot: string | null;
+  postCount: number;
+  attentionCount: number;
 };
 
-const summaryGroups = [
-  {
-    label: "Scheduled",
-    statuses: ["draft", "scheduled"],
-  },
-  {
-    label: "Processing",
-    statuses: ["publishing", "waiting_for_user"],
-  },
-  {
-    label: "Posted",
-    statuses: ["partially_published", "published"],
-  },
-  {
-    label: "Needs review",
-    statuses: ["failed", "held", "needs_attention", "outcome_unknown"],
-  },
-];
-
-export function SocialScheduleSummary({ posts }: SocialScheduleSummaryProps) {
+export function SocialScheduleSummary({
+  nextSlot,
+  postCount,
+  attentionCount,
+}: SocialScheduleSummaryProps) {
   return (
-    <section
-      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
-      aria-label="Schedule summary"
-    >
-      {summaryGroups.map((group) => (
-        <div
-          className="rounded-lg border border-border bg-white p-4"
-          key={group.label}
-        >
-          <p className="text-sm font-semibold text-text-secondary">
-            {group.label}
-          </p>
-          <p className="mt-2 text-2xl font-bold tabular-nums text-text-primary">
-            {
-              posts.filter((post) => group.statuses.includes(post.status))
-                .length
-            }
-          </p>
-        </div>
-      ))}
+    <section className="grid gap-3 sm:grid-cols-3" aria-label="Schedule summary">
+      <div className="rounded-lg bg-surface p-4">
+        <p className="text-sm text-text-secondary">Next open product time</p>
+        <p className="mt-1 text-base font-bold text-text-primary">
+          {nextSlot ? new Date(nextSlot).toLocaleString() : "Queue not active"}
+        </p>
+      </div>
+      <div className="rounded-lg bg-surface p-4">
+        <p className="text-sm text-text-secondary">Posts in this view</p>
+        <p className="mt-1 text-2xl font-bold text-text-primary">{postCount}</p>
+      </div>
+      <div className="rounded-lg bg-surface p-4">
+        <p className="text-sm text-text-secondary">Need your review</p>
+        <p className="mt-1 text-2xl font-bold text-text-primary">
+          {attentionCount}
+        </p>
+      </div>
     </section>
   );
 }

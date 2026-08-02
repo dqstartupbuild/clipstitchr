@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/app/_components/ui/Button";
-import { ConfirmActionDialog } from "@/app/_components/ui/ConfirmActionDialog";
 import { disconnectSocialAccount } from "@/lib/clipstitchr/client/disconnectSocialAccount";
 import { startSocialOAuthConnection } from "@/lib/clipstitchr/client/startSocialOAuthConnection";
 import type { SocialPlatform } from "@/lib/clipstitchr/social/types/SocialPlatform";
@@ -25,20 +24,25 @@ type SocialAccountRowProps = {
 
 export function SocialAccountRow({ account }: SocialAccountRowProps) {
   const [isDisconnecting, setIsDisconnecting] = useState(false);
-  const [isDisconnectDialogOpen, setIsDisconnectDialogOpen] = useState(false);
-  const [isReconnecting, setIsReconnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const platformLabel =
     account.platform === "tiktok" ? "TikTok" : "Instagram";
   const connected = account.status === "connected";
 
   const handleDisconnect = async () => {
+    if (
+      !window.confirm(
+        `Disconnect ${account.displayName || account.username}? Future posts for this account will be held for review.`,
+      )
+    ) {
+      return;
+    }
+
     setIsDisconnecting(true);
     setError(null);
 
     try {
       await disconnectSocialAccount(account.id);
-      setIsDisconnectDialogOpen(false);
     } catch (nextError) {
       setError(
         nextError instanceof Error
@@ -47,22 +51,6 @@ export function SocialAccountRow({ account }: SocialAccountRowProps) {
       );
     } finally {
       setIsDisconnecting(false);
-    }
-  };
-
-  const handleReconnect = async () => {
-    setIsReconnecting(true);
-    setError(null);
-
-    try {
-      await startSocialOAuthConnection(account.platform);
-    } catch (nextError) {
-      setError(
-        nextError instanceof Error
-          ? nextError.message
-          : `Unable to reconnect ${platformLabel}.`,
-      );
-      setIsReconnecting(false);
     }
   };
 
@@ -126,9 +114,9 @@ export function SocialAccountRow({ account }: SocialAccountRowProps) {
           <Button
             type="button"
             size="sm"
-            isLoading={isReconnecting}
-            disabled={isDisconnecting}
-            onClick={() => void handleReconnect()}
+            onClick={() =>
+              void startSocialOAuthConnection(account.platform)
+            }
           >
             Reconnect
           </Button>
@@ -138,21 +126,11 @@ export function SocialAccountRow({ account }: SocialAccountRowProps) {
           size="sm"
           variant="danger"
           isLoading={isDisconnecting}
-          disabled={isReconnecting}
-          onClick={() => setIsDisconnectDialogOpen(true)}
+          onClick={() => void handleDisconnect()}
         >
           Disconnect
         </Button>
       </div>
-      <ConfirmActionDialog
-        confirmLabel="Disconnect account"
-        description={`Future posts for ${account.displayName || account.username} will be held for review. Your existing schedule and post history will stay saved.`}
-        isLoading={isDisconnecting}
-        open={isDisconnectDialogOpen}
-        title={`Disconnect ${account.displayName || account.username}?`}
-        onConfirm={() => void handleDisconnect()}
-        onOpenChange={setIsDisconnectDialogOpen}
-      />
     </article>
   );
 }
