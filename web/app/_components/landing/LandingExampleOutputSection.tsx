@@ -13,7 +13,7 @@ export function LandingExampleOutputSection() {
     >
       <div className="landing-output-heading-row">
         <h2 className="landing-display" id="landing-output-heading">
-          Built from real clips. Shown without a mockup.
+          Built from real clips.
         </h2>
         <Link className="landing-text-link" href="/examples">
           Open the full reel
