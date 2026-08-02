@@ -13,8 +13,7 @@ create or improve source material, but they all feed the same content library.
 
 ## Product Goal
 
-ClipStitchr is not a general video editor, AI playground, or general-purpose
-social scheduler.
+ClipStitchr is not a general video editor, AI playground, or social scheduler.
 It is built around one practical job: turn scattered marketing footage into
 finished TikTok and Reels assets with less repetitive editing.
 
@@ -198,18 +197,12 @@ Deployment details live in:
 
 ### Scheduling And Analytics
 
-ClipStitchr has an in-house TikTok and Instagram publishing path for paid users.
-Users connect accounts directly, choose product defaults and weekly local-time
-queues, schedule durable final assets, review each account's delivery, and
-manually refresh official analytics. It remains behind the safe
-`SOCIAL_PUBLISHING_PROVIDER` migration flag until platform approvals and live
-tests pass. Post Bridge remains a legacy read-only history path during cutover.
+Post Bridge integrations support scheduling and analytics surfaces. Dashboard
+routes include schedule and analytics pages, with backend docs covering API
+configuration, stored post state, media upload behavior, and analytics sync.
 
 Relevant docs:
 
-- `docs/features/social-publishing/in-house-social-publishing-architecture.md`
-- `docs/features/social-publishing/manual-social-analytics.md`
-- `docs/features/social-publishing/post-bridge-migration.md`
 - `docs/features/post-bridge/post-bridge-scheduling.md`
 - `docs/features/post-bridge/post-bridge-analytics.md`
 
@@ -373,7 +366,7 @@ Dashboard routes:
 | `/dashboard/swapr` | Swapr motion-transfer studio |
 | `/dashboard/hooks` | Hook Lab |
 | `/dashboard/schedule` | Scheduling workspace |
-| `/dashboard/analytics` | Saved social analytics and manual refresh |
+| `/dashboard/analytics` | Post Bridge analytics |
 | `/dashboard/settings` | Product and account settings |
 | `/dashboard/onboarding` | First-run onboarding |
 | `/dashboard/uploads` | Redirect to Library |
@@ -493,10 +486,7 @@ Major configuration groups:
 - Cloudflare R2: account, bucket, access key, secret key, signed URL TTL
 - Replicate/provider models: token and model IDs
 - Rate limits: `RATE_LIMIT_API_SECRET`
-- Direct social publishing: provider flag, public base URL, versioned token
-  encryption keys, platform OAuth credentials, redirects, and webhook verify
-  token
-- Post Bridge: legacy API key encryption secret, base URL, media limits
+- Post Bridge: API key encryption secret, base URL, media limits
 - TikTok: pixel and Events API values
 - PostHog: project token and host
 - IndexNow and blog publish webhook secrets
@@ -562,10 +552,8 @@ Start here:
 - `docs/features/editor/quick-edit.md` for non-destructive source edits
 - `docs/features/stitchr/stitchr-batch.md` for automated draft creation
 - `docs/features/hook-lab/hook-lab-post-analysis.md` for public post analysis
-- `docs/features/social-publishing/in-house-social-publishing-architecture.md`
-  for direct scheduling
-- `docs/features/social-publishing/manual-social-analytics.md` for analytics
-- `docs/features/social-publishing/post-bridge-migration.md` for legacy removal
+- `docs/features/post-bridge/post-bridge-scheduling.md` for scheduling
+- `docs/features/post-bridge/post-bridge-analytics.md` for analytics
 - `docs/operations/security/rate-limits.md` for backend cost protection
 - `docs/operations/reliability/durable-workflows.md` for provider workflow recovery
 - `docs/operations/deployment/media-worker.md` for worker deployment
@@ -625,8 +613,8 @@ Before production deploys:
 - configure R2
 - configure provider secrets and model IDs
 - configure rate-limit secrets
-- configure direct social publishing, legacy Post Bridge, TikTok analytics,
-  PostHog, and IndexNow values only when those features are enabled
+- configure Post Bridge, TikTok, PostHog, and IndexNow values only when those
+  features are enabled
 - deploy Cloud Run worker jobs when worker code or shared worker backend code
   changes
 

@@ -8,7 +8,6 @@ export const notificationSourceTypeValidator = v.union(
   v.literal("photo"),
   v.literal("stitch"),
   v.literal("stitchr-batch"),
-  v.literal("social-post"),
   v.literal("swipe"),
   v.literal("video-clip"),
 );

@@ -7,7 +7,6 @@ import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/get
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { filterPostBridgeAnalyticsByPostResultIds } from "@/lib/clipstitchr/server/postBridge/filterPostBridgeAnalyticsByPostResultIds";
 import { getLatestPostBridgeAnalyticsSyncedAtMs } from "@/lib/clipstitchr/server/postBridge/getLatestPostBridgeAnalyticsSyncedAtMs";
-import { getPostBridgeLegacyWriteResponse } from "@/lib/clipstitchr/server/postBridge/getPostBridgeLegacyWriteResponse";
 import { listPostBridgeAnalytics } from "@/lib/clipstitchr/server/postBridge/listPostBridgeAnalytics";
 import { listPostBridgePostResults } from "@/lib/clipstitchr/server/postBridge/listPostBridgePostResults";
 import { readPostBridgeProductIdFromRequest } from "@/lib/clipstitchr/server/postBridge/readPostBridgeProductIdFromRequest";
@@ -40,12 +39,6 @@ export async function POST(request: Request) {
 
   if (!userId) {
     return createAuthenticationRequiredResponse();
-  }
-
-  const legacyWriteResponse = getPostBridgeLegacyWriteResponse();
-
-  if (legacyWriteResponse) {
-    return legacyWriteResponse;
   }
 
   try {

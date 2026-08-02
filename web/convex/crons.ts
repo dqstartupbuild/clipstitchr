@@ -24,25 +24,4 @@ crons.interval(
   {},
 );
 
-crons.interval(
-  "plan due social deliveries",
-  { minutes: 1 },
-  internal.socialPublishing.planDueSocialTargets.planDueSocialTargets,
-  {},
-);
-
-crons.interval(
-  "reconcile social delivery status",
-  { minutes: 1 },
-  internal.socialPublishing.planSocialStatusChecks.planSocialStatusChecks,
-  {},
-);
-
-crons.interval(
-  "expire social connection state",
-  { minutes: 10 },
-  internal.socialOAuth.expireSocialOAuthStates.expireSocialOAuthStates,
-  {},
-);
-
 export default crons;

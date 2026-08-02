@@ -56,10 +56,6 @@ describe("renderSwiprSlideBlob", () => {
 
   it("draws a cover-cropped background and optional text overlay", async () => {
     const context = {
-      canvas: {
-        height: 1920,
-        width: 1080,
-      },
       drawImage: vi.fn(),
     };
     const canvas = {
@@ -96,21 +92,12 @@ describe("renderSwiprSlideBlob", () => {
       expect.objectContaining({ text: "Hook" }),
       0,
     );
-    expect(mocks.createBlobFromCanvas).toHaveBeenCalledWith(
-      canvas,
-      "image/png",
-    );
+    expect(mocks.createBlobFromCanvas).toHaveBeenCalledWith(canvas, "image/png");
   });
 
   it("skips blank overlays and rejects missing canvas contexts", async () => {
     const canvas = {
-      getContext: vi.fn(() => ({
-        canvas: {
-          height: 1920,
-          width: 1080,
-        },
-        drawImage: vi.fn(),
-      })),
+      getContext: vi.fn(() => ({ drawImage: vi.fn() })),
       height: 0,
       width: 0,
     };
@@ -131,36 +118,5 @@ describe("renderSwiprSlideBlob", () => {
     await expect(
       renderSwiprSlideBlob(new Blob(["background"]), createSlide()),
     ).rejects.toThrow("Unable to create Swipr slide canvas.");
-  });
-
-  it("renders a provider-safe JPEG profile", async () => {
-    const context = {
-      canvas: {
-        height: 1350,
-        width: 1080,
-      },
-      drawImage: vi.fn(),
-    };
-    const canvas = {
-      getContext: vi.fn(() => context),
-      height: 0,
-      width: 0,
-    };
-
-    vi.stubGlobal("document", {
-      createElement: vi.fn(() => canvas),
-    });
-
-    await renderSwiprSlideBlob(new Blob(["background"]), createSlide(), {
-      height: 1350,
-      mimeType: "image/jpeg",
-      width: 1080,
-    });
-
-    expect(canvas).toMatchObject({ height: 1350, width: 1080 });
-    expect(mocks.createBlobFromCanvas).toHaveBeenCalledWith(
-      canvas,
-      "image/jpeg",
-    );
   });
 });

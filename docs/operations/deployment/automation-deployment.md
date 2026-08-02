@@ -132,63 +132,6 @@ npm run media-worker -- --once --max-jobs=3
 - FFmpeg can be installed in the container image.
 - Convex job claiming keeps overlapping executions safe.
 
-### Direct social publishing provider shape
-
-The provider job also owns `social-publish`, `social-status-reconcile`,
-`social-capability-refresh`, and `social-analytics-refresh`. Include `social`
-in `PROVIDER_WORKER_TOOLS`.
-
-The provider runtime requires:
-
-```bash
-SOCIAL_PUBLIC_BASE_URL=https://your-production-domain.com
-SOCIAL_TOKEN_ENCRYPTION_CURRENT_VERSION=1
-INSTAGRAM_GRAPH_API_VERSION=v25.0
-SOCIAL_ANALYTICS_TIKTOK_APIFY_ACTOR_ID=clockworks/tiktok-scraper
-SOCIAL_ANALYTICS_APIFY_MAX_TOTAL_CHARGE_USD=0.5
-SOCIAL_ANALYTICS_APIFY_URL_LIMIT=100
-```
-
-Bind these values from Secret Manager:
-
-```text
-SOCIAL_TOKEN_ENCRYPTION_KEYS
-TIKTOK_CLIENT_KEY
-TIKTOK_CLIENT_SECRET
-```
-
-Create or rotate the provider bindings with the existing
-`create_or_update_secret` helper from the Cloud Run setup:
-
-```bash
-create_or_update_secret \
-  clipstitchr-social-token-encryption-keys \
-  "$SOCIAL_TOKEN_ENCRYPTION_KEYS"
-create_or_update_secret \
-  clipstitchr-tiktok-client-key \
-  "$TIKTOK_CLIENT_KEY"
-create_or_update_secret \
-  clipstitchr-tiktok-client-secret \
-  "$TIKTOK_CLIENT_SECRET"
-```
-
-Grant the provider job service account
-`roles/secretmanager.secretAccessor` on those three exact secret names. Never
-put their values in `--set-env-vars`, repository files, screenshots, or logs.
-
-The same token key ring and current version must be present in the Next.js
-runtime. `APIFY_TOKEN` remains the existing shared provider-worker secret and is
-used by social analytics only when a user explicitly requests TikTok saves.
-
-Next.js additionally needs `SOCIAL_PUBLISHING_PROVIDER`,
-`TIKTOK_REDIRECT_URI`, `INSTAGRAM_CLIENT_ID`,
-`INSTAGRAM_CLIENT_SECRET`, `INSTAGRAM_REDIRECT_URI`, and
-`INSTAGRAM_WEBHOOK_VERIFY_TOKEN`. Register the exact callback, webhook,
-deauthorization, and data-deletion URLs with each platform before testing.
-
-This feature changes only provider-worker code. The media worker does not need a
-redeploy unless separately shared code or its image changed.
-
 ## Cloud Run Job Setup
 
 1. Choose the Google Cloud project and region, then enable the required APIs:
@@ -551,17 +494,6 @@ Before enabling users broadly:
 - Confirm final media retries mark the automation task/run failed when exhausted.
 - Confirm held tools, avatar photos and Swipr, are not exposed as active
   automation options and are not scheduled by the core planner.
-- Keep production `SOCIAL_PUBLISHING_PROVIDER=post_bridge` until every item in
-  `docs/features/social-publishing/platform-approval-and-launch.md` passes.
-- Confirm the provider `--check` validates social secrets without printing
-  them.
-- Use authorized development accounts to smoke-test TikTok automatic video,
-  TikTok inbox video, TikTok photo sound on/off, Instagram Reel, single image,
-  carousel, status reconciliation, disconnect, and manual analytics.
-- Confirm an ambiguous final publish becomes `outcome_unknown` and a recovery
-  run performs status-only reconciliation.
-- Confirm an inactive entitlement prevents provider initialization and
-  Instagram's final `media_publish`.
 
 ## Sources
 

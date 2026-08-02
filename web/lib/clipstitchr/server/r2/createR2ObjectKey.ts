@@ -66,11 +66,6 @@ const objectKindConfig: Record<
     baseName: "media",
     fallbackExtension: "bin",
   },
-  "social-post-asset": {
-    directory: "social-post-assets",
-    baseName: "media",
-    fallbackExtension: "bin",
-  },
   "swapr-segment-video": {
     directory: "swapr-segments",
     baseName: "segment",

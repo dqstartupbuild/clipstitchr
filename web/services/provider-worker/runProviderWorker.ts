@@ -29,16 +29,6 @@ import { processManualCliprDemo } from "./processManualCliprDemo";
 import { processManualSwiprDraft } from "./processManualSwiprDraft";
 import { processSwiprBackgroundGeneration } from "./processSwiprBackgroundGeneration";
 import { processSwaprPhotoExpansion } from "./processSwaprPhotoExpansion";
-import { processSocialPublishJob } from "./social/processSocialPublishJob";
-import { SocialApiError } from "./social/SocialApiError";
-import { assertSocialProviderWorkerConfiguration } from "./social/assertSocialProviderWorkerConfiguration";
-import { parseSocialPublishJobInput } from "./social/parseSocialPublishJobInput";
-import type { SocialProviderJob } from "./social/SocialProviderJob";
-import { parseSocialAnalyticsRefreshJobInput } from "./social/analytics/parseSocialAnalyticsRefreshJobInput";
-import { processSocialAnalyticsRefreshJob } from "./social/analytics/processSocialAnalyticsRefreshJob";
-import { parseSocialCapabilityRefreshJobInput } from "./social/capabilities/parseSocialCapabilityRefreshJobInput";
-import { processSocialCapabilityRefreshJob } from "./social/capabilities/processSocialCapabilityRefreshJob";
-import { redactProviderJobErrorMessage } from "./social/redactProviderJobErrorMessage";
 import { PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS } from "./providerWorkerClaimableProviderJobs";
 import { providerWorkerQueueApiReference } from "./providerWorkerQueueApiReference";
 import { PROVIDER_TOOLS, type ProviderTool } from "./providerWorkerTools";
@@ -449,9 +439,7 @@ function getConfig(): ProviderWorkerConfig {
 
   return {
     automationTools: new Set(
-      Array.from(providerTools).filter(
-        (tool) => tool !== "social" && getIsAutomationToolEnabled(tool),
-      ),
+      Array.from(providerTools).filter(getIsAutomationToolEnabled),
     ),
     convexUrl: getRequiredEnv("NEXT_PUBLIC_CONVEX_URL"),
     lockMs: Number(process.env.PROVIDER_WORKER_LOCK_MS || LOCK_MS),
@@ -1839,14 +1827,15 @@ async function processStitchr({
       stitchrHookVariationSeed: task.id,
     });
 
-  const textOverlay = createStitchrTextOverlay(
-    textGeneration.overlayText || textGeneration.filledHook || "",
-    duration,
-    input.stitchrTextStyleId,
-    input.stitchrTextColor,
-    input.stitchrTextBackgroundColor,
-    input.stitchrTextStrokeColor,
-  );
+  const textOverlay =
+    createStitchrTextOverlay(
+      textGeneration.overlayText || textGeneration.filledHook || "",
+      duration,
+      input.stitchrTextStyleId,
+      input.stitchrTextColor,
+      input.stitchrTextBackgroundColor,
+      input.stitchrTextStrokeColor,
+    );
   const mediaJob = (await client.mutation(
     api.mediaJobs.createStitchrDraftFinalizationFromProvider,
     {
@@ -3288,36 +3277,6 @@ async function processProviderJob({
     return;
   }
 
-  if (
-    job.jobType === "social-publish" ||
-    job.jobType === "social-status-reconcile"
-  ) {
-    await processSocialPublishJob({
-      client,
-      job: job as SocialProviderJob,
-      providerWorkerSecret: config.providerWorkerSecret,
-    });
-    return;
-  }
-
-  if (job.jobType === "social-analytics-refresh") {
-    await processSocialAnalyticsRefreshJob({
-      client,
-      job: job as SocialProviderJob,
-      providerWorkerSecret: config.providerWorkerSecret,
-    });
-    return;
-  }
-
-  if (job.jobType === "social-capability-refresh") {
-    await processSocialCapabilityRefreshJob({
-      client,
-      job: job as SocialProviderJob,
-      providerWorkerSecret: config.providerWorkerSecret,
-    });
-    return;
-  }
-
   throw new Error(`Unsupported provider job type: ${job.jobType}.`);
 }
 
@@ -3417,8 +3376,7 @@ async function failProviderJob({
   error: unknown;
   job: ProviderJob;
 }) {
-  const rawMessage = getErrorMessage(error, "Unable to process provider job.");
-  const message = redactProviderJobErrorMessage(job.jobType, rawMessage);
+  const message = getErrorMessage(error, "Unable to process provider job.");
 
   if (job.jobType === "hook-lab-post-analysis") {
     const failure = getHookLabPostAnalysisFailure(error);
@@ -3434,101 +3392,6 @@ async function failProviderJob({
         usageReservationId: job.usageReservationId,
       },
     );
-    return;
-  }
-
-  if (
-    job.jobType === "social-publish" ||
-    job.jobType === "social-status-reconcile"
-  ) {
-    const input = parseSocialPublishJobInput(job.inputSnapshotJson);
-
-    await Promise.all([
-      client
-        .mutation(
-          api.socialPublishing.failSocialTargetAfterRetryLimit
-            .failSocialTargetAfterRetryLimit,
-          {
-            secret: config.providerWorkerSecret,
-            ownerId: job.ownerId,
-            postId: input.postId,
-            targetId: input.targetId,
-            errorMessage: message,
-            now: getNow(),
-          },
-        )
-        .catch(() => null),
-      markProviderJobStatus({
-        client,
-        config,
-        job,
-        status: "failed",
-        stage: "provider-failed",
-        error: message,
-      }).catch(() => null),
-    ]);
-    return;
-  }
-
-  if (job.jobType === "social-analytics-refresh") {
-    const { refreshRunId } = parseSocialAnalyticsRefreshJobInput(
-      job.inputSnapshotJson,
-    );
-
-    await Promise.all([
-      client
-        .mutation(
-          api.socialAnalytics.failSocialAnalyticsRefreshRun
-            .failSocialAnalyticsRefreshRun,
-          {
-            secret: config.providerWorkerSecret,
-            ownerId: job.ownerId,
-            id: refreshRunId,
-            errorMessage: message,
-            now: getNow(),
-          },
-        )
-        .catch(() => null),
-      markProviderJobStatus({
-        client,
-        config,
-        job,
-        status: "failed",
-        stage: "provider-failed",
-        error: message,
-      }).catch(() => null),
-    ]);
-    return;
-  }
-
-  if (job.jobType === "social-capability-refresh") {
-    const { accountId } = parseSocialCapabilityRefreshJobInput(
-      job.inputSnapshotJson,
-    );
-
-    await Promise.all([
-      client
-        .mutation(
-          api.socialAccounts.markSocialAccountNeedsAttentionFromProvider
-            .markSocialAccountNeedsAttentionFromProvider,
-          {
-            secret: config.providerWorkerSecret,
-            ownerId: job.ownerId,
-            id: accountId,
-            errorMessage: message,
-            now: getNow(),
-          },
-        )
-        .catch(() => null),
-      markProviderJobStatus({
-        client,
-        config,
-        job,
-        status: "failed",
-        stage: "provider-failed",
-        error: message,
-      }).catch(() => null),
-    ]);
     return;
   }
 
@@ -3620,14 +3483,9 @@ async function runOnce({
       try {
         await processProviderJob({ client, config, job: providerJob });
       } catch (error) {
-        const rawMessage = getErrorMessage(
+        const message = getErrorMessage(
           error,
           "Unable to process provider job.",
-        );
-        const isSocialJob = providerJob.jobType.startsWith("social-");
-        const message = redactProviderJobErrorMessage(
-          providerJob.jobType,
-          rawMessage,
         );
         const retryQueued =
           providerJob.jobType !== "hook-lab-post-analysis" ||
@@ -3639,10 +3497,6 @@ async function runOnce({
                   ownerId: providerJob.ownerId,
                   id: providerJob.id,
                   error: message,
-                  continuationDelayMs:
-                    error instanceof SocialApiError
-                      ? error.retryAfterMs
-                      : undefined,
                   updatedAt: getNow(),
                 },
               )
@@ -3651,7 +3505,7 @@ async function runOnce({
         if (!retryQueued) {
           await failProviderJob({ client, config, error, job: providerJob });
         }
-        throw isSocialJob ? new Error(message) : error;
+        throw error;
       }
 
       processedCount += 1;
@@ -3719,9 +3573,6 @@ async function main() {
   if (args.check) {
     createReplicateClient();
     getRequiredEnv("APIFY_TOKEN");
-    if (config.providerTools.has("social")) {
-      assertSocialProviderWorkerConfiguration();
-    }
     console.log("Provider worker check passed.");
     return;
   }

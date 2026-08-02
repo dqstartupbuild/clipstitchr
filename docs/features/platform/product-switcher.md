@@ -16,9 +16,8 @@ Stitchr, Clipr, Swipr, and Swapr.
   sidebar layouts, including Safari.
 - The same switcher can create a new product. New products become active right
   away.
-- Settings has a Product settings section for editing saved products,
-  automation, direct social defaults, and that product's queue, followed by an
-  Account settings section for direct social accounts, legacy Post Bridge,
+- Settings has a Product settings section for editing saved products and
+  product automation, followed by an Account settings section for Post Bridge,
   support, and subscription.
 - Product creation stays in the sidebar switcher. Existing products can be
   edited from Settings.
@@ -56,9 +55,8 @@ Stitchr, Clipr, Swipr, and Swapr.
   above account settings.
 - `web/app/_components/settings/SettingsProductSection.tsx` groups product
   editing and product automation.
-- `web/app/_components/settings/SettingsAccountSection.tsx` groups direct
-  social accounts, shared account preferences, and the migration-selected
-  provider.
+- `web/app/_components/settings/SettingsAccountSection.tsx` groups shared
+  account preferences and Post Bridge product account links.
 - `web/app/_components/settings/ProductSettingsList.tsx` shows saved products
   and keeps edit, make active, details, and delete actions available.
 - `web/convex/products.ts` creates products, reports setup state, and assigns

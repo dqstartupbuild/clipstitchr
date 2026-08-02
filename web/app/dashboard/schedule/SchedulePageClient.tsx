@@ -10,13 +10,7 @@ import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct
 import type { PostBridgePost } from "@/lib/clipstitchr/types/PostBridgePost";
 import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
 
-type SchedulePageClientProps = {
-  readOnlyLegacy?: boolean;
-};
-
-export function SchedulePageClient({
-  readOnlyLegacy = false,
-}: SchedulePageClientProps) {
+export function SchedulePageClient() {
   const products = useDashboardProduct();
   const [posts, setPosts] = useState<PostBridgePost[]>([]);
   const [accounts, setAccounts] = useState<PostBridgeSocialAccount[]>([]);
@@ -74,12 +68,6 @@ export function SchedulePageClient({
           description="Plan where finished ads go next."
           actions={null}
         />
-        {readOnlyLegacy ? (
-          <p className="rounded-lg bg-surface-elevated p-4 text-sm leading-6 text-text-secondary">
-            This is your read-only Post Bridge history. New posts use the
-            accounts connected directly to ClipStitchr.
-          </p>
-        ) : null}
         <ScheduledPostsPanel
           accounts={accounts}
           error={postsError}

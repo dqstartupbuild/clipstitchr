@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { SettingsPageClient } from "@/app/dashboard/settings/SettingsPageClient";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
-import { getSocialPublishingProvider } from "@/lib/clipstitchr/social/getSocialPublishingProvider";
 
 export const metadata: Metadata = createPageMetadata({
   title: `Settings | ${site.name}`,
@@ -13,9 +12,5 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function SettingsPage() {
-  return (
-    <SettingsPageClient
-      socialPublishingProvider={getSocialPublishingProvider()}
-    />
-  );
+  return <SettingsPageClient />;
 }

@@ -1,11 +1,9 @@
 import { v } from "convex/values";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
-import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
-import { socialPlatformValidator } from "./validators/socialPlatform";
 
 function getPositiveCount(count: number, name: string) {
   if (!Number.isFinite(count) || count <= 0) {
@@ -293,132 +291,6 @@ export const consumePostBridgeAnalyticsSync = mutation({
       throws: true,
     });
     await rateLimiter.limit(ctx, "postBridgeAnalyticsSyncGlobal", {
-      throws: true,
-    });
-  },
-});
-
-export const consumeSocialOAuthConnect = mutation({
-  args: {
-    secret: v.string(),
-  },
-  handler: async (ctx, { secret }) => {
-    assertRateLimitApiSecret(secret);
-
-    const ownerId = await getAuthenticatedOwnerId(ctx);
-
-    await rateLimiter.limit(ctx, "socialOAuthConnect", {
-      key: ownerId,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "socialOAuthConnectGlobal", {
-      throws: true,
-    });
-  },
-});
-
-export const consumeSocialAccountDisconnect = mutation({
-  args: {
-    secret: v.string(),
-  },
-  handler: async (ctx, { secret }) => {
-    assertRateLimitApiSecret(secret);
-
-    const ownerId = await getAuthenticatedOwnerId(ctx);
-
-    await rateLimiter.limit(ctx, "socialAccountDisconnect", {
-      key: ownerId,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "socialAccountDisconnectGlobal", {
-      throws: true,
-    });
-  },
-});
-
-export const consumeSocialMediaFetch = mutation({
-  args: {
-    ownerId: v.string(),
-    secret: v.string(),
-  },
-  handler: async (ctx, { ownerId, secret }) => {
-    assertRateLimitApiSecret(secret);
-
-    await rateLimiter.limit(ctx, "socialMediaFetch", {
-      key: ownerId,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "socialMediaFetchGlobal", {
-      throws: true,
-    });
-  },
-});
-
-export const consumeSocialWebhook = mutation({
-  args: {
-    platform: v.string(),
-    secret: v.string(),
-  },
-  handler: async (ctx, { platform, secret }) => {
-    assertRateLimitApiSecret(secret);
-
-    await rateLimiter.limit(ctx, "socialWebhookByPlatform", {
-      key: platform,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "socialWebhookGlobal", {
-      throws: true,
-    });
-  },
-});
-
-export const consumeSocialProviderPublish = mutation({
-  args: {
-    secret: v.string(),
-    ownerId: v.string(),
-    socialAccountId: v.string(),
-    platform: socialPlatformValidator,
-  },
-  handler: async (ctx, args) => {
-    assertProviderWorkerSecret(args.secret);
-
-    await rateLimiter.limit(
-      ctx,
-      args.platform === "tiktok"
-        ? "socialTikTokPublishByAccount"
-        : "socialInstagramPublishByAccount",
-      {
-        key: args.socialAccountId,
-        throws: true,
-      },
-    );
-    await rateLimiter.limit(ctx, "socialPublishByOwner", {
-      key: args.ownerId,
-      throws: true,
-    });
-    await rateLimiter.limit(
-      ctx,
-      args.platform === "tiktok"
-        ? "socialPublishTikTokGlobal"
-        : "socialPublishInstagramGlobal",
-      { throws: true },
-    );
-  },
-});
-
-export const consumeSocialProviderStatusCheck = mutation({
-  args: {
-    secret: v.string(),
-    socialAccountId: v.string(),
-  },
-  handler: async (ctx, args) => {
-    assertProviderWorkerSecret(args.secret);
-
-    await rateLimiter.limit(ctx, "socialStatusCheckByAccount", {
-      key: args.socialAccountId,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "socialStatusCheckGlobal", {
       throws: true,
     });
   },

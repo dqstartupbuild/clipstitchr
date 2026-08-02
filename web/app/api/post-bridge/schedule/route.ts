@@ -9,7 +9,6 @@ import { assertPostBridgeSourceMediaKind } from "@/lib/clipstitchr/server/postBr
 import { createPostBridgePost } from "@/lib/clipstitchr/server/postBridge/createPostBridgePost";
 import { createPostBridgePostReference } from "@/lib/clipstitchr/server/postBridge/createPostBridgePostReference";
 import { getPostBridgeAccountPlatforms } from "@/lib/clipstitchr/server/postBridge/getPostBridgeAccountPlatforms";
-import { getPostBridgeLegacyWriteResponse } from "@/lib/clipstitchr/server/postBridge/getPostBridgeLegacyWriteResponse";
 import { getPostBridgeUploadedMediaSizeBytes } from "@/lib/clipstitchr/server/postBridge/getPostBridgeUploadedMediaSizeBytes";
 import { getPostBridgeSourceProductId } from "@/lib/clipstitchr/server/postBridge/getPostBridgeSourceProductId";
 import { getSelectedPostBridgeAccounts } from "@/lib/clipstitchr/server/postBridge/getSelectedPostBridgeAccounts";
@@ -28,12 +27,6 @@ export async function POST(request: Request) {
 
   if (!userId) {
     return createAuthenticationRequiredResponse();
-  }
-
-  const legacyWriteResponse = getPostBridgeLegacyWriteResponse();
-
-  if (legacyWriteResponse) {
-    return legacyWriteResponse;
   }
 
   try {

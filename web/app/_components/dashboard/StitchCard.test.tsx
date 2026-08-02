@@ -130,10 +130,6 @@ vi.mock("@/lib/clipstitchr/hooks/useObjectUrl", () => ({
   useObjectUrl: mocks.useObjectUrl,
 }));
 
-vi.mock("@/app/dashboard/useSocialPublishingProvider", () => ({
-  useSocialPublishingProvider: () => "post_bridge",
-}));
-
 vi.mock("@/lib/clipstitchr/hooks/useLazyBlobObjectUrl", () => ({
   useLazyBlobObjectUrl: (options: { loadBlob: () => Promise<Blob | null> }) => {
     mocks.lazyObjectUrlOptions = options;

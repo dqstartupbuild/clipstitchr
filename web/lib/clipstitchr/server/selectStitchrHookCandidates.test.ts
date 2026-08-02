@@ -233,25 +233,21 @@ describe("selectStitchrHookCandidates", () => {
     );
   });
 
-  it(
-    "covers every family and opener coordinate across thirty lanes",
-    () => {
-      const coordinateKeys = Array.from({ length: 30 }, (_, index) => {
-        const candidates = selectStitchrHookCandidates({
-          clipContexts: [],
-          product,
-          templates: cliprHookTemplates,
-          variationSeed: `stitchr-seed:${index + 1}`,
-        });
-        const coordinates = getUgcDiscoveryHookCoordinates(
-          candidates[0]?.id ?? "",
-        );
-
-        return `${coordinates?.familyIndex}:${coordinates?.openerIndex}`;
+  it("covers every family and opener coordinate across thirty lanes", () => {
+    const coordinateKeys = Array.from({ length: 30 }, (_, index) => {
+      const candidates = selectStitchrHookCandidates({
+        clipContexts: [],
+        product,
+        templates: cliprHookTemplates,
+        variationSeed: `stitchr-seed:${index + 1}`,
       });
+      const coordinates = getUgcDiscoveryHookCoordinates(
+        candidates[0]?.id ?? "",
+      );
 
-      expect(new Set(coordinateKeys).size).toBe(30);
-    },
-    15_000,
-  );
+      return `${coordinates?.familyIndex}:${coordinates?.openerIndex}`;
+    });
+
+    expect(new Set(coordinateKeys).size).toBe(30);
+  });
 });

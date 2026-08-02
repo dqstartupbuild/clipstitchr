@@ -32,17 +32,14 @@ export async function createStitchPostBridgeScheduleMedia({
   return {
     hasAudio: Boolean(
       stitch.music?.enabled ||
-      stitch.includeUgcAudio !== false ||
-      stitch.includeDemoAudio !== false,
+        stitch.includeUgcAudio !== false ||
+        stitch.includeDemoAudio !== false,
     ),
     mediaFiles: [
       {
         blob: renderedBlob,
-        durationSeconds: stitch.duration,
         fileName: getPostBridgeMediaFileName(stitch.name, "video"),
-        height: stitch.height,
         mediaKind: "video",
-        width: stitch.width,
       },
     ],
   };

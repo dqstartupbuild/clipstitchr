@@ -33,8 +33,7 @@ Feature documentation is grouped by the part of ClipStitchr it supports:
 | `features/library/` | The shared media Library |
 | `features/marketing/` | Public marketing surfaces and case studies |
 | `features/platform/` | Shared account, onboarding, navigation, and workspace behavior |
-| `features/post-bridge/` | Legacy Post Bridge scheduling and analytics migration records |
-| `features/social-publishing/` | Direct account connection, queues, publishing, analytics, migration, and operations |
+| `features/post-bridge/` | Scheduling and post-performance workflows |
 | `features/public-tools/` | Public tools organized into audits, calculators, generators, portfolio records, and resources |
 | `features/settings/` | Product and automation settings |
 | `features/stitchr/` | Stitchr creation, scoring, and saved renders |

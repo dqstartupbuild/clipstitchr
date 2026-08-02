@@ -18,8 +18,6 @@ import { StitchEditDialog } from "@/app/_components/dashboard/StitchEditDialog";
 import { MediaPrimaryAction } from "@/app/_components/dashboard/MediaPrimaryAction";
 import { StitchScoreBadge } from "@/app/_components/dashboard/StitchScoreBadge";
 import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
-import { SocialPublishDialog } from "@/app/_components/social/SocialPublishDialog";
-import { useSocialPublishingProvider } from "@/app/dashboard/useSocialPublishingProvider";
 import {
   MediaCardActionMenu,
   type MediaCardActionMenuItem,
@@ -123,7 +121,6 @@ export function StitchCard({
   onUpdateTextOverlay,
   ugcClips = [],
 }: StitchCardProps) {
-  const socialPublishingProvider = useSocialPublishingProvider();
   const [previewState, setPreviewState] = useState<StitchPreviewSources | null>(
     null,
   );
@@ -624,8 +621,6 @@ export function StitchCard({
     {
       label: "Schedule post",
       icon: <CalendarClock aria-hidden className="h-4 w-4" />,
-      disabled:
-        socialPublishingProvider === "in_house" && !stitch.productId,
       onClick: () => setIsScheduleOpen(true),
     },
     {
@@ -817,49 +812,24 @@ export function StitchCard({
         />
       ) : null}
       {isScheduleOpen ? (
-        socialPublishingProvider === "in_house" && stitch.productId ? (
-          <SocialPublishDialog
-            defaultCaption={stitch.socialCaption}
-            mediaKind="video"
-            previewUrl={posterUrl}
-            productId={stitch.productId}
-            sourceId={stitch.id}
-            sourceTitle={stitch.name}
-            sourceType="stitch"
-            videoDurationSeconds={stitch.duration}
-            videoHeight={stitch.height}
-            videoWidth={stitch.width}
-            onClose={() => setIsScheduleOpen(false)}
-            onRenderMedia={renderPostBridgeMedia}
-            onScheduled={(postId) => {
-              setHasScheduledPostBridgePost(true);
-              void onPostBridgeScheduled?.();
-              trackPostHogEvent("stitch_scheduled", {
-                social_post_id: postId,
-                stitch_id: stitch.id,
-              });
-            }}
-          />
-        ) : (
-          <PostBridgeScheduleDialog
-            defaultCaption={stitch.socialCaption}
-            sourceId={stitch.id}
-            sourceProductId={stitch.productId}
-            sourceTitle={stitch.name}
-            sourceType="stitch"
-            onClose={() => setIsScheduleOpen(false)}
-            onRenderMedia={renderPostBridgeMedia}
-            onScheduled={(post) => {
-              setHasScheduledPostBridgePost(true);
-              void onPostBridgeScheduled?.();
-              trackPostHogEvent("stitch_scheduled", {
-                platform_count: post.platforms.length,
-                post_bridge_post_id: post.postId,
-                stitch_id: stitch.id,
-              });
-            }}
-          />
-        )
+        <PostBridgeScheduleDialog
+          defaultCaption={stitch.socialCaption}
+          sourceId={stitch.id}
+          sourceProductId={stitch.productId}
+          sourceTitle={stitch.name}
+          sourceType="stitch"
+          onClose={() => setIsScheduleOpen(false)}
+          onRenderMedia={renderPostBridgeMedia}
+          onScheduled={(post) => {
+            setHasScheduledPostBridgePost(true);
+            void onPostBridgeScheduled?.();
+            trackPostHogEvent("stitch_scheduled", {
+              platform_count: post.platforms.length,
+              post_bridge_post_id: post.postId,
+              stitch_id: stitch.id,
+            });
+          }}
+        />
       ) : null}
     </>
   );

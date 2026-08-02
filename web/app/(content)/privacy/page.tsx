@@ -11,7 +11,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function PrivacyPage() {
-  const lastUpdated = "July 29, 2026";
+  const lastUpdated = "July 16, 2026";
 
   return (
     <article className="legal-page">
@@ -71,43 +71,6 @@ export default function PrivacyPage() {
               You can delete clips, photos, and stitches in the dashboard. Those
               actions remove the saved record and associated media objects for
               your account.
-            </p>
-          </section>
-
-          <section>
-            <h2>Connected TikTok and Instagram Accounts</h2>
-            <p>
-              When you connect TikTok or a professional Instagram account, the
-              platform sends ClipStitchr an account ID, display name, profile
-              image, approved permissions, and access tokens. ClipStitchr never
-              receives your TikTok or Instagram password. Access and refresh
-              tokens are encrypted before they are stored and are never shown
-              in the browser.
-            </p>
-            <p>
-              If you ask ClipStitchr to publish, we send the media, caption, and
-              choices you approved to the selected platform. We store your
-              schedule, delivery status, platform publication IDs, public post
-              links when available, and the publishing details needed to avoid
-              duplicate posts. We do not publish unless you choose the account,
-              approve the post, and confirm the required platform options.
-            </p>
-            <p>
-              Manual analytics refreshes ask TikTok or Instagram for public
-              performance counts for posts ClipStitchr published. We keep dated
-              snapshots so you can compare periods without treating missing
-              platform data as zero. If you choose TikTok save-count enrichment,
-              Apify may read the public post URL only during that refresh.
-            </p>
-            <p>
-              You can disconnect a social account in Settings at any time.
-              ClipStitchr asks the platform to revoke access when supported,
-              removes that account from product defaults, and holds future
-              deliveries for your review. To request deletion of connected
-              account data, publication records, or analytics history, contact{" "}
-              <a href={`mailto:${supportEmail}`}>{supportEmail}</a>. Platform
-              deauthorization and data-deletion requests are also handled
-              through the signed callbacks required by TikTok and Meta.
             </p>
           </section>
 

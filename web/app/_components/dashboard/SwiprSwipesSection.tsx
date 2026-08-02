@@ -5,7 +5,6 @@ import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyS
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { SwiprSwipeCard } from "@/app/_components/dashboard/SwiprSwipeCard";
 import { PostBridgeBatchQueueDialog } from "@/app/_components/postBridge/PostBridgeBatchQueueDialog";
-import { useSocialPublishingProvider } from "@/app/dashboard/useSocialPublishingProvider";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
 import { createSwiprPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia";
@@ -55,7 +54,6 @@ export function SwiprSwipesSection({
   onStatusFilterChange,
   onUpdatePostedStatus,
 }: SwiprSwipesSectionProps) {
-  const socialPublishingProvider = useSocialPublishingProvider();
   const backgroundsById = useMemo(
     () => new Map(backgrounds.map((background) => [background.id, background])),
     [backgrounds],
@@ -118,13 +116,9 @@ export function SwiprSwipesSection({
               onDeleteSelected={() => {
                 void batchDelete.deleteSelectedItems();
               }}
-              onQueueSelected={
-                socialPublishingProvider === "post_bridge"
-                  ? () => {
-                      batchQueue.openBatchQueueDialog();
-                    }
-                  : undefined
-              }
+              onQueueSelected={() => {
+                batchQueue.openBatchQueueDialog();
+              }}
               onSelectVisible={batchDelete.selectVisibleItems}
               onStartSelecting={batchDelete.startSelecting}
               onStopSelecting={batchDelete.stopSelecting}
@@ -181,8 +175,7 @@ export function SwiprSwipesSection({
           description={emptyDescription}
         />
       )}
-      {socialPublishingProvider === "post_bridge" &&
-      batchQueue.isBatchQueueDialogOpen ? (
+      {batchQueue.isBatchQueueDialogOpen ? (
         <PostBridgeBatchQueueDialog
           allowMusic
           items={batchQueue.queuedItems.map((swipe) => ({

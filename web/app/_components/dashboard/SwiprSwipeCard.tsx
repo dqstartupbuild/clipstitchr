@@ -14,8 +14,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { MediaPrimaryAction } from "@/app/_components/dashboard/MediaPrimaryAction";
 import { SwiprSwipeDetailsDialog } from "@/app/_components/dashboard/SwiprSwipeDetailsDialog";
 import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
-import { SocialPublishDialog } from "@/app/_components/social/SocialPublishDialog";
-import { useSocialPublishingProvider } from "@/app/dashboard/useSocialPublishingProvider";
 import { Badge } from "@/app/_components/ui/Badge";
 import {
   MediaCardActionMenu,
@@ -27,7 +25,6 @@ import { createSwiprPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/cre
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
-import { socialPhotoRenderProfile } from "@/lib/clipstitchr/social/socialPhotoRenderProfile";
 import type { PostBridgePlatform } from "@/lib/clipstitchr/types/PostBridgePlatform";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
@@ -69,7 +66,6 @@ export function SwiprSwipeCard({
   onPostBridgeScheduled,
   onUpdatePostedStatus,
 }: SwiprSwipeCardProps) {
-  const socialPublishingProvider = useSocialPublishingProvider();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
@@ -81,17 +77,20 @@ export function SwiprSwipeCard({
     id: string;
     message: string;
   } | null>(null);
-  const backgroundsById = useMemo(() => {
-    const nextBackgroundsById = new Map(
-      backgrounds.map((item) => [item.id, item] as const),
-    );
+  const backgroundsById = useMemo(
+    () => {
+      const nextBackgroundsById = new Map(
+        backgrounds.map((item) => [item.id, item] as const),
+      );
 
-    if (background) {
-      nextBackgroundsById.set(background.id, background);
-    }
+      if (background) {
+        nextBackgroundsById.set(background.id, background);
+      }
 
-    return nextBackgroundsById;
-  }, [background, backgrounds]);
+      return nextBackgroundsById;
+    },
+    [background, backgrounds],
+  );
   const missingBackgroundCount = useMemo(() => {
     const referencedIds = new Set([
       swipe.backgroundId,
@@ -211,8 +210,8 @@ export function SwiprSwipeCard({
           const slideBlob =
             backgroundId === currentBackground.id
               ? blob
-              : (slideBackgroundAsset.blob ??
-                (await onLoadBackgroundBlob(slideBackgroundAsset.id)));
+              : slideBackgroundAsset.blob ??
+                (await onLoadBackgroundBlob(slideBackgroundAsset.id));
 
           slideBackgrounds[slide.id] = getSwiprBackgroundFromAsset({
             ...slideBackgroundAsset,
@@ -238,12 +237,10 @@ export function SwiprSwipeCard({
       });
   };
   const renderPostBridgeMedia = async ({
-    imageProfile,
     musicTrack,
     onProgress,
     platforms,
   }: {
-    imageProfile?: typeof socialPhotoRenderProfile;
     musicTrack: SharedMusicTrack | null;
     onProgress: (progress: number) => void;
     platforms: PostBridgePlatform[];
@@ -254,7 +251,6 @@ export function SwiprSwipeCard({
 
     return await createSwiprPostBridgeScheduleMedia({
       backgroundsById,
-      imageProfile,
       loadBackgroundBlob: onLoadBackgroundBlob,
       musicTrack,
       onPrimaryBackgroundLoaded: (id, blob) => {
@@ -366,7 +362,10 @@ export function SwiprSwipeCard({
           ) : null}
           {hasMissingBackground ? (
             <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-100 px-5 text-center">
-              <ImageOff aria-hidden className="h-9 w-9 text-text-tertiary" />
+              <ImageOff
+                aria-hidden
+                className="h-9 w-9 text-text-tertiary"
+              />
               <span className="text-sm font-bold text-text-primary">
                 Photo is missing
               </span>
@@ -477,43 +476,20 @@ export function SwiprSwipeCard({
         />
       ) : null}
       {isScheduleOpen ? (
-        socialPublishingProvider === "in_house" ? (
-          <SocialPublishDialog
-            defaultCaption={swipe.socialCaption ?? socialDescription}
-            mediaKind="image"
-            previewUrl={previewUrl}
-            productId={swipe.productSourceId}
-            sourceId={swipe.id}
-            sourceTitle={postBridgeTitle}
-            sourceType="swipe"
-            onClose={() => setIsScheduleOpen(false)}
-            onRenderMedia={(options) =>
-              renderPostBridgeMedia({
-                ...options,
-                imageProfile: socialPhotoRenderProfile,
-              })
-            }
-            onScheduled={() => {
-              setHasScheduledPostBridgePost(true);
-              void onPostBridgeScheduled?.();
-            }}
-          />
-        ) : (
-          <PostBridgeScheduleDialog
-            allowMusic
-            defaultCaption={swipe.socialCaption ?? socialDescription}
-            sourceId={swipe.id}
-            sourceProductId={swipe.productSourceId}
-            sourceTitle={postBridgeTitle}
-            sourceType="swipe"
-            onClose={() => setIsScheduleOpen(false)}
-            onRenderMedia={renderPostBridgeMedia}
-            onScheduled={() => {
-              setHasScheduledPostBridgePost(true);
-              void onPostBridgeScheduled?.();
-            }}
-          />
-        )
+        <PostBridgeScheduleDialog
+          allowMusic
+          defaultCaption={swipe.socialCaption ?? socialDescription}
+          sourceId={swipe.id}
+          sourceProductId={swipe.productSourceId}
+          sourceTitle={postBridgeTitle}
+          sourceType="swipe"
+          onClose={() => setIsScheduleOpen(false)}
+          onRenderMedia={renderPostBridgeMedia}
+          onScheduled={() => {
+            setHasScheduledPostBridgePost(true);
+            void onPostBridgeScheduled?.();
+          }}
+        />
       ) : null}
     </>
   );

@@ -24,7 +24,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  distDir: process.env.NEXT_DIST_DIR?.trim() || ".next",
   images: {
     localPatterns: [
       {

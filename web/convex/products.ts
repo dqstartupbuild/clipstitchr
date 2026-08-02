@@ -12,7 +12,6 @@ import { upsertProductCard } from "./upsertProductCard";
 import { normalizePostBridgeSocialAccountIds } from "../lib/clipstitchr/utils/normalizePostBridgeSocialAccountIds";
 import { assertProductLimit } from "./products/assertProductLimit";
 import { disableProductAutomation } from "./products/disableProductAutomation";
-import { createInitialProductSocialQueue } from "./productSocialQueues/createInitialProductSocialQueue";
 
 const PRODUCT_TEXT_MAX_LENGTH = 2000;
 const PRODUCT_NAME_MAX_LENGTH = 120;
@@ -233,7 +232,6 @@ export const create = mutation({
     };
     const productId = await ctx.db.insert("products", productFields);
     await upsertProductCard(ctx, productFields);
-    await createInitialProductSocialQueue(ctx, ownerId, id, now);
 
     if (!existingPrimaryProduct) {
       const existingPreferences = await ctx.db

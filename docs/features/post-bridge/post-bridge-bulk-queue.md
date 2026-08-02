@@ -1,11 +1,5 @@
 # Post Bridge Bulk Queue
 
-> **Legacy migration path.** Bulk queue is hidden when
-> `SOCIAL_PUBLISHING_PROVIDER=in_house`, which prevents a batch from reaching
-> both providers. Existing Post Bridge queue visibility is retained until the
-> removal audit in `docs/features/social-publishing/post-bridge-migration.md`
-> is complete.
-
 Dashboard Library selection mode can add selected saved Stitches or Swipes to
 the user's Post Bridge queue with one review and confirmation flow.
 

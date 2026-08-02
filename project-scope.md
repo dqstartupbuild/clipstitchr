@@ -29,8 +29,7 @@ clips.
 
 ### Product Thesis
 
-ClipStitchr is not a general video editor, AI playground, or general-purpose
-social scheduler.
+ClipStitchr is not a general video editor, AI playground, or social scheduler.
 It is a practical short-form system for people who dislike the repetitive work
 of turning scattered UGC and product demos into finished ads.
 
@@ -286,30 +285,6 @@ selected slides.
 | 9 | Auto-generated Swipr slide text uses purpose-filtered hidden hook libraries | ✅ | ✅ |
 | 10 | Pinterest or stock-library provider integration | — | ✅ |
 
-### 4.9 Direct Social Publishing and Analytics
-
-ClipStitchr has an in-house paid-user publishing path for saved Stitches and
-Swipr image sets. It supports only TikTok and Instagram and reuses Convex,
-Cloudflare R2, the existing provider job queue, and the provider Cloud Run Job.
-It does not add a second scheduler service.
-
-| # | Feature | Current | Production gate |
-|---|---|---|---|
-| 1 | Connect any number of owned TikTok and Instagram professional accounts | ✅ | Platform app approval |
-| 2 | Save product account defaults and one IANA-timezone queue per product | ✅ | Live account smoke test |
-| 3 | Post now, use the next product slot, or choose an exact time | ✅ | Live account smoke test |
-| 4 | TikTok automatic video/photo posting and video inbox delivery | ✅ | TikTok Content Posting audit |
-| 5 | Instagram Reels, single images, and image carousels | ✅ | Meta Advanced Access |
-| 6 | Independent duplicate-safe delivery, status reconciliation, holds, and review/resume | ✅ | Worker deployment smoke test |
-| 7 | User-triggered official analytics with nullable metrics and optional TikTok saves enrichment | ✅ | Approved API scopes |
-| 8 | Legacy Post Bridge history behind a migration flag | ✅ | Removal after queue audit |
-
-`SOCIAL_PUBLISHING_PROVIDER=post_bridge` remains the safe default. Production
-must not switch to `in_house` until the launch checklist in
-`docs/features/social-publishing/platform-approval-and-launch.md` is complete.
-See `docs/features/social-publishing/in-house-social-publishing-architecture.md`
-for the implementation contract.
-
 ---
 
 ## 5. Pages / Routes (MVP)
@@ -323,9 +298,6 @@ for the implementation contract.
 /dashboard/swipr → Authenticated TikTok carousel image generator
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos with UGC clips or finished stitches
 /dashboard/library → Authenticated Library with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Pexels tabs; UGC/Demo/Avatar upload controls open from the header upload selector
-/dashboard/settings → Authenticated direct social accounts, product account defaults, and product queue settings
-/dashboard/schedule → Authenticated product schedule and independent delivery states
-/dashboard/analytics → Authenticated saved social analytics and manual refresh controls
 /dashboard/avatars → Compatibility redirect to `/dashboard/library?tab=avatars`
 /dashboard/uploads → Compatibility redirect to `/dashboard/library`
 /dashboard/stitches → Compatibility redirect to `/dashboard/library?tab=stitches`
@@ -576,14 +548,6 @@ record. Legacy destination-tool fields remain for old saved briefs, but new
 adaptations stay inside Hook Lab. Products may store a default avatar and Demo
 clip.
 
-Direct social publishing stores focused `socialAccounts`,
-`productSocialAccounts`, `productSocialQueues`, `socialPosts`,
-`socialPostAssets`, `socialPostTargets`, `socialPublishAttempts`,
-`socialExternalPublications`, `socialAnalyticsSnapshots`, and
-`socialAnalyticsRefreshRuns` rows. Separate OAuth-state, webhook-replay,
-temporary-media-grant, and provider-data-deletion records keep security and
-operations independent from the logical post.
-
 ---
 
 ## 9. Phased Rollout
@@ -621,10 +585,6 @@ operations independent from the logical post.
 - [ ] Export quality settings
 - [ ] Usage analytics
 - [ ] Billing / subscription (if applicable)
-- [x] In-house TikTok and Instagram publishing behind a safe migration flag
-- [x] Product social queues and user-triggered social analytics
-- [ ] TikTok Content Posting audit, Meta Advanced Access, production account
-  smoke tests, and in-house flag cutover
 
 ### Phase 4 — Secondary AI-Assisted Content Supply and Editing
 
@@ -682,6 +642,3 @@ operations independent from the logical post.
 - [ ] All resulting 9:16 videos can be downloaded.
 - [ ] User can create multiple finished ads from the same library without opening a traditional editor.
 - [ ] Core media workflows work on `localhost`; AI helper workflows require configured provider, Convex, R2, Clerk, and rate-limit environment variables.
-- [ ] A paid user can connect approved TikTok and Instagram accounts, publish
-  each supported media shape, review independent delivery state, and refresh
-  nullable analytics without buying a separate scheduler subscription.

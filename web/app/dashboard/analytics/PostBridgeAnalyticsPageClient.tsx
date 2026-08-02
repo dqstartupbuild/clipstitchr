@@ -29,13 +29,7 @@ const emptySyncStatus = {
   syncTriggered: false,
 };
 
-type PostBridgeAnalyticsPageClientProps = {
-  readOnlyLegacy?: boolean;
-};
-
-export function PostBridgeAnalyticsPageClient({
-  readOnlyLegacy = false,
-}: PostBridgeAnalyticsPageClientProps) {
+export function PostBridgeAnalyticsPageClient() {
   const products = useDashboardProduct();
   const [analytics, setAnalytics] = useState<PostBridgeAnalytics[]>([]);
   const [syncStatus, setSyncStatus] = useState<{
@@ -99,10 +93,7 @@ export function PostBridgeAnalyticsPageClient({
 
     try {
       applyLoadResult(
-        await fetchPostBridgeAnalytics({
-          productId: activeProductId,
-          readOnly: readOnlyLegacy,
-        }),
+        await fetchPostBridgeAnalytics({ productId: activeProductId }),
       );
     } catch (nextError) {
       setError(
@@ -113,7 +104,7 @@ export function PostBridgeAnalyticsPageClient({
     } finally {
       setIsLoading(false);
     }
-  }, [activeProductId, applyLoadResult, readOnlyLegacy]);
+  }, [activeProductId, applyLoadResult]);
 
   useEffect(() => {
     let isActive = true;
@@ -132,7 +123,6 @@ export function PostBridgeAnalyticsPageClient({
 
         const result = await fetchPostBridgeAnalytics({
           productId: activeProductId,
-          readOnly: readOnlyLegacy,
         });
 
         if (!isActive) {
@@ -162,7 +152,7 @@ export function PostBridgeAnalyticsPageClient({
     return () => {
       isActive = false;
     };
-  }, [activeProductId, applyLoadResult, readOnlyLegacy]);
+  }, [activeProductId, applyLoadResult]);
 
   const handleSync = async () => {
     if (!activeProductId) {
@@ -210,20 +200,13 @@ export function PostBridgeAnalyticsPageClient({
                 type="button"
                 icon={<RotateCw aria-hidden className="h-4 w-4" />}
                 isLoading={isSyncing}
-                disabled={readOnlyLegacy}
                 onClick={() => void handleSync()}
               >
-                {readOnlyLegacy ? "Legacy sync off" : "Sync analytics"}
+                Sync analytics
               </Button>
             </div>
           }
         />
-        {readOnlyLegacy ? (
-          <p className="rounded-lg bg-surface-elevated p-4 text-sm leading-6 text-text-secondary">
-            This is your read-only Post Bridge analytics history. Refresh only
-            reloads saved records and does not contact Post Bridge.
-          </p>
-        ) : null}
 
         {error ? (
           <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
