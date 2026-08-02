@@ -12,6 +12,5 @@ export type SocialComposeTargetDraft = {
   brandContentToggle: boolean;
   brandOrganicToggle: boolean;
   commercialContentEnabled: boolean;
-  isAigc: boolean;
   shareToFeed: boolean;
 };

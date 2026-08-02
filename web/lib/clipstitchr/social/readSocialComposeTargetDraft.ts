@@ -35,7 +35,6 @@ export function readSocialComposeTargetDraft({
       commercialContentEnabled:
         controls.brandContentToggle === true ||
         controls.brandOrganicToggle === true,
-      isAigc: controls.isAigc === true,
       shareToFeed:
         controls.shareToFeed === undefined
           ? true

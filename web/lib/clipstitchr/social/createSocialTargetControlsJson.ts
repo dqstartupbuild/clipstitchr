@@ -14,7 +14,6 @@ export function createSocialTargetControlsJson(
           brandContentToggle: target.brandContentToggle,
           brandOrganicToggle: target.brandOrganicToggle,
           consentAcknowledged,
-          isAigc: target.isAigc,
           privacyLevel:
             target.publishMode === "direct"
               ? target.privacyLevel

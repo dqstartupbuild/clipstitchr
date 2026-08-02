@@ -15,7 +15,6 @@ export function readTikTokTargetControls(
     brandContentToggle: value.brandContentToggle === true,
     brandOrganicToggle: value.brandOrganicToggle === true,
     consentAcknowledged: value.consentAcknowledged === true,
-    isAigc: value.isAigc === true,
     privacyLevel:
       typeof value.privacyLevel === "string"
         ? value.privacyLevel.trim()

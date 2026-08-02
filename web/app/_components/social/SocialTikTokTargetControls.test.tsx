@@ -34,7 +34,6 @@ describe("SocialTikTokTargetControls", () => {
     expect(html).toContain("Let TikTok pick a sound");
     expect(html).toContain('checked=""');
     expect(html).not.toContain("Send to TikTok for finishing");
-    expect(html).not.toContain("significantly edited with AI");
   });
 
   it("shows inbox delivery for videos and hides photo sound", () => {
@@ -52,8 +51,6 @@ describe("SocialTikTokTargetControls", () => {
     expect(html).toContain("Send to TikTok for finishing");
     expect(html).not.toContain("Let TikTok pick a sound");
     expect(html).toContain("Choose before posting");
-    expect(html).toContain("significantly edited with AI");
-    expect(html).toContain("TikTok will add its AI-generated content label.");
   });
 
   it("removes Only you while paid branded content is selected", () => {
@@ -128,25 +125,6 @@ describe("SocialTikTokTargetControls", () => {
     expect(html).toContain("finish the post in TikTok");
     expect(html).not.toContain("Allow comments");
     expect(html).not.toContain("promotes a brand");
-    expect(html).not.toContain("significantly edited with AI");
-  });
-
-  it("preserves an explicit AI-generated video disclosure", () => {
-    const html = renderToStaticMarkup(
-      <SocialTikTokTargetControls
-        account={account}
-        disabled={false}
-        mediaKind="video"
-        target={{
-          ...createSocialComposeTargetDraft(account.id, "tiktok"),
-          isAigc: true,
-        }}
-        onChange={vi.fn()}
-      />,
-    );
-
-    expect(html).toContain("significantly edited with AI");
-    expect(html).toContain('checked=""');
   });
 
   it("shows the current account-specific video duration limit", () => {

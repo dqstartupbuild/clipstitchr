@@ -33,7 +33,7 @@ TikTok production publishing must not be described as audited while review is
 pending. Instagram customer publishing must not be described as production
 ready while Advanced Access is pending.
 
-## Staged portal state on July 29-30, 2026
+## Staged portal state on July 29, 2026
 
 The following development configuration is saved without enabling production:
 
@@ -50,16 +50,11 @@ The following development configuration is saved without enabling production:
   `ClipStitchr-IG` tester invitation and is listed in Meta's access-token setup.
   Meta identifies the Instagram Login app separately from the parent Meta app,
   and Vercel uses that Instagram Login client ID.
-- The tester generated an Instagram sandbox access token. A v25.0 profile
-  request returned the expected `guppycalisthenics` Business account. The token
-  was used from the local clipboard without printing it, writing it to the
-  repository, or adding it to a secret store.
 - A Meta App Review draft exists but has not been submitted. It requests only
   `instagram_business_basic`, `instagram_business_content_publish`, and
   `instagram_business_manage_insights`. The automatically selected messaging,
   comments, and Human Agent permissions were removed from the draft.
-- The tester's account-level webhook subscription is on. Every field
-  subscription for comments, live comments, messages,
+- All Meta webhook subscriptions for comments, live comments, messages,
   message edits and reactions, handover, opt-ins, postbacks, referrals, seen
   receipts, and standby are disabled. ClipStitchr does not request or process
   those event types, so subscribing would collect data outside this feature's
@@ -91,57 +86,38 @@ The following development configuration is saved without enabling production:
   challenge for the staged verification token. This proves the callback route
   and current Vercel secret are live without enabling signed webhook event
   processing.
-- Meta accepted and saved the production callback URL and webhook verification
-  token. Meta still needs its API-test counters to ingest the successful
-  sandbox calls, permission screencasts, review testing instructions, the
-  responsible data-handling answers, and Advanced Access. The app remains
-  unpublished. The production feature flag remains on Post-Bridge, the
-  provider worker does not advertise the `social` tool, and no social-enabled
-  provider-worker production deployment or review submission has occurred.
+- Meta still needs webhook verification, review testing instructions, and
+  Advanced Access. The app remains unpublished. The production feature flag
+  remains on Post-Bridge, the provider worker does not advertise the `social`
+  tool, and no social-enabled provider-worker production deployment or review
+  submission has occurred.
 - The development-only
   [browser acceptance suite](browser-acceptance-testing.md) passes desktop and
   mobile pointer and keyboard checks. It uses fixture accounts and does not
   replace the authorized-account provider smoke gate.
-- The current provider-worker source is deployed as the immutable image
-  `social-aigc-staged-701ae4a7-20260730-040756`, with registry digest
-  `sha256:12ba2fd4cb72ccc9d925c192cbef54843934da2caf35c45d71d90952908ae2ac`.
-  Cloud Run execution `clipstitchr-provider-worker-dfwrt` passed `--check` on
-  July 30, 2026 at 04:15 UTC.
-- The deployed job has the staged social environment and Secret Manager
-  references for `SOCIAL_TOKEN_ENCRYPTION_KEYS`, `TIKTOK_CLIENT_KEY`, and
-  `TIKTOK_CLIENT_SECRET`. `PROVIDER_WORKER_TOOLS` remains
-  `stitchr,swapr,clipr,avatar-photo,swipr`, so the deployed worker cannot claim
-  or process social jobs before approval.
+- Safe-gated provider-worker execution
+  `clipstitchr-provider-worker-88qgt` passed `--check` on July 29, 2026 at
+  15:10 UTC. The deployed job still omits the `social` tool. Final source
+  hardening happened after that execution, so a future authorized social-worker
+  deployment must rebuild the current source and pass a new `--check`; the
+  earlier execution is not evidence that the current source is deployed.
 
 ## Meta review draft handoff
 
 The saved, unsubmitted draft has these remaining gates:
 
-- On July 30, 2026, an authorized v25.0
-  `instagram_business_manage_insights` request returned lifetime views for an
-  existing carousel. The current provider-worker analytics implementation then
-  read views, reach, likes, comments, shares, and saves for that post; Reel-only
-  watch time correctly remained unavailable.
-- An authorized `instagram_business_content_publish` request created a
-  non-public image container from the certified ClipStitchr app icon. The
-  container reached `FINISHED`. `media_publish` was deliberately not called, so
-  the test did not create a public Instagram post; a follow-up media listing
-  confirmed the container was absent from the account's published media.
-- Immediately after those successful calls and on a later July 30 refresh,
-  Meta's Testing page still reported
+- Meta's Testing page reports
   `instagram_business_content_publish` at 0 of 1 required API calls and
-  `instagram_business_manage_insights` at 0 of 1 required API calls. Meta notes
-  that successful test data can take up to 24 hours to appear and remains valid
-  for 30 days. Recheck the counters before submission; do not repeat external
-  mutations merely because the counters are delayed.
+  `instagram_business_manage_insights` at 0 of 1 required API calls. A
+  successful authorized-account publish and insights request must be recorded
+  before submission. Meta notes that successful test data can take up to
+  24 hours to appear and remains valid for 30 days.
 - Each requested permission needs its own end-to-end screencast. The
   `instagram_business_basic` recording must show a professional account
   connecting and its profile information appearing in ClipStitchr. The
   publishing recording must show the user reviewing and explicitly authorizing
-  an Instagram post. The TikTok audit recording should include the manual
-  privacy choice, interaction and commercial disclosures, and the direct-video
-  AI disclosure when it applies. The insights recording must show the user
-  choosing a manual analytics refresh and reading the saved result.
+  an Instagram post. The insights recording must show the user choosing a
+  manual analytics refresh and reading the saved result.
 - Reviewer instructions need a working ClipStitchr test account or access code
   that remains active for the review period. Instagram account credentials
   must not be placed in the submission.
@@ -178,11 +154,11 @@ supports the user-triggered analytics refresh for published posts.
 
 ## Current source validation
 
-The staged source passed the following checks on July 29-30, 2026:
+The staged source passed the following local checks on July 29, 2026:
 
 - ESLint completed with zero errors and eight unrelated pre-existing warnings.
 - TypeScript completed with no errors.
-- Vitest passed 990 files and 3,194 tests with coverage.
+- Vitest passed 989 files and 3,190 tests with coverage.
 - Playwright passed all eight desktop and mobile pointer/keyboard tests.
 - The isolated Next.js production build compiled, typechecked, and generated
   all 175 static pages.
@@ -190,22 +166,17 @@ The staged source passed the following checks on July 29-30, 2026:
   acceptance fixture, `200` for Privacy, and `401` for an unauthenticated OAuth
   start.
 - The production-shape `linux/amd64` provider-worker image built locally from
-  the current source. Its social-only `--check` passed with the staged Secret
-  Manager key ring and TikTok credentials, plus non-production placeholders for
-  values that the check validates only for presence. A separate check passed
-  with the production tool allowlist that omits `social`.
-- The current source image was then pushed and deployed with the production
-  social tool still disabled. Cloud Run execution
-  `clipstitchr-provider-worker-dfwrt` completed its deployed `--check`
-  successfully.
+  the current source. Its social-only `--check` passed with the real versioned
+  local key ring and non-production placeholders for presence-only Cloud Run
+  values. The image was not pushed or deployed.
 
 These checks validate the code and safe feature gate. They do not replace the
-remaining authorized-account public publishing smoke cases, Meta test-counter
-ingestion, platform review, or Advanced Access.
+unverified Meta webhook, current-source worker deployment, platform review,
+Advanced Access, or authorized-account provider smoke tests.
 
 Do not turn these staged settings into a production-readiness claim. The
-approval, remaining authorized-account smoke, and cutover gates above still
-apply.
+approval, authorized-account smoke, secret provisioning, worker deployment, and
+cutover gates above still apply.
 
 References:
 [TikTok Content Posting](https://developers.tiktok.com/products/content-posting-api/),

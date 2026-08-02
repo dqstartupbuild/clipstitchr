@@ -10,7 +10,6 @@ const controls = {
   brandContentToggle: false,
   brandOrganicToggle: false,
   consentAcknowledged: true,
-  isAigc: false,
   privacyLevel: "SELF_ONLY",
 };
 

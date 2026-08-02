@@ -17,7 +17,6 @@ export function createSocialComposeTargetDraft(
     brandContentToggle: false,
     brandOrganicToggle: false,
     commercialContentEnabled: false,
-    isAigc: false,
     shareToFeed: true,
   };
 }

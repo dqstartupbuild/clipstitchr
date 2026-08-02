@@ -35,7 +35,6 @@ export async function initializeTikTokPublish({
     disable_stitch: !controls.allowStitch,
     brand_content_toggle: controls.brandContentToggle,
     brand_organic_toggle: controls.brandOrganicToggle,
-    is_aigc: controls.isAigc,
   };
   const endpoint = isPhotoPost
     ? "https://open.tiktokapis.com/v2/post/publish/content/init/"

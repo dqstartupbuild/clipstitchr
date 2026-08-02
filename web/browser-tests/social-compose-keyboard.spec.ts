@@ -47,13 +47,6 @@ test("supports the compose workflow and focus trap from the keyboard", async ({
   await page.keyboard.type("public");
   await expect(privacySelect).toHaveValue("PUBLIC_TO_EVERYONE");
 
-  const aiDisclosure = page.getByRole("checkbox", {
-    name: /generated or significantly edited with AI/,
-  });
-  await aiDisclosure.focus();
-  await page.keyboard.press("Space");
-  await expect(aiDisclosure).toBeChecked();
-
   const chooseTime = page.getByRole("radio", { name: "Choose a time" });
   await chooseTime.focus();
   await page.keyboard.press("Space");
