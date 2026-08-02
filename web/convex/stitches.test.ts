@@ -129,22 +129,6 @@ function createSaveArgs(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function createPostBridgePost(overrides: Record<string, unknown> = {}) {
-  return {
-    createdAt: "2026-06-27T10:00:00.000Z",
-    hasAudio: true,
-    mediaIds: ["media_1"],
-    mediaKind: "video",
-    platforms: ["tiktok"],
-    postId: "post_1",
-    socialAccountIds: [123],
-    sourceType: "stitch",
-    status: "scheduled",
-    updatedAt: "2026-06-27T10:00:00.000Z",
-    ...overrides,
-  };
-}
-
 describe("convex stitches", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -397,49 +381,6 @@ describe("convex stitches", () => {
     );
   });
 
-  it("marks stitches posted when adding a Post Bridge post reference", async () => {
-    const setup = createCtx([
-      {
-        _id: "doc_1",
-        id: "stitch_1",
-        postBridgePosts: [
-          createPostBridgePost({
-            mediaIds: ["old_media"],
-            postId: "post_1",
-          }),
-        ],
-      },
-    ]);
-
-    await getHandler(addPostBridgePost)(setup.ctx, {
-      id: "stitch_1",
-      post: createPostBridgePost({
-        mediaIds: ["new_media"],
-        postId: "post_1",
-      }),
-    });
-
-    expect(setup.ctx.db.patch).toHaveBeenCalledWith(
-      "doc_1",
-      expect.objectContaining({
-        isPosted: true,
-        postBridgePosts: [
-          expect.objectContaining({
-            mediaIds: ["new_media"],
-            postId: "post_1",
-          }),
-        ],
-        postedAt: expect.any(String),
-      }),
-    );
-    expect(mocks.stitchCounts.replaceOrInsert).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ id: "stitch_1" }),
-      expect.objectContaining({ id: "stitch_1" }),
-    );
-    expect(mocks.stitchProductCounts.replaceOrInsert).toHaveBeenCalled();
-  });
-
   it("throws for missing updates and returns removed stitches", async () => {
     let setup = createCtx([null]);
 
@@ -524,30 +465,6 @@ describe("convex stitches", () => {
           summary: "Good but can be tighter.",
         },
         ugcTrimRange: { start: 0, end: 4 },
-      },
-      null,
-      {
-        _id: "doc_1",
-        duration: 10,
-        id: "stitch_1",
-        quickEdit: {
-          appliedAt: "2026-05-20T00:00:00.000Z",
-          baseline: {
-            demoTrimRange: { start: 0, end: 8 },
-            duration: 12,
-            ugcTrimRange: { start: 0, end: 4 },
-          },
-          removeRanges: [],
-          source: "ai-score",
-        },
-        stitchScore: {
-          dropOffRiskPoints: ["Slow handoff"],
-          hookToDemoFlow: 81,
-          overallRetentionEstimate: 78,
-          suggestedOverlayText: ["Better hook"],
-          suggestedTrims: ["Cut the first pause"],
-          summary: "Good but can be tighter.",
-        },
       },
       null,
     ]);

@@ -35,7 +35,6 @@ export function createStitchCardFields(stitch: Doc<"stitches">) {
     socialCaption: stitch.socialCaption,
     stitchScore: stitch.stitchScore,
     firstStitchScore: stitch.firstStitchScore,
-    postBridgePosts: stitch.postBridgePosts,
     isPosted: stitch.isPosted,
     postedAt: stitch.postedAt,
     automation: stitch.automation,

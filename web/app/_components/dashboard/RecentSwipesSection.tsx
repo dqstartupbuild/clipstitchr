@@ -12,7 +12,6 @@ type RecentSwipesSectionProps = {
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
-  onPostBridgeScheduled?: () => void | Promise<void>;
   onUpdatePostedStatus?: (
     swipe: SwiprSwipe,
     isPosted: boolean,
@@ -25,7 +24,6 @@ export function RecentSwipesSection({
   onLoadBackgroundBlob,
   onLoadPoster,
   onDelete,
-  onPostBridgeScheduled,
   onUpdatePostedStatus,
 }: RecentSwipesSectionProps) {
   const backgroundsById = new Map(
@@ -56,7 +54,6 @@ export function RecentSwipesSection({
                 onLoadBackgroundBlob={onLoadBackgroundBlob}
                 onLoadPoster={onLoadPoster}
                 onDelete={onDelete}
-                onPostBridgeScheduled={onPostBridgeScheduled}
                 onUpdatePostedStatus={onUpdatePostedStatus}
               />
             );

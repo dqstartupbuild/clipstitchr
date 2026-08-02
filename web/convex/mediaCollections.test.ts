@@ -224,22 +224,6 @@ function createSwipeArgs(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function createPostBridgePost(overrides: Record<string, unknown> = {}) {
-  return {
-    createdAt: "2026-06-27T10:00:00.000Z",
-    hasAudio: false,
-    mediaIds: ["media_1"],
-    mediaKind: "image",
-    platforms: ["instagram"],
-    postId: "post_1",
-    socialAccountIds: [123],
-    sourceType: "swipe",
-    status: "scheduled",
-    updatedAt: "2026-06-27T10:00:00.000Z",
-    ...overrides,
-  };
-}
-
 function createAvatarArgs(overrides: Record<string, unknown> = {}) {
   return {
     cliprVoiceId: "Rachel",
@@ -693,7 +677,6 @@ describe("convex media collections", () => {
         { unique: { _id: "background_doc", uploadedByOwnerId: "owner_123" } },
       ],
     });
-
     await expect(
       getHandler<Record<string, unknown>, unknown>(swipes.save)(
         saveCtx,
@@ -849,48 +832,6 @@ describe("convex media collections", () => {
       isPosted: undefined,
       postedAt: undefined,
     });
-
-    const postBridgeCtx = createCtx({
-      swipes: [
-        {
-          unique: {
-            _id: "swipe_doc",
-            id: "swipe_1",
-            postBridgePosts: [
-              createPostBridgePost({
-                mediaIds: ["old_media"],
-                postId: "post_1",
-              }),
-            ],
-          },
-        },
-      ],
-    });
-
-    await getHandler<Record<string, unknown>, unknown>(
-      swipes.addPostBridgePost,
-    )(postBridgeCtx, {
-      id: "swipe_1",
-      post: createPostBridgePost({
-        mediaIds: ["new_media"],
-        postId: "post_1",
-      }),
-    });
-
-    expect(postBridgeCtx.db.patch).toHaveBeenCalledWith(
-      "swipe_doc",
-      expect.objectContaining({
-        isPosted: true,
-        postBridgePosts: [
-          expect.objectContaining({
-            mediaIds: ["new_media"],
-            postId: "post_1",
-          }),
-        ],
-        postedAt: expect.any(String),
-        updatedAt: expect.any(String),
-      }),
-    );
 
     const removeCtx = createCtx({
       swipes: [

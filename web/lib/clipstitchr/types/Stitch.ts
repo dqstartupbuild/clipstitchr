@@ -44,7 +44,6 @@ export type Stitch = {
   socialCaption?: string;
   stitchScore?: StitchScore;
   firstStitchScore?: StitchScore;
-  postBridgePosts?: PostBridgePostReference[];
   isPosted?: boolean;
   postedAt?: string;
   createdAt: string;

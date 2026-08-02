@@ -2,7 +2,6 @@
 
 import {
   CheckCircle2,
-  CalendarClock,
   Download,
   Edit3,
   Eye,
@@ -13,7 +12,6 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MediaPrimaryAction } from "@/app/_components/dashboard/MediaPrimaryAction";
 import { SwiprSwipeDetailsDialog } from "@/app/_components/dashboard/SwiprSwipeDetailsDialog";
-import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
 import { Badge } from "@/app/_components/ui/Badge";
 import {
   MediaCardActionMenu,
@@ -21,18 +19,15 @@ import {
 } from "@/app/_components/ui/MediaCardActionMenu";
 import { Panel } from "@/app/_components/ui/Panel";
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
-import { createSwiprPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia";
+import { createPublishingMediaHref } from "@/lib/clipstitchr/publishing/client/createPublishingMediaHref";
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
-import type { PostBridgePlatform } from "@/lib/clipstitchr/types/PostBridgePlatform";
-import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { createSwiprSwipeSocialDescription } from "@/lib/clipstitchr/utils/createSwiprSwipeSocialDescription";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { getSwiprBackgroundFromAsset } from "@/lib/clipstitchr/utils/getSwiprBackgroundFromAsset";
-import { getSwiprPostBridgeTitle } from "@/lib/clipstitchr/utils/getSwiprPostBridgeTitle";
 import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
 import { getSwiprSwipeEditHref } from "@/lib/clipstitchr/utils/getSwiprSwipeEditHref";
 
@@ -46,7 +41,6 @@ type SwiprSwipeCardProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
   onSelect?: () => void;
-  onPostBridgeScheduled?: () => void | Promise<void>;
   onUpdatePostedStatus?: (
     swipe: SwiprSwipe,
     isPosted: boolean,
@@ -63,11 +57,9 @@ export function SwiprSwipeCard({
   onLoadPoster,
   onDelete,
   onSelect,
-  onPostBridgeScheduled,
   onUpdatePostedStatus,
 }: SwiprSwipeCardProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
   const [loadedBackground, setLoadedBackground] = useState<{
     blob: Blob;
@@ -113,9 +105,7 @@ export function SwiprSwipeCard({
   const [postedStatusError, setPostedStatusError] = useState<string | null>(
     null,
   );
-  const [hasScheduledPostBridgePost, setHasScheduledPostBridgePost] =
-    useState(false);
-  const displayIsPosted = isPosted || hasScheduledPostBridgePost;
+  const displayIsPosted = isPosted;
   const loadPosterBlob = useCallback(
     () => onLoadPoster?.(swipe.id) ?? Promise.resolve(null),
     [onLoadPoster, swipe.id],
@@ -130,7 +120,6 @@ export function SwiprSwipeCard({
   const exporter = useSwiprExport();
   const editHref = getSwiprSwipeEditHref(swipe.id);
   const socialDescription = createSwiprSwipeSocialDescription(swipe);
-  const postBridgeTitle = getSwiprPostBridgeTitle(swipe);
 
   useEffect(() => {
     let isCancelled = false;
@@ -236,34 +225,6 @@ export function SwiprSwipeCard({
         });
       });
   };
-  const renderPostBridgeMedia = async ({
-    musicTrack,
-    onProgress,
-    platforms,
-  }: {
-    musicTrack: SharedMusicTrack | null;
-    onProgress: (progress: number) => void;
-    platforms: PostBridgePlatform[];
-  }) => {
-    if (hasMissingBackground) {
-      throw new Error("This Swipe is missing a photo.");
-    }
-
-    return await createSwiprPostBridgeScheduleMedia({
-      backgroundsById,
-      loadBackgroundBlob: onLoadBackgroundBlob,
-      musicTrack,
-      onPrimaryBackgroundLoaded: (id, blob) => {
-        setLoadedBackground({
-          blob,
-          id,
-        });
-      },
-      onProgress,
-      platforms,
-      swipe,
-    });
-  };
   const handleUpdatePostedStatus = async (nextIsPosted: boolean) => {
     if (!onUpdatePostedStatus) {
       return;
@@ -274,7 +235,6 @@ export function SwiprSwipeCard({
 
     try {
       await onUpdatePostedStatus(swipe, nextIsPosted);
-      setHasScheduledPostBridgePost(nextIsPosted);
     } catch (error) {
       setPostedStatusError(
         error instanceof Error
@@ -298,10 +258,10 @@ export function SwiprSwipeCard({
       onClick: downloadSwipe,
     },
     {
-      label: "Schedule post",
-      icon: <CalendarClock aria-hidden className="h-4 w-4" />,
+      label: "Publish or schedule",
+      href: createPublishingMediaHref({ kind: "swipe", recordId: swipe.id }),
+      icon: <Download aria-hidden className="h-4 w-4" />,
       disabled: hasMissingBackground,
-      onClick: () => setIsScheduleOpen(true),
     },
     {
       label: "Edit Swipe",
@@ -473,22 +433,6 @@ export function SwiprSwipeCard({
           }}
           onDownload={downloadSwipe}
           onLoadBackgroundBlob={onLoadBackgroundBlob}
-        />
-      ) : null}
-      {isScheduleOpen ? (
-        <PostBridgeScheduleDialog
-          allowMusic
-          defaultCaption={swipe.socialCaption ?? socialDescription}
-          sourceId={swipe.id}
-          sourceProductId={swipe.productSourceId}
-          sourceTitle={postBridgeTitle}
-          sourceType="swipe"
-          onClose={() => setIsScheduleOpen(false)}
-          onRenderMedia={renderPostBridgeMedia}
-          onScheduled={() => {
-            setHasScheduledPostBridgePost(true);
-            void onPostBridgeScheduled?.();
-          }}
         />
       ) : null}
     </>

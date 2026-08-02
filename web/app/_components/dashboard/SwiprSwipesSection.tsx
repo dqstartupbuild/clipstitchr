@@ -4,19 +4,14 @@ import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { SwiprSwipeCard } from "@/app/_components/dashboard/SwiprSwipeCard";
-import { PostBridgeBatchQueueDialog } from "@/app/_components/postBridge/PostBridgeBatchQueueDialog";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
-import { createSwiprPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
-import { useLibraryBatchQueueDialog } from "@/lib/clipstitchr/hooks/useLibraryBatchQueueDialog";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryPostedStatusFilter";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
-import { createSwiprSwipeSocialDescription } from "@/lib/clipstitchr/utils/createSwiprSwipeSocialDescription";
-import { getSwiprPostBridgeTitle } from "@/lib/clipstitchr/utils/getSwiprPostBridgeTitle";
 
 type SwiprSwipesSectionProps = {
   backgrounds: SwiprBackgroundAsset[];
@@ -30,7 +25,6 @@ type SwiprSwipesSectionProps = {
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
-  onPostBridgeScheduled?: () => void | Promise<void>;
   onStatusFilterChange?: (status: LibraryPostedStatusFilter) => void;
   onUpdatePostedStatus?: (
     swipe: SwiprSwipe,
@@ -50,7 +44,6 @@ export function SwiprSwipesSection({
   onLoadBackgroundBlob,
   onLoadPoster,
   onDelete,
-  onPostBridgeScheduled,
   onStatusFilterChange,
   onUpdatePostedStatus,
 }: SwiprSwipesSectionProps) {
@@ -71,11 +64,6 @@ export function SwiprSwipesSection({
     itemPluralName: "Swipes",
     onDelete,
   });
-  const selectedSwipes = useMemo(
-    () => swipes.filter((swipe) => batchDelete.selectedIds.has(swipe.id)),
-    [batchDelete.selectedIds, swipes],
-  );
-  const batchQueue = useLibraryBatchQueueDialog(selectedSwipes);
   const statusFilterOptions: {
     label: string;
     value: LibraryPostedStatusFilter;
@@ -108,16 +96,12 @@ export function SwiprSwipesSection({
             <LibraryBatchActionBar
               areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
               isDeletingSelected={batchDelete.isDeletingSelected}
-              isQueueingSelected={batchQueue.isBatchQueueDialogOpen}
               isSelecting={batchDelete.isSelecting}
               selectedCount={batchDelete.selectedCount}
               visibleItemCount={batchDelete.visibleItemCount}
               onClearSelection={batchDelete.clearSelection}
               onDeleteSelected={() => {
                 void batchDelete.deleteSelectedItems();
-              }}
-              onQueueSelected={() => {
-                batchQueue.openBatchQueueDialog();
               }}
               onSelectVisible={batchDelete.selectVisibleItems}
               onStartSelecting={batchDelete.startSelecting}
@@ -139,12 +123,11 @@ export function SwiprSwipesSection({
                   isSelected={batchDelete.selectedIds.has(swipe.id)}
                   isSelectionDisabled={
                     batchDelete.isDeletingSelected ||
-                    batchQueue.isBatchQueueDialogOpen
+                    false
                   }
                   onLoadBackgroundBlob={onLoadBackgroundBlob}
                   onLoadPoster={onLoadPoster}
                   onDelete={onDelete}
-                  onPostBridgeScheduled={onPostBridgeScheduled}
                   onSelect={
                     batchDelete.isSelecting
                       ? () => batchDelete.toggleItemSelection(swipe.id)
@@ -175,33 +158,6 @@ export function SwiprSwipesSection({
           description={emptyDescription}
         />
       )}
-      {batchQueue.isBatchQueueDialogOpen ? (
-        <PostBridgeBatchQueueDialog
-          allowMusic
-          items={batchQueue.queuedItems.map((swipe) => ({
-            caption:
-              swipe.socialCaption ?? createSwiprSwipeSocialDescription(swipe),
-            id: swipe.id,
-            productId: swipe.productSourceId,
-            renderMedia: ({ musicTrack, onProgress, platforms }) =>
-              createSwiprPostBridgeScheduleMedia({
-                backgroundsById,
-                loadBackgroundBlob: onLoadBackgroundBlob,
-                musicTrack,
-                onProgress,
-                platforms,
-                swipe,
-              }),
-            sourceType: "swipe",
-            title: getSwiprPostBridgeTitle(swipe),
-          }))}
-          onClose={batchQueue.closeBatchQueueDialog}
-          onQueued={async () => {
-            batchDelete.stopSelecting();
-            await onPostBridgeScheduled?.();
-          }}
-        />
-      ) : null}
     </section>
   );
 }

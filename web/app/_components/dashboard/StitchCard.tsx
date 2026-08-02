@@ -2,7 +2,6 @@
 
 import {
   CheckCircle2,
-  CalendarClock,
   Download,
   Edit3,
   Gauge,
@@ -12,7 +11,6 @@ import {
   Trash2,
   WandSparkles,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDialog";
 import { StitchEditDialog } from "@/app/_components/dashboard/StitchEditDialog";
@@ -37,6 +35,7 @@ import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchS
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import { createPublishingMediaHref } from "@/lib/clipstitchr/publishing/client/createPublishingMediaHref";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
@@ -106,7 +105,6 @@ export function StitchCard({
   onLoadPoster,
   onLoadVideo,
   onScore,
-  onPostBridgeScheduled,
   onApplyQuickEdit,
   onResetQuickEdit,
   onSelect,
@@ -160,7 +158,6 @@ export function StitchCard({
   });
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isScoring, setIsScoring] = useState(false);
@@ -185,12 +182,10 @@ export function StitchCard({
   const [sourceSettingsError, setSourceSettingsError] = useState<string | null>(
     null,
   );
-  const [hasScheduledPostBridgePost, setHasScheduledPostBridgePost] =
-    useState(false);
   const fileSizeLabel = stitch.size
     ? formatBytes(stitch.size)
     : "Ready to download";
-  const isPosted = Boolean(stitch.isPosted) || hasScheduledPostBridgePost;
+  const isPosted = Boolean(stitch.isPosted);
   const canUseQuickEdit = !getStitchIsLongr(stitch);
   const hasActionableQuickEditSuggestions =
     getQuickEditSuggestionsHasActionableChange(
@@ -328,19 +323,6 @@ export function StitchCard({
     } finally {
       setIsDownloading(false);
     }
-  };
-  const renderPostBridgeMedia = async ({
-    onProgress,
-  }: {
-    onProgress: (progress: number) => void;
-  }) => {
-    return await createStitchPostBridgeScheduleMedia({
-      loadClip: onLoadClip,
-      loadVideo: onLoadVideo,
-      onProgress,
-      onRenderedVideo: setStitchVideoBlob,
-      stitch,
-    });
   };
   const handleScore = async () => {
     if (!onScore) {
@@ -553,7 +535,6 @@ export function StitchCard({
 
     try {
       await onUpdatePostedStatus(stitch, nextIsPosted);
-      setHasScheduledPostBridgePost(nextIsPosted);
       trackPostHogEvent(
         nextIsPosted ? "stitch_marked_posted" : "stitch_marked_unposted",
         {
@@ -617,9 +598,9 @@ export function StitchCard({
       onClick: () => void handleDownload(),
     },
     {
-      label: "Schedule post",
-      icon: <CalendarClock aria-hidden className="h-4 w-4" />,
-      onClick: () => setIsScheduleOpen(true),
+      label: "Publish or schedule",
+      href: createPublishingMediaHref({ kind: "stitch", recordId: stitch.id }),
+      icon: <Download aria-hidden className="h-4 w-4" />,
     },
     {
       label: "Edit stitch",
@@ -807,26 +788,6 @@ export function StitchCard({
           }
           onSaveSourceSettings={handleUpdateSourceSettings}
           onSaveTextOverlay={handleUpdateTextOverlay}
-        />
-      ) : null}
-      {isScheduleOpen ? (
-        <PostBridgeScheduleDialog
-          defaultCaption={stitch.socialCaption}
-          sourceId={stitch.id}
-          sourceProductId={stitch.productId}
-          sourceTitle={stitch.name}
-          sourceType="stitch"
-          onClose={() => setIsScheduleOpen(false)}
-          onRenderMedia={renderPostBridgeMedia}
-          onScheduled={(post) => {
-            setHasScheduledPostBridgePost(true);
-            void onPostBridgeScheduled?.();
-            trackPostHogEvent("stitch_scheduled", {
-              platform_count: post.platforms.length,
-              post_bridge_post_id: post.postId,
-              stitch_id: stitch.id,
-            });
-          }}
         />
       ) : null}
     </>

@@ -217,7 +217,6 @@ CREATE TABLE "ClipPublishingPostState" (
   "scheduledUtcOffsetMinutes" INTEGER,
   "workflowId" TEXT NOT NULL,
   "workflowRunId" TEXT,
-  "legacyPostBridgeMapping" JSONB,
   "disposition" "ClipPublishingPostDisposition" NOT NULL DEFAULT 'ACTIVE',
   "internalState" "ClipPublishingInternalState" NOT NULL DEFAULT 'QUEUED',
   "canceledAt" TIMESTAMP(3),
