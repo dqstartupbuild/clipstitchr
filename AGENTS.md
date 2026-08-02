@@ -66,7 +66,7 @@ docker push "$REPOSITORY/provider-worker:$TAG"
 Deploy the provider job with the existing production shape:
 
 The provider deployment command assumes `clipstitchr-pexels-api-key`,
-`clipstitchr-apify-token`, `SOCIAL_TOKEN_ENCRYPTION_KEYS`,
+`clipstitchr-apify-token`, `clipstitchr-social-token-encryption-keys`,
 `clipstitchr-tiktok-client-key`, and `clipstitchr-tiktok-client-secret` exist
 in Secret Manager and grant
 `140346842368-compute@developer.gserviceaccount.com` secret accessor access.
@@ -88,7 +88,7 @@ gcloud run jobs deploy clipstitchr-provider-worker \
   --execution-environment gen2 \
   --service-account "140346842368-compute@developer.gserviceaccount.com" \
   --set-env-vars '^@^NEXT_PUBLIC_CONVEX_URL=https://whimsical-ptarmigan-764.convex.cloud@PROVIDER_WORKER_TOOLS=stitchr,swapr,clipr,avatar-photo,swipr,social@CLIPR_TTS_MODEL_ID=elevenlabs/v3@CLIPR_LIP_SYNC_MODEL_ID=pixverse/lipsync@TEXT_WRITING_MODEL_ID=anthropic/claude-sonnet-4.6@HOOK_LAB_TIKTOK_ACTOR_ID=clockworks/tiktok-scraper@HOOK_LAB_INSTAGRAM_ACTOR_ID=apify/instagram-scraper@HOOK_LAB_APIFY_MAX_TOTAL_CHARGE_USD=0.5@HOOK_LAB_IMPORTED_VIDEO_MAX_BYTES=104857600@HOOK_LAB_VIDEO_MAX_DURATION_SECONDS=180@SOCIAL_PUBLIC_BASE_URL=https://clipstitchr.com@SOCIAL_TOKEN_ENCRYPTION_CURRENT_VERSION=1@INSTAGRAM_GRAPH_API_VERSION=v25.0@SOCIAL_ANALYTICS_TIKTOK_APIFY_ACTOR_ID=clockworks/tiktok-scraper@SOCIAL_ANALYTICS_APIFY_MAX_TOTAL_CHARGE_USD=0.5@SOCIAL_ANALYTICS_APIFY_URL_LIMIT=100' \
-  --set-secrets PROVIDER_WORKER_SECRET=provider-worker-secret:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest,APIFY_TOKEN=clipstitchr-apify-token:latest,PEXELS_API_KEY=clipstitchr-pexels-api-key:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest,SOCIAL_TOKEN_ENCRYPTION_KEYS=SOCIAL_TOKEN_ENCRYPTION_KEYS:latest,TIKTOK_CLIENT_KEY=clipstitchr-tiktok-client-key:latest,TIKTOK_CLIENT_SECRET=clipstitchr-tiktok-client-secret:latest
+  --set-secrets PROVIDER_WORKER_SECRET=provider-worker-secret:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest,APIFY_TOKEN=clipstitchr-apify-token:latest,PEXELS_API_KEY=clipstitchr-pexels-api-key:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest,SOCIAL_TOKEN_ENCRYPTION_KEYS=clipstitchr-social-token-encryption-keys:latest,TIKTOK_CLIENT_KEY=clipstitchr-tiktok-client-key:latest,TIKTOK_CLIENT_SECRET=clipstitchr-tiktok-client-secret:latest
 ```
 
 Build and push the media worker:

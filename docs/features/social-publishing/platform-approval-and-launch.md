@@ -50,15 +50,6 @@ The following development configuration is saved without enabling production:
   `ClipStitchr-IG` tester invitation and is listed in Meta's access-token setup.
   Meta identifies the Instagram Login app separately from the parent Meta app,
   and Vercel uses that Instagram Login client ID.
-- A Meta App Review draft exists but has not been submitted. It requests only
-  `instagram_business_basic`, `instagram_business_content_publish`, and
-  `instagram_business_manage_insights`. The automatically selected messaging,
-  comments, and Human Agent permissions were removed from the draft.
-- All Meta webhook subscriptions for comments, live comments, messages,
-  message edits and reactions, handover, opt-ins, postbacks, referrals, seen
-  receipts, and standby are disabled. ClipStitchr does not request or process
-  those event types, so subscribing would collect data outside this feature's
-  publishing-and-insights scope.
 - Meta Basic settings use `clipstitchr.com`, the production website, the public
   privacy and terms pages, public deletion instructions, and the
   `Utility & productivity` category. The certified 1024-by-1024 ClipStitchr app
@@ -67,30 +58,19 @@ The following development configuration is saved without enabling production:
   `TIKTOK_CLIENT_SECRET`, `INSTAGRAM_CLIENT_ID`, and
   `INSTAGRAM_CLIENT_SECRET` values. The sensitive credentials are marked
   sensitive. The production-safe callback, public-base, Graph API version, and
-  current-key-version variables are also staged. The versioned
-  `SOCIAL_TOKEN_ENCRYPTION_KEYS` key ring and
-  `INSTAGRAM_WEBHOOK_VERIFY_TOKEN` are staged as sensitive production
-  variables. Updating those variables did not directly trigger a deployment.
-  The later production deployment is ready and the live callback challenge
-  check below passed.
+  current-key-version variables are also staged. No deployment was triggered.
 - Google Secret Manager has version 1 of
   `clipstitchr-tiktok-client-key` and
   `clipstitchr-tiktok-client-secret`. The provider-worker service account has
   `roles/secretmanager.secretAccessor` on both. Instagram credentials remain
   app-runtime-only because the provider worker does not read them.
-- Google Secret Manager has enabled version 2 of
-  `SOCIAL_TOKEN_ENCRYPTION_KEYS`, containing the versioned key-ring format.
-  The provider-worker service account has least-privilege
-  `roles/secretmanager.secretAccessor` access to that secret.
-- The production Instagram webhook verification endpoint returned the exact
-  challenge for the staged verification token. This proves the callback route
-  and current Vercel secret are live without enabling signed webhook event
-  processing.
-- Meta still needs webhook verification, review testing instructions, and
+- The versioned social token-encryption key ring and Instagram webhook
+  verification token are not generated or installed yet. Creating those new
+  persistent secrets requires an explicit action-time confirmation.
+- Meta still needs review testing instructions, webhook-field access, and
   Advanced Access. The app remains unpublished. The production feature flag
   remains on Post-Bridge, the provider worker does not advertise the `social`
-  tool, and no social-enabled provider-worker production deployment or review
-  submission has occurred.
+  tool, and no production deployment or review submission has occurred.
 - The development-only
   [browser acceptance suite](browser-acceptance-testing.md) passes desktop and
   mobile pointer and keyboard checks. It uses fixture accounts and does not
@@ -101,56 +81,6 @@ The following development configuration is saved without enabling production:
   hardening happened after that execution, so a future authorized social-worker
   deployment must rebuild the current source and pass a new `--check`; the
   earlier execution is not evidence that the current source is deployed.
-
-## Meta review draft handoff
-
-The saved, unsubmitted draft has these remaining gates:
-
-- Meta's Testing page reports
-  `instagram_business_content_publish` at 0 of 1 required API calls and
-  `instagram_business_manage_insights` at 0 of 1 required API calls. A
-  successful authorized-account publish and insights request must be recorded
-  before submission. Meta notes that successful test data can take up to
-  24 hours to appear and remains valid for 30 days.
-- Each requested permission needs its own end-to-end screencast. The
-  `instagram_business_basic` recording must show a professional account
-  connecting and its profile information appearing in ClipStitchr. The
-  publishing recording must show the user reviewing and explicitly authorizing
-  an Instagram post. The insights recording must show the user choosing a
-  manual analytics refresh and reading the saved result.
-- Reviewer instructions need a working ClipStitchr test account or access code
-  that remains active for the review period. Instagram account credentials
-  must not be placed in the submission.
-- Data handling requires organization-specific answers about processors, the
-  responsible data controller, its country, national-security requests, and
-  related policies. These are legal and operational attestations and must be
-  completed by the responsible person rather than inferred from the codebase.
-- Each permission includes an allowed-usage certification. Do not accept those
-  certifications or submit the draft until the responsible person has reviewed
-  them.
-
-Use the following factual reviewer path after the test account is prepared:
-
-1. Sign in at `https://clipstitchr.com/sign-in`, then open
-   `https://clipstitchr.com/dashboard/settings`.
-2. In Account settings, choose **Connect Instagram** under **Connect where you
-   post**. Authorize a professional Business or Creator account. The connected
-   account row displays its Instagram identity and connection state.
-3. Open a finished Stitchr or Swipr result and choose **Schedule post**. Select
-   the connected Instagram account, review the caption and media, confirm the
-   Instagram sharing consent, and choose the intended delivery time.
-4. Open `https://clipstitchr.com/dashboard/schedule` to inspect the per-account
-   delivery state and the resulting Instagram post link.
-5. Open `https://clipstitchr.com/dashboard/analytics`, filter to the connected
-   account, and choose **Refresh analytics**. ClipStitchr performs analytics
-   refreshes only when the user asks and keeps the official platform counts as
-   the primary result.
-
-ClipStitchr uses Instagram Login, not Facebook Login, for this workflow.
-`instagram_business_basic` identifies and displays the connected professional
-account. `instagram_business_content_publish` publishes only user-reviewed
-Reels, single images, or carousels. `instagram_business_manage_insights`
-supports the user-triggered analytics refresh for published posts.
 
 ## Current source validation
 
@@ -165,14 +95,10 @@ The staged source passed the following local checks on July 29, 2026:
 - A production-server smoke returned `404` for the development-only social
   acceptance fixture, `200` for Privacy, and `401` for an unauthenticated OAuth
   start.
-- The production-shape `linux/amd64` provider-worker image built locally from
-  the current source. Its social-only `--check` passed with the real versioned
-  local key ring and non-production placeholders for presence-only Cloud Run
-  values. The image was not pushed or deployed.
 
 These checks validate the code and safe feature gate. They do not replace the
-unverified Meta webhook, current-source worker deployment, platform review,
-Advanced Access, or authorized-account provider smoke tests.
+missing encryption/webhook secrets, current-source worker deployment, platform
+review, Advanced Access, or authorized-account provider smoke tests.
 
 Do not turn these staged settings into a production-readiness claim. The
 approval, authorized-account smoke, secret provisioning, worker deployment, and
