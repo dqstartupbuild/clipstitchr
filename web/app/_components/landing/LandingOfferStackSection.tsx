@@ -19,8 +19,8 @@ const capabilityChapters = [
     marker: "SHIP",
     title: "Carry the same product context past the video export.",
     description:
-      "Build carousel drafts in Swipr, prepare daily drafts for review, then schedule your finished clips to Instagram and TikTok without leaving ClipStitchr.",
-    details: ["Swipr carousels", "Review-first daily drafts", "Instagram and TikTok scheduling"],
+      "Build carousel drafts in Swipr, prepare daily drafts for review, or queue finished work through Post Bridge when the campaign is ready.",
+    details: ["Swipr carousels", "Review-first daily drafts", "Post Bridge scheduling"],
   },
 ];
 

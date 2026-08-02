@@ -13,10 +13,6 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    exclude: [
-      "**/node_modules/**",
-      "services/publishing-service/tests/integration/**",
-    ],
     coverage: {
       include: [
         "app/**/*.{ts,tsx}",

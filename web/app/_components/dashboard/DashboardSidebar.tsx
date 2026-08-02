@@ -1,14 +1,15 @@
 "use client";
 
 import {
+  CalendarClock,
   FlaskConical,
   Home,
   Images,
   Library,
+  BarChart3,
   CirclePlay,
   Menu,
   Scissors,
-  Send,
   Settings,
   Shuffle,
   X,
@@ -44,7 +45,8 @@ const navigationSections = [
   {
     label: "Ship",
     links: [
-      { href: "/dashboard/publishing", label: "Publishing", icon: Send },
+      { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock },
+      { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
       { href: "/dashboard/settings", label: "Settings", icon: Settings },
     ],
   },

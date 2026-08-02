@@ -1,10 +1,5 @@
-import { redirect } from "next/navigation";
-import { createLegacyPublishingRedirect } from "@/lib/clipstitchr/publishing/navigation/createLegacyPublishingRedirect";
+import { SchedulePageClient } from "@/app/dashboard/schedule/SchedulePageClient";
 
-export default async function SchedulePage({
-  searchParams = Promise.resolve({}),
-}: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  redirect(createLegacyPublishingRedirect("schedule", await searchParams));
+export default function SchedulePage() {
+  return <SchedulePageClient />;
 }

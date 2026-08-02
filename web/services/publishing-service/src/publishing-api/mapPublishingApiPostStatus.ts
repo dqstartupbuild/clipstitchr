@@ -28,5 +28,11 @@ export const mapPublishingApiPostStatus = (
       return "processing";
     case "QUEUED":
       return "queued";
+    case "CANCELED":
+      return "canceled";
+    case "ACTION_REQUIRED":
+      return "action-required";
+    case "UNCERTAIN":
+      return "uncertain";
   }
 };
