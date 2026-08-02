@@ -1,6 +1,7 @@
 import type { SwiprProductSourceType } from "@/lib/clipstitchr/types/SwiprProductSourceType";
 import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
+import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
 import type { SwipePublishingBundle } from "@/lib/clipstitchr/publishing/media/SwipePublishingBundle";
 
 export type SwiprSwipe = {

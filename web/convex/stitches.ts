@@ -21,6 +21,8 @@ import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { quickEditCropValidator } from "./validators/quickEditCrop";
 import { quickEditRemoveRangeValidator } from "./validators/quickEditRemoveRange";
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
+import { postBridgePostReferenceValidator } from "./validators/postBridgePostReference";
+import { upsertPostBridgePostProductMapping } from "./postBridgePostProductMappings";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchScoreValidator } from "./validators/stitchScore";
 import { stitchrModeValidator } from "./validators/stitchrMode";
@@ -1294,6 +1296,58 @@ export const updatePostedStatus = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
+      ]);
+    }
+  },
+});
+
+export const addPostBridgePost = mutation({
+  args: {
+    id: v.string(),
+    post: postBridgePostReferenceValidator,
+  },
+  handler: async (ctx, { id, post }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const postedAt = new Date().toISOString();
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      isPosted: true,
+      postBridgePosts: [
+        ...(stitch.postBridgePosts ?? []).filter(
+          (existingPost) => existingPost.postId !== post.postId,
+        ),
+        post,
+      ],
+      postedAt: stitch.postedAt ?? postedAt,
+    });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertPostBridgePostProductMapping(ctx, {
+          ownerId,
+          post,
+          productId: updatedStitch.productId,
+          sourceId: updatedStitch.id,
+          sourceType: "stitch",
+        }),
         upsertStitchCard(ctx, updatedStitch),
       ]);
     }

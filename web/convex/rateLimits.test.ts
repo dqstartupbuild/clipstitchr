@@ -230,6 +230,33 @@ describe("convex rateLimits", () => {
     {
       args: { secret: "secret" },
       expected: [
+        { key: "owner_123", name: "postBridgeSchedule", throws: true },
+        { key: "owner_123", name: "postBridgeScheduleHourly", throws: true },
+        { key: "owner_123", name: "postBridgeScheduleDaily", throws: true },
+        { name: "postBridgeScheduleGlobalDaily", throws: true },
+      ],
+      mutation: rateLimits.consumePostBridgeSchedule,
+    },
+    {
+      args: { mediaSizeBytes: 1024.2, secret: "secret" },
+      expected: [
+        {
+          count: 1025,
+          key: "owner_123",
+          name: "postBridgeUploadBytesDaily",
+          throws: true,
+        },
+        {
+          count: 1025,
+          name: "postBridgeUploadBytesGlobalDaily",
+          throws: true,
+        },
+      ],
+      mutation: rateLimits.consumePostBridgeMediaUpload,
+    },
+    {
+      args: { secret: "secret" },
+      expected: [
         {
           key: "owner_123",
           name: "replicateUploadAnalysis",

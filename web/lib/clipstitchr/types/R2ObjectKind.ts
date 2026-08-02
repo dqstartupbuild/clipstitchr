@@ -9,6 +9,7 @@ export type R2ObjectKind =
   | "photo"
   | "photo-original"
   | "photo-thumbnail"
+  | "post-bridge-media"
   | "swapr-segment-video"
   | "library-music-audio"
   | "clipr-music-audio"

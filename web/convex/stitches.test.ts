@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   applyQuickEdit,
+  addPostBridgePost,
   get,
   list,
   remove,
