@@ -26,10 +26,7 @@ describe("exchangeInstagramAuthorizationCode", () => {
       .mockResolvedValueOnce(
         response({
           access_token: "short-token",
-          permissions: [
-            "instagram_business_basic",
-            "instagram_business_content_publish",
-          ],
+          permissions: "instagram_business_basic,instagram_business_content_publish",
           user_id: 123,
         }),
       )
@@ -56,10 +53,6 @@ describe("exchangeInstagramAuthorizationCode", () => {
       accountType: "MEDIA_CREATOR",
       externalAccountId: "ig_123",
       platform: "instagram",
-      scopes: [
-        "instagram_business_basic",
-        "instagram_business_content_publish",
-      ],
       username: "creator",
     });
     const tokenRequest = fetchMock.mock.calls[0]?.[1]?.body;
