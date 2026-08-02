@@ -1,0 +1,18 @@
+import { publishingApiSchemas } from "@/lib/clipstitchr/publishing/client/readers/publishingApiSchemas";
+import { readPublishingApiResponse } from "@/lib/clipstitchr/publishing/client/readers/readPublishingApiResponse";
+
+export async function disconnectPublishingIntegration(id: string) {
+  const response = await fetch(
+    `/api/publishing/integrations/${encodeURIComponent(id)}`,
+    {
+      cache: "no-store",
+      credentials: "same-origin",
+      headers: { Accept: "application/json" },
+      method: "DELETE",
+    },
+  );
+  return readPublishingApiResponse(
+    response,
+    publishingApiSchemas.integrationsResponse,
+  );
+}

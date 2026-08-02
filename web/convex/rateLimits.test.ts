@@ -90,21 +90,37 @@ describe("convex rateLimits", () => {
     {
       args: { secret: "secret", sizeBytes: 10.2 },
       expected: [
-        { key: "owner_123", name: "r2UploadUrl", throws: true },
+        {
+          count: 1,
+          key: "owner_123",
+          name: "r2UploadUrl",
+          throws: true,
+        },
+        { count: 1, name: "r2UploadUrlGlobal", throws: true },
         {
           count: 11,
           key: "owner_123",
           name: "r2UploadBytes",
           throws: true,
         },
+        { count: 11, name: "r2UploadBytesGlobal", throws: true },
         {
           count: 11,
           key: "owner_123",
           name: "r2UploadBytesMonthly",
           throws: true,
         },
+        { count: 11, name: "r2UploadBytesMonthlyGlobal", throws: true },
       ],
       mutation: rateLimits.consumeR2Upload,
+    },
+    {
+      args: { secret: "secret" },
+      expected: [
+        { key: "owner_123", name: "swipePublishingPrepare", throws: true },
+        { name: "swipePublishingPrepareGlobal", throws: true },
+      ],
+      mutation: rateLimits.consumeSwipePublishingPrepare,
     },
     {
       args: { secret: "secret" },
@@ -112,6 +128,46 @@ describe("convex rateLimits", () => {
         { key: "owner_123", name: "r2DownloadUrl", throws: true },
       ],
       mutation: rateLimits.consumeR2Download,
+    },
+    {
+      args: {
+        grantKey: "pmg_aaaaaaaaaaaaaaaaaaaaaa",
+        quotaIdentity:
+          "pmq_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        readBytes: 4_096,
+        secret: "secret",
+      },
+      expected: [
+        {
+          key: "pmq_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:pmg_aaaaaaaaaaaaaaaaaaaaaa",
+          name: "publishingMediaReadRequestsByGrant",
+          throws: true,
+        },
+        {
+          key: "pmq_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          name: "publishingMediaReadRequestsByQuota",
+          throws: true,
+        },
+        { name: "publishingMediaReadRequestsGlobal", throws: true },
+        {
+          count: 4_096,
+          key: "pmq_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:pmg_aaaaaaaaaaaaaaaaaaaaaa",
+          name: "publishingMediaReadBytesByGrant",
+          throws: true,
+        },
+        {
+          count: 4_096,
+          key: "pmq_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          name: "publishingMediaReadBytesByQuota",
+          throws: true,
+        },
+        {
+          count: 4_096,
+          name: "publishingMediaReadBytesGlobal",
+          throws: true,
+        },
+      ],
+      mutation: rateLimits.consumePublishingMediaRead,
     },
     {
       args: { objectCount: 3.1, secret: "secret" },

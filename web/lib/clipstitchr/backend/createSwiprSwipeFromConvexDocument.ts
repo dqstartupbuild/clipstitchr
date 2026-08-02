@@ -20,6 +20,8 @@ export function createSwiprSwipeFromConvexDocument(
     rationale: "rationale" in swipe ? swipe.rationale : undefined,
     socialCaption: swipe.socialCaption,
     slides: swipe.slides,
+    publishingRevision: swipe.publishingRevision,
+    publishingBundle: swipe.publishingBundle,
     posterObject: swipe.posterObject,
     posterBlob,
     posterVersion: swipe.posterVersion,

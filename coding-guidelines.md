@@ -78,6 +78,37 @@ export const ListItem = () => (
 ### Enforcement
 When submitting PRs or writing new code, review your files against this standard. If a file name cannot accurately and concisely describe everything inside the file without using "and", it likely needs to be split.
 
+## Imported Postiz code exception
+
+The Atomic Code Splitting rules apply to all ClipStitchr-owned code. They do
+not require mechanical restructuring of a traceable Postiz source file inside
+`web/vendor/postiz/` when preserving the upstream file shape is important for
+license review or safe upstream updates.
+
+A file qualifies for this exception only when it:
+
+1. lives under `web/vendor/postiz/`;
+2. appears in the import provenance manifest with its upstream path and audited
+   source commit;
+3. retains required copyright and GNU AGPL version 3 notices; and
+4. records whether it is verbatim or modified, including the modification date
+   and a useful summary.
+
+The exception belongs to the imported file, not to the publishing feature.
+ClipStitchr routes, adapters, Clerk tenant logic, service assertions, media
+bridges, encryption, rate limits, tests, user-facing components, and deployment
+code must remain outside the vendor boundary and follow one file, one purpose.
+Do not add shared ClipStitchr helpers to the vendor directory. When a Postiz
+file becomes a substantially rewritten ClipStitchr implementation, move the
+replacement out of the import boundary and split it according to these
+guidelines.
+
+Every import or refresh must follow
+`docs/architecture/postiz-publishing-source-boundary.md`. That process requires
+a bounded source map, a complete provenance update, preserved legal notices,
+reviewed modifications, and verification that no secrets, build artifacts,
+dependencies, uploaded media, or Git metadata entered the repository.
+
 ## Progressive Disclosure and Task-Separated Workspaces
 
 Every interface must make the user's next useful step feel smaller than the full capability of the feature. Show the shortest useful answer first, separate distinct user jobs into focused views, and reveal deeper detail only when the user asks for it or needs it.

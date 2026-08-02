@@ -596,4 +596,45 @@ describe("client API wrappers", () => {
       expect.objectContaining({ type: "audio/mpeg" }),
     );
   });
+
+  it("sends the signed SHA-256 headers and records exposed R2 versions", async () => {
+    const checksumSha256 = `${"A".repeat(43)}=`;
+    const imageBlob = new Blob(["image"], { type: "image/png" });
+
+    fetchMock.mockResolvedValueOnce(
+      new Response(null, {
+        status: 200,
+        headers: {
+          etag: '"etag-123"',
+          "x-amz-version-id": "version-123",
+        },
+      }),
+    );
+
+    await expect(
+      putBlobToR2({
+        blob: imageBlob,
+        checksumSha256,
+        contentType: "image/png",
+        key: "uploads/slide.png",
+        size: imageBlob.size,
+        url: "https://put",
+      }),
+    ).resolves.toEqual({
+      contentType: "image/png",
+      etag: '"etag-123"',
+      key: "uploads/slide.png",
+      size: imageBlob.size,
+      versionId: "version-123",
+    });
+    expect(fetchMock).toHaveBeenCalledWith("https://put", {
+      body: imageBlob,
+      headers: {
+        "Content-Type": "image/png",
+        "x-amz-checksum-sha256": checksumSha256,
+        "x-amz-meta-checksum-sha256": checksumSha256,
+      },
+      method: "PUT",
+    });
+  });
 });

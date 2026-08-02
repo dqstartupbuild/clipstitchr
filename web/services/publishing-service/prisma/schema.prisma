@@ -1,0 +1,464 @@
+generator client {
+  provider = "prisma-client-js"
+  runtime  = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id               String                @id @default(uuid())
+  name             String
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  Integration      Integration[]
+  media            Media[]
+  post             Post[]
+  tags             Tags[]
+  publishingTenant ClipPublishingTenant?
+}
+
+model Tags {
+  id           String       @id @default(uuid())
+  name         String
+  color        String
+  orgId        String
+  deletedAt    DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  organization Organization @relation(fields: [orgId], references: [id])
+  posts        TagsPosts[]
+
+  @@index([orgId])
+  @@index([deletedAt])
+}
+
+model TagsPosts {
+  postId    String
+  tagId     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id])
+  tag       Tags     @relation(fields: [tagId], references: [id])
+
+  @@id([postId, tagId])
+  @@unique([postId, tagId])
+}
+
+model Media {
+  id                 String                     @id @default(uuid())
+  name               String
+  originalName       String?
+  path               String
+  organizationId     String
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  deletedAt          DateTime?
+  fileSize           Int                        @default(0)
+  type               String                     @default("image")
+  thumbnail          String?
+  alt                String?
+  thumbnailTimestamp Int?
+  organization       Organization               @relation(fields: [organizationId], references: [id])
+  publishingSource   ClipPublishingMediaSource?
+
+  @@index([name])
+  @@index([organizationId])
+  @@index([type])
+}
+
+model Integration {
+  id                    String                            @id @default(cuid())
+  internalId            String
+  organizationId        String
+  name                  String
+  picture               String?
+  providerIdentifier    String
+  type                  String
+  token                 String
+  disabled              Boolean                           @default(false)
+  tokenExpiration       DateTime?
+  refreshToken          String?
+  profile               String?
+  deletedAt             DateTime?
+  createdAt             DateTime                          @default(now())
+  updatedAt             DateTime?                         @updatedAt
+  inBetweenSteps        Boolean                           @default(false)
+  refreshNeeded         Boolean                           @default(false)
+  postingTimes          String                            @default("[{\"time\":120}, {\"time\":400}, {\"time\":700}]")
+  customInstanceDetails String?
+  rootInternalId        String?
+  additionalSettings    String?                           @default("[]")
+  organization          Organization                      @relation(fields: [organizationId], references: [id])
+  posts                 Post[]
+  publishingSecrets     ClipPublishingIntegrationSecret[]
+  publishingPostStates  ClipPublishingPostState[]
+  analyticsSnapshots    ClipPublishingAnalyticsSnapshot[]
+
+  @@unique([organizationId, internalId])
+  @@index([rootInternalId])
+  @@index([organizationId])
+  @@index([providerIdentifier])
+  @@index([updatedAt])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@index([inBetweenSteps])
+  @@index([refreshNeeded])
+  @@index([disabled])
+}
+
+model Post {
+  id              String                   @id @default(cuid())
+  state           State                    @default(QUEUE)
+  publishDate     DateTime
+  organizationId  String
+  integrationId   String
+  content         String
+  delay           Int                      @default(0)
+  group           String
+  title           String?
+  description     String?
+  parentPostId    String?
+  releaseId       String?
+  releaseURL      String?
+  settings        String?
+  image           String?
+  creationMethod  CreationMethod           @default(UNKNOWN)
+  intervalInDays  Int?
+  error           String?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  deletedAt       DateTime?
+  integration     Integration              @relation(fields: [integrationId], references: [id])
+  organization    Organization             @relation(fields: [organizationId], references: [id])
+  parentPost      Post?                    @relation("parentPostId", fields: [parentPostId], references: [id])
+  childrenPost    Post[]                   @relation("parentPostId")
+  tags            TagsPosts[]
+  publishingState ClipPublishingPostState?
+
+  @@index([group])
+  @@index([deletedAt])
+  @@index([publishDate])
+  @@index([state])
+  @@index([organizationId])
+  @@index([parentPostId])
+  @@index([intervalInDays])
+  @@index([creationMethod])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([releaseURL])
+  @@index([integrationId])
+}
+
+model ClipPublishingTenant {
+  id                  String                             @id @default(uuid())
+  tenantKey           String                             @unique(map: "ClipPublishingTenant_tenantKey_key")
+  organizationId      String                             @unique(map: "ClipPublishingTenant_org_key")
+  createdAt           DateTime                           @default(now())
+  organization        Organization                       @relation(fields: [organizationId], references: [id], onDelete: Restrict, map: "ClipPublishingTenant_org_fkey")
+  secrets             ClipPublishingIntegrationSecret[]
+  mediaSources        ClipPublishingMediaSource[]
+  postStates          ClipPublishingPostState[]
+  attempts            ClipPublishingAttempt[]
+  receipts            ClipPublishingReceipt[]
+  receiptPublications ClipPublishingReceiptPublication[]
+  outboxEvents        ClipPublishingOutbox[]
+  analytics           ClipPublishingAnalyticsSnapshot[]
+  auditEvents         ClipPublishingAuditEvent[]
+
+  @@index([createdAt], map: "ClipPublishingTenant_created_idx")
+}
+
+model ClipPublishingIntegrationSecret {
+  id                 String                  @id @default(uuid())
+  tenantId           String
+  integrationId      String
+  providerIdentifier ClipPublishingProvider
+  tokenKind          ClipPublishingTokenKind
+  envelope           String
+  version            Int
+  expiresAt          DateTime?
+  createdAt          DateTime                @default(now())
+  replacedAt         DateTime?
+  tenant             ClipPublishingTenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "ClipPubIntegrationSecret_tenant_fkey")
+  integration        Integration             @relation(fields: [integrationId], references: [id], onDelete: Restrict, map: "ClipPubIntegrationSecret_integration_fkey")
+
+  @@unique([tenantId, integrationId, tokenKind, version], map: "ClipPubIntegrationSecret_version_key")
+  @@index([tenantId, integrationId, tokenKind, replacedAt], map: "ClipPubIntegrationSecret_active_idx")
+}
+
+model ClipPublishingMediaSource {
+  id                 String                    @id @default(uuid())
+  tenantId           String
+  mediaId            String                    @unique(map: "ClipPublishingMediaSource_media_key")
+  sourceKind         ClipPublishingSourceKind
+  sourceRecordId     String
+  sourceRevision     String
+  contentChecksum    String
+  objectManifest     Json
+  mediaType          String
+  byteLength         BigInt
+  compatibilityFacts Json
+  createdAt          DateTime                  @default(now())
+  tenant             ClipPublishingTenant      @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "ClipPublishingMediaSource_tenant_fkey")
+  media              Media                     @relation(fields: [mediaId], references: [id], onDelete: Restrict, map: "ClipPublishingMediaSource_media_fkey")
+  postStates         ClipPublishingPostState[]
+
+  @@unique([tenantId, sourceKind, sourceRecordId, sourceRevision], map: "ClipPublishingMediaSource_revision_key")
+  @@index([tenantId, contentChecksum], map: "ClipPublishingMediaSource_checksum_idx")
+}
+
+model ClipPublishingPostState {
+  id                        String                            @id @default(uuid())
+  tenantId                  String
+  postId                    String                            @unique(map: "ClipPublishingPostState_post_key")
+  integrationId             String
+  mediaSourceId             String?
+  idempotencyKey            String
+  canonicalRequestHash      String
+  sourceKind                ClipPublishingSourceKind?
+  sourceRecordId            String?
+  sourceRevision            String?
+  intent                    ClipPublishingIntent
+  scheduledTimeZone         String?
+  scheduledLocalTime        String?
+  scheduledUtcOffsetMinutes Int?
+  workflowId                String                            @unique(map: "ClipPublishingPostState_workflow_key")
+  workflowRunId             String?
+  legacyPostBridgeMapping   Json?
+  disposition               ClipPublishingPostDisposition     @default(ACTIVE)
+  internalState             ClipPublishingInternalState       @default(QUEUED)
+  canceledAt                DateTime?
+  createdAt                 DateTime                          @default(now())
+  updatedAt                 DateTime                          @updatedAt
+  tenant                    ClipPublishingTenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "ClipPublishingPostState_tenant_fkey")
+  post                      Post                              @relation(fields: [postId], references: [id], onDelete: Restrict, map: "ClipPublishingPostState_post_fkey")
+  integration               Integration                       @relation(fields: [integrationId], references: [id], onDelete: Restrict, map: "ClipPublishingPostState_integration_fkey")
+  mediaSource               ClipPublishingMediaSource?        @relation(fields: [mediaSourceId], references: [id], onDelete: Restrict, map: "ClipPublishingPostState_media_fkey")
+  attempts                  ClipPublishingAttempt[]
+  receipts                  ClipPublishingReceipt[]
+  outboxEvents              ClipPublishingOutbox[]
+  analytics                 ClipPublishingAnalyticsSnapshot[]
+
+  @@unique([tenantId, integrationId, idempotencyKey], map: "ClipPublishingPostState_idempotency_key")
+  @@index([tenantId, internalState, createdAt], map: "ClipPublishingPostState_state_idx")
+}
+
+model ClipPublishingAttempt {
+  id                    String                           @id @default(uuid())
+  tenantId              String
+  postStateId           String
+  attemptNumber         Int
+  actorClerkUserId      String
+  status                ClipPublishingAttemptStatus      @default(INTENT)
+  startedAt             DateTime?
+  finishedAt            DateTime?
+  safeErrorCode         String?
+  safeErrorMessage      String?
+  checkpointVersion     Int                              @default(0)
+  checkpoint            Json                             @default("{}")
+  checkpointedAt        DateTime?
+  providerOperationKind ClipPublishingProviderOperation?
+  providerOperationId   String?
+  createdAt             DateTime                         @default(now())
+  updatedAt             DateTime                         @updatedAt
+  tenant                ClipPublishingTenant             @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "ClipPublishingAttempt_tenant_fkey")
+  postState             ClipPublishingPostState          @relation(fields: [postStateId], references: [id], onDelete: Restrict, map: "ClipPublishingAttempt_state_fkey")
+  receipts              ClipPublishingReceipt[]
+
+  @@unique([postStateId, attemptNumber], map: "ClipPublishingAttempt_number_key")
+  @@index([tenantId, createdAt], map: "ClipPublishingAttempt_tenant_idx")
+}
+
+model ClipPublishingReceipt {
+  id                 String                             @id @default(uuid())
+  tenantId           String
+  postStateId        String
+  attemptId          String?
+  providerIdentifier ClipPublishingProvider
+  resultClass        ClipPublishingReceiptResult
+  responseDigest     String
+  safeMetadata       Json
+  observedAt         DateTime
+  createdAt          DateTime                           @default(now())
+  tenant             ClipPublishingTenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "ClipPublishingReceipt_tenant_fkey")
+  postState          ClipPublishingPostState            @relation(fields: [postStateId], references: [id], onDelete: Restrict, map: "ClipPublishingReceipt_state_fkey")
+  attempt            ClipPublishingAttempt?             @relation(fields: [attemptId], references: [id], onDelete: Restrict, map: "ClipPublishingReceipt_attempt_fkey")
+  analytics          ClipPublishingAnalyticsSnapshot[]
+  publications       ClipPublishingReceiptPublication[]
+
+  @@unique([tenantId, postStateId, responseDigest], map: "ClipPublishingReceipt_digest_key")
+  @@index([tenantId, observedAt], map: "ClipPublishingReceipt_tenant_idx")
+}
+
+model ClipPublishingReceiptPublication {
+  id                  String                 @id @default(uuid())
+  tenantId            String
+  receiptId           String
+  providerIdentifier  ClipPublishingProvider
+  remotePublicationId String
+  observableUrl       String?
+  createdAt           DateTime               @default(now())
+  tenant              ClipPublishingTenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "ClipPublishingReceiptPublication_tenant_fkey")
+  receipt             ClipPublishingReceipt  @relation(fields: [receiptId], references: [id], onDelete: Restrict, map: "ClipPublishingReceiptPublication_receipt_fkey")
+
+  @@unique([receiptId, remotePublicationId], map: "ClipPublishingReceiptPublication_receipt_key")
+  @@unique([tenantId, providerIdentifier, remotePublicationId], map: "ClipPublishingReceiptPublication_remote_key")
+  @@index([tenantId, createdAt], map: "ClipPublishingReceiptPublication_tenant_idx")
+}
+
+model ClipPublishingOutbox {
+  id               String                     @id @default(uuid())
+  tenantId         String
+  postStateId      String
+  workflowId       String
+  eventType        String
+  eventVersion     Int
+  payload          Json
+  status           ClipPublishingOutboxStatus @default(PENDING)
+  availableAt      DateTime                   @default(now())
+  leaseOwner       String?
+  leaseExpiresAt   DateTime?
+  deliveryAttempts Int                        @default(0)
+  lastSafeError    String?
+  deliveredAt      DateTime?
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  tenant           ClipPublishingTenant       @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "ClipPublishingOutbox_tenant_fkey")
+  postState        ClipPublishingPostState    @relation(fields: [postStateId], references: [id], onDelete: Restrict, map: "ClipPublishingOutbox_state_fkey")
+
+  @@unique([postStateId, eventType, eventVersion], map: "ClipPublishingOutbox_event_key")
+  @@index([status, availableAt, leaseExpiresAt], map: "ClipPublishingOutbox_lease_idx")
+  @@index([tenantId, createdAt], map: "ClipPublishingOutbox_tenant_idx")
+}
+
+model ClipPublishingAnalyticsSnapshot {
+  id                String                   @id @default(uuid())
+  tenantId          String
+  integrationId     String?
+  postStateId       String?
+  receiptId         String?
+  metricWindowStart DateTime
+  metricWindowEnd   DateTime
+  observedAt        DateTime
+  metrics           Json
+  createdAt         DateTime                 @default(now())
+  tenant            ClipPublishingTenant     @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "ClipPublishingAnalytics_tenant_fkey")
+  integration       Integration?             @relation(fields: [integrationId], references: [id], onDelete: Restrict, map: "ClipPublishingAnalytics_integration_fkey")
+  postState         ClipPublishingPostState? @relation(fields: [postStateId], references: [id], onDelete: Restrict, map: "ClipPublishingAnalytics_state_fkey")
+  receipt           ClipPublishingReceipt?   @relation(fields: [receiptId], references: [id], onDelete: Restrict, map: "ClipPublishingAnalytics_receipt_fkey")
+
+  @@index([tenantId, observedAt], map: "ClipPublishingAnalytics_tenant_idx")
+  @@index([integrationId, metricWindowStart, metricWindowEnd], map: "ClipPublishingAnalytics_window_idx")
+}
+
+model ClipPublishingAuditEvent {
+  id               String               @id @default(uuid())
+  tenantId         String
+  actorClerkUserId String
+  requestId        String
+  action           String
+  subjectType      String
+  subjectId        String
+  result           String
+  safeMetadata     Json
+  createdAt        DateTime             @default(now())
+  tenant           ClipPublishingTenant @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "ClipPublishingAuditEvent_tenant_fkey")
+
+  @@index([tenantId, createdAt], map: "ClipPublishingAuditEvent_tenant_idx")
+  @@index([tenantId, requestId], map: "ClipPublishingAuditEvent_request_idx")
+}
+
+enum State {
+  QUEUE
+  PUBLISHED
+  ERROR
+  DRAFT
+}
+
+enum CreationMethod {
+  UNKNOWN
+  WEB
+  MCP
+  API
+  AUTOPOST
+  CLI
+}
+
+enum ClipPublishingTokenKind {
+  ACCESS
+  REFRESH
+  LONG_LIVED_ACCESS
+}
+
+enum ClipPublishingProvider {
+  INSTAGRAM
+  INSTAGRAM_STANDALONE
+  TIKTOK
+}
+
+enum ClipPublishingSourceKind {
+  STITCH
+  SWIPE
+  LIBRARY
+}
+
+enum ClipPublishingIntent {
+  DRAFT
+  PUBLISH_NOW
+  SCHEDULE
+}
+
+enum ClipPublishingPostDisposition {
+  ACTIVE
+  CANCELED
+  UNCERTAIN
+  ACTION_REQUIRED
+  TERMINAL
+}
+
+enum ClipPublishingInternalState {
+  DRAFT
+  QUEUED
+  DISPATCHING
+  PROCESSING
+  PUBLISHED
+  FAILED
+  CANCELED
+  ACTION_REQUIRED
+  UNCERTAIN
+}
+
+enum ClipPublishingAttemptStatus {
+  INTENT
+  STARTED
+  SUCCEEDED
+  FAILED
+  UNCERTAIN
+  CANCELED
+}
+
+enum ClipPublishingProviderOperation {
+  META_MEDIA_CONTAINER
+  META_CAROUSEL_CONTAINER
+  META_MEDIA_PUBLISH
+  TIKTOK_PUBLISH
+}
+
+enum ClipPublishingReceiptResult {
+  PUBLISHED
+  ACCEPTED_PROCESSING
+  USER_ACTION_REQUIRED
+  REJECTED
+  CANCELED
+  UNCERTAIN
+}
+
+enum ClipPublishingOutboxStatus {
+  PENDING
+  LEASED
+  DELIVERED
+  DEAD_LETTER
+}

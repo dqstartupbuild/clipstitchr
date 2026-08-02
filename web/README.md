@@ -268,4 +268,9 @@ Set `NEXT_PUBLIC_SITE_URL` to your production domain before deploying so generat
 
 ## License
 
-MIT
+The combined source distribution is licensed under the GNU Affero General
+Public License version 3 only. See the root `LICENSE`,
+`THIRD_PARTY_NOTICES.md`, `MODIFICATIONS.md`, `TRADEMARKS.md`, and
+`docs/architecture/postiz-publishing-source-boundary.md` files for the license,
+Postiz attribution, modification record, brand rights, and corresponding-source
+requirements.

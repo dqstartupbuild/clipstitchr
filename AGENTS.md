@@ -11,6 +11,55 @@ ClipStitchr is a browser-local Next.js MVP app under `web/`. The repository root
 
 The app uses the planned Next.js shape from `project-scope.md`: app routes such as `/`, `/dashboard`, `/dashboard/library`, `/dashboard/hooks`, `/dashboard/stitchr`, `/dashboard/swapr`, `/dashboard/clipr`, and `/dashboard/swipr`; `/dashboard/library` is the authenticated Library with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Pexels tabs. Hook Lab at `/dashboard/hooks` saves and analyzes public TikTok and Instagram video posts. `/dashboard/uploads`, `/dashboard/avatars`, and `/dashboard/stitches` redirect to the relevant Library tab for compatibility. Durable metadata and media are backed by Convex and Cloudflare R2, browser video processing uses Media Bunny, uploads normalize to TikTok 9:16, poster images are generated for video preview default states, and Stitchr uses UGC-then-Demo sequencing for preview, stitching, and download. Stitchr supports selecting up to 20 UGC clips with one selected Demo clip; one shared text overlay is applied across the batch, and each selected UGC produces its own finished stitch.
 
+## Imported Postiz code exception
+
+Selected Postiz source is imported from
+`gitroomhq/postiz-app` at audited commit
+`cf4c432c00c9db775ea1b1f12480a8e2b89aec32`. Postiz is licensed under the
+GNU Affero General Public License version 3. The bounded import lives only in
+`web/vendor/postiz/`.
+
+The Atomic Code Splitting rules have one narrow exception for a Postiz file
+when all of these conditions are true:
+
+- the file is inside `web/vendor/postiz/`;
+- the file is listed in the import provenance manifest;
+- its upstream path, source commit, modification state, and purpose remain
+  traceable; and
+- preserving upstream organization materially improves license review or
+  future source updates.
+
+This exception does not apply to ClipStitchr-owned adapters, Clerk identity and
+tenant resolution, route handlers, media bridges, encryption, rate limits,
+navigation, copy, tests, deployment code, or new publishing behavior. Keep
+that code outside `web/vendor/postiz/` and follow one file, one purpose. Do not
+place new ClipStitchr code in the imported directory to avoid the atomic rules.
+If an imported implementation is substantially rewritten into a
+ClipStitchr-owned module, move the replacement outside the vendor boundary and
+split it atomically.
+
+Preserve upstream copyright and license notices. Record material modifications
+and dates, and update the provenance manifest for every import, deletion,
+rename, or upstream refresh. Do not copy Postiz `.env` files, credentials, Git
+metadata, dependencies, build output, uploads, caches, or generated runtime
+data.
+
+Read these documents before changing the import or publishing architecture:
+
+- `docs/architecture/postiz-publishing-source-boundary.md`
+- `docs/features/publishing/post-bridge-cutover.md`
+- `THIRD_PARTY_NOTICES.md`
+- `MODIFICATIONS.md`
+- `TRADEMARKS.md`
+- `LICENSE`
+
+Any deployment that runs a modified AGPL-covered publishing service for users
+over a network must provide those users a prominent way to obtain the exact
+Corresponding Source for the deployed version. Treat the source link and
+release archive as a production launch requirement, not a later documentation
+task. Never include secrets, private keys, user data, or uploaded media in a
+source archive.
+
 ## Media Bunny Implementation Guidance
 
 For any Media Bunny-related change, read the relevant parts of these files before editing code:

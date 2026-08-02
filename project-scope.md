@@ -96,6 +96,8 @@ cleanup.
 | **Framework**      | Next.js (from starship boilerplate) | Same                 |
 | **Auth**           | Clerk                          | Clerk-protected dashboard |
 | **Backend / DB**   | Convex                         | Convex                    |
+| **Publishing DB**  | PostgreSQL with a bounded Postiz-derived publishing model | Existing development PostgreSQL |
+| **Publishing Coordination** | Redis security state plus a PostgreSQL transactional outbox in a long-running Node.js service | Redis plus PostgreSQL 18 development services |
 | **Object Storage** | Cloudflare R2                  | Cloudflare R2             |
 | **Video Engine**   | Media Bunny with optional server-side processing later | Media Bunny (browser) |
 
@@ -285,6 +287,34 @@ selected slides.
 | 9 | Auto-generated Swipr slide text uses purpose-filtered hidden hook libraries | ✅ | ✅ |
 | 10 | Pinterest or stock-library provider integration | — | ✅ |
 
+### 4.9 Instagram and TikTok Publishing
+
+Publishing is a post-creation handoff for finished ClipStitchr work, not a
+replacement for the Library or Stitchr. It uses a bounded, traceable Postiz
+source import while keeping Clerk as the only application identity system and
+Cloudflare R2 as the durable media source.
+
+The migration is in progress. Post Bridge remains available until the new path
+is live and all pending external schedules have an explicit disposition.
+
+| # | Feature | Migration | Prod |
+|---|---------|-----------|------|
+| 1 | One top-level Publishing entry with retained Calendar, Posts, Analytics, and Integrations navigation | In progress | ✅ |
+| 2 | Connect Instagram and TikTok through ClipStitchr-domain OAuth callbacks | In progress | ✅ |
+| 3 | Compose from a durable saved Stitch, Swipe, or supported Library asset | In progress | ✅ |
+| 4 | Publish now, save a draft, or schedule an exact time and timezone | In progress | ✅ |
+| 5 | Per-destination pending, processing, published, failed, and action-required status | In progress | ✅ |
+| 6 | Idempotent retry that skips destinations with a successful provider receipt | In progress | ✅ |
+| 7 | Supported provider analytics and result inspection | In progress | ✅ |
+| 8 | YouTube and every other social provider unavailable | In progress | ✅ |
+| 9 | PostgreSQL persistence, Redis state and protection, and a long-running transactional-outbox dispatcher | In progress | ✅ |
+| 10 | Authenticated provider tokens encrypted at rest and never returned to the browser | In progress | ✅ |
+
+Postiz application login, billing, AI assistants, marketplace, administration,
+and unrelated providers are outside this integration. Imported source remains
+under `web/vendor/postiz/`; new Clerk, tenancy, media, route, security, and
+deployment adapters remain ClipStitchr-owned code.
+
 ---
 
 ## 5. Pages / Routes (MVP)
@@ -301,6 +331,14 @@ selected slides.
 /dashboard/avatars → Compatibility redirect to `/dashboard/library?tab=avatars`
 /dashboard/uploads → Compatibility redirect to `/dashboard/library`
 /dashboard/stitches → Compatibility redirect to `/dashboard/library?tab=stitches`
+/dashboard/publishing → Enters the retained publishing workspace at Calendar
+/dashboard/publishing/calendar → Scheduled publishing calendar
+/dashboard/publishing/posts → Drafts, queued work, results, failures, and retries
+/dashboard/publishing/analytics → Supported Instagram and TikTok results
+/dashboard/publishing/integrations → Instagram and TikTok account connections
+/dashboard/publishing/compose → Focused Postiz-derived composer
+/dashboard/schedule → Compatibility redirect to the publishing calendar after cutover
+/dashboard/analytics → Compatibility redirect to publishing analytics after cutover
 ```
 
 ---
@@ -353,6 +391,13 @@ selected slides.
 │ Cloudflare R2  │
 │ (Object Store) │
 └────────────────┘
+
+Authenticated publishing requests pass through Clerk-protected Next.js routes
+to a private Node.js 22 publishing service. That service owns the reduced
+PostgreSQL model, Redis-backed OAuth/replay/rate-limit state, encrypted provider
+credentials, and a versioned transactional-outbox workflow. Scheduled work
+stores durable R2 object identity and mints provider-readable media access only
+when a leased attempt is ready to publish.
 ```
 
 ---

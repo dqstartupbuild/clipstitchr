@@ -5,17 +5,23 @@ import { DashboardTopBar } from "@/app/_components/dashboard/DashboardTopBar";
 
 type DashboardShellProps = {
   children: ReactNode;
+  contentAs?: "div" | "main";
 };
 
-export function DashboardShell({ children }: DashboardShellProps) {
+export function DashboardShell({
+  children,
+  contentAs = "main",
+}: DashboardShellProps) {
+  const Content = contentAs;
+
   return (
     <div className="dashboard-shell min-h-screen bg-background text-foreground lg:grid lg:grid-cols-[268px_1fr]">
       <DashboardSidebar />
-      <main className="dashboard-main min-w-0 px-4 py-5 md:px-8 lg:px-10">
+      <Content className="dashboard-main min-w-0 px-4 py-5 md:px-8 lg:px-10">
         <DashboardTopBar />
         <ActiveWorkerJobsBanner />
         {children}
-      </main>
+      </Content>
     </div>
   );
 }
