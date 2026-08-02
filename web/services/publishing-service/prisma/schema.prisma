@@ -227,6 +227,7 @@ model ClipPublishingPostState {
   scheduledUtcOffsetMinutes Int?
   workflowId                String                            @unique(map: "ClipPublishingPostState_workflow_key")
   workflowRunId             String?
+  legacyPostBridgeMapping   Json?
   disposition               ClipPublishingPostDisposition     @default(ACTIVE)
   internalState             ClipPublishingInternalState       @default(QUEUED)
   canceledAt                DateTime?

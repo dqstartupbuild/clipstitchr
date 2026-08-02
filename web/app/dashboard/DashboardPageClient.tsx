@@ -128,6 +128,7 @@ export function DashboardPageClient() {
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadStitchPoster}
           onLoadVideo={library.loadStitchVideo}
+          onPostBridgeScheduled={library.refresh}
           onScore={library.scoreStitch}
           onApplyQuickEdit={library.applyStitchQuickEdit}
           onResetQuickEdit={library.resetStitchQuickEdit}
@@ -146,6 +147,7 @@ export function DashboardPageClient() {
           onLoadBackgroundBlob={loadDashboardBackgroundBlob}
           onLoadPoster={swiprLibrary.loadSwipePoster}
           onDelete={swiprLibrary.removeSwipe}
+          onPostBridgeScheduled={swiprLibrary.refresh}
           onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
         />
         <StitchrCallout />

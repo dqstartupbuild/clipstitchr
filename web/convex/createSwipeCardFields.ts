@@ -21,6 +21,7 @@ export function createSwipeCardFields(swipe: Doc<"swipes">) {
     searchText: getSwipeCardSearchText(swipe),
     posterObject: swipe.posterObject,
     posterVersion: swipe.posterVersion,
+    postBridgePosts: swipe.postBridgePosts,
     isPosted: swipe.isPosted,
     postedAt: swipe.postedAt,
     automation: swipe.automation,

@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
+import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
@@ -43,6 +44,9 @@ const mocks = vi.hoisted(() => ({
     onGenerate: () => Promise<StitchMusicMetadata | null>;
     onRemove: () => Promise<void>;
     onSave: (music: StitchMusicMetadata) => Promise<void>;
+  },
+  scheduleProps: null as null | {
+    onScheduled: (post: PostBridgePostReference) => void;
   },
   stateQueue: [] as unknown[],
   stateSetter: vi.fn(),
@@ -113,6 +117,14 @@ vi.mock("@/app/_components/dashboard/StitchTextSettingsDialog", () => ({
   },
 }));
 
+vi.mock("@/app/_components/postBridge/PostBridgeScheduleDialog", () => ({
+  PostBridgeScheduleDialog: (props: {
+    onScheduled: (post: PostBridgePostReference) => void;
+  }) => {
+    mocks.scheduleProps = props;
+    return "PostBridgeScheduleDialog";
+  },
+}));
 
 vi.mock("@/lib/clipstitchr/hooks/useObjectUrl", () => ({
   useObjectUrl: mocks.useObjectUrl,
@@ -195,6 +207,20 @@ function createStitchMusic(
   };
 }
 
+function createPostBridgePostReference(): PostBridgePostReference {
+  return {
+    createdAt: "2026-06-28T12:00:00.000Z",
+    hasAudio: true,
+    mediaIds: ["media_1"],
+    mediaKind: "video",
+    platforms: ["tiktok"],
+    postId: "post_1",
+    socialAccountIds: [123],
+    sourceType: "stitch",
+    status: "scheduled",
+    updatedAt: "2026-06-28T12:00:00.000Z",
+  };
+}
 
 function createClip(id: string): VideoClip {
   return {
@@ -275,6 +301,7 @@ describe("StitchCard", () => {
     mocks.editProps = null;
     mocks.lazyObjectUrlOptions = null;
     mocks.musicProps = null;
+    mocks.scheduleProps = null;
     mocks.textProps = null;
     mocks.stateQueue = [];
     mocks.useObjectUrl.mockReturnValue("blob:poster");
@@ -430,6 +457,38 @@ describe("StitchCard", () => {
     expect(mocks.trackPostHogEvent).toHaveBeenCalledWith(
       "stitch_deleted",
       expect.objectContaining({
+        stitch_id: "stitch_1",
+      }),
+    );
+  });
+
+  it("marks the card posted and refreshes after Post Bridge scheduling", () => {
+    const onPostBridgeScheduled = vi.fn();
+
+    mocks.stateQueue = [null, null, null, false, false, true];
+
+    renderToStaticMarkup(
+      <StitchCard
+        stitch={createStitch()}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onPostBridgeScheduled={onPostBridgeScheduled}
+        onUpdateMusic={vi.fn()}
+        onUpdatePostedStatus={vi.fn()}
+        onUpdateSocialCaption={vi.fn()}
+        onUpdateSourceSettings={vi.fn()}
+        onUpdateTextOverlay={vi.fn()}
+      />,
+    );
+
+    mocks.scheduleProps?.onScheduled(createPostBridgePostReference());
+
+    expect(mocks.stateSetter).toHaveBeenCalledWith(true);
+    expect(onPostBridgeScheduled).toHaveBeenCalledTimes(1);
+    expect(mocks.trackPostHogEvent).toHaveBeenCalledWith(
+      "stitch_scheduled",
+      expect.objectContaining({
+        post_bridge_post_id: "post_1",
         stitch_id: "stitch_1",
       }),
     );

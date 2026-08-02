@@ -4,11 +4,14 @@ import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
+import { PostBridgeBatchQueueDialog } from "@/app/_components/postBridge/PostBridgeBatchQueueDialog";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
+import { createStitchPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
+import { useLibraryBatchQueueDialog } from "@/lib/clipstitchr/hooks/useLibraryBatchQueueDialog";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
@@ -38,6 +41,7 @@ type StitchesSectionProps = {
   onLoadMoreItems?: () => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
+  onPostBridgeScheduled?: () => void | Promise<void>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
@@ -92,6 +96,7 @@ export function StitchesSection({
   onLoadMoreItems,
   onLoadPoster,
   onLoadVideo,
+  onPostBridgeScheduled,
   onScore,
   onApplyQuickEdit,
   onResetQuickEdit,
@@ -118,6 +123,11 @@ export function StitchesSection({
     itemPluralName: "stitches",
     onDelete,
   });
+  const selectedStitches = useMemo(
+    () => stitches.filter((stitch) => batchDelete.selectedIds.has(stitch.id)),
+    [batchDelete.selectedIds, stitches],
+  );
+  const batchQueue = useLibraryBatchQueueDialog(selectedStitches);
   const statusFilterOptions: {
     label: string;
     value: StitchLibraryStatusFilter;
@@ -150,12 +160,16 @@ export function StitchesSection({
             <LibraryBatchActionBar
               areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
               isDeletingSelected={batchDelete.isDeletingSelected}
+              isQueueingSelected={batchQueue.isBatchQueueDialogOpen}
               isSelecting={batchDelete.isSelecting}
               selectedCount={batchDelete.selectedCount}
               visibleItemCount={batchDelete.visibleItemCount}
               onClearSelection={batchDelete.clearSelection}
               onDeleteSelected={() => {
                 void batchDelete.deleteSelectedItems();
+              }}
+              onQueueSelected={() => {
+                batchQueue.openBatchQueueDialog();
               }}
               onSelectVisible={batchDelete.selectVisibleItems}
               onStartSelecting={batchDelete.startSelecting}
@@ -175,12 +189,13 @@ export function StitchesSection({
                 isSelected={batchDelete.selectedIds.has(stitch.id)}
                 isSelectionDisabled={
                   batchDelete.isDeletingSelected ||
-                  false
+                  batchQueue.isBatchQueueDialogOpen
                 }
                 onDelete={onDelete}
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
                 onLoadVideo={onLoadVideo}
+                onPostBridgeScheduled={onPostBridgeScheduled}
                 onScore={onScore}
                 onApplyQuickEdit={onApplyQuickEdit}
                 onResetQuickEdit={onResetQuickEdit}
@@ -231,6 +246,29 @@ export function StitchesSection({
             Load more stitches
           </Button>
         </div>
+      ) : null}
+      {batchQueue.isBatchQueueDialogOpen ? (
+        <PostBridgeBatchQueueDialog
+          items={batchQueue.queuedItems.map((stitch) => ({
+            caption: stitch.socialCaption ?? "",
+            id: stitch.id,
+            productId: stitch.productId,
+            renderMedia: ({ onProgress }) =>
+              createStitchPostBridgeScheduleMedia({
+                loadClip: onLoadClip,
+                loadVideo: onLoadVideo,
+                onProgress,
+                stitch,
+              }),
+            sourceType: "stitch",
+            title: stitch.name,
+          }))}
+          onClose={batchQueue.closeBatchQueueDialog}
+          onQueued={async () => {
+            batchDelete.stopSelecting();
+            await onPostBridgeScheduled?.();
+          }}
+        />
       ) : null}
     </section>
   );

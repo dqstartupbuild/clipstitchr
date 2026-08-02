@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SwiprSwipeCard } from "@/app/_components/dashboard/SwiprSwipeCard";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
+import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 
@@ -14,6 +15,11 @@ const mocks = vi.hoisted(() => ({
   lazyObjectUrlOptions: null as null | { loadBlob: () => Promise<Blob | null> },
   lazyPosterUrl: null as string | null,
   refValue: { current: null },
+  scheduleProps: null as null | {
+    defaultCaption?: string;
+    onScheduled: (post: PostBridgePostReference) => void;
+    sourceTitle?: string;
+  },
   setStateCalls: [] as Array<ReturnType<typeof vi.fn>>,
   stateQueue: [] as unknown[],
   useObjectUrl: vi.fn(),
@@ -58,6 +64,16 @@ vi.mock("@/lib/clipstitchr/hooks/useSwiprExport", () => ({
   useSwiprExport: mocks.useSwiprExport,
 }));
 
+vi.mock("@/app/_components/postBridge/PostBridgeScheduleDialog", () => ({
+  PostBridgeScheduleDialog: (props: {
+    defaultCaption?: string;
+    onScheduled: (post: PostBridgePostReference) => void;
+    sourceTitle?: string;
+  }) => {
+    mocks.scheduleProps = props;
+    return "PostBridgeScheduleDialog";
+  },
+}));
 
 function findElements(
   value: unknown,
@@ -139,6 +155,20 @@ function createSwipe(overrides: Partial<SwiprSwipe> = {}): SwiprSwipe {
   };
 }
 
+function createPostBridgePostReference(): PostBridgePostReference {
+  return {
+    createdAt: "2026-06-28T12:00:00.000Z",
+    hasAudio: true,
+    mediaIds: ["media_1"],
+    mediaKind: "video",
+    platforms: ["instagram"],
+    postId: "post_1",
+    socialAccountIds: [123],
+    sourceType: "swipe",
+    status: "scheduled",
+    updatedAt: "2026-06-28T12:00:00.000Z",
+  };
+}
 
 function getActionItems(tree: unknown): MediaCardActionMenuItem[] {
   return findElements(
@@ -162,6 +192,7 @@ describe("SwiprSwipeCard", () => {
     mocks.stateQueue = [];
     mocks.lazyObjectUrlOptions = null;
     mocks.lazyPosterUrl = null;
+    mocks.scheduleProps = null;
     mocks.useObjectUrl.mockImplementation((blob: Blob | undefined) =>
       blob ? "blob:background" : null,
     );
@@ -391,4 +422,62 @@ describe("SwiprSwipeCard", () => {
     expect(onUpdatePostedStatus).toHaveBeenCalledWith(postedSwipe, false);
   });
 
+  it("marks the card posted and refreshes after Post Bridge scheduling", () => {
+    const onPostBridgeScheduled = vi.fn();
+
+    mocks.stateQueue = [false, true, false, null, null, null, false];
+
+    const tree = SwiprSwipeCard({
+      background: createBackground({ blob: new Blob(["background"]) }),
+      backgrounds: [createBackground()],
+      onDelete: vi.fn(),
+      onLoadBackgroundBlob: vi.fn(),
+      onPostBridgeScheduled,
+      swipe: createSwipe(),
+    });
+    const scheduleDialog = findElements(
+      tree,
+      (element) =>
+        element.props?.sourceType === "swipe" &&
+        typeof element.props?.onScheduled === "function",
+    )[0];
+
+    (scheduleDialog.props.onScheduled as (post: PostBridgePostReference) => void)(
+      createPostBridgePostReference(),
+    );
+
+    expect(onPostBridgeScheduled).toHaveBeenCalledTimes(1);
+    expect(mocks.setStateCalls.at(-1)).toHaveBeenCalledWith(true);
+  });
+
+  it("uses the first Swipe post copy line as the Post Bridge title", () => {
+    mocks.stateQueue = [false, true, false, null, null, null, false];
+
+    const tree = SwiprSwipeCard({
+      background: createBackground({ blob: new Blob(["background"]) }),
+      backgrounds: [createBackground()],
+      onDelete: vi.fn(),
+      onLoadBackgroundBlob: vi.fn(),
+      swipe: createSwipe({
+        description:
+          "The gym usually is not the answer.\n\nHere is what fixes it.",
+        name: "Guppy carousel",
+        socialCaption:
+          "Skinny-fat is solvable. The gym just usually isn't the solution.\n\nThe gym usually is not the answer.",
+      }),
+    });
+    const scheduleDialog = findElements(
+      tree,
+      (element) =>
+        element.props?.sourceType === "swipe" &&
+        typeof element.props?.onScheduled === "function",
+    )[0];
+
+    expect(scheduleDialog.props.defaultCaption).toBe(
+      "Skinny-fat is solvable. The gym just usually isn't the solution.\n\nThe gym usually is not the answer.",
+    );
+    expect(scheduleDialog.props.sourceTitle).toBe(
+      "Skinny-fat is solvable. The gym just usually isn't the solution.",
+    );
+  });
 });
