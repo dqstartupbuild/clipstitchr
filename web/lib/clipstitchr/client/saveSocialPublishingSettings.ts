@@ -20,8 +20,16 @@ export async function saveSocialPublishingSettings(apiKey: string) {
     );
   }
 
-  return (await response.json()) as {
+  const body = (await response.json().catch(() => null)) as {
     accounts: SocialPublishingSocialAccount[];
     settings: SocialPublishingSettings;
-  };
+  } | null;
+
+  if (!body) {
+    throw new Error(
+      "ClipStitchr could not read the Zernio response. Refresh the page and try again.",
+    );
+  }
+
+  return body;
 }

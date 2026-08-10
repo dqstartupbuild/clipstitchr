@@ -1,4 +1,5 @@
 import { createSocialPublishingUrl } from "@/lib/clipstitchr/server/socialPublishing/createSocialPublishingUrl";
+import { readSocialPublishingJsonResponse } from "@/lib/clipstitchr/server/socialPublishing/readSocialPublishingJsonResponse";
 import { reserveSocialPublishingProviderRequest } from "@/lib/clipstitchr/server/socialPublishing/reserveSocialPublishingProviderRequest";
 import { waitForSocialPublishingRetry } from "@/lib/clipstitchr/server/socialPublishing/waitForSocialPublishingRetry";
 
@@ -41,11 +42,16 @@ export async function requestSocialPublishing<ResponseBody>(
     }
 
     if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as {
+      const payload = await readSocialPublishingJsonResponse<{
         error?: unknown;
-      } | null;
+        message?: unknown;
+      }>(response).catch(() => null);
       const providerMessage =
-        typeof payload?.error === "string" ? payload.error.trim() : "";
+        typeof payload?.error === "string"
+          ? payload.error.trim()
+          : typeof payload?.message === "string"
+            ? payload.message.trim()
+            : "";
 
       throw new Error(
         providerMessage || `Zernio request failed with status ${response.status}.`,
@@ -56,7 +62,7 @@ export async function requestSocialPublishing<ResponseBody>(
       return undefined as ResponseBody;
     }
 
-    return (await response.json()) as ResponseBody;
+    return await readSocialPublishingJsonResponse<ResponseBody>(response);
   }
 
   throw new Error("Zernio request failed after retries.");

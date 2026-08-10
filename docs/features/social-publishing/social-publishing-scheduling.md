@@ -99,6 +99,6 @@ docs/operations/security/rate-limits.md.
 ## Environment
 
 - SOCIAL_PUBLISHING_API_KEY_ENCRYPTION_SECRET encrypts saved user keys.
-- ZERNIO_API_BASE_URL defaults to https://zernio.com/api.
+- ZERNIO_API_BASE_URL defaults to https://zernio.com/api/v1.
 - SOCIAL_PUBLISHING_MAX_MEDIA_BYTES defaults to 250 MiB.
 - RATE_LIMIT_API_SECRET authorizes server-side limiter calls to Convex.

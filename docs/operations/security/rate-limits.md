@@ -294,7 +294,7 @@ Zernio API variables:
   encrypted with this secret, stored in Convex, and decrypted only inside
   server-side Zernio API routes.
 - `ZERNIO_API_BASE_URL` optionally overrides the API base URL. It defaults
-  to `https://zernio.com/api`.
+  to `https://zernio.com/api/v1`.
 - `SOCIAL_PUBLISHING_MAX_MEDIA_BYTES` optionally caps rendered schedule-upload media
   size. It defaults to 250 MB.
 - User Zernio keys must not be sent to the browser after save. Only masked
