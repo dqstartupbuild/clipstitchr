@@ -1,5 +1,6 @@
 import { createSocialPublishingUploadedMedia } from "@/lib/clipstitchr/server/socialPublishing/createSocialPublishingUploadedMedia";
 import { getSocialPublishingSourceType } from "@/lib/clipstitchr/server/socialPublishing/getSocialPublishingSourceType";
+import { isSocialPublishingPlatform } from "@/lib/clipstitchr/server/socialPublishing/isSocialPublishingPlatform";
 import { normalizeSocialPublishingCaption } from "@/lib/clipstitchr/server/socialPublishing/normalizeSocialPublishingCaption";
 import { normalizeSocialPublishingScheduledAt } from "@/lib/clipstitchr/server/socialPublishing/normalizeSocialPublishingScheduledAt";
 import { normalizeSocialPublishingTitle } from "@/lib/clipstitchr/server/socialPublishing/normalizeSocialPublishingTitle";
@@ -23,6 +24,7 @@ type SocialPublishingScheduleRequestBody = {
 };
 
 type SocialPublishingUploadedMediaBody = {
+  customPlatform?: unknown;
   mediaId?: unknown;
   mimeType?: unknown;
   name?: unknown;
@@ -92,12 +94,25 @@ export async function readSocialPublishingScheduleRequest(
         throw new Error("Unable to prepare this media upload.");
       }
 
-      return createSocialPublishingUploadedMedia({
+      const uploadedMedia = createSocialPublishingUploadedMedia({
         mediaId: item.mediaId,
         mimeType: item.mimeType,
         name: typeof item.name === "string" ? item.name : "",
         sizeBytes: item.sizeBytes,
       });
+
+      if (item.customPlatform === undefined) {
+        return uploadedMedia;
+      }
+
+      if (!isSocialPublishingPlatform(item.customPlatform)) {
+        throw new Error("Unable to prepare platform-specific media.");
+      }
+
+      return {
+        ...uploadedMedia,
+        customPlatform: item.customPlatform,
+      };
     }),
     scheduledAt: useQueue
       ? null

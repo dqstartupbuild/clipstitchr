@@ -55,6 +55,12 @@ post or existingPost, so a same-request retry does not create a duplicate.
 Queue submissions use queuedFromProfile; immediate submissions use publishNow.
 Media is sent in mediaItems, and per-account settings are sent in platforms.
 
+Swipr image posts are rendered at Instagram's 1080 x 1350 feed size when
+Instagram is the only destination. Cross-platform image posts keep the shared
+1080 x 1920 media and send a separate 1080 x 1350 image set through Zernio's
+per-platform `customMedia` field for Instagram. This preserves TikTok's
+vertical layout without sending Instagram an unsupported 9:16 feed image.
+
 ## Supported Media
 
 - Stitches publish as one MP4.
@@ -81,6 +87,7 @@ docs/operations/security/rate-limits.md.
 - <https://docs.zernio.com/>
 - <https://docs.zernio.com/posts/create-post>
 - <https://docs.zernio.com/accounts/get-tiktok-creator-info>
+- <https://docs.zernio.com/guides/media-uploads>
 - <https://docs.zernio.com/guides/rate-limits>
 
 ## File Tree
@@ -90,9 +97,12 @@ docs/operations/security/rate-limits.md.
 - web/app/api/social-publishing/accounts/route.ts
 - web/app/api/social-publishing/media/upload/route.ts
 - web/app/api/social-publishing/schedule/route.ts
+- web/lib/clipstitchr/client/createSwiprSocialPublishingScheduleMedia.ts
+- web/lib/clipstitchr/server/socialPublishing/groupSocialPublishingMedia.ts
 - web/lib/clipstitchr/server/socialPublishing/createSocialPublishingPost.ts
 - web/lib/clipstitchr/server/socialPublishing/listSocialPublishingSocialAccounts.ts
 - web/lib/clipstitchr/server/socialPublishing/zernio/
+- web/lib/clipstitchr/utils/getSwiprSocialPublishingImageRenderTargets.ts
 - web/convex/socialPublishingSettings.ts
 - web/convex/socialPublishingPostProductMappings.ts
 

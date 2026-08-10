@@ -118,8 +118,8 @@ export function SettingsSocialPublishingPanel({
   return (
     <Panel className="p-4">
       <form className="relative flex flex-col gap-4" onSubmit={handleSave}>
-        <div className="flex items-start justify-between gap-3">
-          <div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">
               Zernio
             </p>
@@ -131,7 +131,7 @@ export function SettingsSocialPublishingPanel({
               are free, and you control any upgrades directly with Zernio.
             </p>
           </div>
-          <div className="flex shrink-0 flex-wrap justify-end gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:justify-end">
             {settings.hasApiKey ? (
               <span className="inline-flex h-9 items-center gap-1 rounded-full bg-emerald-50 px-2.5 text-xs font-bold text-emerald-700">
                 <CheckCircle2 aria-hidden className="h-3.5 w-3.5" />
@@ -143,6 +143,7 @@ export function SettingsSocialPublishingPanel({
                 type="button"
                 variant="secondary"
                 size="sm"
+                className="min-w-0 flex-1 sm:flex-none"
                 icon={<Settings2 aria-hidden className="h-4 w-4" />}
                 disabled={isLoading}
                 onClick={() => setIsConfigOpen(true)}
@@ -216,12 +217,13 @@ export function SettingsSocialPublishingPanel({
           </p>
         ) : null}
 
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="grid gap-2 sm:flex sm:justify-end">
           {settings.hasApiKey ? (
             <Button
               type="button"
               variant="danger"
               size="sm"
+              className="w-full sm:w-auto"
               icon={<Trash2 aria-hidden className="h-4 w-4" />}
               isLoading={isDeleting}
               disabled={isBusy}
@@ -233,6 +235,7 @@ export function SettingsSocialPublishingPanel({
           <Button
             type="submit"
             size="sm"
+            className="w-full sm:w-auto"
             icon={<KeyRound aria-hidden className="h-4 w-4" />}
             isLoading={isSaving}
             disabled={isBusy || !apiKey.trim()}

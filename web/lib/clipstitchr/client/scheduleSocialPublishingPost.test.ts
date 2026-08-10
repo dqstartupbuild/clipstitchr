@@ -73,6 +73,7 @@ describe("scheduleSocialPublishingPost", () => {
         },
         {
           blob: new Blob(["two"], { type: "image/png" }),
+          customPlatform: "instagram",
           fileName: "slide-2.png",
           mediaKind: "image",
         },
@@ -141,6 +142,7 @@ describe("scheduleSocialPublishingPost", () => {
             sizeBytes: 1,
           },
           {
+            customPlatform: "instagram",
             mediaId: "media_2",
             mediaKind: "image",
             mimeType: "image/png",

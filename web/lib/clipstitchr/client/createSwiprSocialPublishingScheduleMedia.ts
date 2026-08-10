@@ -7,6 +7,7 @@ import type { SocialPublishingScheduleRenderResult } from "@/lib/clipstitchr/typ
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { getSocialPublishingMediaFileName } from "@/lib/clipstitchr/utils/getSocialPublishingMediaFileName";
+import { getSwiprSocialPublishingImageRenderTargets } from "@/lib/clipstitchr/utils/getSwiprSocialPublishingImageRenderTargets";
 import { getSwiprSocialPublishingMediaKind } from "@/lib/clipstitchr/utils/getSwiprSocialPublishingMediaKind";
 import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
 import { getSwiprSlideFileName } from "@/lib/clipstitchr/utils/getSwiprSlideFileName";
@@ -62,20 +63,34 @@ export async function createSwiprSocialPublishingScheduleMedia({
     }) === "image"
   ) {
     const mediaFiles: SocialPublishingScheduleMediaFile[] = [];
+    const renderTargets = getSwiprSocialPublishingImageRenderTargets(platforms);
+    const renderCount = swipe.slides.length * renderTargets.length;
+    let completedRenderCount = 0;
 
     for (let index = 0; index < swipe.slides.length; index += 1) {
       const slide = swipe.slides[index];
-      const slideBlob = await renderSwiprSlideBlob(
-        slideBackgroundBlobs[slide.id],
-        slide,
-      );
 
-      mediaFiles.push({
-        blob: slideBlob,
-        fileName: getSwiprSlideFileName(index),
-        mediaKind: "image" as const,
-      });
-      onProgress((index + 1) / swipe.slides.length);
+      for (const target of renderTargets) {
+        const slideBlob = await renderSwiprSlideBlob(
+          slideBackgroundBlobs[slide.id],
+          slide,
+          { height: target.height, width: target.width },
+        );
+        const fileName = getSwiprSlideFileName(index);
+
+        mediaFiles.push({
+          blob: slideBlob,
+          ...(target.customPlatform
+            ? { customPlatform: target.customPlatform }
+            : {}),
+          fileName: target.customPlatform
+            ? `${target.customPlatform}-${fileName}`
+            : fileName,
+          mediaKind: "image" as const,
+        });
+        completedRenderCount += 1;
+        onProgress(completedRenderCount / renderCount);
+      }
     }
 
     return {

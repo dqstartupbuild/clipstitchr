@@ -56,6 +56,7 @@ describe("renderSwiprSlideBlob", () => {
 
   it("draws a cover-cropped background and optional text overlay", async () => {
     const context = {
+      canvas: null as unknown,
       drawImage: vi.fn(),
     };
     const canvas = {
@@ -63,6 +64,7 @@ describe("renderSwiprSlideBlob", () => {
       height: 0,
       width: 0,
     };
+    context.canvas = canvas;
 
     vi.stubGlobal("document", {
       createElement: vi.fn(() => canvas),
@@ -96,11 +98,16 @@ describe("renderSwiprSlideBlob", () => {
   });
 
   it("skips blank overlays and rejects missing canvas contexts", async () => {
+    const context = {
+      canvas: null as unknown,
+      drawImage: vi.fn(),
+    };
     const canvas = {
-      getContext: vi.fn(() => ({ drawImage: vi.fn() })),
+      getContext: vi.fn(() => context),
       height: 0,
       width: 0,
     };
+    context.canvas = canvas;
 
     vi.stubGlobal("document", {
       createElement: vi.fn(() => canvas),
@@ -118,5 +125,38 @@ describe("renderSwiprSlideBlob", () => {
     await expect(
       renderSwiprSlideBlob(new Blob(["background"]), createSlide()),
     ).rejects.toThrow("Unable to create Swipr slide canvas.");
+  });
+
+  it("renders an Instagram feed image at 4:5", async () => {
+    const context = {
+      canvas: null as unknown,
+      drawImage: vi.fn(),
+    };
+    const canvas = {
+      getContext: vi.fn(() => context),
+      height: 0,
+      width: 0,
+    };
+    context.canvas = canvas;
+
+    vi.stubGlobal("document", {
+      createElement: vi.fn(() => canvas),
+    });
+
+    await renderSwiprSlideBlob(
+      new Blob(["background"], { type: "image/jpeg" }),
+      createSlide(),
+      { height: 1350, width: 1080 },
+    );
+
+    expect(canvas.width).toBe(1080);
+    expect(canvas.height).toBe(1350);
+    expect(context.drawImage).toHaveBeenCalledWith(
+      expect.any(Object),
+      0,
+      -285,
+      1080,
+      1920,
+    );
   });
 });

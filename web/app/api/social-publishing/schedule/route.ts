@@ -10,6 +10,7 @@ import { createSocialPublishingPost } from "@/lib/clipstitchr/server/socialPubli
 import { createSocialPublishingPostReference } from "@/lib/clipstitchr/server/socialPublishing/createSocialPublishingPostReference";
 import { getSocialPublishingAccountPlatforms } from "@/lib/clipstitchr/server/socialPublishing/getSocialPublishingAccountPlatforms";
 import { getSocialPublishingUploadedMediaSizeBytes } from "@/lib/clipstitchr/server/socialPublishing/getSocialPublishingUploadedMediaSizeBytes";
+import { groupSocialPublishingMedia } from "@/lib/clipstitchr/server/socialPublishing/groupSocialPublishingMedia";
 import { getSocialPublishingSourceProductId } from "@/lib/clipstitchr/server/socialPublishing/getSocialPublishingSourceProductId";
 import { getSelectedSocialPublishingAccounts } from "@/lib/clipstitchr/server/socialPublishing/getSelectedSocialPublishingAccounts";
 import { listSocialPublishingSocialAccounts } from "@/lib/clipstitchr/server/socialPublishing/listSocialPublishingSocialAccounts";
@@ -73,12 +74,15 @@ export async function POST(request: Request) {
     );
     const platforms = getSocialPublishingAccountPlatforms(selectedAccounts);
     assertSocialPublishingPlatformMediaKind(mediaKind, platforms);
-    const mediaIds = input.mediaFiles.map((mediaFile) => mediaFile.mediaId);
+    const { customMediaIdsByPlatform, mediaIds } = groupSocialPublishingMedia(
+      input.mediaFiles,
+    );
 
     const post = await createSocialPublishingPost({
       accounts: selectedAccounts,
       apiKey,
       caption: input.caption,
+      customMediaIdsByPlatform,
       mediaIds,
       mediaKind,
       scheduledAt: input.scheduledAt,

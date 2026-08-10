@@ -8,14 +8,23 @@ import { drawSwiprSlideToCanvas } from "@/lib/clipstitchr/media/drawSwiprSlideTo
 import { loadImageFromBlob } from "@/lib/clipstitchr/media/loadImageFromBlob";
 import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
 
+type RenderSwiprSlideBlobOutputSize = {
+  height: number;
+  width: number;
+};
+
 export async function renderSwiprSlideBlob(
   backgroundBlob: Blob,
   slide: SwiprSlide,
+  outputSize: RenderSwiprSlideBlobOutputSize = {
+    height: TIKTOK_OUTPUT_HEIGHT,
+    width: TIKTOK_OUTPUT_WIDTH,
+  },
 ) {
   const background = await loadImageFromBlob(backgroundBlob);
   const canvas = document.createElement("canvas");
-  canvas.width = TIKTOK_OUTPUT_WIDTH;
-  canvas.height = TIKTOK_OUTPUT_HEIGHT;
+  canvas.width = outputSize.width;
+  canvas.height = outputSize.height;
 
   const context = canvas.getContext("2d");
 

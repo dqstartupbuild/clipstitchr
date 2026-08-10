@@ -20,6 +20,7 @@ describe("readSocialPublishingScheduleRequest", () => {
           hasAudio: false,
           mediaFiles: [
             {
+              customPlatform: "instagram",
               mediaId: "media_1",
               mimeType: "video/mp4",
               name: "launch.mp4",
@@ -34,6 +35,7 @@ describe("readSocialPublishingScheduleRequest", () => {
         }),
       ),
     ).resolves.toMatchObject({
+      mediaFiles: [expect.objectContaining({ customPlatform: "instagram" })],
       scheduledAt: null,
       useQueue: true,
     });

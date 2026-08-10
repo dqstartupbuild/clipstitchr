@@ -38,11 +38,16 @@ export async function scheduleSocialPublishingPost({
 
   for (const mediaFile of mediaFiles) {
     uploadedMediaFiles.push(
-      await uploadSocialPublishingScheduleMedia({
-        mediaFile,
-        sourceId,
-        sourceType,
-      }),
+      {
+        ...(await uploadSocialPublishingScheduleMedia({
+          mediaFile,
+          sourceId,
+          sourceType,
+        })),
+        ...(mediaFile.customPlatform
+          ? { customPlatform: mediaFile.customPlatform }
+          : {}),
+      },
     );
   }
 

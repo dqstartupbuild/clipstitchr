@@ -3,6 +3,7 @@ import { requestSocialPublishing } from "@/lib/clipstitchr/server/socialPublishi
 import { normalizeZernioPost } from "@/lib/clipstitchr/server/socialPublishing/zernio/normalizeZernioPost";
 import type { ZernioPost } from "@/lib/clipstitchr/server/socialPublishing/zernio/ZernioPost";
 import type { SocialPublishingMediaKind } from "@/lib/clipstitchr/types/SocialPublishingMediaKind";
+import type { SocialPublishingPlatform } from "@/lib/clipstitchr/types/SocialPublishingPlatform";
 import type { SocialPublishingPost } from "@/lib/clipstitchr/types/SocialPublishingPost";
 import type { SocialPublishingSocialAccount } from "@/lib/clipstitchr/types/SocialPublishingSocialAccount";
 import type { SocialPublishingTikTokCommercialContentType } from "@/lib/clipstitchr/types/SocialPublishingTikTokCommercialContentType";
@@ -11,6 +12,7 @@ type CreateSocialPublishingPostOptions = {
   accounts: SocialPublishingSocialAccount[];
   apiKey: string;
   caption: string;
+  customMediaIdsByPlatform?: Partial<Record<SocialPublishingPlatform, string[]>>;
   mediaIds: string[];
   mediaKind: SocialPublishingMediaKind;
   scheduledAt: string | null;
@@ -31,6 +33,7 @@ export async function createSocialPublishingPost({
   accounts,
   apiKey,
   caption,
+  customMediaIdsByPlatform = {},
   mediaIds,
   mediaKind,
   scheduledAt,
@@ -60,6 +63,8 @@ export async function createSocialPublishingPost({
       mediaItems: mediaIds.map((url) => ({ type: mediaKind, url })),
       platforms: createSocialPublishingPlatformConfigurations({
         accounts,
+        customMediaIdsByPlatform,
+        mediaKind,
         tiktokCaption,
       }),
       ...(includesTikTok

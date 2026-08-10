@@ -25,6 +25,7 @@ describe("createSocialPublishingPlatformConfigurations", () => {
           createAccount("tiktok_1", "tiktok"),
           createAccount("youtube_1", "youtube"),
         ],
+        mediaKind: "video",
       }),
     ).toEqual([
       { accountId: "tiktok_1", platform: "tiktok" },
@@ -39,6 +40,7 @@ describe("createSocialPublishingPlatformConfigurations", () => {
           createAccount("tiktok_1", "tiktok"),
           createAccount("instagram_1", "instagram"),
         ],
+        mediaKind: "image",
         tiktokCaption: "Body copy",
       }),
     ).toEqual([
@@ -48,6 +50,33 @@ describe("createSocialPublishingPlatformConfigurations", () => {
         platform: "tiktok",
       },
       { accountId: "instagram_1", platform: "instagram" },
+    ]);
+  });
+
+  it("sends custom media only to its matching platform", () => {
+    expect(
+      createSocialPublishingPlatformConfigurations({
+        accounts: [
+          createAccount("tiktok_1", "tiktok"),
+          createAccount("instagram_1", "instagram"),
+        ],
+        customMediaIdsByPlatform: {
+          instagram: ["https://cdn.zernio.test/instagram-slide.png"],
+        },
+        mediaKind: "image",
+      }),
+    ).toEqual([
+      { accountId: "tiktok_1", platform: "tiktok" },
+      {
+        accountId: "instagram_1",
+        customMedia: [
+          {
+            type: "image",
+            url: "https://cdn.zernio.test/instagram-slide.png",
+          },
+        ],
+        platform: "instagram",
+      },
     ]);
   });
 });

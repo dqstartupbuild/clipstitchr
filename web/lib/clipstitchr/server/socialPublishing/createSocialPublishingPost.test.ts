@@ -107,8 +107,11 @@ describe("createSocialPublishingPost", () => {
       accounts: [createAccount("instagram_1", "instagram")],
       apiKey: "zernio_test_key",
       caption: "Launch",
-      mediaIds: ["https://cdn.zernio.test/media.mp4"],
-      mediaKind: "video",
+      customMediaIdsByPlatform: {
+        instagram: ["https://cdn.zernio.test/instagram-feed.png"],
+      },
+      mediaIds: ["https://cdn.zernio.test/vertical.png"],
+      mediaKind: "image",
       scheduledAt: "2026-06-27T12:00:00.000Z",
       tiktokCommercialContentType: "none",
       tiktokConsentGiven: false,
@@ -118,6 +121,18 @@ describe("createSocialPublishingPost", () => {
     });
 
     expect(bodies[0]).toMatchObject({
+      platforms: [
+        {
+          accountId: "instagram_1",
+          customMedia: [
+            {
+              type: "image",
+              url: "https://cdn.zernio.test/instagram-feed.png",
+            },
+          ],
+          platform: "instagram",
+        },
+      ],
       scheduledFor: "2026-06-27T12:00:00.000Z",
       timezone: "UTC",
     });
