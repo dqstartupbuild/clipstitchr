@@ -208,7 +208,7 @@ export const consumeHookLabCreativeBrief = mutation({
   },
 });
 
-export const consumePostBridgeRead = mutation({
+export const consumeSocialPublishingRead = mutation({
   args: {
     secret: v.string(),
   },
@@ -217,17 +217,17 @@ export const consumePostBridgeRead = mutation({
 
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
-    await rateLimiter.limit(ctx, "postBridgeRead", {
+    await rateLimiter.limit(ctx, "socialPublishingRead", {
       key: ownerId,
       throws: true,
     });
-    await rateLimiter.limit(ctx, "postBridgeReadGlobal", {
+    await rateLimiter.limit(ctx, "socialPublishingReadGlobal", {
       throws: true,
     });
   },
 });
 
-export const consumePostBridgeSchedule = mutation({
+export const consumeSocialPublishingSchedule = mutation({
   args: {
     secret: v.string(),
   },
@@ -236,25 +236,25 @@ export const consumePostBridgeSchedule = mutation({
 
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
-    await rateLimiter.limit(ctx, "postBridgeSchedule", {
+    await rateLimiter.limit(ctx, "socialPublishingSchedule", {
       key: ownerId,
       throws: true,
     });
-    await rateLimiter.limit(ctx, "postBridgeScheduleHourly", {
+    await rateLimiter.limit(ctx, "socialPublishingScheduleHourly", {
       key: ownerId,
       throws: true,
     });
-    await rateLimiter.limit(ctx, "postBridgeScheduleDaily", {
+    await rateLimiter.limit(ctx, "socialPublishingScheduleDaily", {
       key: ownerId,
       throws: true,
     });
-    await rateLimiter.limit(ctx, "postBridgeScheduleGlobalDaily", {
+    await rateLimiter.limit(ctx, "socialPublishingScheduleGlobalDaily", {
       throws: true,
     });
   },
 });
 
-export const consumePostBridgeMediaUpload = mutation({
+export const consumeSocialPublishingMediaUpload = mutation({
   args: {
     mediaSizeBytes: v.number(),
     secret: v.string(),
@@ -265,19 +265,19 @@ export const consumePostBridgeMediaUpload = mutation({
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const uploadBytes = getPositiveCount(mediaSizeBytes, "Media size");
 
-    await rateLimiter.limit(ctx, "postBridgeUploadBytesDaily", {
+    await rateLimiter.limit(ctx, "socialPublishingUploadBytesDaily", {
       count: uploadBytes,
       key: ownerId,
       throws: true,
     });
-    await rateLimiter.limit(ctx, "postBridgeUploadBytesGlobalDaily", {
+    await rateLimiter.limit(ctx, "socialPublishingUploadBytesGlobalDaily", {
       count: uploadBytes,
       throws: true,
     });
   },
 });
 
-export const consumePostBridgeAnalyticsSync = mutation({
+export const consumeSocialPublishingAnalyticsSync = mutation({
   args: {
     secret: v.string(),
   },
@@ -286,11 +286,11 @@ export const consumePostBridgeAnalyticsSync = mutation({
 
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
-    await rateLimiter.limit(ctx, "postBridgeAnalyticsSync", {
+    await rateLimiter.limit(ctx, "socialPublishingAnalyticsSync", {
       key: ownerId,
       throws: true,
     });
-    await rateLimiter.limit(ctx, "postBridgeAnalyticsSyncGlobal", {
+    await rateLimiter.limit(ctx, "socialPublishingAnalyticsSyncGlobal", {
       throws: true,
     });
   },

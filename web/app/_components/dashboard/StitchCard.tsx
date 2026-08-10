@@ -17,14 +17,14 @@ import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDi
 import { StitchEditDialog } from "@/app/_components/dashboard/StitchEditDialog";
 import { MediaPrimaryAction } from "@/app/_components/dashboard/MediaPrimaryAction";
 import { StitchScoreBadge } from "@/app/_components/dashboard/StitchScoreBadge";
-import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
+import { SocialPublishingScheduleDialog } from "@/app/_components/socialPublishing/SocialPublishingScheduleDialog";
 import {
   MediaCardActionMenu,
   type MediaCardActionMenuItem,
 } from "@/app/_components/ui/MediaCardActionMenu";
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
-import { createStitchPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia";
+import { createStitchSocialPublishingScheduleMedia } from "@/lib/clipstitchr/client/createStitchSocialPublishingScheduleMedia";
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
@@ -61,7 +61,7 @@ type StitchCardProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
-  onPostBridgeScheduled?: () => void | Promise<void>;
+  onSocialPublishingScheduled?: () => void | Promise<void>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
   onSelect?: () => void;
@@ -108,7 +108,7 @@ export function StitchCard({
   onLoadPoster,
   onLoadVideo,
   onScore,
-  onPostBridgeScheduled,
+  onSocialPublishingScheduled,
   onApplyQuickEdit,
   onResetQuickEdit,
   onSelect,
@@ -187,12 +187,12 @@ export function StitchCard({
   const [sourceSettingsError, setSourceSettingsError] = useState<string | null>(
     null,
   );
-  const [hasScheduledPostBridgePost, setHasScheduledPostBridgePost] =
+  const [hasScheduledSocialPublishingPost, setHasScheduledSocialPublishingPost] =
     useState(false);
   const fileSizeLabel = stitch.size
     ? formatBytes(stitch.size)
     : "Ready to download";
-  const isPosted = Boolean(stitch.isPosted) || hasScheduledPostBridgePost;
+  const isPosted = Boolean(stitch.isPosted) || hasScheduledSocialPublishingPost;
   const canUseQuickEdit = !getStitchIsLongr(stitch);
   const hasActionableQuickEditSuggestions =
     getQuickEditSuggestionsHasActionableChange(
@@ -331,12 +331,12 @@ export function StitchCard({
       setIsDownloading(false);
     }
   };
-  const renderPostBridgeMedia = async ({
+  const renderSocialPublishingMedia = async ({
     onProgress,
   }: {
     onProgress: (progress: number) => void;
   }) => {
-    return await createStitchPostBridgeScheduleMedia({
+    return await createStitchSocialPublishingScheduleMedia({
       loadClip: onLoadClip,
       loadVideo: onLoadVideo,
       onProgress,
@@ -555,7 +555,7 @@ export function StitchCard({
 
     try {
       await onUpdatePostedStatus(stitch, nextIsPosted);
-      setHasScheduledPostBridgePost(nextIsPosted);
+      setHasScheduledSocialPublishingPost(nextIsPosted);
       trackPostHogEvent(
         nextIsPosted ? "stitch_marked_posted" : "stitch_marked_unposted",
         {
@@ -812,20 +812,20 @@ export function StitchCard({
         />
       ) : null}
       {isScheduleOpen ? (
-        <PostBridgeScheduleDialog
+        <SocialPublishingScheduleDialog
           defaultCaption={stitch.socialCaption}
           sourceId={stitch.id}
           sourceProductId={stitch.productId}
           sourceTitle={stitch.name}
           sourceType="stitch"
           onClose={() => setIsScheduleOpen(false)}
-          onRenderMedia={renderPostBridgeMedia}
+          onRenderMedia={renderSocialPublishingMedia}
           onScheduled={(post) => {
-            setHasScheduledPostBridgePost(true);
-            void onPostBridgeScheduled?.();
+            setHasScheduledSocialPublishingPost(true);
+            void onSocialPublishingScheduled?.();
             trackPostHogEvent("stitch_scheduled", {
               platform_count: post.platforms.length,
-              post_bridge_post_id: post.postId,
+              social_publishing_post_id: post.postId,
               stitch_id: stitch.id,
             });
           }}

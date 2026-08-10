@@ -3,7 +3,7 @@ export type ProductCardFieldSource = {
   id: string;
   name: string;
   ownerId: string;
-  postBridgeSocialAccountIds?: number[];
+  socialPublishingSocialAccountIds?: string[];
   updatedAt: string;
   websiteUrl?: string;
 };
@@ -14,7 +14,7 @@ export function createProductCardFields(product: ProductCardFieldSource) {
     id: product.id,
     name: product.name,
     websiteUrl: product.websiteUrl,
-    postBridgeSocialAccountIds: product.postBridgeSocialAccountIds,
+    socialPublishingSocialAccountIds: product.socialPublishingSocialAccountIds,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
   };

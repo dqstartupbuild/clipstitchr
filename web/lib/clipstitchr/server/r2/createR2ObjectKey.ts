@@ -61,8 +61,8 @@ const objectKindConfig: Record<
     baseName: "thumbnail",
     fallbackExtension: "jpg",
   },
-  "post-bridge-media": {
-    directory: "post-bridge-media",
+  "social-publishing-media": {
+    directory: "social-publishing-media",
     baseName: "media",
     fallbackExtension: "bin",
   },

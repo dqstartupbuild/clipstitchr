@@ -1,9 +1,9 @@
-import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
-import { getPostBridgePlatformLabel } from "@/lib/clipstitchr/utils/getPostBridgePlatformLabel";
+import type { SocialPublishingSocialAccount } from "@/lib/clipstitchr/types/SocialPublishingSocialAccount";
+import { getSocialPublishingPlatformLabel } from "@/lib/clipstitchr/utils/getSocialPublishingPlatformLabel";
 
 type ScheduledPostAccountListProps = {
-  accountIds: number[];
-  accounts: PostBridgeSocialAccount[];
+  accountIds: string[];
+  accounts: SocialPublishingSocialAccount[];
 };
 
 export function ScheduledPostAccountList({
@@ -32,7 +32,7 @@ export function ScheduledPostAccountList({
           >
             <span className="truncate">
               {account
-                ? `${account.username} - ${getPostBridgePlatformLabel(account.platform)}`
+                ? `${account.username} - ${getSocialPublishingPlatformLabel(account.platform)}`
                 : `Account ${accountId}`}
             </span>
           </span>

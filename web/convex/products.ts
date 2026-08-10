@@ -9,7 +9,7 @@ import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
 import { deleteProductCard } from "./deleteProductCard";
 import { upsertProductCard } from "./upsertProductCard";
-import { normalizePostBridgeSocialAccountIds } from "../lib/clipstitchr/utils/normalizePostBridgeSocialAccountIds";
+import { normalizeSocialPublishingSocialAccountIds } from "../lib/clipstitchr/utils/normalizeSocialPublishingSocialAccountIds";
 import { assertProductLimit } from "./products/assertProductLimit";
 import { disableProductAutomation } from "./products/disableProductAutomation";
 
@@ -407,10 +407,10 @@ export const get = query({
   },
 });
 
-export const updatePostBridgeSocialAccountIds = mutation({
+export const updateSocialPublishingSocialAccountIds = mutation({
   args: {
     id: v.string(),
-    socialAccountIds: v.array(v.number()),
+    socialAccountIds: v.array(v.string()),
     updatedAt: v.string(),
   },
   handler: async (ctx, { id, socialAccountIds, updatedAt }) => {
@@ -431,8 +431,8 @@ export const updatePostBridgeSocialAccountIds = mutation({
     }
 
     await ctx.db.patch(product._id, {
-      postBridgeSocialAccountIds:
-        normalizePostBridgeSocialAccountIds(socialAccountIds),
+      socialPublishingSocialAccountIds:
+        normalizeSocialPublishingSocialAccountIds(socialAccountIds),
       updatedAt,
     });
     const updatedProduct = await ctx.db.get(product._id);

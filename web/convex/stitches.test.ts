@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   applyQuickEdit,
-  addPostBridgePost,
+  addSocialPublishingPost,
   get,
   list,
   remove,
@@ -130,7 +130,7 @@ function createSaveArgs(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function createPostBridgePost(overrides: Record<string, unknown> = {}) {
+function createSocialPublishingPost(overrides: Record<string, unknown> = {}) {
   return {
     createdAt: "2026-06-27T10:00:00.000Z",
     hasAudio: true,
@@ -398,13 +398,13 @@ describe("convex stitches", () => {
     );
   });
 
-  it("marks stitches posted when adding a Post Bridge post reference", async () => {
+  it("marks stitches posted when adding a Zernio post reference", async () => {
     const setup = createCtx([
       {
         _id: "doc_1",
         id: "stitch_1",
-        postBridgePosts: [
-          createPostBridgePost({
+        socialPublishingPosts: [
+          createSocialPublishingPost({
             mediaIds: ["old_media"],
             postId: "post_1",
           }),
@@ -412,9 +412,9 @@ describe("convex stitches", () => {
       },
     ]);
 
-    await getHandler(addPostBridgePost)(setup.ctx, {
+    await getHandler(addSocialPublishingPost)(setup.ctx, {
       id: "stitch_1",
-      post: createPostBridgePost({
+      post: createSocialPublishingPost({
         mediaIds: ["new_media"],
         postId: "post_1",
       }),
@@ -424,7 +424,7 @@ describe("convex stitches", () => {
       "doc_1",
       expect.objectContaining({
         isPosted: true,
-        postBridgePosts: [
+        socialPublishingPosts: [
           expect.objectContaining({
             mediaIds: ["new_media"],
             postId: "post_1",

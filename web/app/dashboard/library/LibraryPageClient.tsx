@@ -500,7 +500,7 @@ export function LibraryPageClient({
             onLoadMoreItems={handleLoadMoreSelectedStitches}
             onLoadPoster={library.loadStitchPoster}
             onLoadVideo={library.loadStitchVideo}
-            onPostBridgeScheduled={library.refresh}
+            onSocialPublishingScheduled={library.refresh}
             onScore={library.scoreStitch}
             onApplyQuickEdit={library.applyStitchQuickEdit}
             onResetQuickEdit={library.resetStitchQuickEdit}
@@ -543,7 +543,7 @@ export function LibraryPageClient({
             onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
             onLoadPoster={swiprLibrary.loadSwipePoster}
             onDelete={swiprLibrary.removeSwipe}
-            onPostBridgeScheduled={swiprLibrary.refresh}
+            onSocialPublishingScheduled={swiprLibrary.refresh}
             onStatusFilterChange={setSwipeStatusFilter}
             onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
           />

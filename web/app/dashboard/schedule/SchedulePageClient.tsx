@@ -4,23 +4,23 @@ import { useCallback, useEffect, useState } from "react";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { ScheduledPostsPanel } from "@/app/_components/schedule/ScheduledPostsPanel";
-import { fetchPostBridgeAccountOptions } from "@/lib/clipstitchr/client/fetchPostBridgeAccountOptions";
-import { fetchPostBridgePosts } from "@/lib/clipstitchr/client/fetchPostBridgePosts";
+import { fetchSocialPublishingAccountOptions } from "@/lib/clipstitchr/client/fetchSocialPublishingAccountOptions";
+import { fetchSocialPublishingPosts } from "@/lib/clipstitchr/client/fetchSocialPublishingPosts";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
-import type { PostBridgePost } from "@/lib/clipstitchr/types/PostBridgePost";
-import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
+import type { SocialPublishingPost } from "@/lib/clipstitchr/types/SocialPublishingPost";
+import type { SocialPublishingSocialAccount } from "@/lib/clipstitchr/types/SocialPublishingSocialAccount";
 
 export function SchedulePageClient() {
   const products = useDashboardProduct();
-  const [posts, setPosts] = useState<PostBridgePost[]>([]);
-  const [accounts, setAccounts] = useState<PostBridgeSocialAccount[]>([]);
+  const [posts, setPosts] = useState<SocialPublishingPost[]>([]);
+  const [accounts, setAccounts] = useState<SocialPublishingSocialAccount[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
   const [postsError, setPostsError] = useState<string | null>(null);
   const activeProductId = products.activeProduct?.id;
 
   const loadAccounts = useCallback(async () => {
     try {
-      const options = await fetchPostBridgeAccountOptions();
+      const options = await fetchSocialPublishingAccountOptions();
 
       setAccounts(options.accounts);
     } catch {
@@ -42,7 +42,7 @@ export function SchedulePageClient() {
     setPostsError(null);
 
     try {
-      setPosts(await fetchPostBridgePosts({ productId: activeProductId }));
+      setPosts(await fetchSocialPublishingPosts({ productId: activeProductId }));
       await loadAccounts();
     } catch (nextError) {
       setPostsError(

@@ -6,11 +6,11 @@ import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
 import { deleteSwipeCard } from "./deleteSwipeCard";
 import { getSwipeNotificationCopy } from "./getSwipeNotificationCopy";
-import { upsertPostBridgePostProductMapping } from "./postBridgePostProductMappings";
+import { upsertSocialPublishingPostProductMapping } from "./socialPublishingPostProductMappings";
 import { rateLimiter } from "./rateLimiter";
 import { upsertSwipeCard } from "./upsertSwipeCard";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
-import { postBridgePostReferenceValidator } from "./validators/postBridgePostReference";
+import { socialPublishingPostReferenceValidator } from "./validators/socialPublishingPostReference";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swiprProductSourceTypeValidator } from "./validators/swiprProductSourceType";
 import { swiprSlideValidator } from "./validators/swiprSlide";
@@ -586,10 +586,10 @@ export const updatePostedStatus = mutation({
   },
 });
 
-export const addPostBridgePost = mutation({
+export const addSocialPublishingPost = mutation({
   args: {
     id: v.string(),
-    post: postBridgePostReferenceValidator,
+    post: socialPublishingPostReferenceValidator,
   },
   handler: async (ctx, { id, post }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
@@ -611,8 +611,8 @@ export const addPostBridgePost = mutation({
 
     await ctx.db.patch(swipe._id, {
       isPosted: true,
-      postBridgePosts: [
-        ...(swipe.postBridgePosts ?? []).filter(
+      socialPublishingPosts: [
+        ...(swipe.socialPublishingPosts ?? []).filter(
           (existingPost) => existingPost.postId !== post.postId,
         ),
         post,
@@ -624,7 +624,7 @@ export const addPostBridgePost = mutation({
 
     if (updatedSwipe) {
       await Promise.all([
-        upsertPostBridgePostProductMapping(ctx, {
+        upsertSocialPublishingPostProductMapping(ctx, {
           ownerId,
           post,
           productId: updatedSwipe.productSourceId,

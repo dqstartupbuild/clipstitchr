@@ -4,7 +4,7 @@ import { cliprDoc } from "@/lib/clipstitchr/docs/cliprDoc";
 import { clipScoreDoc } from "@/lib/clipstitchr/docs/clipScoreDoc";
 import { gettingStartedDoc } from "@/lib/clipstitchr/docs/gettingStartedDoc";
 import { hookLabDoc } from "@/lib/clipstitchr/docs/hookLabDoc";
-import { postBridgeDoc } from "@/lib/clipstitchr/docs/postBridgeDoc";
+import { socialPublishingDoc } from "@/lib/clipstitchr/docs/socialPublishingDoc";
 import { rateLimitsDoc } from "@/lib/clipstitchr/docs/rateLimitsDoc";
 import { stitchScoreDoc } from "@/lib/clipstitchr/docs/stitchScoreDoc";
 import { stitchrDoc } from "@/lib/clipstitchr/docs/stitchrDoc";
@@ -23,6 +23,6 @@ export const customerDocs: CustomerDocPage[] = [
   swaprDoc,
   avatarsDoc,
   automationDoc,
-  postBridgeDoc,
+  socialPublishingDoc,
   rateLimitsDoc,
 ];

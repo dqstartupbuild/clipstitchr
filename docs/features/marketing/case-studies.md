@@ -25,7 +25,7 @@ not emit unused image preload warnings.
 
 The detail sidebar reads each authored tool's label and optional URL. Tools
 without URLs render as plain text, while linked tools open their own sites. The
-Guppy case study uses those sidebar links for DansUGC and Post Bridge, matching
+Guppy case study uses those sidebar links for DansUGC and Zernio, matching
 the links in the body sections where those tools are discussed.
 
 The reusable page pieces live under `web/app/_components/case-studies/`:

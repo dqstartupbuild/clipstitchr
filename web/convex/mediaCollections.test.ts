@@ -224,7 +224,7 @@ function createSwipeArgs(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function createPostBridgePost(overrides: Record<string, unknown> = {}) {
+function createSocialPublishingPost(overrides: Record<string, unknown> = {}) {
   return {
     createdAt: "2026-06-27T10:00:00.000Z",
     hasAudio: false,
@@ -850,14 +850,14 @@ describe("convex media collections", () => {
       postedAt: undefined,
     });
 
-    const postBridgeCtx = createCtx({
+    const socialPublishingCtx = createCtx({
       swipes: [
         {
           unique: {
             _id: "swipe_doc",
             id: "swipe_1",
-            postBridgePosts: [
-              createPostBridgePost({
+            socialPublishingPosts: [
+              createSocialPublishingPost({
                 mediaIds: ["old_media"],
                 postId: "post_1",
               }),
@@ -868,20 +868,20 @@ describe("convex media collections", () => {
     });
 
     await getHandler<Record<string, unknown>, unknown>(
-      swipes.addPostBridgePost,
-    )(postBridgeCtx, {
+      swipes.addSocialPublishingPost,
+    )(socialPublishingCtx, {
       id: "swipe_1",
-      post: createPostBridgePost({
+      post: createSocialPublishingPost({
         mediaIds: ["new_media"],
         postId: "post_1",
       }),
     });
 
-    expect(postBridgeCtx.db.patch).toHaveBeenCalledWith(
+    expect(socialPublishingCtx.db.patch).toHaveBeenCalledWith(
       "swipe_doc",
       expect.objectContaining({
         isPosted: true,
-        postBridgePosts: [
+        socialPublishingPosts: [
           expect.objectContaining({
             mediaIds: ["new_media"],
             postId: "post_1",

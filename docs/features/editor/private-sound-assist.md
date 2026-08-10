@@ -75,9 +75,9 @@ web/app/_components/music/
   MusicSelectorDialog.tsx
   TikTokSoundCandidateListItem.tsx
   TikTokSoundPreviewButton.tsx
-web/app/_components/postBridge/
-  PostBridgeSoundModePicker.tsx
-  PostBridgeSoundModeOption.tsx
+web/app/_components/socialPublishing/
+  SocialPublishingSoundModePicker.tsx
+  SocialPublishingSoundModeOption.tsx
 web/app/api/music/
   upload/route.ts
   tiktok/search/route.ts

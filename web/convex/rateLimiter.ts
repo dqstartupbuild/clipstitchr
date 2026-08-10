@@ -603,71 +603,71 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 900,
     shards: 5,
   },
-  postBridgeRead: {
+  socialPublishingRead: {
     kind: "token bucket",
     rate: 120,
     period: HOUR,
     capacity: 30,
   },
-  postBridgeReadGlobal: {
+  socialPublishingReadGlobal: {
     kind: "token bucket",
     rate: 1000,
     period: HOUR,
     capacity: 200,
     shards: 5,
   },
-  postBridgeProviderRequest: {
+  socialPublishingProviderRequest: {
     kind: "token bucket",
-    rate: 8,
-    period: SECOND,
+    rate: 60,
+    period: MINUTE,
     capacity: 2,
     maxReserved: 40,
   },
-  postBridgeSchedule: {
+  socialPublishingSchedule: {
     kind: "token bucket",
-    rate: 600,
+    rate: 15,
     period: MINUTE,
-    capacity: 60,
+    capacity: 3,
   },
-  postBridgeScheduleHourly: {
+  socialPublishingScheduleHourly: {
     kind: "token bucket",
-    rate: 100,
+    rate: 15,
     period: HOUR,
-    capacity: 100,
+    capacity: 15,
   },
-  postBridgeScheduleDaily: {
+  socialPublishingScheduleDaily: {
     kind: "token bucket",
-    rate: 1000,
+    rate: 50,
     period: DAY,
-    capacity: 1000,
+    capacity: 50,
   },
-  postBridgeUploadBytesDaily: {
+  socialPublishingUploadBytesDaily: {
     kind: "token bucket",
     rate: 2 * GIGABYTE,
     period: DAY,
     capacity: 2 * GIGABYTE,
   },
-  postBridgeScheduleGlobalDaily: {
+  socialPublishingScheduleGlobalDaily: {
     kind: "token bucket",
     rate: 10000,
     period: DAY,
     capacity: 1000,
     shards: 10,
   },
-  postBridgeUploadBytesGlobalDaily: {
+  socialPublishingUploadBytesGlobalDaily: {
     kind: "token bucket",
     rate: 50 * GIGABYTE,
     period: DAY,
     capacity: 50 * GIGABYTE,
     shards: 10,
   },
-  postBridgeAnalyticsSync: {
+  socialPublishingAnalyticsSync: {
     kind: "token bucket",
-    rate: 12,
+    rate: 6,
     period: HOUR,
-    capacity: 3,
+    capacity: 2,
   },
-  postBridgeAnalyticsSyncGlobal: {
+  socialPublishingAnalyticsSyncGlobal: {
     kind: "token bucket",
     rate: 200,
     period: HOUR,

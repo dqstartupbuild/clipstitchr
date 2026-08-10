@@ -21,8 +21,8 @@ import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { quickEditCropValidator } from "./validators/quickEditCrop";
 import { quickEditRemoveRangeValidator } from "./validators/quickEditRemoveRange";
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
-import { postBridgePostReferenceValidator } from "./validators/postBridgePostReference";
-import { upsertPostBridgePostProductMapping } from "./postBridgePostProductMappings";
+import { socialPublishingPostReferenceValidator } from "./validators/socialPublishingPostReference";
+import { upsertSocialPublishingPostProductMapping } from "./socialPublishingPostProductMappings";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchScoreValidator } from "./validators/stitchScore";
 import { stitchrModeValidator } from "./validators/stitchrMode";
@@ -1302,10 +1302,10 @@ export const updatePostedStatus = mutation({
   },
 });
 
-export const addPostBridgePost = mutation({
+export const addSocialPublishingPost = mutation({
   args: {
     id: v.string(),
-    post: postBridgePostReferenceValidator,
+    post: socialPublishingPostReferenceValidator,
   },
   handler: async (ctx, { id, post }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
@@ -1327,8 +1327,8 @@ export const addPostBridgePost = mutation({
 
     await ctx.db.patch(stitch._id, {
       isPosted: true,
-      postBridgePosts: [
-        ...(stitch.postBridgePosts ?? []).filter(
+      socialPublishingPosts: [
+        ...(stitch.socialPublishingPosts ?? []).filter(
           (existingPost) => existingPost.postId !== post.postId,
         ),
         post,
@@ -1341,7 +1341,7 @@ export const addPostBridgePost = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
-        upsertPostBridgePostProductMapping(ctx, {
+        upsertSocialPublishingPostProductMapping(ctx, {
           ownerId,
           post,
           productId: updatedStitch.productId,

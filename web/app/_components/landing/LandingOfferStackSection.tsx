@@ -19,8 +19,8 @@ const capabilityChapters = [
     marker: "SHIP",
     title: "Carry the same product context past the video export.",
     description:
-      "Build carousel drafts in Swipr, prepare daily drafts for review, or queue finished work through Post Bridge when the campaign is ready.",
-    details: ["Swipr carousels", "Review-first daily drafts", "Post Bridge scheduling"],
+      "Build carousel drafts in Swipr, prepare daily drafts for review, or queue finished work through Zernio when the campaign is ready.",
+    details: ["Swipr carousels", "Review-first daily drafts", "Zernio scheduling"],
   },
 ];
 

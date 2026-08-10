@@ -4,10 +4,10 @@ import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { SwiprSwipeCard } from "@/app/_components/dashboard/SwiprSwipeCard";
-import { PostBridgeBatchQueueDialog } from "@/app/_components/postBridge/PostBridgeBatchQueueDialog";
+import { SocialPublishingBatchQueueDialog } from "@/app/_components/socialPublishing/SocialPublishingBatchQueueDialog";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
-import { createSwiprPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia";
+import { createSwiprSocialPublishingScheduleMedia } from "@/lib/clipstitchr/client/createSwiprSocialPublishingScheduleMedia";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { useLibraryBatchQueueDialog } from "@/lib/clipstitchr/hooks/useLibraryBatchQueueDialog";
@@ -16,7 +16,7 @@ import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryP
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { createSwiprSwipeSocialDescription } from "@/lib/clipstitchr/utils/createSwiprSwipeSocialDescription";
-import { getSwiprPostBridgeTitle } from "@/lib/clipstitchr/utils/getSwiprPostBridgeTitle";
+import { getSwiprSocialPublishingTitle } from "@/lib/clipstitchr/utils/getSwiprSocialPublishingTitle";
 
 type SwiprSwipesSectionProps = {
   backgrounds: SwiprBackgroundAsset[];
@@ -30,7 +30,7 @@ type SwiprSwipesSectionProps = {
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
-  onPostBridgeScheduled?: () => void | Promise<void>;
+  onSocialPublishingScheduled?: () => void | Promise<void>;
   onStatusFilterChange?: (status: LibraryPostedStatusFilter) => void;
   onUpdatePostedStatus?: (
     swipe: SwiprSwipe,
@@ -50,7 +50,7 @@ export function SwiprSwipesSection({
   onLoadBackgroundBlob,
   onLoadPoster,
   onDelete,
-  onPostBridgeScheduled,
+  onSocialPublishingScheduled,
   onStatusFilterChange,
   onUpdatePostedStatus,
 }: SwiprSwipesSectionProps) {
@@ -144,7 +144,7 @@ export function SwiprSwipesSection({
                   onLoadBackgroundBlob={onLoadBackgroundBlob}
                   onLoadPoster={onLoadPoster}
                   onDelete={onDelete}
-                  onPostBridgeScheduled={onPostBridgeScheduled}
+                  onSocialPublishingScheduled={onSocialPublishingScheduled}
                   onSelect={
                     batchDelete.isSelecting
                       ? () => batchDelete.toggleItemSelection(swipe.id)
@@ -176,7 +176,7 @@ export function SwiprSwipesSection({
         />
       )}
       {batchQueue.isBatchQueueDialogOpen ? (
-        <PostBridgeBatchQueueDialog
+        <SocialPublishingBatchQueueDialog
           allowMusic
           items={batchQueue.queuedItems.map((swipe) => ({
             caption:
@@ -184,7 +184,7 @@ export function SwiprSwipesSection({
             id: swipe.id,
             productId: swipe.productSourceId,
             renderMedia: ({ musicTrack, onProgress, platforms }) =>
-              createSwiprPostBridgeScheduleMedia({
+              createSwiprSocialPublishingScheduleMedia({
                 backgroundsById,
                 loadBackgroundBlob: onLoadBackgroundBlob,
                 musicTrack,
@@ -193,12 +193,12 @@ export function SwiprSwipesSection({
                 swipe,
               }),
             sourceType: "swipe",
-            title: getSwiprPostBridgeTitle(swipe),
+            title: getSwiprSocialPublishingTitle(swipe),
           }))}
           onClose={batchQueue.closeBatchQueueDialog}
           onQueued={async () => {
             batchDelete.stopSelecting();
-            await onPostBridgeScheduled?.();
+            await onSocialPublishingScheduled?.();
           }}
         />
       ) : null}

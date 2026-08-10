@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
-import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
+import type { SocialPublishingPostReference } from "@/lib/clipstitchr/types/SocialPublishingPostReference";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
@@ -46,7 +46,7 @@ const mocks = vi.hoisted(() => ({
     onSave: (music: StitchMusicMetadata) => Promise<void>;
   },
   scheduleProps: null as null | {
-    onScheduled: (post: PostBridgePostReference) => void;
+    onScheduled: (post: SocialPublishingPostReference) => void;
   },
   stateQueue: [] as unknown[],
   stateSetter: vi.fn(),
@@ -117,12 +117,12 @@ vi.mock("@/app/_components/dashboard/StitchTextSettingsDialog", () => ({
   },
 }));
 
-vi.mock("@/app/_components/postBridge/PostBridgeScheduleDialog", () => ({
-  PostBridgeScheduleDialog: (props: {
-    onScheduled: (post: PostBridgePostReference) => void;
+vi.mock("@/app/_components/socialPublishing/SocialPublishingScheduleDialog", () => ({
+  SocialPublishingScheduleDialog: (props: {
+    onScheduled: (post: SocialPublishingPostReference) => void;
   }) => {
     mocks.scheduleProps = props;
-    return "PostBridgeScheduleDialog";
+    return "SocialPublishingScheduleDialog";
   },
 }));
 
@@ -207,7 +207,7 @@ function createStitchMusic(
   };
 }
 
-function createPostBridgePostReference(): PostBridgePostReference {
+function createSocialPublishingPostReference(): SocialPublishingPostReference {
   return {
     createdAt: "2026-06-28T12:00:00.000Z",
     hasAudio: true,
@@ -215,7 +215,7 @@ function createPostBridgePostReference(): PostBridgePostReference {
     mediaKind: "video",
     platforms: ["tiktok"],
     postId: "post_1",
-    socialAccountIds: [123],
+    socialAccountIds: ["account_123"],
     sourceType: "stitch",
     status: "scheduled",
     updatedAt: "2026-06-28T12:00:00.000Z",
@@ -462,8 +462,8 @@ describe("StitchCard", () => {
     );
   });
 
-  it("marks the card posted and refreshes after Post Bridge scheduling", () => {
-    const onPostBridgeScheduled = vi.fn();
+  it("marks the card posted and refreshes after Zernio scheduling", () => {
+    const onSocialPublishingScheduled = vi.fn();
 
     mocks.stateQueue = [null, null, null, false, false, true];
 
@@ -472,7 +472,7 @@ describe("StitchCard", () => {
         stitch={createStitch()}
         onDelete={vi.fn()}
         onLoadClip={vi.fn()}
-        onPostBridgeScheduled={onPostBridgeScheduled}
+        onSocialPublishingScheduled={onSocialPublishingScheduled}
         onUpdateMusic={vi.fn()}
         onUpdatePostedStatus={vi.fn()}
         onUpdateSocialCaption={vi.fn()}
@@ -481,14 +481,14 @@ describe("StitchCard", () => {
       />,
     );
 
-    mocks.scheduleProps?.onScheduled(createPostBridgePostReference());
+    mocks.scheduleProps?.onScheduled(createSocialPublishingPostReference());
 
     expect(mocks.stateSetter).toHaveBeenCalledWith(true);
-    expect(onPostBridgeScheduled).toHaveBeenCalledTimes(1);
+    expect(onSocialPublishingScheduled).toHaveBeenCalledTimes(1);
     expect(mocks.trackPostHogEvent).toHaveBeenCalledWith(
       "stitch_scheduled",
       expect.objectContaining({
-        post_bridge_post_id: "post_1",
+        social_publishing_post_id: "post_1",
         stitch_id: "stitch_1",
       }),
     );

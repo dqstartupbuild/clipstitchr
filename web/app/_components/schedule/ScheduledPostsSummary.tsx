@@ -1,13 +1,13 @@
-import type { PostBridgePost } from "@/lib/clipstitchr/types/PostBridgePost";
-import type { PostBridgePostStatus } from "@/lib/clipstitchr/types/PostBridgePostStatus";
-import { formatPostBridgeNumber } from "@/lib/clipstitchr/utils/formatPostBridgeNumber";
-import { getPostBridgePostStatusLabel } from "@/lib/clipstitchr/utils/getPostBridgePostStatusLabel";
+import type { SocialPublishingPost } from "@/lib/clipstitchr/types/SocialPublishingPost";
+import type { SocialPublishingPostStatus } from "@/lib/clipstitchr/types/SocialPublishingPostStatus";
+import { formatSocialPublishingNumber } from "@/lib/clipstitchr/utils/formatSocialPublishingNumber";
+import { getSocialPublishingPostStatusLabel } from "@/lib/clipstitchr/utils/getSocialPublishingPostStatusLabel";
 
 type ScheduledPostsSummaryProps = {
-  posts: PostBridgePost[];
+  posts: SocialPublishingPost[];
 };
 
-const statuses: PostBridgePostStatus[] = [
+const statuses: SocialPublishingPostStatus[] = [
   "scheduled",
   "processing",
   "posted",
@@ -23,10 +23,10 @@ export function ScheduledPostsSummary({ posts }: ScheduledPostsSummaryProps) {
           className="rounded-lg border border-border bg-white p-4"
         >
           <p className="text-sm font-semibold text-text-secondary">
-            {getPostBridgePostStatusLabel(status)}
+            {getSocialPublishingPostStatusLabel(status)}
           </p>
           <p className="mt-2 text-2xl font-bold text-text-primary">
-            {formatPostBridgeNumber(
+            {formatSocialPublishingNumber(
               posts.filter((post) => post.status === status).length,
             )}
           </p>

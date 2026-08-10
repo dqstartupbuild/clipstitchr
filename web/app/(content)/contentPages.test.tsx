@@ -182,20 +182,20 @@ describe("content pages", () => {
     expect(indexMarkup).toContain("Clip Scores");
     expect(indexMarkup).toContain("Hook Lab");
     expect(indexMarkup).toContain("Automation");
-    expect(indexMarkup).toContain("Post Bridge");
+    expect(indexMarkup).toContain("Zernio");
     expect(generateDocsArticleStaticParams()).toContainEqual({
-      slug: "post-bridge",
+      slug: "social-publishing",
     });
     expect(articleMarkup).toContain(firstDoc.title);
     expect(articleMarkup).toContain("Back to docs");
 
-    const postBridgeArticleMarkup = renderToStaticMarkup(
+    const socialPublishingArticleMarkup = renderToStaticMarkup(
       await DocsArticlePage({
-        params: Promise.resolve({ slug: "post-bridge" }),
+        params: Promise.resolve({ slug: "social-publishing" }),
       }),
     );
-    expect(postBridgeArticleMarkup).toContain("What Post Bridge adds");
-    expect(postBridgeArticleMarkup).toContain("Check what happened");
+    expect(socialPublishingArticleMarkup).toContain("What Zernio adds");
+    expect(socialPublishingArticleMarkup).toContain("Check what happened");
   });
 
   it("returns empty metadata and notFound for missing docs", async () => {

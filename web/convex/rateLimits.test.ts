@@ -174,12 +174,12 @@ describe("convex rateLimits", () => {
     {
       args: { secret: "secret" },
       expected: [
-        { key: "owner_123", name: "postBridgeSchedule", throws: true },
-        { key: "owner_123", name: "postBridgeScheduleHourly", throws: true },
-        { key: "owner_123", name: "postBridgeScheduleDaily", throws: true },
-        { name: "postBridgeScheduleGlobalDaily", throws: true },
+        { key: "owner_123", name: "socialPublishingSchedule", throws: true },
+        { key: "owner_123", name: "socialPublishingScheduleHourly", throws: true },
+        { key: "owner_123", name: "socialPublishingScheduleDaily", throws: true },
+        { name: "socialPublishingScheduleGlobalDaily", throws: true },
       ],
-      mutation: rateLimits.consumePostBridgeSchedule,
+      mutation: rateLimits.consumeSocialPublishingSchedule,
     },
     {
       args: { mediaSizeBytes: 1024.2, secret: "secret" },
@@ -187,16 +187,16 @@ describe("convex rateLimits", () => {
         {
           count: 1025,
           key: "owner_123",
-          name: "postBridgeUploadBytesDaily",
+          name: "socialPublishingUploadBytesDaily",
           throws: true,
         },
         {
           count: 1025,
-          name: "postBridgeUploadBytesGlobalDaily",
+          name: "socialPublishingUploadBytesGlobalDaily",
           throws: true,
         },
       ],
-      mutation: rateLimits.consumePostBridgeMediaUpload,
+      mutation: rateLimits.consumeSocialPublishingMediaUpload,
     },
     {
       args: { secret: "secret" },

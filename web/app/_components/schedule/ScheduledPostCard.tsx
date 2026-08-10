@@ -1,17 +1,17 @@
 import { ScheduledPostAccountList } from "@/app/_components/schedule/ScheduledPostAccountList";
 import { ScheduledPostStatusBadge } from "@/app/_components/schedule/ScheduledPostStatusBadge";
-import type { PostBridgePost } from "@/lib/clipstitchr/types/PostBridgePost";
-import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
-import { getPostBridgePostTimeLabel } from "@/lib/clipstitchr/utils/getPostBridgePostTimeLabel";
-import { getPostBridgeUnknownString } from "@/lib/clipstitchr/utils/getPostBridgeUnknownString";
+import type { SocialPublishingPost } from "@/lib/clipstitchr/types/SocialPublishingPost";
+import type { SocialPublishingSocialAccount } from "@/lib/clipstitchr/types/SocialPublishingSocialAccount";
+import { getSocialPublishingPostTimeLabel } from "@/lib/clipstitchr/utils/getSocialPublishingPostTimeLabel";
+import { getSocialPublishingUnknownString } from "@/lib/clipstitchr/utils/getSocialPublishingUnknownString";
 
 type ScheduledPostCardProps = {
-  accounts: PostBridgeSocialAccount[];
-  post: PostBridgePost;
+  accounts: SocialPublishingSocialAccount[];
+  post: SocialPublishingPost;
 };
 
 export function ScheduledPostCard({ accounts, post }: ScheduledPostCardProps) {
-  const caption = getPostBridgeUnknownString(post.caption) || "Untitled post";
+  const caption = getSocialPublishingUnknownString(post.caption) || "Untitled post";
 
   return (
     <article className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -28,7 +28,7 @@ export function ScheduledPostCard({ accounts, post }: ScheduledPostCardProps) {
           {caption}
         </h2>
         <p className="mt-1 text-sm font-semibold text-text-tertiary">
-          {getPostBridgePostTimeLabel(post)}
+          {getSocialPublishingPostTimeLabel(post)}
         </p>
         {post.warnings?.length ? (
           <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700">

@@ -11,7 +11,7 @@ export type ProductProfile = {
   inferredProblem?: string;
   inferredPainPoints: string[];
   preferredCliprHookStyleKey?: string;
-  postBridgeSocialAccountIds?: number[];
+  socialPublishingSocialAccountIds?: string[];
   createdAt: string;
   updatedAt: string;
 };

@@ -244,7 +244,7 @@ own baseline instead of ranking unrelated creators by raw views. ClipStitchr can
 eventually do this more reliably with first-party user data:
 
 - connect Hook Lab references to content produced from them;
-- connect generated content to Post Bridge publishing and analytics;
+- connect generated content to Zernio publishing and analytics;
 - compare hook pattern, format, proof device, and product-entry timing within
   the same product/account;
 - learn which structures beat that account's normal performance;
@@ -353,7 +353,7 @@ is missing.
 
 ### Phase 3: evidence from user outcomes
 
-1. Connect generated outputs to Post Bridge analytics.
+1. Connect generated outputs to Zernio analytics.
 2. Build within-account and within-product baselines.
 3. Rerank formats and hooks using the user's own results with minimum samples.
 4. Show transparent evidence instead of a universal viral score.

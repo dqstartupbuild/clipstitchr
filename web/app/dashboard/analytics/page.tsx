@@ -1,5 +1,5 @@
-import { PostBridgeAnalyticsPageClient } from "@/app/dashboard/analytics/PostBridgeAnalyticsPageClient";
+import { SocialPublishingAnalyticsPageClient } from "@/app/dashboard/analytics/SocialPublishingAnalyticsPageClient";
 
 export default function AnalyticsPage() {
-  return <PostBridgeAnalyticsPageClient />;
+  return <SocialPublishingAnalyticsPageClient />;
 }

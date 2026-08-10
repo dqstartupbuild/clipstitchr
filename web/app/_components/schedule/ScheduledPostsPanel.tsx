@@ -5,16 +5,16 @@ import { ScheduledPostCard } from "@/app/_components/schedule/ScheduledPostCard"
 import { ScheduledPostsSummary } from "@/app/_components/schedule/ScheduledPostsSummary";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
-import { postBridgeListPageSize } from "@/lib/clipstitchr/constants/postBridgeListPageSize";
+import { socialPublishingListPageSize } from "@/lib/clipstitchr/constants/socialPublishingListPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
-import type { PostBridgePost } from "@/lib/clipstitchr/types/PostBridgePost";
-import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
+import type { SocialPublishingPost } from "@/lib/clipstitchr/types/SocialPublishingPost";
+import type { SocialPublishingSocialAccount } from "@/lib/clipstitchr/types/SocialPublishingSocialAccount";
 
 type ScheduledPostsPanelProps = {
-  accounts: PostBridgeSocialAccount[];
+  accounts: SocialPublishingSocialAccount[];
   error: string | null;
   isLoading: boolean;
-  posts: PostBridgePost[];
+  posts: SocialPublishingPost[];
   onRefresh: () => void;
 };
 
@@ -38,7 +38,7 @@ export function ScheduledPostsPanel({
     return rightTime - leftTime;
   });
   const pagination = usePagination(orderedPosts, {
-    pageSize: postBridgeListPageSize,
+    pageSize: socialPublishingListPageSize,
   });
 
   return (

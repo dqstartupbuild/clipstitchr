@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SwiprSwipeCard } from "@/app/_components/dashboard/SwiprSwipeCard";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
-import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
+import type { SocialPublishingPostReference } from "@/lib/clipstitchr/types/SocialPublishingPostReference";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 
@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
   refValue: { current: null },
   scheduleProps: null as null | {
     defaultCaption?: string;
-    onScheduled: (post: PostBridgePostReference) => void;
+    onScheduled: (post: SocialPublishingPostReference) => void;
     sourceTitle?: string;
   },
   setStateCalls: [] as Array<ReturnType<typeof vi.fn>>,
@@ -64,14 +64,14 @@ vi.mock("@/lib/clipstitchr/hooks/useSwiprExport", () => ({
   useSwiprExport: mocks.useSwiprExport,
 }));
 
-vi.mock("@/app/_components/postBridge/PostBridgeScheduleDialog", () => ({
-  PostBridgeScheduleDialog: (props: {
+vi.mock("@/app/_components/socialPublishing/SocialPublishingScheduleDialog", () => ({
+  SocialPublishingScheduleDialog: (props: {
     defaultCaption?: string;
-    onScheduled: (post: PostBridgePostReference) => void;
+    onScheduled: (post: SocialPublishingPostReference) => void;
     sourceTitle?: string;
   }) => {
     mocks.scheduleProps = props;
-    return "PostBridgeScheduleDialog";
+    return "SocialPublishingScheduleDialog";
   },
 }));
 
@@ -155,7 +155,7 @@ function createSwipe(overrides: Partial<SwiprSwipe> = {}): SwiprSwipe {
   };
 }
 
-function createPostBridgePostReference(): PostBridgePostReference {
+function createSocialPublishingPostReference(): SocialPublishingPostReference {
   return {
     createdAt: "2026-06-28T12:00:00.000Z",
     hasAudio: true,
@@ -163,7 +163,7 @@ function createPostBridgePostReference(): PostBridgePostReference {
     mediaKind: "video",
     platforms: ["instagram"],
     postId: "post_1",
-    socialAccountIds: [123],
+    socialAccountIds: ["account_123"],
     sourceType: "swipe",
     status: "scheduled",
     updatedAt: "2026-06-28T12:00:00.000Z",
@@ -422,8 +422,8 @@ describe("SwiprSwipeCard", () => {
     expect(onUpdatePostedStatus).toHaveBeenCalledWith(postedSwipe, false);
   });
 
-  it("marks the card posted and refreshes after Post Bridge scheduling", () => {
-    const onPostBridgeScheduled = vi.fn();
+  it("marks the card posted and refreshes after Zernio scheduling", () => {
+    const onSocialPublishingScheduled = vi.fn();
 
     mocks.stateQueue = [false, true, false, null, null, null, false];
 
@@ -432,7 +432,7 @@ describe("SwiprSwipeCard", () => {
       backgrounds: [createBackground()],
       onDelete: vi.fn(),
       onLoadBackgroundBlob: vi.fn(),
-      onPostBridgeScheduled,
+      onSocialPublishingScheduled,
       swipe: createSwipe(),
     });
     const scheduleDialog = findElements(
@@ -442,15 +442,15 @@ describe("SwiprSwipeCard", () => {
         typeof element.props?.onScheduled === "function",
     )[0];
 
-    (scheduleDialog.props.onScheduled as (post: PostBridgePostReference) => void)(
-      createPostBridgePostReference(),
+    (scheduleDialog.props.onScheduled as (post: SocialPublishingPostReference) => void)(
+      createSocialPublishingPostReference(),
     );
 
-    expect(onPostBridgeScheduled).toHaveBeenCalledTimes(1);
+    expect(onSocialPublishingScheduled).toHaveBeenCalledTimes(1);
     expect(mocks.setStateCalls.at(-1)).toHaveBeenCalledWith(true);
   });
 
-  it("uses the first Swipe post copy line as the Post Bridge title", () => {
+  it("uses the first Swipe post copy line as the Zernio title", () => {
     mocks.stateQueue = [false, true, false, null, null, null, false];
 
     const tree = SwiprSwipeCard({

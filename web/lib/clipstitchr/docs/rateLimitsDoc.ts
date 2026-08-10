@@ -179,25 +179,25 @@ export const rateLimitsDoc = {
       ],
     },
     {
-      title: "Post Bridge",
+      title: "Zernio",
       rows: [
         {
-          action: "Post Bridge reads",
+          action: "Zernio reads",
           limit: "120 per hour; up to 30 at once",
-          note: "Used for connected accounts, Settings config, scheduled posts, analytics, and key checks. Calls are gently spaced to stay under Post Bridge's own limit.",
+          note: "Used for connected accounts, Settings config, scheduled posts, analytics, and key checks. Calls are gently spaced to stay under Zernio's own limit.",
         },
         {
-          action: "Post Bridge media uploads",
+          action: "Zernio media uploads",
           limit: "2 GB per day",
-          note: "Counts rendered media sent from ClipStitchr to Post Bridge.",
+          note: "Counts rendered media sent from ClipStitchr to Zernio.",
         },
         {
-          action: "Post Bridge post creates",
+          action: "Zernio post creates",
           limit: "100 per hour and 1,000 per day; up to 60 at once",
-          note: "Uses your saved Post Bridge key. Bulk queue sends posts one at a time and can continue from the first unfinished post.",
+          note: "Uses your saved Zernio key. Bulk queue sends posts one at a time and can continue from the first unfinished post.",
         },
         {
-          action: "Post Bridge analytics sync",
+          action: "Zernio analytics sync",
           limit: "12 per hour; up to 3 at once",
         },
       ],

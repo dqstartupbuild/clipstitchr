@@ -1,7 +1,7 @@
 import type { SwiprProductSourceType } from "@/lib/clipstitchr/types/SwiprProductSourceType";
 import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
-import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
+import type { SocialPublishingPostReference } from "@/lib/clipstitchr/types/SocialPublishingPostReference";
 
 export type SwiprSwipe = {
   id: string;
@@ -21,7 +21,7 @@ export type SwiprSwipe = {
   posterObject?: R2ObjectReference;
   posterBlob?: Blob;
   posterVersion?: number;
-  postBridgePosts?: PostBridgePostReference[];
+  socialPublishingPosts?: SocialPublishingPostReference[];
   isPosted?: boolean;
   postedAt?: string;
   createdAt: string;

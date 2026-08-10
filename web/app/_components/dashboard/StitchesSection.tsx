@@ -4,11 +4,11 @@ import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
-import { PostBridgeBatchQueueDialog } from "@/app/_components/postBridge/PostBridgeBatchQueueDialog";
+import { SocialPublishingBatchQueueDialog } from "@/app/_components/socialPublishing/SocialPublishingBatchQueueDialog";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
-import { createStitchPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia";
+import { createStitchSocialPublishingScheduleMedia } from "@/lib/clipstitchr/client/createStitchSocialPublishingScheduleMedia";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { useLibraryBatchQueueDialog } from "@/lib/clipstitchr/hooks/useLibraryBatchQueueDialog";
@@ -41,7 +41,7 @@ type StitchesSectionProps = {
   onLoadMoreItems?: () => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
-  onPostBridgeScheduled?: () => void | Promise<void>;
+  onSocialPublishingScheduled?: () => void | Promise<void>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
@@ -96,7 +96,7 @@ export function StitchesSection({
   onLoadMoreItems,
   onLoadPoster,
   onLoadVideo,
-  onPostBridgeScheduled,
+  onSocialPublishingScheduled,
   onScore,
   onApplyQuickEdit,
   onResetQuickEdit,
@@ -195,7 +195,7 @@ export function StitchesSection({
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
                 onLoadVideo={onLoadVideo}
-                onPostBridgeScheduled={onPostBridgeScheduled}
+                onSocialPublishingScheduled={onSocialPublishingScheduled}
                 onScore={onScore}
                 onApplyQuickEdit={onApplyQuickEdit}
                 onResetQuickEdit={onResetQuickEdit}
@@ -248,13 +248,13 @@ export function StitchesSection({
         </div>
       ) : null}
       {batchQueue.isBatchQueueDialogOpen ? (
-        <PostBridgeBatchQueueDialog
+        <SocialPublishingBatchQueueDialog
           items={batchQueue.queuedItems.map((stitch) => ({
             caption: stitch.socialCaption ?? "",
             id: stitch.id,
             productId: stitch.productId,
             renderMedia: ({ onProgress }) =>
-              createStitchPostBridgeScheduleMedia({
+              createStitchSocialPublishingScheduleMedia({
                 loadClip: onLoadClip,
                 loadVideo: onLoadVideo,
                 onProgress,
@@ -266,7 +266,7 @@ export function StitchesSection({
           onClose={batchQueue.closeBatchQueueDialog}
           onQueued={async () => {
             batchDelete.stopSelecting();
-            await onPostBridgeScheduled?.();
+            await onSocialPublishingScheduled?.();
           }}
         />
       ) : null}

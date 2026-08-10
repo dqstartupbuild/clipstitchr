@@ -20,7 +20,7 @@ type RecentStitchesSectionProps = {
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
-  onPostBridgeScheduled?: () => void | Promise<void>;
+  onSocialPublishingScheduled?: () => void | Promise<void>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
@@ -64,7 +64,7 @@ export function RecentStitchesSection({
   onLoadClip,
   onLoadPoster,
   onLoadVideo,
-  onPostBridgeScheduled,
+  onSocialPublishingScheduled,
   onScore,
   onApplyQuickEdit,
   onResetQuickEdit,
@@ -101,7 +101,7 @@ export function RecentStitchesSection({
               onLoadClip={onLoadClip}
               onLoadPoster={onLoadPoster}
               onLoadVideo={onLoadVideo}
-              onPostBridgeScheduled={onPostBridgeScheduled}
+              onSocialPublishingScheduled={onSocialPublishingScheduled}
               onScore={onScore}
               onApplyQuickEdit={onApplyQuickEdit}
               onResetQuickEdit={onResetQuickEdit}
