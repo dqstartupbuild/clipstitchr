@@ -11,6 +11,7 @@ import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { ProgressBar } from "@/app/_components/ui/ProgressBar";
 import { fetchSocialPublishingAccountOptions } from "@/lib/clipstitchr/client/fetchSocialPublishingAccountOptions";
+import { getSocialPublishingErrorMessage } from "@/lib/clipstitchr/client/getSocialPublishingErrorMessage";
 import { queueSocialPublishingBatchItems } from "@/lib/clipstitchr/client/queueSocialPublishingBatchItems";
 import type { SocialPublishingBatchQueueItem } from "@/lib/clipstitchr/types/SocialPublishingBatchQueueItem";
 import type { SocialPublishingSocialAccount } from "@/lib/clipstitchr/types/SocialPublishingSocialAccount";
@@ -87,7 +88,12 @@ export function SocialPublishingBatchQueueDialog({
       })
       .catch((nextError) => {
         if (!isCancelled) {
-          setError(nextError instanceof Error ? nextError.message : "Unable to load connected accounts.");
+          setError(
+            getSocialPublishingErrorMessage(
+              nextError,
+              "Unable to load connected accounts.",
+            ),
+          );
         }
       })
       .finally(() => {
@@ -158,7 +164,10 @@ export function SocialPublishingBatchQueueDialog({
       setTimeout(onClose, 700);
     } catch (nextError) {
       setStatus("idle");
-      const message = nextError instanceof Error ? nextError.message : "Unable to queue these posts.";
+      const message = getSocialPublishingErrorMessage(
+        nextError,
+        "Unable to queue these posts.",
+      );
       setError(
         completedBeforeFailure > 0
           ? `${message} ${completedBeforeFailure} already added. Continue to finish the rest.`

@@ -37,10 +37,11 @@ export const site = {
   publisherName: "ClipStitchr",
   defaultTitle: "ClipStitchr | Turn Raw Footage Into Finished Ads",
   defaultDescription:
-    "ClipStitchr helps indie app builders turn saved clips and product demos into TikTok and Reels ads without rebuilding the same editing workflow every week.",
+    "ClipStitchr helps app builders turn saved clips and demos into finished ads for TikTok, Instagram Reels, and YouTube Shorts.",
   keywords: [
     "mobile app TikTok ads",
-    "mobile app Reels ads",
+    "mobile app Instagram Reels ads",
+    "mobile app YouTube Shorts ads",
     "UGC ad tool",
     "product demo ads",
     "short-form app ads",

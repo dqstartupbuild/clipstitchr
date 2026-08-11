@@ -31,6 +31,14 @@ describe("filterSupportedSocialPublishingAccounts", () => {
           platform: "youtube",
           username: "clipstitchr shorts",
         },
+        {
+          _id: "disabled_instagram",
+          enabled: false,
+          isActive: true,
+          platform: "instagram",
+          profileId: "profile_1",
+          username: "hidden.side.effect",
+        },
       ]),
     ).toEqual([
       {
@@ -54,4 +62,3 @@ describe("filterSupportedSocialPublishingAccounts", () => {
     ]);
   });
 });
-

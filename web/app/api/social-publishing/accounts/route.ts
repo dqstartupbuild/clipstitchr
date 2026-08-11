@@ -7,6 +7,7 @@ import { listSocialPublishingSocialAccounts } from "@/lib/clipstitchr/server/soc
 import { resolveSocialPublishingApiKey } from "@/lib/clipstitchr/server/socialPublishing/resolveSocialPublishingApiKey";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
+import { getAvailableSocialPublishingAccountIds } from "@/lib/clipstitchr/utils/getAvailableSocialPublishingAccountIds";
 
 export const runtime = "nodejs";
 
@@ -36,10 +37,14 @@ export async function GET(request: Request) {
       ? await convex.query(api.products.get, { id: productId })
       : null;
     const apiKey = await resolveSocialPublishingApiKey(convex);
+    const accounts = await listSocialPublishingSocialAccounts(apiKey);
 
     return Response.json({
-      accounts: await listSocialPublishingSocialAccounts(apiKey),
-      defaultSocialAccountIds: product?.socialPublishingSocialAccountIds ?? [],
+      accounts,
+      defaultSocialAccountIds: getAvailableSocialPublishingAccountIds(
+        accounts,
+        product?.socialPublishingSocialAccountIds ?? [],
+      ),
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

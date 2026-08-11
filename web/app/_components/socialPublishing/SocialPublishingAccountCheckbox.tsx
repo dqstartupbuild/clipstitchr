@@ -1,5 +1,6 @@
 import type { SocialPublishingSocialAccount } from "@/lib/clipstitchr/types/SocialPublishingSocialAccount";
 import { getSocialPublishingPlatformLabel } from "@/lib/clipstitchr/utils/getSocialPublishingPlatformLabel";
+import { isSocialPublishingAccountAvailable } from "@/lib/clipstitchr/utils/isSocialPublishingAccountAvailable";
 
 type SocialPublishingAccountCheckboxProps = {
   account: SocialPublishingSocialAccount;
@@ -14,18 +15,16 @@ export function SocialPublishingAccountCheckbox({
   disabled = false,
   onChange,
 }: SocialPublishingAccountCheckboxProps) {
-  const isUnavailable =
-    !account.isActive ||
-    account.needsReconnection ||
-    account.tiktokCanPostMore === false ||
-    (account.platform === "tiktok" && !account.tiktokPrivacyLevels?.length);
-  const accountStatus = account.needsReconnection
-    ? "Reconnect in Zernio"
-    : account.tiktokCanPostMore === false
-      ? "TikTok daily limit reached"
-      : account.platform === "tiktok" && !account.tiktokPrivacyLevels?.length
-        ? "TikTok details unavailable"
-      : getSocialPublishingPlatformLabel(account.platform);
+  const isUnavailable = !isSocialPublishingAccountAvailable(account);
+  const accountStatus = !account.isActive
+    ? "Unavailable in Zernio"
+    : account.needsReconnection
+      ? "Reconnect in Zernio"
+      : account.tiktokCanPostMore === false
+        ? "TikTok daily limit reached"
+        : account.platform === "tiktok" && !account.tiktokPrivacyLevels?.length
+          ? "TikTok details unavailable"
+          : getSocialPublishingPlatformLabel(account.platform);
 
   return (
     <label className="flex items-center gap-3 rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold text-text-primary">

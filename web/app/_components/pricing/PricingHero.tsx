@@ -9,8 +9,9 @@ export function PricingHero() {
         <div className="pricing-hero-detail">
           <p>
             Stitchr, scoring, Hook Lab post analysis, and your clip library are
-            included. Creation credits cover everyday output, while each plan
-            has a separate allowance for Clipr and Swapr videos.
+            included. Connect your Zernio account to publish on TikTok,
+            Instagram Reels, and YouTube Shorts. Creation credits cover everyday
+            output, with a separate Clipr and Swapr video allowance.
           </p>
           <PrimaryButtonLink href="#plans">Choose a plan</PrimaryButtonLink>
         </div>

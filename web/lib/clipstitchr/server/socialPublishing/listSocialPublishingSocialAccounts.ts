@@ -7,6 +7,7 @@ type ListSocialPublishingSocialAccountsResponse = {
   accounts: {
     _id: unknown;
     displayName?: unknown;
+    enabled?: unknown;
     isActive?: unknown;
     needsReconnection?: unknown;
     platform: unknown;

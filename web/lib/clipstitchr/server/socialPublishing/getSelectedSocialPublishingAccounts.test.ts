@@ -38,7 +38,16 @@ describe("getSelectedSocialPublishingAccounts", () => {
     expect(() =>
       getSelectedSocialPublishingAccounts(accounts, ["account_3"]),
     ).toThrow(
-      "Choose connected accounts before scheduling.",
+      "Choose active, connected accounts before scheduling.",
     );
+  });
+
+  it("throws when a saved account needs reconnection", () => {
+    expect(() =>
+      getSelectedSocialPublishingAccounts(
+        [{ ...accounts[1], needsReconnection: true }],
+        ["account_2"],
+      ),
+    ).toThrow("Choose active, connected accounts before scheduling.");
   });
 });

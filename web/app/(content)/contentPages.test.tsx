@@ -275,6 +275,9 @@ describe("content pages", () => {
     expect(layoutMarkup).toContain("Tools");
     expect(layoutMarkup).toContain("Pricing");
     expect(pricingMarkup).toContain("Pick your pace");
+    expect(pricingMarkup).toContain(
+      "TikTok, Instagram Reels, and YouTube Shorts",
+    );
     expect(pricingMarkup).toContain("Stitchr ads from saved clips");
     expect(pricingMarkup).toContain("Clip scores and video reads");
     expect(pricingMarkup).toContain("$99");

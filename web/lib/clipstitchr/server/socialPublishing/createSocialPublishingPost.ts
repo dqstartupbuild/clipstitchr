@@ -1,4 +1,5 @@
 import { createSocialPublishingPlatformConfigurations } from "@/lib/clipstitchr/server/socialPublishing/createSocialPublishingPlatformConfigurations";
+import { normalizeSocialPublishingTikTokPhotoTitle } from "@/lib/clipstitchr/server/socialPublishing/normalizeSocialPublishingTikTokPhotoTitle";
 import { requestSocialPublishing } from "@/lib/clipstitchr/server/socialPublishing/requestSocialPublishing";
 import { normalizeZernioPost } from "@/lib/clipstitchr/server/socialPublishing/zernio/normalizeZernioPost";
 import type { ZernioPost } from "@/lib/clipstitchr/server/socialPublishing/zernio/ZernioPost";
@@ -51,6 +52,7 @@ export async function createSocialPublishingPost({
   }
 
   const includesTikTok = accounts.some((account) => account.platform === "tiktok");
+  const isTikTokPhotoPost = includesTikTok && mediaKind === "image";
 
   if (includesTikTok && (!tiktokConsentGiven || !tiktokPrivacyLevel)) {
     throw new Error("Review the TikTok settings and approve this post first.");
@@ -59,13 +61,17 @@ export async function createSocialPublishingPost({
   const response = await requestSocialPublishing<CreateZernioPostResponse>("/v1/posts", {
     apiKey,
     body: {
-      content: caption,
+      content: isTikTokPhotoPost
+        ? normalizeSocialPublishingTikTokPhotoTitle(title)
+        : caption,
       mediaItems: mediaIds.map((url) => ({ type: mediaKind, url })),
       platforms: createSocialPublishingPlatformConfigurations({
         accounts,
+        caption,
         customMediaIdsByPlatform,
+        isTikTokPhotoPost,
         mediaKind,
-        tiktokCaption,
+        title,
       }),
       ...(includesTikTok
         ? {
@@ -77,6 +83,12 @@ export async function createSocialPublishingPost({
               contentPreviewConfirmed: tiktokConsentGiven,
               expressConsentGiven: tiktokConsentGiven,
               privacyLevel: tiktokPrivacyLevel,
+              ...(isTikTokPhotoPost
+                ? {
+                    description: tiktokCaption ?? "",
+                    mediaType: "photo",
+                  }
+                : {}),
             },
           }
         : {}),

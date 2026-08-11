@@ -8,6 +8,7 @@ import { SocialPublishingProductAccountConfigRow } from "@/app/_components/setti
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { fetchSocialPublishingAccountOptions } from "@/lib/clipstitchr/client/fetchSocialPublishingAccountOptions";
+import { getSocialPublishingErrorMessage } from "@/lib/clipstitchr/client/getSocialPublishingErrorMessage";
 import type { SocialPublishingSocialAccount } from "@/lib/clipstitchr/types/SocialPublishingSocialAccount";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { createSocialPublishingProductAccountSelections } from "@/lib/clipstitchr/utils/createSocialPublishingProductAccountSelections";
@@ -51,13 +52,17 @@ export function SettingsSocialPublishingProductConfigDialog({
 
       setAccounts(options.accounts);
       setSelectedAccountIdsByProduct(
-        createSocialPublishingProductAccountSelections(products),
+        createSocialPublishingProductAccountSelections(
+          products,
+          options.accounts,
+        ),
       );
     } catch (nextError) {
       setError(
-        nextError instanceof Error
-          ? nextError.message
-          : "Unable to load connected accounts.",
+        getSocialPublishingErrorMessage(
+          nextError,
+          "Unable to load connected accounts.",
+        ),
       );
     } finally {
       setIsLoading(false);
@@ -100,9 +105,10 @@ export function SettingsSocialPublishingProductConfigDialog({
       setMessage(`${product.name} posting accounts saved.`);
     } catch (nextError) {
       setError(
-        nextError instanceof Error
-          ? nextError.message
-          : "Unable to save posting accounts.",
+        getSocialPublishingErrorMessage(
+          nextError,
+          "Unable to save posting accounts.",
+        ),
       );
     } finally {
       setSavingProductId(null);
@@ -172,7 +178,10 @@ export function SettingsSocialPublishingProductConfigDialog({
           ) : null}
 
           {error ? (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+            <p
+              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"
+              role="alert"
+            >
               {error}
             </p>
           ) : null}

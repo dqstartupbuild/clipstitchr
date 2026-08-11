@@ -45,6 +45,6 @@ export function createLlmsTxt() {
     "- RSS feed for content syndication",
     "",
     "## Site Context",
-    `${site.name} helps indie app builders and mobile marketers grow on TikTok and Reels without becoming content people. Users upload clips once, pick a product demo, and turn saved footage into finished vertical ads. Stitchr includes a Longr mode for arranging multiple saved clips into one saved Stitch. The public site also keeps fifty free app marketing tools and resources, docs, a blog, case studies, and RSS feed.`,
+    `${site.name} helps indie app builders and mobile marketers grow on TikTok, Instagram Reels, and YouTube Shorts without becoming content people. Users upload clips once, pick a product demo, and turn saved footage into finished vertical ads. Stitchr includes a Longr mode for arranging multiple saved clips into one saved Stitch. The public site also keeps fifty free app marketing tools and resources, docs, a blog, case studies, and RSS feed.`,
   ].join("\n");
 }

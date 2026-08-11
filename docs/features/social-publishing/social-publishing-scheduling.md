@@ -30,8 +30,13 @@ fresh Zernio connection.
 
 The schedule dialog loads accounts from GET /v1/accounts, keeps supported
 TikTok, Instagram, and YouTube accounts, and preselects the source product's
-defaults. Users can change the account choices, caption, sound, and delivery
-mode before submitting.
+available defaults. Accounts with Zernio `enabled: false` are omitted because
+Zernio does not consider those side-effect account records publishable. Saved
+defaults are also removed from the current selection when an account is
+inactive, needs reconnection, has reached TikTok's daily limit, or cannot load
+required TikTok creator settings. The same availability rules run again on the
+server before a post is created. Users can change the account choices, caption,
+sound, and delivery mode before submitting.
 
 TikTok accounts are enriched with
 GET /v1/accounts/{accountId}/tiktok/creator-info. The dialog disables accounts
@@ -45,21 +50,36 @@ Media moves through these stages:
 1. The browser renders PNG carousel images or one MP4.
 2. The browser uploads each file to a temporary owner-scoped R2 object.
 3. POST /api/social-publishing/media/upload verifies ownership and media
-   constraints, calls POST /v1/media/presign, and uploads to its signed URL.
+   constraints, calls POST /v1/media/presign, uploads to its signed URL, and
+   confirms that Zernio's public URL is readable. A briefly unavailable public
+   URL is retried before ClipStitchr creates a post.
 4. POST /api/social-publishing/schedule verifies the selected accounts and
    creates the Zernio post with POST /v1/posts.
 5. ClipStitchr saves the Zernio post ID and local product mapping.
+
+Temporary R2 objects are removed after the Zernio copy attempt, including when
+the provider upload or public-URL check fails. Browser messages such as Safari's
+bare `Load failed` are replaced with a clear connection message and retry step.
 
 Each create request carries a unique x-request-id. Zernio can return either
 post or existingPost, so a same-request retry does not create a duplicate.
 Queue submissions use queuedFromProfile; immediate submissions use publishNow.
 Media is sent in mediaItems, and per-account settings are sent in platforms.
+YouTube targets receive the saved ClipStitchr title explicitly through
+`platformSpecificData.title` instead of relying on Zernio to infer a title from
+the caption.
 
 Swipr image posts are rendered at Instagram's 1080 x 1350 feed size when
 Instagram is the only destination. Cross-platform image posts keep the shared
 1080 x 1920 media and send a separate 1080 x 1350 image set through Zernio's
 per-platform `customMedia` field for Instagram. This preserves TikTok's
 vertical layout without sending Instagram an unsupported 9:16 feed image.
+
+For TikTok photo carousels, the first non-empty line of the Swipe description
+is sent as the slideshow title and limited to TikTok's 90-character maximum.
+The remaining lines are sent through `tiktokSettings.description` as the full
+TikTok caption. When the same carousel also goes to Instagram, Instagram keeps
+the complete original caption through its per-platform `customContent` field.
 
 ## Supported Media
 
@@ -89,6 +109,10 @@ docs/operations/security/rate-limits.md.
 - <https://docs.zernio.com/accounts/get-tiktok-creator-info>
 - <https://docs.zernio.com/guides/media-uploads>
 - <https://docs.zernio.com/guides/rate-limits>
+- <https://docs.zernio.com/platforms/instagram>
+- <https://docs.zernio.com/platforms/tiktok>
+- <https://docs.zernio.com/platforms/youtube>
+- <https://docs.zernio.com/api/openapi>
 
 ## File Tree
 
@@ -98,10 +122,13 @@ docs/operations/security/rate-limits.md.
 - web/app/api/social-publishing/media/upload/route.ts
 - web/app/api/social-publishing/schedule/route.ts
 - web/lib/clipstitchr/client/createSwiprSocialPublishingScheduleMedia.ts
+- web/lib/clipstitchr/client/getSocialPublishingErrorMessage.ts
 - web/lib/clipstitchr/server/socialPublishing/groupSocialPublishingMedia.ts
 - web/lib/clipstitchr/server/socialPublishing/createSocialPublishingPost.ts
 - web/lib/clipstitchr/server/socialPublishing/listSocialPublishingSocialAccounts.ts
+- web/lib/clipstitchr/server/socialPublishing/waitForSocialPublishingMediaAvailability.ts
 - web/lib/clipstitchr/server/socialPublishing/zernio/
+- web/lib/clipstitchr/utils/isSocialPublishingAccountAvailable.ts
 - web/lib/clipstitchr/utils/getSwiprSocialPublishingImageRenderTargets.ts
 - web/convex/socialPublishingSettings.ts
 - web/convex/socialPublishingPostProductMappings.ts

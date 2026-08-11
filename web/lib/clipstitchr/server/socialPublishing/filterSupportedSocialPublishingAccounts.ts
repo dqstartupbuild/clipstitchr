@@ -4,6 +4,7 @@ import type { SocialPublishingSocialAccount } from "@/lib/clipstitchr/types/Soci
 type RawSocialPublishingSocialAccount = {
   _id: unknown;
   displayName?: unknown;
+  enabled?: unknown;
   isActive?: unknown;
   needsReconnection?: unknown;
   platform: unknown;
@@ -17,6 +18,7 @@ export function filterSupportedSocialPublishingAccounts(
   return accounts.flatMap((account) => {
     if (
       typeof account._id !== "string" ||
+      account.enabled === false ||
       !isSocialPublishingPlatform(account.platform)
     ) {
       return [];

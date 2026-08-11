@@ -68,6 +68,7 @@ describe("LandingPage", () => {
     expect(markup).toContain("Your clips");
     expect(markup).toContain("Your campaign");
     expect(markup).toContain("Pair every Hook/UGC clip with one product demo");
+    expect(markup).toContain("TikTok, Instagram Reels, and YouTube Shorts");
     expect(markup).toContain("Get ClipStitchr");
     expect(markup).toContain("Paid plans start at $39/month");
     expect(markup).toContain("Every tool is included");
@@ -82,6 +83,7 @@ describe("LandingPage", () => {
     expect(markup).toContain("Batch up to 20 hooks");
     expect(markup).toContain("Social post analysis");
     expect(markup).toContain("Swipr carousels");
+    expect(markup).toContain("queue finished work through Zernio");
     expect(markup).toContain("75");
     expect(markup).toContain("161K+");
     expect(markup).toContain("Make the batch. Keep building");

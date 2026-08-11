@@ -8,8 +8,8 @@ means doing content work you never wanted to become good at. Editing, captions,
 music, clip organization, drafts, exports, and posting cadence can start taking
 over the week.
 
-ClipStitchr exists so builders can grow on TikTok and Reels without becoming
-content people.
+ClipStitchr exists so builders can grow on TikTok, Instagram Reels, and YouTube
+Shorts without becoming content people.
 
 ## Product Thesis
 
@@ -33,7 +33,7 @@ Primary users:
 - solo app founders
 - mobile app marketers
 - small app teams
-- builders trying to grow with TikTok and Reels
+- builders trying to grow with TikTok, Instagram Reels, and YouTube Shorts
 
 They are not trying to become creators. They may understand the growth case for
 short-form, but the day-to-day work feels draining, foreign, or annoying.
@@ -90,8 +90,8 @@ Homepage headline:
 Homepage subhead:
 
 > Upload Hook/UGC clips and product demos once. Build a reusable library. Create
-> polished TikTok and Reels verticals without rebuilding the same workflow every
-> week.
+> polished TikTok, Instagram Reels, and YouTube Shorts verticals without
+> rebuilding the same workflow every week.
 
 The older "built by someone who hates making content" line remains useful brand
 context, but it should not be treated as the required public headline.

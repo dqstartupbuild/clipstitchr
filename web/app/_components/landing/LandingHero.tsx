@@ -13,8 +13,9 @@ export function LandingHero() {
         </h1>
         <div className="landing-hero-intro">
           <p>
-            Pair every Hook/UGC clip with one product demo. Leave with a batch
-            of vertical ads ready to review, test, and post.
+            Pair every Hook/UGC clip with one product demo. Leave with finished
+            vertical ads ready to review, test, and post on TikTok, Instagram
+            Reels, and YouTube Shorts.
           </p>
           <div className="landing-hero-actions">
             <LandingDashboardCta

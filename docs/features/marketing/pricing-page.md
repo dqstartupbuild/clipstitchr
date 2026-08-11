@@ -33,6 +33,11 @@ The comparison states the recurring terms before signup: plans renew monthly
 until canceled, customers cancel from Settings, and access continues through
 the end of the paid month.
 
+The pricing hero names TikTok, Instagram Reels, and YouTube Shorts as supported
+publishing destinations through the user's Zernio connection. It keeps Hook Lab
+post analysis separate because Hook Lab imports only TikTok and Instagram
+posts.
+
 Starter centers Stitchr and Swipr while retaining a small monthly taste of
 Clipr and Swapr. Pro adds weekly generation room and daily drafts for one
 product. Agency raises the product limit to 10 and enables daily drafts for all

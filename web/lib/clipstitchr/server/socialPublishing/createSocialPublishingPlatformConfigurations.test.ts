@@ -25,31 +25,42 @@ describe("createSocialPublishingPlatformConfigurations", () => {
           createAccount("tiktok_1", "tiktok"),
           createAccount("youtube_1", "youtube"),
         ],
+        caption: "Launch",
         mediaKind: "video",
+        title: "Launch title",
       }),
     ).toEqual([
       { accountId: "tiktok_1", platform: "tiktok" },
-      { accountId: "youtube_1", platform: "youtube" },
+      {
+        accountId: "youtube_1",
+        platform: "youtube",
+        platformSpecificData: { title: "Launch title" },
+      },
     ]);
   });
 
-  it("uses custom content only for TikTok", () => {
+  it("keeps the full caption on non-TikTok targets when TikTok uses a photo title", () => {
     expect(
       createSocialPublishingPlatformConfigurations({
         accounts: [
           createAccount("tiktok_1", "tiktok"),
           createAccount("instagram_1", "instagram"),
         ],
+        caption: "Photo title\n\nBody copy",
+        isTikTokPhotoPost: true,
         mediaKind: "image",
-        tiktokCaption: "Body copy",
+        title: "Photo title",
       }),
     ).toEqual([
       {
         accountId: "tiktok_1",
-        customContent: "Body copy",
         platform: "tiktok",
       },
-      { accountId: "instagram_1", platform: "instagram" },
+      {
+        accountId: "instagram_1",
+        customContent: "Photo title\n\nBody copy",
+        platform: "instagram",
+      },
     ]);
   });
 
@@ -60,10 +71,12 @@ describe("createSocialPublishingPlatformConfigurations", () => {
           createAccount("tiktok_1", "tiktok"),
           createAccount("instagram_1", "instagram"),
         ],
+        caption: "Launch",
         customMediaIdsByPlatform: {
           instagram: ["https://cdn.zernio.test/instagram-slide.png"],
         },
         mediaKind: "image",
+        title: "Launch title",
       }),
     ).toEqual([
       { accountId: "tiktok_1", platform: "tiktok" },

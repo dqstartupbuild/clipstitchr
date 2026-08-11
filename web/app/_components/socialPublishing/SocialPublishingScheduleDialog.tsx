@@ -11,6 +11,7 @@ import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { ProgressBar } from "@/app/_components/ui/ProgressBar";
 import { fetchSocialPublishingAccountOptions } from "@/lib/clipstitchr/client/fetchSocialPublishingAccountOptions";
+import { getSocialPublishingErrorMessage } from "@/lib/clipstitchr/client/getSocialPublishingErrorMessage";
 import { scheduleSocialPublishingPost } from "@/lib/clipstitchr/client/scheduleSocialPublishingPost";
 import type { SocialPublishingPostReference } from "@/lib/clipstitchr/types/SocialPublishingPostReference";
 import type { SocialPublishingPublishMode } from "@/lib/clipstitchr/types/SocialPublishingPublishMode";
@@ -131,9 +132,10 @@ export function SocialPublishingScheduleDialog({
         }
 
         setError(
-          nextError instanceof Error
-            ? nextError.message
-            : "Unable to load connected accounts.",
+          getSocialPublishingErrorMessage(
+            nextError,
+            "Unable to load connected accounts.",
+          ),
         );
         setStatus("idle");
       });
@@ -216,9 +218,10 @@ export function SocialPublishingScheduleDialog({
     } catch (nextError) {
       setStatus("idle");
       setError(
-        nextError instanceof Error
-          ? nextError.message
-          : "Unable to send this post.",
+        getSocialPublishingErrorMessage(
+          nextError,
+          "Unable to send this post.",
+        ),
       );
     }
   };
@@ -370,7 +373,10 @@ export function SocialPublishingScheduleDialog({
           ) : null}
 
           {error ? (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+            <p
+              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"
+              role="alert"
+            >
               {error}
             </p>
           ) : null}

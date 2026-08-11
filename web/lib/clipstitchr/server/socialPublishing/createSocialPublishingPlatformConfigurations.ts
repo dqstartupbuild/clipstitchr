@@ -4,24 +4,28 @@ import type { SocialPublishingSocialAccount } from "@/lib/clipstitchr/types/Soci
 
 type CreateSocialPublishingPlatformConfigurationsOptions = {
   accounts: SocialPublishingSocialAccount[];
+  caption: string;
   customMediaIdsByPlatform?: Partial<Record<SocialPublishingPlatform, string[]>>;
+  isTikTokPhotoPost?: boolean;
   mediaKind: SocialPublishingMediaKind;
-  tiktokCaption?: string;
+  title: string;
 };
 
 export function createSocialPublishingPlatformConfigurations({
   accounts,
+  caption,
   customMediaIdsByPlatform = {},
+  isTikTokPhotoPost = false,
   mediaKind,
-  tiktokCaption,
+  title,
 }: CreateSocialPublishingPlatformConfigurationsOptions) {
   return accounts.map((account) => {
     const customMediaIds = customMediaIdsByPlatform[account.platform] ?? [];
 
     return {
       accountId: account.id,
-      ...(account.platform === "tiktok" && tiktokCaption
-        ? { customContent: tiktokCaption }
+      ...(isTikTokPhotoPost && account.platform !== "tiktok"
+        ? { customContent: caption }
         : {}),
       ...(customMediaIds.length
         ? {
@@ -30,6 +34,9 @@ export function createSocialPublishingPlatformConfigurations({
               url,
             })),
           }
+        : {}),
+      ...(account.platform === "youtube"
+        ? { platformSpecificData: { title } }
         : {}),
       platform: account.platform,
     };

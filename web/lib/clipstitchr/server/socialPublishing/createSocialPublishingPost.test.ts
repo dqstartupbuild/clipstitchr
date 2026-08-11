@@ -139,4 +139,113 @@ describe("createSocialPublishingPost", () => {
     expect(bodies[0]).not.toHaveProperty("queuedFromProfile");
     expect(bodies[0]).not.toHaveProperty("tiktokSettings");
   });
+
+  it("keeps the explicit ClipStitchr title for YouTube Shorts", async () => {
+    const bodies: object[] = [];
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+        bodies.push(JSON.parse(String(init?.body)) as object);
+
+        return Response.json({
+          post: {
+            _id: "post_1",
+            content: "Caption body",
+            createdAt: "2026-08-11T00:00:00.000Z",
+            platforms: [{ accountId: "youtube_1" }],
+            status: "publishing",
+          },
+        });
+      }),
+    );
+
+    await createSocialPublishingPost({
+      accounts: [createAccount("youtube_1", "youtube")],
+      apiKey: "zernio_test_key",
+      caption: "Caption body",
+      mediaIds: ["https://cdn.zernio.test/short.mp4"],
+      mediaKind: "video",
+      scheduledAt: null,
+      tiktokCommercialContentType: "none",
+      tiktokConsentGiven: false,
+      tiktokPrivacyLevel: "",
+      title: "Explicit Short title",
+      useQueue: false,
+    });
+
+    expect(bodies[0]).toMatchObject({
+      platforms: [
+        {
+          accountId: "youtube_1",
+          platform: "youtube",
+          platformSpecificData: { title: "Explicit Short title" },
+        },
+      ],
+      title: "Explicit Short title",
+    });
+  });
+
+  it("uses the first Swipe line as a TikTok photo title and the rest as its description", async () => {
+    const bodies: object[] = [];
+    const title = "A".repeat(95);
+    const caption = `${title}\n\n${"Long caption body. ".repeat(70)}\n\n#fitness`;
+    const tiktokCaption = `${"Long caption body. ".repeat(70)}\n\n#fitness`;
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+        bodies.push(JSON.parse(String(init?.body)) as object);
+
+        return Response.json({
+          post: {
+            _id: "post_1",
+            content: title.slice(0, 90),
+            createdAt: "2026-08-11T00:00:00.000Z",
+            platforms: [
+              { accountId: "tiktok_1" },
+              { accountId: "instagram_1" },
+            ],
+            scheduledFor: "2026-08-12T12:00:00.000Z",
+            status: "scheduled",
+          },
+        });
+      }),
+    );
+
+    await createSocialPublishingPost({
+      accounts: [
+        createAccount("tiktok_1", "tiktok"),
+        createAccount("instagram_1", "instagram"),
+      ],
+      apiKey: "zernio_test_key",
+      caption,
+      mediaIds: ["https://cdn.zernio.test/slide.png"],
+      mediaKind: "image",
+      scheduledAt: null,
+      tiktokCaption,
+      tiktokCommercialContentType: "brand_organic",
+      tiktokConsentGiven: true,
+      tiktokPrivacyLevel: "PUBLIC_TO_EVERYONE",
+      title,
+      useQueue: true,
+    });
+
+    expect(bodies[0]).toMatchObject({
+      content: title.slice(0, 90),
+      platforms: [
+        { accountId: "tiktok_1", platform: "tiktok" },
+        {
+          accountId: "instagram_1",
+          customContent: caption,
+          platform: "instagram",
+        },
+      ],
+      tiktokSettings: {
+        description: tiktokCaption,
+        mediaType: "photo",
+      },
+    });
+    expect(String((bodies[0] as { content: string }).content)).toHaveLength(90);
+  });
 });

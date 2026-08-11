@@ -9,8 +9,8 @@ ClipStitchr.
 ClipStitchr was built by someone who genuinely hates making content.
 
 The editing, captions, music, clip organization, separate uploads, and constant
-pressure to show up on TikTok and Instagram were not fun side quests. They were
-the price of trying to grow mobile apps.
+pressure to show up on TikTok, Instagram, and YouTube Shorts were not fun side
+quests. They were the price of trying to grow mobile apps.
 
 That is the brand. Do not sand it down.
 
@@ -33,7 +33,8 @@ Speak to:
 - solo founders
 - mobile app marketers
 - small teams trying to grow apps
-- builders who need TikTok and Reels to work without taking over the week
+- builders who need TikTok, Instagram Reels, and YouTube Shorts to work without
+  taking over the week
 
 Do not write as if the user already likes content creation.
 
@@ -73,8 +74,8 @@ Homepage headline:
 Homepage subhead:
 
 > Upload Hook/UGC clips and product demos once. Build a reusable library. Create
-> polished TikTok and Reels verticals without rebuilding the same workflow every
-> week.
+> polished TikTok, Instagram Reels, and YouTube Shorts verticals without
+> rebuilding the same workflow every week.
 
 Good supporting lines:
 
@@ -203,8 +204,8 @@ Avoid dashboard lines that sound like generic SaaS command centers:
 
 Default short description:
 
-ClipStitchr helps indie app builders turn saved clips and product demos into
-TikTok and Reels ads without rebuilding the same editing workflow every week.
+ClipStitchr helps app builders turn saved clips and demos into finished ads for
+TikTok, Instagram Reels, and YouTube Shorts.
 
 Longer description:
 
@@ -227,7 +228,7 @@ social falls off the list.
 - review
 - reuse
 - export
-- TikTok and Reels
+- TikTok, Instagram Reels, and YouTube Shorts
 - mobile app
 - short-form
 - content person

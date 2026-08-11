@@ -15,6 +15,10 @@ The homepage promise remains:
 
 The supporting copy focuses on one concrete job: pair up to 20 Hook/UGC clips
 with one product demo, review the separate outputs, and keep building.
+The primary brand description and visible homepage copy name TikTok, Instagram
+Reels, and YouTube Shorts as destinations for finished vertical ads. Hook Lab
+copy remains limited to TikTok and Instagram because those are the public post
+sources that Hook Lab can import and analyze.
 
 ## How It Works
 
