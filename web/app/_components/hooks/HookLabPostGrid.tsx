@@ -38,9 +38,9 @@ export function HookLabPostGrid({
 
   if (!posts.length) {
     return (
-      <div className="rounded-xl bg-[#e3ebe6] px-5 py-12 text-center">
-        <h2 className="text-xl font-bold text-[#18201c]">No saved posts yet</h2>
-        <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#56625c]">
+      <div className="rounded-xl bg-surface px-5 py-12 text-center">
+        <h2 className="text-xl font-bold text-text-primary">No saved posts yet</h2>
+        <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-text-secondary">
           Paste your first public TikTok or Instagram post above. Its full
           analysis will stay here.
         </p>

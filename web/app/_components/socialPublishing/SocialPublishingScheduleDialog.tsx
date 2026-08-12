@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { SocialPublishingAccountCheckbox } from "@/app/_components/socialPublishing/SocialPublishingAccountCheckbox";
 import { SocialPublishingPublishModePicker } from "@/app/_components/socialPublishing/SocialPublishingPublishModePicker";
@@ -373,12 +374,7 @@ export function SocialPublishingScheduleDialog({
           ) : null}
 
           {error ? (
-            <p
-              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"
-              role="alert"
-            >
-              {error}
-            </p>
+            <DashboardAlert variant="error">{error}</DashboardAlert>
           ) : null}
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

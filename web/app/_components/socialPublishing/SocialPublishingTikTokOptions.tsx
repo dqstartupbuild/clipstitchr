@@ -1,3 +1,4 @@
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import type { SocialPublishingTikTokCommercialContentType } from "@/lib/clipstitchr/types/SocialPublishingTikTokCommercialContentType";
 
 type SocialPublishingTikTokOptionsProps = {
@@ -73,10 +74,10 @@ export function SocialPublishingTikTokOptions({
         <span>{consentLabel}</span>
       </label>
       {!privacyLevels.length ? (
-        <p className="text-sm font-semibold text-red-700" role="alert">
+        <DashboardAlert variant="error">
           TikTok posting details could not be loaded. Refresh your Zernio
           connection and try again.
-        </p>
+        </DashboardAlert>
       ) : null}
     </fieldset>
   );

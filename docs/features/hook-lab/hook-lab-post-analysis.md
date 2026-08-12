@@ -86,6 +86,12 @@ close control and report navigation stay reachable on long timelines. The
 shared dashboard dialog viewport preserves the top edge on short screens and
 accounts for mobile safe areas.
 
+Hook Lab uses the dashboard's shared warm surface, text, accent, and border
+tokens throughout its composer, saved-post cards, empty state, thumbnails, and
+loading state. Ready and attention statuses use the accessible warm accent
+rather than a separate green or red mini-theme. Error alerts include an icon,
+explicit error copy, and an alert role, so meaning never depends on color alone.
+
 ## Analysis contract
 
 The model receives the entire video, its measured duration, the source caption,

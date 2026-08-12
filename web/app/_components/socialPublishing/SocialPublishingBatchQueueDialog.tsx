@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { SocialPublishingAccountCheckbox } from "@/app/_components/socialPublishing/SocialPublishingAccountCheckbox";
 import { SocialPublishingBatchCaptionEditor } from "@/app/_components/socialPublishing/SocialPublishingBatchCaptionEditor";
@@ -198,7 +199,7 @@ export function SocialPublishingBatchQueueDialog({
           {hasSelectedTikTokAccount ? <SocialPublishingTikTokOptions commercialContentType={tiktokCommercialContentType} consentGiven={tiktokConsentGiven} consentLabel="I reviewed every selected post and approve publishing them to TikTok." disabled={isBusy} privacyLevel={resolvedTiktokPrivacyLevel} privacyLevels={tiktokPrivacyLevels} onCommercialContentTypeChange={(value) => { setTiktokCommercialContentType(value); setTiktokConsentGiven(false); }} onConsentGivenChange={setTiktokConsentGiven} onPrivacyLevelChange={(value) => { setTiktokPrivacyLevel(value); setTiktokConsentGiven(false); }} /> : null}
           {allowMusic ? <div className="grid gap-3"><SocialPublishingSoundModePicker disabled={isBusy} value={soundMode} onChange={setSoundMode} />{soundMode === "manual" ? <div className="flex flex-wrap items-center gap-3"><MusicSelectorButton disabled={isBusy} label={musicTrack ? "Change sound" : "Add sound"} selectedTrackId={musicTrack?.id} source="swipr" onSelectTrack={setMusicTrack} />{musicTrack ? <button type="button" className="text-sm font-semibold text-text-secondary underline-offset-4 hover:text-accent hover:underline" disabled={isBusy} onClick={() => setMusicTrack(null)}>Remove sound</button> : null}</div> : null}</div> : null}
           {status === "queueing" || status === "complete" ? <div className="grid gap-2" role="status" aria-live="polite"><p className="text-sm font-semibold text-text-secondary">{status === "complete" ? `Added ${items.length} posts to your queue.` : `Adding post ${Math.min(completedCount + 1, items.length)} of ${items.length} to your queue...`}</p><ProgressBar value={progress} /></div> : null}
-          {error ? <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" role="alert">{error}</p> : null}
+          {error ? <DashboardAlert variant="error">{error}</DashboardAlert> : null}
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="secondary" disabled={isBusy} onClick={onClose}>Cancel</Button><Button type="button" isLoading={isBusy} disabled={status === "complete" || !accounts.length || !selectedAccountIds.length || (hasSelectedTikTokAccount && (!resolvedTiktokPrivacyLevel || !tiktokConsentGiven))} onClick={() => void handleQueue()}>{completedCount > 0 ? `Continue with ${remainingCount}` : `Add ${items.length} to queue`}</Button></div>
         </div>
       </div>

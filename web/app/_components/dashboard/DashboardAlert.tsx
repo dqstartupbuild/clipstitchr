@@ -10,7 +10,7 @@ type DashboardAlertProps = {
 };
 
 const variantClasses: Record<DashboardAlertVariant, string> = {
-  error: "border-red-200 bg-red-50 text-red-700",
+  error: "border-accent/30 bg-surface-muted text-accent-dark",
   info: "border-accent/30 bg-surface-muted text-accent-dark",
   success: "border-accent/30 bg-surface-muted text-accent-dark",
   warning: "border-amber-200 bg-amber-50 text-amber-800",
@@ -36,6 +36,7 @@ export function DashboardAlert({
         "dashboard-alert rounded-lg border p-4 text-sm shadow-[0_14px_42px_rgba(0,0,0,0.12)]",
         variantClasses[variant],
       ].join(" ")}
+      role={variant === "error" ? "alert" : undefined}
     >
       <div className="flex items-start gap-3">
         <Icon aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />

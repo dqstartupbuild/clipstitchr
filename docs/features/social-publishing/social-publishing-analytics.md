@@ -29,6 +29,11 @@ ClipStitchr does not poll a provider-specific sync endpoint.
 The refresh route is limited to six requests per hour per owner with a burst of
 two. Regular reads retain their own owner and global limits.
 
+Load and refresh failures use the shared dashboard alert treatment. Its warm
+surface and accent colors match the rest of the Analytics workspace, while the
+error icon, message, and alert role communicate the failure without relying on
+red alone.
+
 ## Source References
 
 - <https://docs.zernio.com/analytics/get-analytics>
@@ -44,4 +49,3 @@ two. Regular reads retain their own owner and global limits.
 - web/lib/clipstitchr/server/socialPublishing/listSocialPublishingAnalytics.ts
 - web/lib/clipstitchr/server/socialPublishing/zernio/normalizeZernioPost.ts
 - web/convex/socialPublishingPostProductMappings.ts
-

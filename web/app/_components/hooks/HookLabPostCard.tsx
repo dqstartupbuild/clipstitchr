@@ -52,7 +52,7 @@ export function HookLabPostCard({
           <HookLabPostStatusText status={post.status} />
         </div>
         {post.failureMessage ? (
-          <p className="mt-2 text-sm leading-5 text-red-700">
+          <p className="mt-2 text-sm leading-5 text-accent-dark">
             {post.failureMessage}
           </p>
         ) : null}

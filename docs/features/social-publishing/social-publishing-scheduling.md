@@ -38,6 +38,11 @@ required TikTok creator settings. The same availability rules run again on the
 server before a post is created. Users can change the account choices, caption,
 sound, and delivery mode before submitting.
 
+Scheduling and batch-queue errors use the shared dashboard alert treatment.
+The alert stays within ClipStitchr's warm surface and accent palette while its
+icon, plain-language message, and alert role preserve clear error meaning
+without relying on red alone.
+
 TikTok accounts are enriched with
 GET /v1/accounts/{accountId}/tiktok/creator-info. The dialog disables accounts
 that need reconnection, have reached TikTok's daily limit, or cannot return

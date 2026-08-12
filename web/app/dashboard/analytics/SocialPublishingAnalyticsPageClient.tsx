@@ -2,6 +2,7 @@
 
 import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { Button } from "@/app/_components/ui/Button";
@@ -167,9 +168,7 @@ export function SocialPublishingAnalyticsPageClient() {
         />
 
         {error ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
-            {error}
-          </p>
+          <DashboardAlert variant="error">{error}</DashboardAlert>
         ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

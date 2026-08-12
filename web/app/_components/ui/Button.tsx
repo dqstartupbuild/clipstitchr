@@ -9,11 +9,12 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variantClasses = {
-  primary: "bg-accent text-white hover:bg-accent-dark",
+  primary: "bg-accent text-text-inverse hover:bg-accent-dark",
   secondary:
     "border border-border bg-surface text-text-primary hover:border-accent",
   subtle: "bg-surface-muted text-text-primary hover:bg-white",
-  danger: "border border-red-200 bg-white text-red-600 hover:bg-red-50",
+  danger:
+    "border border-accent/40 bg-surface-muted text-accent-dark hover:bg-surface-elevated",
 };
 
 const sizeClasses = {

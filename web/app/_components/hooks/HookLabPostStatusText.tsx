@@ -17,9 +17,9 @@ export function HookLabPostStatusText({
       className={[
         "text-xs font-semibold",
         status === "failed" || status === "needs_attention"
-          ? "text-red-700"
+          ? "text-accent-dark"
           : status === "ready"
-            ? "text-[#315342]"
+            ? "text-accent-dark"
             : "text-text-tertiary",
       ].join(" ")}
     >

@@ -24,7 +24,7 @@ export function HookLabPostThumbnail({ post }: { post: HookLabPost }) {
   });
 
   return (
-    <div className="aspect-[9/12] overflow-hidden bg-[#dce4df]">
+    <div className="aspect-[9/12] overflow-hidden bg-surface-muted">
       {thumbnailUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -34,7 +34,7 @@ export function HookLabPostThumbnail({ post }: { post: HookLabPost }) {
           src={thumbnailUrl}
         />
       ) : (
-        <div className="flex size-full items-center justify-center p-6 text-center text-sm font-semibold leading-6 text-[#46504b]">
+        <div className="flex size-full items-center justify-center p-6 text-center text-sm font-semibold leading-6 text-text-secondary">
           {post.status === "analyzing"
             ? "Watching the full video..."
             : "Video preview unavailable"}

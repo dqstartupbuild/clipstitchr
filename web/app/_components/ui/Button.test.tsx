@@ -16,5 +16,17 @@ describe("Button", () => {
     const markup = renderToStaticMarkup(<Button>Open Stripe</Button>);
 
     expect(markup).not.toContain("aria-busy");
+    expect(markup).toContain("text-text-inverse");
+  });
+
+  it("keeps destructive actions in the dashboard tonal palette", () => {
+    const markup = renderToStaticMarkup(
+      <Button variant="danger">Delete post</Button>,
+    );
+
+    expect(markup).toContain("border-accent/40");
+    expect(markup).toContain("bg-surface-muted");
+    expect(markup).toContain("text-accent-dark");
+    expect(markup).not.toContain("red-");
   });
 });

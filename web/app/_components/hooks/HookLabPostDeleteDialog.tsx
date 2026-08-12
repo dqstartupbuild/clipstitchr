@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { Button } from "@/app/_components/ui/Button";
 import type { HookLabPost } from "@/lib/clipstitchr/types/HookLabPost";
 import { getErrorMessage } from "@/lib/clipstitchr/utils/getErrorMessage";
@@ -51,7 +52,9 @@ export function HookLabPostDeleteDialog({
           Lab.
         </p>
         {error ? (
-          <p className="mt-4 text-sm font-semibold text-red-700">{error}</p>
+          <div className="mt-4">
+            <DashboardAlert variant="error">{error}</DashboardAlert>
+          </div>
         ) : null}
         <div className="mt-6 flex justify-end gap-2">
           <Button

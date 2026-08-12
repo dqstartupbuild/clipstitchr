@@ -6,11 +6,11 @@ type ScheduledPostStatusBadgeProps = {
 };
 
 const statusClasses: Record<SocialPublishingPostStatus, string> = {
-  failed: "border-red-200 bg-red-50 text-red-700",
-  partial: "border-orange-200 bg-orange-50 text-orange-800",
-  posted: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  processing: "border-amber-200 bg-amber-50 text-amber-700",
-  scheduled: "border-blue-200 bg-blue-50 text-blue-700",
+  failed: "border-accent/40 bg-surface-muted text-accent-dark",
+  partial: "border-warning/40 bg-surface-muted text-warning",
+  posted: "border-border bg-surface-elevated text-text-primary",
+  processing: "border-warning/30 bg-surface-muted text-warning",
+  scheduled: "border-accent/30 bg-surface-muted text-accent-dark",
 };
 
 export function ScheduledPostStatusBadge({

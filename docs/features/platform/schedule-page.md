@@ -1,7 +1,7 @@
 # Schedule Page
 
-ClipStitchr has a Schedule page at `/dashboard/schedule` for reviewing Post
-Bridge posting activity.
+ClipStitchr has a Schedule page at `/dashboard/schedule` for reviewing Zernio
+posting activity.
 
 ## How It Works
 
@@ -40,8 +40,15 @@ is the source of truth for the posts pagination contract.
 
 When Zernio accepts a post-now or scheduled submission, ClipStitchr marks
 the source Stitch or Swipe as posted automatically and stores a local
-Post-Bridge-post-to-product mapping. The Schedule page uses that mapping to keep
+Zernio-post-to-product mapping. The Schedule page uses that mapping to keep
 each product's posting activity separate.
+
+Status badges use the dashboard's warm tonal palette instead of a rainbow of
+provider-style colors. Their text labels remain the primary status signal:
+scheduled and failed use the accent family, partial and processing use the
+shared warning tone, and posted uses the elevated neutral surface. Page errors
+use the shared dashboard alert with an icon and alert semantics rather than a
+bright red panel.
 
 ## Source Files
 

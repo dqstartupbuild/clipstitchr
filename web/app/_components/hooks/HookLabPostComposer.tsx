@@ -19,7 +19,7 @@ export function HookLabPostComposer({
 
   return (
     <form
-      className="rounded-xl bg-[#151a18] p-5 text-white sm:p-7"
+      className="rounded-xl border border-border bg-surface-elevated p-5 text-text-primary sm:p-7"
       onSubmit={(event) => {
         event.preventDefault();
         onError(null);
@@ -36,7 +36,7 @@ export function HookLabPostComposer({
       >
         Add a public post
       </label>
-      <p className="mt-1 max-w-2xl text-sm leading-6 text-[#b9c2be]">
+      <p className="mt-1 max-w-2xl text-sm leading-6 text-text-secondary">
         Paste a TikTok or Instagram video, Reel, or slideshow. Mobile share
         links work too. Hook Lab will save it and explain what happens.
       </p>
@@ -44,7 +44,7 @@ export function HookLabPostComposer({
         <input
           id="hook-lab-post-url"
           autoComplete="url"
-          className="min-h-12 w-full rounded-lg border border-[#46504b] bg-[#222825] px-4 text-base text-white outline-none placeholder:text-[#89928e] focus:border-[#d7e2dc] focus:ring-2 focus:ring-white/15"
+          className="min-h-12 w-full rounded-lg border border-border bg-surface px-4 text-base text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent focus:ring-2 focus:ring-accent/20"
           disabled={isCreating}
           inputMode="url"
           placeholder="Paste a TikTok or Instagram link"
@@ -53,7 +53,7 @@ export function HookLabPostComposer({
           onChange={(event) => setUrl(event.currentTarget.value)}
         />
         <Button
-          className="min-h-12 bg-[#eef4f0] px-5 text-[#151a18] hover:bg-white"
+          className="min-h-12 px-5"
           disabled={!url.trim()}
           isLoading={isCreating}
           type="submit"

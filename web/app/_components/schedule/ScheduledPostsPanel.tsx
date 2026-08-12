@@ -1,6 +1,7 @@
 "use client";
 
 import { RefreshCw } from "lucide-react";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { ScheduledPostCard } from "@/app/_components/schedule/ScheduledPostCard";
 import { ScheduledPostsSummary } from "@/app/_components/schedule/ScheduledPostsSummary";
 import { Button } from "@/app/_components/ui/Button";
@@ -44,9 +45,7 @@ export function ScheduledPostsPanel({
   return (
     <div className="flex flex-col gap-4">
       {error ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
-          {error}
-        </p>
+        <DashboardAlert variant="error">{error}</DashboardAlert>
       ) : null}
       <ScheduledPostsSummary posts={posts} />
       <section className="rounded-lg border border-border bg-white">
