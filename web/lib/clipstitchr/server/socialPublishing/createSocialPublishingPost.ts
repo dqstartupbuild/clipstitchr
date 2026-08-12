@@ -85,6 +85,7 @@ export async function createSocialPublishingPost({
               privacyLevel: tiktokPrivacyLevel,
               ...(isTikTokPhotoPost
                 ? {
+                    autoAddMusic: true,
                     description: tiktokCaption ?? "",
                     mediaType: "photo",
                   }

@@ -78,8 +78,11 @@ vertical layout without sending Instagram an unsupported 9:16 feed image.
 For TikTok photo carousels, the first non-empty line of the Swipe description
 is sent as the slideshow title and limited to TikTok's 90-character maximum.
 The remaining lines are sent through `tiktokSettings.description` as the full
-TikTok caption. When the same carousel also goes to Instagram, Instagram keeps
-the complete original caption through its per-platform `customContent` field.
+TikTok caption. ClipStitchr also asks TikTok to add recommended music
+automatically. TikTok chooses the track, and this option applies only to photo
+carousels, not Stitch or Swipe videos. When the same carousel also goes to
+Instagram, Instagram keeps the complete original caption through its
+per-platform `customContent` field.
 
 ## Supported Media
 

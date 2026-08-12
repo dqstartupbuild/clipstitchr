@@ -186,7 +186,7 @@ describe("createSocialPublishingPost", () => {
     });
   });
 
-  it("uses the first Swipe line as a TikTok photo title and the rest as its description", async () => {
+  it("uses the Swipe caption fields and automatic music for a TikTok photo post", async () => {
     const bodies: object[] = [];
     const title = "A".repeat(95);
     const caption = `${title}\n\n${"Long caption body. ".repeat(70)}\n\n#fitness`;
@@ -242,6 +242,7 @@ describe("createSocialPublishingPost", () => {
         },
       ],
       tiktokSettings: {
+        autoAddMusic: true,
         description: tiktokCaption,
         mediaType: "photo",
       },
