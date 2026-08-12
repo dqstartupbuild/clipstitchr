@@ -1,8 +1,14 @@
 import posthog from "posthog-js";
+import { isDevelopmentAuthBypassEnabled } from "@/lib/clipstitchr/development/auth/isDevelopmentAuthBypassEnabled";
 
 const postHogProjectToken = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
+const isDevelopmentAuthBypass = isDevelopmentAuthBypassEnabled({
+  enabledValue: process.env.DEV_AUTH_BYPASS_ENABLED,
+  hostname: window.location.hostname,
+  nodeEnv: process.env.NODE_ENV,
+});
 
-if (postHogProjectToken) {
+if (postHogProjectToken && !isDevelopmentAuthBypass) {
   posthog.init(postHogProjectToken, {
     api_host: "/ingest",
     ui_host: "https://us.posthog.com",

@@ -41,11 +41,10 @@ describe("root providers", () => {
     }));
 
     const { default: RootLayout, metadata } = await import("@/app/layout");
-    const markup = renderToStaticMarkup(
-      <RootLayout>
-        <main>App child</main>
-      </RootLayout>,
-    );
+    const layout = await RootLayout({
+      children: <main>App child</main>,
+    });
+    const markup = renderToStaticMarkup(layout);
 
     expect(metadata.applicationName).toBe("ClipStitchr");
     expect(markup).toContain("Cookie manager");

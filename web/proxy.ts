@@ -1,53 +1,53 @@
-import {
-  clerkMiddleware,
-  createRouteMatcher,
-} from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-import { isPublicToolGateVisitorKey } from "@/lib/clipstitchr/tools/catalog/rollout/isPublicToolGateVisitorKey";
-import { publicToolGateVisitorCookieName } from "@/lib/clipstitchr/tools/catalog/rollout/publicToolGateVisitorCookieName";
+import type { NextFetchEvent } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { developmentAuthBypassHeaderName } from "@/lib/clipstitchr/development/auth/developmentAuthBypassHeaderName";
+import { isDevelopmentAuthBypassEnabled } from "@/lib/clipstitchr/development/auth/isDevelopmentAuthBypassEnabled";
+import { runClerkProtectedProxy } from "@/lib/clipstitchr/development/auth/runClerkProtectedProxy";
 
-const isDashboardRoute = createRouteMatcher(["/dashboard(.*)"]);
-const isPublicToolRoute = createRouteMatcher([
-  "/tools(.*)",
-  "/api/tools/(.*)/lead",
-  "/api/tools/(.*)/interaction",
-]);
+export default async function proxy(
+  request: NextRequest,
+  event: NextFetchEvent,
+) {
+  const requestHeaders = new Headers(request.headers);
 
-export default clerkMiddleware(
-  async (auth, request) => {
-    if (isDashboardRoute(request)) {
-      await auth.protect();
-    }
+  requestHeaders.delete(developmentAuthBypassHeaderName);
 
-    if (isPublicToolRoute(request)) {
-      const currentVisitorKey = request.cookies.get(
-        publicToolGateVisitorCookieName,
-      )?.value;
+  const isDashboardPageNavigation =
+    request.nextUrl.pathname === "/dashboard" ||
+    request.nextUrl.pathname.startsWith("/dashboard/");
+  const isApiRoute =
+    request.nextUrl.pathname === "/api" ||
+    request.nextUrl.pathname.startsWith("/api/");
+  const isReadOnlyNavigation =
+    request.method === "GET" || request.method === "HEAD";
+  const isBypassEnabled = isDevelopmentAuthBypassEnabled({
+    enabledValue: process.env.DEV_AUTH_BYPASS_ENABLED,
+    hostname: request.nextUrl.hostname,
+    nodeEnv: process.env.NODE_ENV,
+  });
 
-      if (!isPublicToolGateVisitorKey(currentVisitorKey)) {
-        const visitorKey = crypto.randomUUID();
-        request.cookies.set(publicToolGateVisitorCookieName, visitorKey);
-        const response = NextResponse.next({
-          request: { headers: request.headers },
-        });
-        response.cookies.set({
-          httpOnly: true,
-          maxAge: 365 * 24 * 60 * 60,
-          name: publicToolGateVisitorCookieName,
-          path: "/",
-          sameSite: "lax",
-          secure: request.nextUrl.protocol === "https:",
-          value: visitorKey,
-        });
-        return response;
-      }
-    }
-  },
-  {
-    signInUrl: "/sign-in",
-    signUpUrl: "/sign-up",
-  },
-);
+  if (isDashboardPageNavigation && isReadOnlyNavigation && isBypassEnabled) {
+    requestHeaders.set(developmentAuthBypassHeaderName, "1");
+
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
+  if (isBypassEnabled && (isApiRoute || isDashboardPageNavigation)) {
+    return NextResponse.json(
+      {
+        error:
+          "Development preview does not authorize API or server-action access.",
+      },
+      { status: 401 },
+    );
+  }
+
+  const sanitizedRequest = new NextRequest(request, {
+    headers: requestHeaders,
+  });
+
+  return runClerkProtectedProxy(sanitizedRequest, event);
+}
 
 export const config = {
   matcher: [

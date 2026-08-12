@@ -181,19 +181,22 @@ describe("app route wrappers", () => {
   it("renders dashboard page wrapper clients and provider layout", async () => {
     const libraryPage = await LibraryPage();
     const onboardingPage = await OnboardingPage();
-    const markup = renderToStaticMarkup(
-      <DashboardLayout>
-        <DashboardPage />
-        <CliprPage />
-        <HookLabPage />
-        {libraryPage}
-        {onboardingPage}
-        <SettingsPage />
-        <StitchrPage />
-        <SwaprPage />
-        <SwiprPage />
-      </DashboardLayout>,
-    );
+    const dashboardLayout = await DashboardLayout({
+      children: (
+        <>
+          <DashboardPage />
+          <CliprPage />
+          <HookLabPage />
+          {libraryPage}
+          {onboardingPage}
+          <SettingsPage />
+          <StitchrPage />
+          <SwaprPage />
+          <SwiprPage />
+        </>
+      ),
+    });
+    const markup = renderToStaticMarkup(dashboardLayout);
 
     expect(markup).toContain("Dashboard client");
     expect(markup).toContain("Clipr client");

@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
 import {
   Barlow_Condensed,
   DM_Sans,
   Geist_Mono,
   Plus_Jakarta_Sans,
 } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
-import { CookieConsentManager } from "@/app/_components/analytics/CookieConsentManager";
-import { ConvexClientProvider } from "@/app/ConvexClientProvider";
+import { RootProviders } from "@/app/RootProviders";
 import { brandAssets } from "@/lib/brandAssets";
+import { getDevelopmentAuthBypassRequestStatus } from "@/lib/clipstitchr/development/auth/getDevelopmentAuthBypassRequestStatus";
 import { createPageMetadata } from "@/lib/metadata";
 import {
   createOrganizationJsonLd,
@@ -88,11 +86,38 @@ export const metadata: Metadata = {
   manifest: `/manifest.webmanifest?v=${brandAssets.cacheVersion}`,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const mayUseDevelopmentAuthBypass =
+    process.env.NODE_ENV === "development" &&
+    process.env.DEV_AUTH_BYPASS_ENABLED === "true";
+  const isDevelopmentAuthBypass = mayUseDevelopmentAuthBypass
+    ? await getDevelopmentAuthBypassRequestStatus()
+    : false;
+  const rootContent = await RootProviders({
+    children: (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(createWebsiteJsonLd()),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(createOrganizationJsonLd()),
+          }}
+        />
+        {children}
+      </>
+    ),
+    isDevelopmentAuthBypass,
+  });
+
   return (
     <html
       lang="en"
@@ -100,30 +125,7 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${barlowCondensed.variable} ${dmSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ClerkProvider
-          signInUrl="/sign-in"
-          signUpUrl="/sign-up"
-          signInFallbackRedirectUrl="/dashboard"
-          signUpFallbackRedirectUrl="/dashboard/onboarding"
-        >
-          <CookieConsentManager />
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(createWebsiteJsonLd()),
-            }}
-          />
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(createOrganizationJsonLd()),
-            }}
-          />
-          <ConvexClientProvider>
-            {children}
-            <Analytics />
-          </ConvexClientProvider>
-        </ClerkProvider>
+        {rootContent}
       </body>
     </html>
   );
