@@ -652,6 +652,197 @@ start a fresh capped Actor run. Deterministic MIME/input failures do not consume
 three identical automatic attempts, while transient provider/network failures
 remain bounded by the existing provider retry cap.
 
+## Studio Beta Access and Storage Limits
+
+Studio Beta administration and storage are protected before any state change or
+signed R2 URL is created.
+
+| Operation | Per owner or target | Global | Burst |
+| --- | ---: | ---: | ---: |
+| Grant, revoke, or list access | 20 per hour | 200 per hour | 5 target, 30 global |
+| Change the Studio opt-in | 20 per hour | n/a | 5 |
+| Studio R2 upload URL | shared 2,000 per hour | n/a | 500 |
+| Studio R2 upload bytes | shared 10 GiB per day and 500 GiB per 30 days | n/a | full window |
+| Studio R2 download URL | shared 5,000 per hour | n/a | 1,000 |
+| LazyReel run creation | 60 per hour | 2,000 per hour | 10 owner, 300 global |
+| LazyReel run lifecycle write | 300 per hour | 10,000 per hour | 60 owner, 1,500 global |
+| LazyReel report or brief write | 180 per hour | 6,000 per hour | 30 owner, 900 global |
+| LazyReel static catalog read | 600 per hour | 20,000 per hour | 120 owner, 3,000 global |
+| Studio editor project write | 600 per hour | 20,000 per hour | 120 owner, 3,000 global |
+| Studio editor source-catalog read | 600 per hour | 20,000 per hour | 120 owner, 3,000 global |
+| Studio Clips task creation | 24 per hour | 1,000 per hour | 6 owner, 100 global |
+| Studio Clips render-revision creation | 48 per hour | 2,000 per hour | 8 owner, 200 global |
+| Studio Clips record write | 240 per hour | 8,000 per hour | 40 owner, 1,000 global |
+| Studio Clips live-read reservation | 600 per hour | 20,000 per hour | 120 owner, 3,000 global |
+| Studio Clips paid or compute stage | 60 per hour | 2,000 per hour | 10 owner, 200 global |
+| Studio Clips worker lifecycle write | 1,200 per hour | 30,000 per hour | 180 owner, 3,000 global |
+| Studio Clips worker claim | 3,600 per hour per worker | n/a | 120 per worker |
+| Studio Stitch record write | 300 per hour | 10,000 per hour | 60 owner, 1,500 global |
+| Studio Stitch static read | 600 per hour | 20,000 per hour | 120 owner, 3,000 global |
+| Studio Stitch worker lifecycle write | 1,200 per hour | 30,000 per hour | 180 owner, 3,000 global |
+| Studio Stitch worker claim | 3,600 per hour per worker | n/a | 120 per worker |
+| Studio Stitch DanSUGC intent | 30 outputs per hour | 1,000 outputs per hour | 5 owner, 100 global |
+| Studio Stitch Gemini intent | 60 outputs per hour | 2,000 outputs per hour | 10 owner, 200 global |
+| Studio Stitch ElevenLabs intent | 60 outputs per hour | 2,000 outputs per hour | 10 owner, 200 global |
+| Studio Stitch render intent | 120 outputs per hour | 4,000 outputs per hour | 20 owner, 400 global |
+| Studio publishing scope reservation | 3,600 per hour | 100,000 per hour | 300 owner, 10,000 global |
+
+Administrative mutations first validate `STUDIO_BETA_OPERATOR_SECRET` with a
+constant-time comparison, then consume `studioBetaAdminAction` and
+`studioBetaAdminActionGlobal`. The per-target key is the Clerk user ID; list
+uses a fixed `list` key. An idempotent grant or revoke still consumes quota but
+does not create a duplicate audit event.
+
+Preference writes require Clerk authentication, an active grant, and the exact
+global switch before consuming `studioBetaPreferenceUpdate`. Authorization and
+rate limits are independent: a rate limit never grants access.
+
+Studio signed-URL routes apply the independent Next.js Studio guard and then
+call `consumeStudioBetaR2Upload` or `consumeStudioBetaR2Download`. Those Convex
+mutations independently recheck the Studio grant and preference before using
+the existing R2 buckets, and independently reload the active Product owned by
+the authenticated subject. New generic Studio objects are keyed under the
+authenticated owner and Product, and generic downloads reject a same-owner key
+whose embedded Product does not match the independently verified Product before
+quota or signing. Signed-URL JSON bodies are streamed through a 16 KiB
+cap and cancelled as soon as the actual byte count crosses it, including when
+`Content-Length` is absent or false. Studio upload grants also sign the exact
+declared object byte length as a required request header, so a caller cannot
+reserve quota for a small object and PUT a larger one through that grant.
+Upload request caps are 2 GiB for media source/output,
+25 MiB for project and research artifacts, 20 MiB for posters, and 10 MiB each
+for caption files and validated TrueType/OpenType caption fonts. These request
+caps complement, but do not replace, the byte
+budgets or post-upload media probing required by later phases.
+
+`STUDIO_BETA_ENABLED` and `STUDIO_BETA_OPERATOR_SECRET` are server-only.
+Neither may use a `NEXT_PUBLIC_` prefix. The switch must be exactly lowercase
+`true`; missing or different values fail closed. See
+`docs/features/studio-beta/access-foundation.md` for the complete access and
+revocation model.
+
+LazyReel run creation consumes `studioLazyReelRunCreate` and its global bucket
+only after authentication, Studio access, active Product ownership, strict
+input validation, and idempotent existing-run lookup. Completing or failing a
+pending run consumes the separate lifecycle-write pair. Saving, archiving,
+approving, rejecting, or assigning an approved handoff consumes the record-write
+pair. The corpus catalog endpoint consumes static-read owner and global quota
+before parsing the vendored files. Limit failures from HTTP routes return `429`
+with `Retry-After`.
+
+Run-history, report-history, and brief-history Convex queries are authenticated,
+owner- and Product-scoped, indexed, and capped at 50 records. They are read-only,
+have no provider or storage-write cost, and benefit from Convex query caching,
+so they intentionally have no additional token bucket. Every mutation invoked
+from those views keeps its independent write quota. See
+`docs/features/studio-beta/lazyreel-research.md` for snapshot caps and the full
+execution boundary.
+
+Studio editor create, autosave, archive, and reopen mutations consume
+`studioEditorProjectWrite` and `studioEditorProjectWriteGlobal` after Clerk
+authentication, exact Studio access, active Product ownership, strict snapshot
+validation, and idempotent receipt lookup. Snapshots are capped at 256 KiB and
+optimistic revision checks prevent one tab from silently overwriting another.
+The source shelf is implemented as a read-only Convex mutation because it must
+atomically reserve `studioEditorStaticRead` and its global bucket before reading
+bounded owner/Product-scoped Library and Stitch rows. Ordinary project get/list
+queries are bounded, cached metadata reads with no provider or storage-write
+cost, so they intentionally have no separate bucket. Media uploads and export
+downloads continue through the Studio R2 signed-URL and byte budgets above;
+accepted exports use the existing Library save limit. See
+`docs/features/studio-beta/editor.md`.
+
+Studio Clips consumes its task-creation pair only after the authenticated owner,
+Studio grant, active Product, source, request body, and idempotency key are
+validated. The worker independently authenticates its secret, verifies its
+lease and the same owner/Product/Studio scope, and consumes a separate cost-stage
+owner/global pair before each download, transcription, analysis, B-roll, or
+rendering stage. Progress, checkpoint, completion, and failure mutations use the
+worker-write pair; claim attempts use the per-worker bucket. The UI reserves one
+static-read token when opening or reconnecting a live task subscription rather
+than polling the HTTP route repeatedly. Accepting, editing metadata, archiving,
+and materializing an accepted output into the Product Library use the record-
+write pair. Materialization also uses the existing classic Library save limits,
+is idempotent, reuses only an R2 object under the exact owner, Product, and
+task-or-render-revision namespace, and never issues a second provider call.
+
+Creating or resuming a real trim, split, ordered merge, caption restyle,
+deterministic regeneration, Product-style batch, or platform export is subject
+to the same independent ownership and one-active-work checks. New render
+revisions consume `studioClipsRenderRevisionCreate` and
+`studioClipsRenderRevisionCreateGlobal` after strict source-revision and
+idempotency validation. Revisions then consume the existing paid-stage pair
+immediately before source download and render. Product-style saves use the
+record-write pair; any real batch revision they create also consumes the
+render-revision pair. An idempotent replay does not consume a second creation
+budget. Cancel/resume and worker lifecycle writes keep their existing buckets.
+
+Studio Stitch recipe, run, review, output, archive, reopen, acceptance, and
+handoff writes use the record-write owner/global pair. Catalog and bounded run
+reads reserve the static-read pair. Every configured paid intent is counted by
+requested output before persistence: DanSUGC, Gemini, ElevenLabs, and rendering
+have independent owner and sharded-global buckets. Missing provider
+configuration fails closed before an intent or paid call is presented as
+available. Worker claims consume the per-worker claim bucket. Lease, progress,
+checkpoint, failure, completion, and cost-reservation writes consume the
+worker-lifecycle owner/global pair. Provider execution workers recheck the
+corresponding reservation and Studio/Product/recipe/run ownership before each
+provider call; an intent row alone is not authorization to spend. DanSUGC
+selection is checkpointed before purchase, and a lost response is reconciled
+against purchase history. A repeated purchase reservation runs reconciliation
+only and never sends a second purchase request; unresolved coverage is an
+uncertain, non-retryable failure. Other repeated paid invocations without a
+durable checkpoint are classified as uncertain rather than retried blindly.
+Output materialization first reserves the Studio Stitch
+static-read pair before the R2 HEAD request, then consumes the record-write pair
+plus the existing Library save limits after verifying owner, Product, R2
+version, checksum, size, content type, and worker-probed media facts.
+
+Every `/api/studio/publishing/*` request first reserves the Studio publishing
+scope bucket after Clerk authentication, Studio access, and active Product
+ownership. The isolated publishing service then applies its Redis tenant and
+global policy for the exact action before external work. Default policies are:
+
+The internal publishing dispatch-access route is not browser-authenticated. It
+requires a dedicated constant-time-checked service secret and accepts only a
+4 KiB exact owner/Product body. Its responses are always `private, no-store`.
+The service rejects redirects, applies a five-second timeout, rejects a declared
+response length above 256 bytes before reading, enforces the same streamed cap,
+uses fatal UTF-8 decoding, and accepts only an exact boolean decision. Each
+allowed pre-dispatch check consumes the same
+3,600/hour owner and 100,000/hour global Studio publishing scope buckets. A
+revoked grant, owner opt-out, disabled global switch, archived Product,
+ownership mismatch, rate-limit rejection, or unavailable web/Convex
+authority fails closed before provider credentials, media grants, checkpoints,
+or provider calls are touched. When the service switch is off, the dispatcher
+does not lease records at all.
+
+| Postiz Beta service action | Tenant | Global |
+| --- | ---: | ---: |
+| Integration read | 120 per minute | 10,000 per minute |
+| OAuth start | 10 per 10 minutes | 1,000 per 10 minutes |
+| OAuth callback | 30 per 10 minutes | 3,000 per 10 minutes |
+| Integration refresh | 30 per hour | 2,000 per hour |
+| Integration disconnect | 10 per hour | 1,000 per hour |
+| Media registration | 60 per hour | 5,000 per hour |
+| Provider-readable media grant | 240 per hour | 20,000 per hour |
+| Draft write | 120 per hour | 10,000 per hour |
+| Immediate publish creation | 20 per hour | 1,000 per hour |
+| Scheduled publish creation | 100 per hour | 10,000 per hour |
+| User retry | 30 per hour | 2,000 per hour |
+| Cancellation | 60 per hour | 5,000 per hour |
+| Analytics refresh | 12 per hour | 200 per hour |
+| Status poll | 600 per minute | 10,000 per minute |
+| Webhook processing | 120 per minute | 5,000 per minute |
+| Paid provider work | 20 per minute | 500 per minute |
+
+Service limits use one atomic dual-scope Redis decision. A rejected request does
+not partially consume either scope and returns `429` with `Retry-After`.
+Provider-readable media grants have additional request and byte quotas enforced
+at the R2 gateway, and uncertain non-idempotent publishing outcomes are
+reconciled instead of automatically retried. These records and limits are
+separate from every Zernio route and bucket.
+
 ## Client Batch Caps
 
 Client upload controls enforce batch sizes before any processing, signed URL

@@ -1,0 +1,18 @@
+export const STUDIO_CLIPS_LIMITS = {
+  analysisJsonBytes: 1_000_000,
+  artifactCount: 101,
+  brollArtifactCount: 20,
+  brollArtifactSizeBytes: 100_000_000,
+  claimBytes: 524_288,
+  identifierCharacters: 160,
+  inputDurationSeconds: 5_400,
+  inputSizeBytes: 1_073_741_824,
+  localPathCharacters: 4_096,
+  mediaDimensionPixels: 8_192,
+  objectKeyCharacters: 1_024,
+  outputSizeBytes: 1_073_741_824,
+  redirectCount: 3,
+  transcriptCharacters: 2_000_000,
+  urlCharacters: 2_048,
+  workspaceBytes: 4_294_967_296,
+} as const;

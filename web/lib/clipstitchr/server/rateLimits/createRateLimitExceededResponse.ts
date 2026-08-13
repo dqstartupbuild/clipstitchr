@@ -53,6 +53,7 @@ export function createRateLimitExceededResponse(error: unknown) {
     {
       status: 429,
       headers: {
+        "Cache-Control": "private, no-store",
         "Retry-After": String(retryAfterSeconds),
       },
     },

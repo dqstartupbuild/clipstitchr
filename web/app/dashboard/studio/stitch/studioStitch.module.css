@@ -1,0 +1,1405 @@
+.page {
+  --stitch-ink: #f3e8de;
+  --stitch-muted: #b8a79a;
+  --stitch-copper: #c39a7d;
+  --stitch-copper-dark: #765342;
+  --stitch-paper: #d8c4b2;
+  --stitch-paper-ink: #261912;
+  --stitch-floor: #0e0a08;
+  --stitch-bench: #19110e;
+  --stitch-panel: #241914;
+  --stitch-panel-raised: #302019;
+  --stitch-danger: #e0a58f;
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 3rem);
+  overflow: clip;
+  color: var(--stitch-ink);
+  background-color: var(--stitch-floor);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.74' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+}
+
+.page::before {
+  position: absolute;
+  z-index: -1;
+  top: 10rem;
+  right: -18rem;
+  width: min(58rem, 68vw);
+  height: 86rem;
+  background: #17100d;
+  content: "";
+  transform: skewX(-7deg);
+  transform-origin: top right;
+}
+
+.page button,
+.page input,
+.page select,
+.page textarea {
+  font: inherit;
+}
+
+.page button,
+.page summary,
+.page label,
+.page select,
+.page input[type="checkbox"],
+.page input[type="radio"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.page button:focus-visible,
+.page a:focus-visible,
+.page input:focus-visible,
+.page select:focus-visible,
+.page textarea:focus-visible,
+.page summary:focus-visible {
+  outline: 3px solid #e2b99e;
+  outline-offset: 3px;
+}
+
+.page button:disabled,
+.page input:disabled,
+.page select:disabled,
+.page textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0 clamp(0.75rem, 2vw, 2rem);
+  max-width: 96rem;
+  margin: 0 auto;
+  padding: clamp(2.75rem, 7vw, 7rem) clamp(1.2rem, 4vw, 4rem) clamp(2rem, 4vw, 4rem);
+}
+
+.titleBlock {
+  grid-column: 1 / 11;
+  min-width: 0;
+}
+
+.productName {
+  overflow-wrap: anywhere;
+  max-width: 36rem;
+  margin-top: 1.1rem;
+  color: var(--stitch-copper);
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.titleBlock h1 {
+  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(3.7rem, 7.6vw, 8.2rem);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 0.84;
+}
+
+.titleBlock h1 span {
+  display: block;
+  white-space: nowrap;
+}
+
+.headerNote {
+  position: relative;
+  grid-column: 5 / -1;
+  margin-top: clamp(1.5rem, 4vw, 4rem);
+  padding: clamp(1.3rem, 3vw, 2.25rem);
+  color: #eaded4;
+  background: #2b1d17;
+}
+
+.headerNote::before,
+.headerNote::after {
+  position: absolute;
+  left: 0.7rem;
+  width: 0.6rem;
+  height: 0.9rem;
+  background: var(--stitch-floor);
+  content: "";
+}
+
+.headerNote::before {
+  top: 0.7rem;
+}
+
+.headerNote::after {
+  bottom: 0.7rem;
+}
+
+.headerNote > p {
+  max-width: 36rem;
+  color: #cfbdb0;
+  line-height: 1.65;
+}
+
+.headerNote dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-top: 1.5rem;
+}
+
+.headerNote dl div {
+  min-width: 0;
+  padding: 0.8rem;
+  background: #211611;
+}
+
+.headerNote dt {
+  color: #a99284;
+  font-size: 0.75rem;
+}
+
+.headerNote dd {
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.readiness,
+.workspace,
+.pageState {
+  width: min(100%, 96rem);
+  margin-inline: auto;
+}
+
+.readiness {
+  display: grid;
+  grid-template-columns: minmax(17rem, 0.42fr) minmax(0, 1.58fr);
+  gap: clamp(1.25rem, 4vw, 4rem);
+  padding: 0 clamp(1rem, 3vw, 3rem) clamp(2rem, 4vw, 4rem);
+}
+
+.readiness > div:first-child {
+  padding-top: 0.45rem;
+}
+
+.readiness h2,
+.sectionLead h2,
+.libraryHeading h2,
+.runExplorer > header h2,
+.pageState h2 {
+  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 0.96;
+}
+
+.readiness h2 {
+  font-size: clamp(1.8rem, 3.6vw, 3.6rem);
+}
+
+.readiness > div:first-child > p {
+  max-width: 34rem;
+  margin-top: 0.8rem;
+  color: var(--stitch-muted);
+  line-height: 1.6;
+}
+
+.providerList,
+.runIntents ul {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.providerList li,
+.runIntents li {
+  display: grid;
+  grid-template-columns: 1rem minmax(9rem, 0.55fr) minmax(10rem, 1.45fr);
+  align-items: center;
+  gap: 0.9rem;
+  min-height: 4.35rem;
+  padding: 0.9rem 1rem;
+  color: #d9c9bd;
+  background: var(--stitch-panel);
+}
+
+.providerList li[data-state="configured"],
+.runIntents li[data-state="intentReady"],
+.runIntents li[data-state="satisfiedByInput"] {
+  background: #2c2119;
+}
+
+.providerList li[data-state="unavailable"],
+.runIntents li[data-state="unavailable"] {
+  background: #2a1915;
+}
+
+.stateMark {
+  display: block;
+  width: 0.65rem;
+  height: 1.25rem;
+  background: #7a5c4b;
+  clip-path: polygon(0 0, 100% 0.25rem, 100% 100%, 0 0.95rem);
+}
+
+[data-state="configured"] > .stateMark,
+[data-state="intentReady"] > .stateMark,
+[data-state="satisfiedByInput"] > .stateMark {
+  background: #c5ad94;
+}
+
+[data-state="unavailable"] > .stateMark {
+  background: #b77f6c;
+}
+
+.providerList strong,
+.providerList span,
+.runIntents strong,
+.runIntents span {
+  display: block;
+}
+
+.providerList strong,
+.runIntents strong {
+  color: var(--stitch-ink);
+  font-size: 0.91rem;
+}
+
+.providerList span,
+.runIntents span {
+  margin-top: 0.22rem;
+  color: #aa978a;
+  font-size: 0.74rem;
+}
+
+.providerList p,
+.runIntents li > p {
+  color: #c9b7aa;
+  font-size: 0.83rem;
+  line-height: 1.45;
+}
+
+.readinessError,
+.inlineError {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  color: #ead7cc;
+  background: #392018;
+}
+
+.readinessError p,
+.inlineError p {
+  line-height: 1.5;
+}
+
+.readinessError button,
+.inlineError button {
+  min-height: 2.75rem;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 0.12rem;
+  padding: 0.68rem 0.95rem;
+  color: var(--stitch-paper-ink);
+  background: var(--stitch-paper);
+  font-weight: 850;
+}
+
+.readinessError button:hover,
+.inlineError button:hover {
+  background: #ead9c9;
+}
+
+.workspace {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  padding: 0 clamp(1rem, 3vw, 3rem) clamp(5rem, 9vw, 9rem);
+}
+
+.inputSources {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.6fr) minmax(18rem, 1.4fr);
+  align-items: end;
+  gap: 1rem;
+  padding: 1rem;
+  background: #15100d;
+}
+
+.sourceNotice {
+  padding: 0.85rem 1rem;
+  color: #d8c2b4;
+  background: #312017;
+  line-height: 1.5;
+}
+
+.recipeBuilder {
+  display: grid;
+  gap: 1.35rem;
+  padding: clamp(1.2rem, 3.7vw, 3.5rem);
+  color: var(--stitch-paper-ink);
+  background-color: var(--stitch-paper);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 170 170' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.62' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='.035'/%3E%3C/svg%3E");
+}
+
+.sectionLead {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.72fr) minmax(17rem, 1.28fr);
+  align-items: end;
+  gap: clamp(1rem, 4vw, 4rem);
+}
+
+.sectionLead h2 {
+  max-width: 9ch;
+  font-size: clamp(2.15rem, 5vw, 5rem);
+}
+
+.sectionLead p {
+  max-width: 42rem;
+  color: #5e4639;
+  line-height: 1.62;
+}
+
+.briefPicker,
+.pipelinePicker,
+.sourceGroup {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.briefPicker > legend,
+.pipelinePicker > legend,
+.sourceGroup > legend {
+  color: #37251c;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.fieldHelp,
+.sourceGroup > p,
+.emptySource {
+  margin-top: 0.45rem;
+  color: #624a3e;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.briefOptions,
+.pipelinePicker > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.briefOptions label,
+.pipelinePicker label,
+.sourceList label {
+  position: relative;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.briefOptions input,
+.pipelinePicker input,
+.sourceList input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.briefOptions label > span,
+.pipelinePicker label > span,
+.sourceList label > span {
+  display: flex;
+  min-height: 4.25rem;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.85rem 1rem;
+  color: #3d2b22;
+  background: #cbb4a1;
+}
+
+.briefOptions label > span {
+  min-height: 5.2rem;
+}
+
+.briefOptions input:checked + span,
+.pipelinePicker input:checked + span,
+.sourceList input:checked + span {
+  color: #efe2d6;
+  background: #4d3428;
+}
+
+.briefOptions input:focus-visible + span,
+.pipelinePicker input:focus-visible + span,
+.sourceList input:focus-visible + span {
+  outline: 3px solid #3f2b22;
+  outline-offset: 3px;
+}
+
+.briefOptions input:disabled + span,
+.pipelinePicker input:disabled + span,
+.sourceList input:disabled + span {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.briefOptions strong,
+.briefOptions small,
+.pipelinePicker strong,
+.pipelinePicker small,
+.sourceList strong,
+.sourceList small {
+  display: block;
+}
+
+.briefOptions strong,
+.pipelinePicker strong,
+.sourceList strong {
+  overflow-wrap: anywhere;
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+
+.briefOptions small,
+.pipelinePicker small,
+.sourceList small {
+  margin-top: 0.32rem;
+  color: inherit;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.pipelineFields {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.fieldPair,
+.musicFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.42rem;
+  min-width: 0;
+  color: inherit;
+  font-size: 0.85rem;
+  font-weight: 850;
+}
+
+.field input,
+.field select,
+.field textarea {
+  min-height: 2.85rem;
+  width: 100%;
+  border: 1px solid #9d806e;
+  border-radius: 0.12rem;
+  padding: 0.67rem 0.75rem;
+  color: #281a13;
+  background: #eadccd;
+}
+
+.field textarea {
+  min-height: 6rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field input[type="range"] {
+  min-height: 2.85rem;
+  border: 0;
+  padding: 0;
+  accent-color: #5c3d2f;
+  background: transparent;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #74594d;
+  opacity: 1;
+}
+
+.field small {
+  color: #675044;
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.sourceGroup {
+  padding: 1rem;
+  background: #ccb5a2;
+}
+
+.sourceList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  max-height: 24rem;
+  margin-top: 0.85rem;
+  overflow: auto;
+  padding: 0.25rem;
+  scrollbar-color: #6f4e3d #c4aa96;
+}
+
+.sourceList label > span {
+  min-height: 4rem;
+  background: #bfa48f;
+}
+
+.sourceGroup output {
+  display: block;
+  margin-top: 0.65rem;
+  color: #62483b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.copyDetails,
+.handoffDetails {
+  background: #c8af9b;
+}
+
+.copyDetails > summary,
+.handoffDetails > summary,
+.recipeCard > details > summary {
+  display: flex;
+  min-height: 2.85rem;
+  cursor: pointer;
+  align-items: center;
+  padding: 0.72rem 0.9rem;
+  font-weight: 850;
+}
+
+.copyDetails > summary {
+  color: #2c1c15;
+  background: #bea18b;
+}
+
+.copyFields,
+.handoffFields {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.saveRecipeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding-top: 0.25rem;
+}
+
+.saveRecipeRow p {
+  color: #654d40;
+  font-size: 0.83rem;
+  line-height: 1.45;
+}
+
+.saveRecipeRow button,
+.batchBar button,
+.runExplorer form button,
+.runActions button,
+.reviewAction button,
+.handoffFields button,
+.recipeCard > button,
+.pageState button {
+  min-height: 2.85rem;
+  border: 0;
+  border-radius: 0.12rem;
+  padding: 0.68rem 1rem;
+  color: #f4e8de;
+  background: #4d3328;
+  font-weight: 850;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.saveRecipeRow button:hover,
+.batchBar button:hover,
+.runExplorer form button:hover,
+.runActions button:hover,
+.reviewAction button:hover,
+.handoffFields button:hover,
+.recipeCard > button:hover,
+.pageState button:hover {
+  color: #241710;
+  background: #e4cfbc;
+}
+
+.formError,
+.formStatus,
+.failureMessage {
+  padding: 0.85rem 1rem;
+  line-height: 1.5;
+}
+
+.formError,
+.failureMessage {
+  color: #f0d9ce;
+  background: #4a251d;
+}
+
+.formStatus {
+  color: #e6d8cc;
+  background: #3a2d23;
+}
+
+.recipeLibrary,
+.runExplorer {
+  min-width: 0;
+  background: var(--stitch-bench);
+}
+
+.recipeLibrary {
+  padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+.libraryHeading,
+.runExplorer > header,
+.outputsPanel > header,
+.reviewPanel > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.libraryHeading h2,
+.runExplorer > header h2 {
+  font-size: clamp(1.85rem, 3.3vw, 3.5rem);
+}
+
+.libraryHeading > div > p,
+.runExplorer > header > div > p {
+  max-width: 46rem;
+  margin-top: 0.55rem;
+  color: var(--stitch-muted);
+  line-height: 1.55;
+}
+
+.libraryHeading > label,
+.checkField {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.65rem;
+  color: #d6c4b6;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.libraryHeading input,
+.checkField input,
+.recipeSummary input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--stitch-paper);
+}
+
+.recipeList,
+.outputList {
+  display: grid;
+  gap: 0.55rem;
+  margin: 1.35rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recipeCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.38fr) auto;
+  align-items: start;
+  gap: 0.7rem;
+  padding: 0.7rem;
+  background: var(--stitch-panel);
+}
+
+.recipeCard[data-status="archived"] {
+  background: #1b1512;
+}
+
+.recipeSummary {
+  display: grid;
+  grid-template-columns: 1.4rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.3rem;
+  padding: 0.4rem 0.45rem;
+}
+
+.recipeSummary > label {
+  display: grid;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  place-items: center;
+  margin: -0.7rem;
+  cursor: pointer;
+}
+
+.recipeSummary strong,
+.recipeSummary span {
+  display: block;
+}
+
+.recipeSummary strong {
+  color: #eee2d9;
+  font-size: 0.91rem;
+}
+
+.recipeSummary div > span {
+  overflow-wrap: anywhere;
+  margin-top: 0.25rem;
+  color: #bba99d;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.recipeSummary > p {
+  color: #a99385;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.recipeCard > details {
+  min-width: 0;
+  background: #1e1512;
+}
+
+.recipeCard > details > summary {
+  color: #d4c2b5;
+  background: #2b1e18;
+}
+
+.recipeFacts {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.9rem;
+}
+
+.recipeFacts div {
+  min-width: 0;
+}
+
+.recipeFacts dt {
+  color: #a58f81;
+  font-size: 0.72rem;
+}
+
+.recipeFacts dd {
+  overflow-wrap: anywhere;
+  margin-top: 0.2rem;
+  color: #e7dad0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.archivedMark {
+  color: #a79284;
+  font-size: 0.71rem;
+  font-weight: 800;
+}
+
+.batchBar {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) minmax(8rem, 0.28fr) auto;
+  align-items: end;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--stitch-panel-raised);
+}
+
+.batchBar strong,
+.batchBar span {
+  display: block;
+}
+
+.batchBar strong {
+  color: #eee3da;
+}
+
+.batchBar span {
+  margin-top: 0.25rem;
+  color: #b6a396;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.batchBar label,
+.runExplorer form label {
+  display: grid;
+  gap: 0.38rem;
+  color: #d1beb1;
+  font-size: 0.8rem;
+  font-weight: 850;
+}
+
+.batchBar input,
+.runExplorer form input {
+  min-height: 2.85rem;
+  width: 100%;
+  border: 1px solid #5b4034;
+  border-radius: 0.12rem;
+  padding: 0.65rem 0.75rem;
+  color: #f2e6dc;
+  background: #100c0a;
+}
+
+.emptyLibrary,
+.noRun,
+.noOutputs,
+.loadingLine {
+  padding: 1rem;
+  color: #c8b6aa;
+  background: #251a15;
+  line-height: 1.55;
+}
+
+.emptyLibrary {
+  margin-top: 1.2rem;
+}
+
+.loadingLine {
+  min-height: 3.75rem;
+}
+
+.runExplorer {
+  padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+.runExplorer > header {
+  align-items: end;
+}
+
+.runExplorer > header > form {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) auto;
+  align-items: end;
+  gap: 0.55rem;
+  width: min(100%, 33rem);
+}
+
+.recentRuns {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  margin: 1.2rem 0;
+  padding: 0.4rem;
+  background: #100c0a;
+  scrollbar-color: #69493a #100c0a;
+}
+
+.recentRuns button {
+  min-height: 2.75rem;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 0.1rem;
+  padding: 0.65rem 0.85rem;
+  color: #bda99c;
+  background: #211713;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.recentRuns button:hover {
+  color: #f0e4db;
+  background: #39261d;
+}
+
+.recentRuns button[aria-pressed="true"] {
+  color: var(--stitch-paper-ink);
+  background: var(--stitch-paper);
+}
+
+.runViewer {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  padding: clamp(0.8rem, 2.2vw, 1.75rem);
+  background: #110d0b;
+}
+
+.runHeading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--stitch-panel-raised);
+}
+
+.runHeading p {
+  color: #ae998b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.runHeading h2 {
+  margin-top: 0.2rem;
+  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.8rem);
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.runHeading span {
+  display: block;
+  margin-top: 0.45rem;
+  color: #bda99c;
+  font-size: 0.78rem;
+}
+
+.runHeading code {
+  overflow-wrap: anywhere;
+  max-width: 28rem;
+  color: #bda99a;
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+.runIdentity {
+  display: grid;
+  justify-items: end;
+  gap: 0.7rem;
+}
+
+.refreshRunButton {
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 0.12rem;
+  padding: 0.65rem 0.85rem;
+  color: #d8c8bd;
+  background: #1b1310;
+  font-weight: 800;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.refreshRunButton:hover {
+  color: #281b14;
+  background: #d8c4b2;
+}
+
+.runActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.85rem 1rem;
+  background: #1e1512;
+}
+
+.runActions p {
+  flex: 1 1 22rem;
+  color: #c6b3a6;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.runIntents,
+.outputsPanel,
+.reviewPanel {
+  min-width: 0;
+  padding: 1rem;
+  background: #1c1411;
+}
+
+.runIntents > h3,
+.outputsPanel h3,
+.reviewPanel h3 {
+  color: #f0e5dc;
+  font-size: 1.05rem;
+}
+
+.runIntents > p,
+.outputsPanel header p,
+.reviewPanel header p {
+  margin-top: 0.35rem;
+  color: #b4a194;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.runIntents ul {
+  margin-top: 0.85rem;
+}
+
+.outputsPanel > header,
+.reviewPanel > header {
+  align-items: center;
+  padding-bottom: 0.8rem;
+}
+
+.outputsPanel > header > strong,
+.reviewPanel > header > strong {
+  flex: 0 0 auto;
+  color: #c8b39f;
+  font-size: 0.79rem;
+}
+
+.outputList {
+  margin-top: 0;
+}
+
+.outputCard {
+  padding: 0.85rem;
+  background: var(--stitch-panel);
+}
+
+.outputCard[data-status="accepted"] {
+  background: #2b221a;
+}
+
+.outputCard > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.outputCard > header strong,
+.outputCard > header span {
+  display: block;
+}
+
+.outputCard > header strong {
+  overflow-wrap: anywhere;
+  color: #ede1d8;
+  font-size: 0.86rem;
+}
+
+.outputCard > header span,
+.outputCard > header p {
+  margin-top: 0.25rem;
+  color: #ae998b;
+  font-size: 0.75rem;
+}
+
+.outputCard > header p {
+  margin-top: 0;
+  text-align: right;
+}
+
+.handoffDetails {
+  background: #201613;
+}
+
+.handoffDetails > summary {
+  color: #dfd0c5;
+  background: #322219;
+}
+
+.handoffFields .field input,
+.handoffFields .field select,
+.handoffFields .field textarea {
+  border-color: #554034;
+  color: #f0e5dc;
+  background: #120d0b;
+}
+
+.handoffFields .field small {
+  color: #ad9a8c;
+}
+
+.handoffHonesty {
+  padding: 0.8rem;
+  color: #c8b4a6;
+  background: #2a1c17;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.acceptedHandoffs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.acceptedHandoffs p {
+  padding: 0.7rem;
+  color: #d4c3b7;
+  background: #1c1511;
+  font-size: 0.76rem;
+}
+
+.acceptedHandoffs a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 0.85rem;
+  color: #281b14;
+  background: #d8c4b2;
+  font-size: 0.8rem;
+  font-weight: 850;
+  text-decoration: none;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.acceptedHandoffs a:hover {
+  background: #ebdbcc;
+}
+
+.acceptedHandoffs small {
+  grid-column: 1 / -1;
+  color: #ab9789;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.noOutputs {
+  background: #271b16;
+}
+
+.noOutputs p + p {
+  margin-top: 0.3rem;
+  color: #ad9b8f;
+  font-size: 0.8rem;
+}
+
+.reviewAction {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #2e211a;
+}
+
+.reviewAction p {
+  color: #d0beb1;
+  font-size: 0.83rem;
+  line-height: 1.45;
+}
+
+.pageState {
+  max-width: 56rem;
+  margin-block: clamp(2rem, 8vw, 8rem);
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  color: var(--stitch-paper-ink);
+  background: var(--stitch-paper);
+}
+
+.pageState h2 {
+  font-size: clamp(2rem, 5vw, 4.5rem);
+}
+
+.pageState p {
+  max-width: 42rem;
+  margin-top: 0.9rem;
+  color: #5a4337;
+  line-height: 1.6;
+}
+
+.pageState button {
+  margin-top: 1.25rem;
+}
+
+.srOnly {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 68rem) {
+  .readiness {
+    grid-template-columns: 1fr;
+  }
+
+  .titleBlock {
+    grid-column: 1 / -1;
+  }
+
+  .headerNote {
+    grid-column: 3 / -1;
+  }
+
+  .readiness > div:first-child {
+    display: grid;
+    grid-template-columns: minmax(11rem, 0.55fr) minmax(16rem, 1.45fr);
+    align-items: end;
+    gap: 1.5rem;
+  }
+
+  .readiness > div:first-child > p {
+    margin-top: 0;
+  }
+
+  .sourceList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .recipeCard {
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.48fr);
+  }
+
+  .recipeCard > button {
+    grid-column: 2;
+  }
+
+  .runExplorer > header {
+    display: grid;
+  }
+
+  .runExplorer > header > form {
+    width: 100%;
+  }
+}
+
+@media (max-width: 48rem) {
+  .page::before {
+    right: -28rem;
+    width: 48rem;
+  }
+
+  .header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.75rem clamp(0.35rem, 2vw, 0.75rem);
+    padding-top: 2.5rem;
+  }
+
+  .titleBlock h1 {
+    font-size: clamp(2rem, 10.5vw, 4.5rem);
+  }
+
+  .headerNote {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+
+  .headerNote dl,
+  .fieldPair,
+  .musicFields,
+  .inputSources,
+  .sectionLead,
+  .readiness > div:first-child,
+  .batchBar,
+  .reviewAction {
+    grid-template-columns: 1fr;
+  }
+
+  .readiness {
+    gap: 1rem;
+  }
+
+  .readiness > div:first-child > p {
+    margin-top: 0.65rem;
+  }
+
+  .providerList li,
+  .runIntents li {
+    grid-template-columns: 1rem minmax(0, 1fr);
+  }
+
+  .providerList li > p,
+  .runIntents li > p {
+    grid-column: 2;
+  }
+
+  .briefOptions,
+  .pipelinePicker > div,
+  .sourceList {
+    grid-template-columns: 1fr;
+  }
+
+  .saveRecipeRow,
+  .libraryHeading,
+  .outputsPanel > header,
+  .reviewPanel > header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .saveRecipeRow button,
+  .batchBar button,
+  .reviewAction button {
+    width: 100%;
+  }
+
+  .recipeCard {
+    grid-template-columns: 1fr;
+  }
+
+  .recipeCard > button {
+    grid-column: auto;
+  }
+
+  .recipeSummary {
+    grid-template-columns: 1.4rem minmax(0, 1fr);
+  }
+
+  .recipeSummary > p {
+    grid-column: 2;
+    white-space: normal;
+  }
+
+  .runExplorer > header > form,
+  .runHeading {
+    grid-template-columns: 1fr;
+  }
+
+  .runHeading code {
+    max-width: none;
+    text-align: left;
+  }
+
+  .runIdentity {
+    justify-items: start;
+  }
+
+  .acceptedHandoffs {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 28rem) {
+  .headerNote dl {
+    gap: 0.35rem;
+  }
+
+  .recipeBuilder,
+  .recipeLibrary,
+  .runExplorer {
+    padding: 0.85rem;
+  }
+
+  .providerList li,
+  .runIntents li,
+  .runViewer,
+  .runHeading,
+  .runIntents,
+  .outputsPanel,
+  .reviewPanel {
+    padding-inline: 0.75rem;
+  }
+
+  .readinessError,
+  .inlineError {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

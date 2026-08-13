@@ -1,0 +1,986 @@
+.researchPage {
+  --research-ink: #f3e9df;
+  --research-paper: #d8c5b3;
+  --research-paper-ink: #231914;
+  --research-bench: #19120f;
+  --research-brown: #2a1e18;
+  --research-copper: #b98a6c;
+  --research-muted: #b9a99e;
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 3rem);
+  overflow: clip;
+  color: var(--research-ink);
+  background-color: #120e0c;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.035'/%3E%3C/svg%3E");
+}
+
+.researchPage::before {
+  position: absolute;
+  z-index: -1;
+  top: 8rem;
+  right: -18vw;
+  width: 58vw;
+  height: 72rem;
+  background: #211712;
+  content: "";
+  transform: rotate(7deg);
+  transform-origin: top left;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(20rem, 0.8fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  max-width: 92rem;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 6rem) clamp(1.25rem, 4vw, 4rem) 1.25rem;
+}
+
+.headerTitle {
+  align-self: end;
+  min-width: 0;
+}
+
+.productName {
+  overflow: hidden;
+  max-width: 34rem;
+  color: var(--research-copper);
+  font-size: 1rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerTitle h1 {
+  max-width: 12ch;
+  margin-top: 0.45rem;
+  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(3.2rem, 7vw, 7rem);
+  font-weight: 900;
+  letter-spacing: -0.068em;
+  line-height: 0.87;
+}
+
+.corpusLedger {
+  align-self: end;
+  padding: clamp(1.15rem, 2.5vw, 2rem);
+  color: #e5d8cd;
+  background: #2b201a;
+}
+
+.corpusLedger > p {
+  max-width: 33rem;
+  color: #c9b8ab;
+  line-height: 1.65;
+}
+
+.corpusLedger dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+.corpusLedger dl div {
+  min-width: 0;
+  padding: 0.8rem;
+  background: #211713;
+}
+
+.corpusLedger dt {
+  color: #aa978a;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.corpusLedger dd {
+  margin-top: 0.35rem;
+  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.researchTabs {
+  max-width: 92rem;
+  margin: 1.5rem auto 0;
+  padding: 0 clamp(1rem, 3vw, 3rem) clamp(4rem, 8vw, 8rem);
+}
+
+.tabList {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0.4rem;
+  background: #231914;
+  scrollbar-color: #6f4e3c #231914;
+}
+
+.tabList button {
+  min-height: 3rem;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 0.12rem;
+  padding: 0.7rem 1rem;
+  color: #bba99d;
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.tabList button:hover {
+  color: #f4e9df;
+  background: #32231c;
+}
+
+.tabList button[data-active] {
+  color: #211813;
+  background: var(--research-paper);
+}
+
+.tabPanel {
+  padding-top: clamp(1rem, 2.5vw, 2.5rem);
+}
+
+.tabPanel:focus-visible,
+.tabList button:focus-visible,
+.researchPage button:focus-visible,
+.researchPage a:focus-visible,
+.researchPage input:focus-visible,
+.researchPage select:focus-visible,
+.researchPage textarea:focus-visible,
+.researchPage summary:focus-visible {
+  outline: 3px solid #e0b99f;
+  outline-offset: 3px;
+}
+
+.pageState {
+  max-width: 52rem;
+  margin: clamp(3rem, 8vw, 8rem) auto;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  color: var(--research-paper-ink);
+  background: var(--research-paper);
+}
+
+.pageState h2,
+.records h2,
+.wikiLibrary h2 {
+  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(1.9rem, 4vw, 3.5rem);
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+}
+
+.pageState p {
+  max-width: 40rem;
+  margin-top: 0.9rem;
+  line-height: 1.6;
+}
+
+.pageState button,
+.saveAction button,
+.recordHeading button,
+.archiveButton,
+.handoffControls button {
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 0.12rem;
+  padding: 0.7rem 1rem;
+  color: #f5e9df;
+  background: #4a3328;
+  font: inherit;
+  font-weight: 800;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.pageState button {
+  margin-top: 1.25rem;
+}
+
+.pageState button:hover,
+.saveAction button:hover,
+.recordHeading button:hover,
+.archiveButton:hover,
+.handoffControls button:hover {
+  color: #211813;
+  background: #d6b7a2;
+}
+
+.researchPage button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.42fr) minmax(0, 1.58fr);
+  align-items: start;
+  gap: clamp(1rem, 3vw, 3rem);
+}
+
+.jobPicker {
+  overflow: hidden;
+  background: #211814;
+}
+
+.jobPicker details + details {
+  margin-top: 0.35rem;
+}
+
+.jobPicker summary,
+.workflowSourceNotes summary,
+.result details summary,
+.recordRow details summary,
+.briefRow details summary,
+.wikiDocument summary,
+.workflowPlan details summary {
+  display: flex;
+  min-height: 2.9rem;
+  cursor: pointer;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  color: #e7d9ce;
+  background: #30221b;
+  font-weight: 850;
+}
+
+.jobList {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.45rem;
+}
+
+.jobButton {
+  min-height: 4.25rem;
+  border: 0;
+  border-radius: 0.1rem;
+  padding: 0.85rem 0.9rem;
+  color: #c2b1a5;
+  background: #19120f;
+  text-align: left;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.jobButton strong,
+.jobButton span {
+  display: block;
+}
+
+.jobButton strong {
+  color: #f0e5dc;
+  font-size: 0.95rem;
+}
+
+.jobButton span {
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.jobButton:hover {
+  color: #e8d8cd;
+  background: #39271f;
+}
+
+.jobButton[aria-pressed="true"] {
+  color: #241914;
+  background: #cdb7a5;
+}
+
+.jobButton[aria-pressed="true"] strong {
+  color: #241914;
+}
+
+.plannerDisclosure {
+  padding: 0.9rem 1rem 0.35rem;
+  color: #a89588;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.jobWorkspace {
+  min-width: 0;
+}
+
+.jobForm {
+  display: grid;
+  gap: 1.2rem;
+  padding: clamp(1.25rem, 4vw, 3.5rem);
+  color: var(--research-paper-ink);
+  background-color: var(--research-paper);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='.04'/%3E%3C/svg%3E");
+}
+
+.formIntroduction {
+  display: grid;
+  grid-template-columns: minmax(11rem, 0.72fr) minmax(15rem, 1.28fr);
+  align-items: end;
+  gap: clamp(1rem, 4vw, 4rem);
+  padding-bottom: 0.7rem;
+}
+
+.formIntroduction h2,
+.resultHeader h2 {
+  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(2rem, 4.5vw, 4rem);
+  letter-spacing: -0.052em;
+  line-height: 0.95;
+}
+
+.formIntroduction p {
+  max-width: 35rem;
+  line-height: 1.62;
+}
+
+.jobForm label,
+.wikiChooser,
+.handoffControls label {
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.jobForm input,
+.jobForm select,
+.jobForm textarea,
+.wikiChooser select,
+.handoffControls select {
+  width: 100%;
+  min-height: 2.9rem;
+  border: 2px solid #8f7767;
+  border-radius: 0.08rem;
+  padding: 0.7rem 0.8rem;
+  color: #231914;
+  background: #eee2d6;
+  font: inherit;
+}
+
+.jobForm textarea {
+  min-height: 8rem;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.formPair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.choiceFieldset,
+.approvalControls {
+  border: 0;
+  padding: 0;
+}
+
+.choiceFieldset legend,
+.approvalControls legend {
+  margin-bottom: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.choiceFieldset label {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.7rem;
+  background: #c8b29f;
+}
+
+.choiceFieldset label + label {
+  margin-top: 0.35rem;
+}
+
+.choiceFieldset input {
+  width: 1.15rem;
+  min-height: auto;
+  height: 1.15rem;
+  margin: 0;
+}
+
+.runButton {
+  min-height: 3.2rem;
+  border: 0;
+  border-radius: 0.1rem;
+  padding: 0.8rem 1.2rem;
+  color: #f7ede5;
+  background: #3f2b22;
+  font: inherit;
+  font-weight: 900;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.runButton:hover {
+  color: #211813;
+  background: #b98a6c;
+}
+
+.jobNotice {
+  padding: 0.9rem 1rem;
+  color: #4f382c;
+  background: #c9b19e;
+  line-height: 1.55;
+}
+
+.workflowSourceNotes ul,
+.result details ul,
+.recordRow details ul,
+.briefRow details ul,
+.workflowPlan details ul {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem 1rem 1rem 2.3rem;
+  line-height: 1.5;
+}
+
+.jobError,
+.recordsError {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  color: #f2d8cf;
+  background: #572d29;
+  line-height: 1.5;
+}
+
+.result {
+  margin-top: clamp(1rem, 3vw, 2.5rem);
+  padding: clamp(1.2rem, 3.5vw, 3rem);
+  color: #eadfd6;
+  background: #2b201a;
+}
+
+.resultHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2rem;
+  align-items: end;
+}
+
+.resultHeader > div > p {
+  color: #be9377;
+  font-weight: 850;
+}
+
+.resultHeader h2 {
+  margin-top: 0.45rem;
+}
+
+.resultHeader > div > span {
+  display: block;
+  max-width: 48rem;
+  margin-top: 0.9rem;
+  color: #c9b8ab;
+  line-height: 1.65;
+}
+
+.saveAction {
+  min-width: 10rem;
+}
+
+.saveAction button {
+  width: 100%;
+  background: #79533f;
+}
+
+.saveAction p {
+  max-width: 18rem;
+  margin-top: 0.5rem;
+  color: #f3c9c0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.evidenceSection,
+.exampleSection,
+.resultSections,
+.sourceLinks,
+.resultNotes,
+.workflowPlan {
+  margin-top: clamp(2rem, 5vw, 4.5rem);
+}
+
+.evidenceSection h3,
+.exampleSection h3,
+.resultSections h3,
+.sourceLinks h3,
+.workflowPlan h3 {
+  font-size: clamp(1.25rem, 2.5vw, 2rem);
+  letter-spacing: -0.025em;
+}
+
+.evidenceList,
+.exampleSection ol,
+.sourceLinks ul,
+.workflowPlan ol {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  list-style: none;
+}
+
+.evidenceList li,
+.exampleSection li,
+.sourceLinks li,
+.workflowPlan ol li {
+  padding: 1rem;
+  background: #211713;
+}
+
+.evidenceList li > div,
+.exampleSection li > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.evidenceList li > div span,
+.exampleSection li > div span {
+  color: #b68a6e;
+  font-size: 0.78rem;
+}
+
+.evidenceList p,
+.exampleSection p {
+  margin-top: 0.55rem;
+  color: #d5c6bb;
+  line-height: 1.55;
+}
+
+.evidenceList small {
+  display: block;
+  margin-top: 0.65rem;
+  color: #a79487;
+}
+
+.exampleSection a,
+.sourceLinks a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  margin-top: 0.5rem;
+  color: #e3b89b;
+  font-weight: 800;
+  transition: color 150ms ease;
+}
+
+.exampleSection a:hover,
+.sourceLinks a:hover {
+  color: #fff4eb;
+}
+
+.sourceLinks a {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.sourceLinks a span {
+  color: #ae9c8f;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.resultSections details,
+.resultNotes details,
+.workflowPlan details,
+.recordRow details,
+.briefRow details,
+.wikiDocument {
+  margin-top: 0.45rem;
+  background: #211713;
+}
+
+.resultSections > h3 + details,
+.resultNotes > details:first-child,
+.workflowPlan > p + ol {
+  margin-top: 1rem;
+}
+
+.resultSections details li,
+.resultNotes details li,
+.workflowPlan details li,
+.recordRow details li,
+.briefRow details li {
+  color: #d4c5ba;
+}
+
+.resultNotes details p {
+  padding: 1rem;
+  color: #d3c3b8;
+  line-height: 1.65;
+}
+
+.readOnlyResult {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1rem;
+  color: #ded1c7;
+}
+
+.readOnlyResult > p,
+.readOnlyResult section > p {
+  line-height: 1.65;
+}
+
+.readOnlyResult section h4 {
+  color: #edc7ac;
+  font-size: 1rem;
+}
+
+.readOnlyResult section ul {
+  margin-top: 0.55rem;
+  padding: 0 0 0 1.25rem;
+}
+
+.readOnlyResult a {
+  color: #efc3a5;
+  font-weight: 800;
+}
+
+.workflowPlan > p {
+  margin-top: 0.55rem;
+  color: #bdab9e;
+}
+
+.workflowPlan ol li {
+  display: grid;
+  grid-template-columns: minmax(9rem, 0.35fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.workflowPlan ol span {
+  color: #cdbdb2;
+  line-height: 1.5;
+}
+
+.records,
+.wikiLibrary {
+  max-width: 68rem;
+  min-height: 32rem;
+  margin: 0 auto;
+  padding: clamp(1.25rem, 4vw, 3.5rem);
+  color: var(--research-paper-ink);
+  background: var(--research-paper);
+}
+
+.records > header p,
+.wikiLibrary > header p {
+  max-width: 43rem;
+  margin-top: 0.9rem;
+  line-height: 1.6;
+}
+
+.recordList {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 2rem;
+  list-style: none;
+}
+
+.recordRow,
+.briefRow {
+  padding: clamp(1rem, 2.5vw, 1.6rem);
+  background: #c6b09e;
+}
+
+.recordRow:nth-child(even),
+.briefRow:nth-child(even) {
+  background: #cfbbab;
+}
+
+.recordHeading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.recordHeading strong,
+.recordHeading span {
+  display: block;
+}
+
+.recordHeading strong {
+  font-size: 1.04rem;
+}
+
+.recordHeading span {
+  margin-top: 0.3rem;
+  color: #6e584b;
+  font-size: 0.78rem;
+}
+
+.recordHeading > p {
+  color: #68493a;
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-align: right;
+}
+
+.recordRow > p,
+.briefRow > p {
+  margin-top: 0.9rem;
+  line-height: 1.55;
+}
+
+.recordRow details,
+.briefRow details {
+  color: #eee3da;
+  background: #37261e;
+}
+
+.recordFailure,
+.recordsError {
+  color: #fff0e9;
+  background: #64332e;
+}
+
+.recordDetails {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.recordDetails div {
+  min-width: 0;
+  padding: 0.75rem;
+  background: #261a15;
+}
+
+.recordDetails dt {
+  color: #a99587;
+  font-size: 0.72rem;
+}
+
+.recordDetails dd {
+  overflow-wrap: anywhere;
+  margin-top: 0.3rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.76rem;
+}
+
+.recordsStatus {
+  margin-top: 2rem;
+  padding: 1.2rem;
+  background: #c5ae9b;
+  line-height: 1.55;
+}
+
+.approvalControls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-top: 1.2rem;
+}
+
+.approvalControls legend {
+  grid-column: 1 / -1;
+}
+
+.approvalControls button {
+  min-height: 2.8rem;
+  border: 0;
+  border-radius: 0.08rem;
+  padding: 0.65rem;
+  color: #4e392d;
+  background: #b49a87;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.approvalControls button:hover {
+  color: #f3e8df;
+  background: #614332;
+}
+
+.approvalControls button[aria-pressed="true"] {
+  color: #f8ede4;
+  background: #4a3328;
+}
+
+.handoffControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+}
+
+.handoffOpenAction {
+  display: inline-flex;
+  min-height: 2.8rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 0.85rem;
+  color: #f3e8df;
+  background: #4a3328;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.handoffOpenAction:hover {
+  color: #37251d;
+  background: #e1c8b7;
+}
+
+.handoffNote {
+  color: #6a5245;
+  font-size: 0.8rem;
+}
+
+.briefBusyStatus {
+  padding: 0.75rem;
+  color: #f4e8df;
+  background: #4b3429;
+  font-weight: 750;
+}
+
+.archiveButton {
+  margin-top: 1rem;
+  color: #4b3028;
+  background: #b99c8a;
+}
+
+.wikiChooser {
+  max-width: 34rem;
+  margin-top: 2rem;
+}
+
+.wikiDocument {
+  margin-top: 1rem;
+  color: #eee3da;
+  background: #2c201a;
+}
+
+.wikiSource {
+  padding: 1rem 1.2rem 0;
+  color: #b69d8d;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.76rem;
+  overflow-wrap: anywhere;
+}
+
+.wikiContent {
+  max-height: 42rem;
+  overflow: auto;
+  padding: 1.2rem;
+  color: #ded1c7;
+  font-family: inherit;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 880px) {
+  .header,
+  .workbench,
+  .formIntroduction {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .header {
+    gap: 2rem;
+  }
+
+  .headerTitle h1 {
+    max-width: 10ch;
+  }
+
+  .jobPicker {
+    position: static;
+  }
+
+  .jobList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .researchPage::before {
+    display: none;
+  }
+
+  .header {
+    padding: 2.5rem 1rem 1rem;
+  }
+
+  .headerTitle h1 {
+    font-size: clamp(3rem, 16vw, 4.4rem);
+  }
+
+  .corpusLedger dl,
+  .formPair,
+  .jobList,
+  .recordDetails,
+  .approvalControls,
+  .handoffControls,
+  .resultHeader,
+  .workflowPlan ol li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .researchTabs {
+    padding-inline: 0.6rem;
+  }
+
+  .tabList button,
+  .jobButton,
+  .runButton,
+  .pageState button,
+  .saveAction button,
+  .recordHeading button,
+  .approvalControls button,
+  .handoffControls button,
+  .archiveButton,
+  .researchPage input,
+  .researchPage select,
+  .researchPage summary {
+    min-height: 2.75rem;
+  }
+
+  .jobForm,
+  .result,
+  .records,
+  .wikiLibrary {
+    padding: 1rem;
+  }
+
+  .resultHeader {
+    align-items: start;
+  }
+
+  .recordHeading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .recordHeading > p {
+    text-align: left;
+  }
+
+  .evidenceList li > div,
+  .exampleSection li > div {
+    align-items: start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .researchPage *,
+  .researchPage *::before,
+  .researchPage *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

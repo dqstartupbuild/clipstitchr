@@ -1,0 +1,55 @@
+{
+  "snapshotId": "opencut-classic-cf5e79e",
+  "snapshotVersion": "cf5e79e",
+  "source": {
+    "repositoryUrl": "https://github.com/opencut-app/opencut-classic.git",
+    "repositoryWebUrl": "https://github.com/opencut-app/opencut-classic",
+    "canonicalRole": "Official archived original OpenCut browser-editor codebase",
+    "defaultBranch": "main",
+    "headAtFetch": "cf5e79e919144200294fb9fed22a222592a0aeea",
+    "commit": "cf5e79e919144200294fb9fed22a222592a0aeea",
+    "shortCommit": "cf5e79e",
+    "commitUrl": "https://github.com/opencut-app/opencut-classic/commit/cf5e79e919144200294fb9fed22a222592a0aeea",
+    "commitDate": "2026-05-17T16:07:21Z",
+    "commitMessage": "docs: readme",
+    "gitTree": "33e71daa26b9116be28f32adc8c96a6f34103f48",
+    "tag": null,
+    "archived": true,
+    "archivedByOwnerOn": "2026-05-17"
+  },
+  "acquisition": {
+    "fetchedAt": "2026-08-12T22:52:35Z",
+    "fetchDate": "2026-08-12",
+    "copiedAt": "2026-08-12T22:52:36Z",
+    "upstreamDirectory": "upstream",
+    "method": "Shallow bare clone of the canonical main branch followed by git archive of the pinned commit"
+  },
+  "sourceVerification": {
+    "verifiedAt": "2026-08-12T22:54:24Z",
+    "gitTreeApiTruncated": false,
+    "gitTreeEntries": 1335,
+    "gitBlobEntries": 1128,
+    "gitTreeDirectoryEntries": 207,
+    "copiedRegularFiles": 1128,
+    "copiedDirectoriesIncludingRoot": 208,
+    "copiedSymlinks": 0,
+    "method": "Compared every git ls-tree path to the copied tree, every regular file to its pinned git hash-object blob ID, and every executable bit to the pinned Git mode.",
+    "result": "Every copied file matched the pinned Git blob ID and executable mode; the copied path count matched the complete, non-truncated Git tree."
+  },
+  "implementationEvidence": {
+    "editorRoute": "apps/web/src/app/editor/[project_id]/page.tsx",
+    "timelineDirectory": "apps/web/src/timeline",
+    "previewDirectory": "apps/web/src/preview",
+    "exportDirectory": "apps/web/src/export",
+    "projectsRoute": "apps/web/src/app/projects/page.tsx"
+  },
+  "verification": {
+    "manifest": "SHA256SUMS",
+    "manifestSha256": "c9ef06efaa180f2976b7d34bf589fa95ff8314959603096e68311046683ff502",
+    "wholeTreeSha256": "c9ef06efaa180f2976b7d34bf589fa95ff8314959603096e68311046683ff502",
+    "manifestAlgorithm": "Regular files beneath upstream are sorted by POSIX-relative path with LC_ALL=C. Each LF-terminated manifest line is lowercase SHA-256, two ASCII spaces, then the relative path.",
+    "regularFileCount": 1128,
+    "script": "verify-snapshot.mjs",
+    "test": "verification/verifySnapshot.test.mjs"
+  }
+}

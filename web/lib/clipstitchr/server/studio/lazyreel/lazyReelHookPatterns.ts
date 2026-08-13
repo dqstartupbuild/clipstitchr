@@ -1,0 +1,15 @@
+export const lazyReelHookPatterns = [
+  { id: "pov", name: "POV / recognition", template: "POV: {moment}" },
+  { id: "belief", name: "Belief-challenging", template: "I thought every {category} was the same. I was wrong about {product}." },
+  { id: "callout", name: "Direct call-out", template: "To the {audience} who has tried everything: this is for you." },
+  { id: "beforeafter", name: "Before / after", template: "The {category} that never lasts. Then {product}, still holding at the end of the day." },
+  { id: "size", name: "Size-of-claim", template: "The one {category} number nobody quotes." },
+  { id: "speed", name: "Speed-of-claim", template: "{category} that lasts after one use." },
+  { id: "authority", name: "Authority figure", template: "Why {niche} pros quietly reach for {product}." },
+  { id: "removelimit", name: "Removing limitations", template: "{category} that lasts, even if you quit every routine by day three." },
+  { id: "question", name: "Question-based", template: "Still fighting {category}?" },
+  { id: "howto", name: "Information-offering", template: "How to nail {category} in an afternoon, no studio." },
+  { id: "newness", name: "Newness", template: "The {category} thing nobody is talking about yet." },
+  { id: "exclusivity", name: "Exclusivity", template: "The only {category} that actually does the job." },
+  { id: "contrast", name: "Comparing to rivals", template: "The overpriced {category} versus {product}." },
+] as const;

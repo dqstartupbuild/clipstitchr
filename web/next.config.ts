@@ -43,6 +43,12 @@ const nextConfig: NextConfig = {
       ignore: [emailConfirmationRequestLogIgnorePattern],
     },
   },
+  outputFileTracingIncludes: {
+    "/api/studio/research/*": [
+      "./vendor/lazyreel/v0_1_0/upstream/mcp/data/**/*",
+      "./vendor/lazyreel/v0_1_0/upstream/wiki/**/*",
+    ],
+  },
   skipTrailingSlashRedirect: true,
   async headers() {
     return [

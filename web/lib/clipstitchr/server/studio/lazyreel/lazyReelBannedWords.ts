@@ -1,0 +1,18 @@
+export const lazyReelBannedWords = [
+  "revolutionary",
+  "supercharge",
+  "game-changing",
+  "game-changer",
+  "transform your life",
+  "transformed my routine",
+  "experience the difference",
+  "introducing our new",
+  "unlock the power",
+  "elevate your",
+  "seamless",
+  "innovative",
+  "stunning",
+  "breathtaking",
+  "epic",
+  "unleash",
+] as const;

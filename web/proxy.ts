@@ -38,7 +38,10 @@ export default async function proxy(
         error:
           "Development preview does not authorize API or server-action access.",
       },
-      { status: 401 },
+      {
+        status: 401,
+        headers: { "Cache-Control": "private, no-store" },
+      },
     );
   }
 

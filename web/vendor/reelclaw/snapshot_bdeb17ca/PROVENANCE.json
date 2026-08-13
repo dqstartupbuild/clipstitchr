@@ -1,0 +1,40 @@
+{
+  "snapshotId": "reelclaw-snapshot-bdeb17ca",
+  "snapshotVersion": "bdeb17ca",
+  "stableDirectoryName": "snapshot_bdeb17ca",
+  "source": {
+    "localPath": "/Users/starship/GitHub/reelclaw-main",
+    "declaredVersion": null,
+    "gitMetadataPresent": false,
+    "noticeFiles": [],
+    "wholeTreeFingerprint": {
+      "sha256": "bdeb17cac41fd8040a39a32f660f336c1a6e5d608125efb1043b924ab9f4f426",
+      "algorithm": "SHA-256 of the complete LF-terminated SHA256SUMS manifest, whose source-relative paths are sorted bytewise with LC_ALL=C"
+    }
+  },
+  "copy": {
+    "copiedAt": "2026-08-12T22:58:08Z",
+    "copiedDate": "2026-08-12",
+    "upstreamDirectory": "upstream",
+    "method": "Complete archive-mode file copy with hidden files and file modes preserved"
+  },
+  "sourceComparison": {
+    "verifiedAt": "2026-08-12T22:58:24Z",
+    "regularFileCount": 14,
+    "directoryCountIncludingRoot": 5,
+    "symlinkCount": 0,
+    "totalRegularFileBytes": 2786175,
+    "method": "Recursive diff plus archive-mode rsync dry-run with itemized changes",
+    "result": "The source and copied upstream trees have no file-content, path, mode, timestamp, or tree-entry differences."
+  },
+  "verification": {
+    "manifest": "SHA256SUMS",
+    "manifestSha256": "bdeb17cac41fd8040a39a32f660f336c1a6e5d608125efb1043b924ab9f4f426",
+    "wholeTreeSha256": "bdeb17cac41fd8040a39a32f660f336c1a6e5d608125efb1043b924ab9f4f426",
+    "manifestAlgorithm": "Regular files beneath upstream are sorted by POSIX-relative path with LC_ALL=C. Each LF-terminated manifest line is lowercase SHA-256, two ASCII spaces, then the relative path.",
+    "regularFileCount": 14,
+    "script": "verify-snapshot.mjs",
+    "test": "verification/verifySnapshot.test.mjs"
+  }
+}
+

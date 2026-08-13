@@ -51,6 +51,7 @@ describe("proxy development auth bypass", () => {
     const response = await proxy(request, {} as never);
 
     expect(response?.status).toBe(401);
+    expect(response?.headers.get("cache-control")).toBe("private, no-store");
     await expect(response?.json()).resolves.toEqual({
       error:
         "Development preview does not authorize API or server-action access.",
@@ -66,6 +67,7 @@ describe("proxy development auth bypass", () => {
     const response = await proxy(request, {} as never);
 
     expect(response?.status).toBe(401);
+    expect(response?.headers.get("cache-control")).toBe("private, no-store");
     expect(mocks.runClerkProtectedProxy).not.toHaveBeenCalled();
   });
 

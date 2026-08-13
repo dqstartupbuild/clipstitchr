@@ -94,6 +94,12 @@ vi.mock("@/app/dashboard/DashboardProductProvider", () => ({
   ),
 }));
 
+vi.mock("@/app/dashboard/StudioBetaAccessProvider", () => ({
+  StudioBetaAccessProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+}));
+
 vi.mock("@/app/dashboard/DashboardLibraryProvider", () => ({
   DashboardLibraryProvider: ({ children }: { children: React.ReactNode }) => (
     <>{children}</>

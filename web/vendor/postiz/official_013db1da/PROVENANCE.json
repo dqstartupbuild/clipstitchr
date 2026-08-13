@@ -1,0 +1,69 @@
+{
+  "snapshotId": "postiz-official-013db1da",
+  "snapshotVersion": "013db1da",
+  "stableDirectoryName": "official_013db1da",
+  "source": {
+    "repositoryUrl": "https://github.com/gitroomhq/postiz-app.git",
+    "repositoryWebUrl": "https://github.com/gitroomhq/postiz-app",
+    "defaultBranch": "main",
+    "headAtFetch": "013db1dac7936054e77d40dd027ede0222771945",
+    "commit": "013db1dac7936054e77d40dd027ede0222771945",
+    "shortCommit": "013db1da",
+    "commitUrl": "https://github.com/gitroomhq/postiz-app/commit/013db1dac7936054e77d40dd027ede0222771945",
+    "commitDate": "2026-08-11T10:23:19Z",
+    "commitMessage": "Merge pull request #1877 from gitroomhq/feat/post-settings-tool",
+    "gitTree": "817291b58d173470f330910f059d7ea26b97f0e1"
+  },
+  "acquisition": {
+    "fetchedAt": "2026-08-12T19:02:03Z",
+    "fetchDate": "2026-08-12",
+    "copiedAt": "2026-08-12T19:02:04Z",
+    "copiedDate": "2026-08-12",
+    "upstreamDirectory": "upstream",
+    "method": "Shallow bare clone of the canonical main branch followed by git archive of the pinned commit"
+  },
+  "preservedNotices": {
+    "licenseFiles": [
+      "LICENSE"
+    ],
+    "contributorAgreementFiles": [
+      "CCLA.md",
+      "ICLA.md"
+    ],
+    "projectPolicyFiles": [
+      "CODE_OF_CONDUCT.md",
+      "CONTRIBUTING.md",
+      "SECURITY.md"
+    ]
+  },
+  "sourceVerification": {
+    "verifiedAt": "2026-08-12T23:08:01Z",
+    "gitTreeApiTruncated": false,
+    "gitTreeEntries": 1212,
+    "gitBlobEntries": 929,
+    "gitTreeDirectoryEntries": 283,
+    "gitSubmoduleEntries": 0,
+    "copiedRegularFiles": 929,
+    "copiedDirectoriesIncludingRoot": 284,
+    "copiedSymlinks": 0,
+    "copiedRegularFileBytes": 17807078,
+    "method": "Compared every git ls-tree path to the copied tree, every regular file to its pinned git hash-object blob ID, and every executable bit to the pinned Git mode.",
+    "result": "Every copied file matched the pinned Git blob ID and executable mode; the copied path count matched the complete, non-truncated Git tree."
+  },
+  "historyAudit": {
+    "originalPostizIntegrationCommit": "9af6be8536860149f9dc9ea5b5d9a6f1f50cd977",
+    "postizRevertCommit": "4968c167b28a20cff6c95ebf4e6f62bc18681607",
+    "zernioReplacementCommit": "bd0a2ce4b6c0264eab338d3be72b68790d1fb5ea",
+    "currentClipStitchrCommit": "ce362a5e03f6a81c042095dc65743b8cc6224537",
+    "report": "INTEGRATION_COMPARISON.md"
+  },
+  "verification": {
+    "manifest": "SHA256SUMS",
+    "manifestSha256": "ce69e41feb70f7453520f95f3de538813958833c894582cf755eb1322473ecc7",
+    "wholeTreeSha256": "ce69e41feb70f7453520f95f3de538813958833c894582cf755eb1322473ecc7",
+    "manifestAlgorithm": "Regular files beneath upstream are sorted by POSIX-relative path with LC_ALL=C. Each LF-terminated manifest line is lowercase SHA-256, two ASCII spaces, then the relative path.",
+    "regularFileCount": 929,
+    "script": "verify-snapshot.mjs",
+    "test": "verification/verifySnapshot.test.mjs"
+  }
+}

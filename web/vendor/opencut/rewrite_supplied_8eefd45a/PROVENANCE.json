@@ -1,0 +1,40 @@
+{
+  "snapshotId": "opencut-rewrite-supplied-8eefd45a",
+  "snapshotVersion": "rewrite-supplied-8eefd45a",
+  "source": {
+    "localPath": "/Users/starship/GitHub/OpenCut-main",
+    "role": "Complete OpenCut rewrite source tree supplied for Studio Beta",
+    "declaredVersion": null,
+    "gitMetadataPresent": false,
+    "suppliedBaselineSha256": "8eefd45ab403be1e086a120f8cb2e1d0c7b79aca7e08de73773e7f7b5b55a0f6",
+    "suppliedBaselineAuthority": "Recorded from the implementation inventory; its original fingerprint algorithm was not supplied. The per-file manifest is authoritative for this copy."
+  },
+  "acquisition": {
+    "copiedAt": "2026-08-13T02:30:56Z",
+    "upstreamDirectory": "upstream",
+    "method": "Archive-mode copy of the complete supplied directory",
+    "excludedPaths": []
+  },
+  "sourceVerification": {
+    "method": "Compared source and copy recursively after archive-mode acquisition.",
+    "result": "No source or tree differences were reported.",
+    "regularFileCount": 127,
+    "directoryCountIncludingRoot": 25,
+    "symlinkCount": 0,
+    "regularFileBytes": 705877
+  },
+  "implementationEvidence": {
+    "editorRoute": "apps/web/src/routes/editor.tsx",
+    "readme": "README.md",
+    "workingBaseline": "../classic_cf5e79e"
+  },
+  "verification": {
+    "manifest": "SHA256SUMS",
+    "manifestSha256": "79b88f98506e83debf245a4dd66ba019f93e1dff2243fbb8238de8eb1a3632e5",
+    "wholeTreeSha256": "79b88f98506e83debf245a4dd66ba019f93e1dff2243fbb8238de8eb1a3632e5",
+    "manifestAlgorithm": "Regular files beneath upstream are sorted by POSIX-relative path with LC_ALL=C. Each LF-terminated manifest line is lowercase SHA-256, two ASCII spaces, then the relative path.",
+    "regularFileCount": 127,
+    "script": "verify-snapshot.mjs",
+    "test": "verification/verifySnapshot.test.mjs"
+  }
+}
