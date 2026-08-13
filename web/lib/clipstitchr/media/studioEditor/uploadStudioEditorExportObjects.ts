@@ -1,5 +1,6 @@
 import { uploadStudioBetaBlobToR2 } from "@/lib/clipstitchr/client/r2/uploadStudioBetaBlobToR2";
 import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
+import { toR2ObjectReference } from "@/lib/clipstitchr/client/r2/toR2ObjectReference";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 
 type UploadStudioEditorExportObjectsOptions = {
@@ -29,7 +30,10 @@ export async function uploadStudioEditorExportObjects({
       recordId: `${clipId}-poster`,
     });
 
-    return { posterObject, videoObject };
+    return {
+      posterObject: toR2ObjectReference(posterObject),
+      videoObject: toR2ObjectReference(videoObject),
+    };
   } catch (error) {
     await deleteObjectsFromR2([videoObject]).catch(() => undefined);
     throw new Error(

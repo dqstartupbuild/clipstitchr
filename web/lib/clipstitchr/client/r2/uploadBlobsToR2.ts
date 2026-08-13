@@ -1,5 +1,6 @@
 import { createR2UploadUrl } from "@/lib/clipstitchr/client/r2/createR2UploadUrl";
 import { putBlobToR2 } from "@/lib/clipstitchr/client/r2/putBlobToR2";
+import { toR2ObjectReference } from "@/lib/clipstitchr/client/r2/toR2ObjectReference";
 import type { R2ObjectKind } from "@/lib/clipstitchr/types/R2ObjectKind";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 
@@ -16,7 +17,7 @@ export async function uploadBlobsToR2(
     items.map((item) => createR2UploadUrl(item)),
   );
 
-  return await Promise.all(
+  const uploadedObjects = await Promise.all(
     uploadUrls.map((uploadUrl, index) =>
       putBlobToR2({
         blob: items[index].blob,
@@ -27,4 +28,6 @@ export async function uploadBlobsToR2(
       }),
     ),
   );
+
+  return uploadedObjects.map(toR2ObjectReference);
 }

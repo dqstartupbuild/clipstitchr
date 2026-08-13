@@ -157,6 +157,16 @@ boundaries:
 ClipStitchr-owned adapters live outside those boundaries and replace duplicate
 auth, storage, billing, account, navigation, and deployment assumptions.
 
+## Classic workspace compatibility
+
+Studio publishing records R2 version and ETag metadata after uploads so later
+provider reads can bind to the exact object. The classic workspace continues to
+send only `key`, `contentType`, and `size` through its existing Convex object
+validators. Shared browser upload adapters must convert the richer upload result
+back to that exact classic shape before saving clips, photos, Stitch renders,
+posters, Swipr backgrounds, or Swipe posters. This boundary keeps Studio's
+durability metadata from changing classic record contracts at runtime.
+
 ## Relevant file tree
 
 ```text
@@ -167,6 +177,7 @@ web/convex/studioBetaAccess/              canonical access checks
 web/convex/studioBetaWorkspace/           bounded home summary
 web/lib/clipstitchr/server/studio/         server access and integrations
 web/lib/clipstitchr/studio/                pure Studio engines
+web/lib/clipstitchr/client/r2/              shared upload compatibility adapters
 web/services/studio-clips-worker/          Clips execution runtime
 web/services/studio-stitch-worker/         Stitch execution runtime
 web/services/publishing-service/           isolated Postiz Beta service
