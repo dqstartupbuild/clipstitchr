@@ -1,13 +1,13 @@
 import {
   SWIPR_MAX_SLIDE_COUNT,
   SWIPR_MIN_SLIDE_COUNT,
-} from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
-import { TIKTOK_OUTPUT_HEIGHT, TIKTOK_OUTPUT_WIDTH } from "@/lib/clipstitchr/constants/tiktokOutputSize";
-import { createSwipePublishingSlideObjectKey } from "@/lib/clipstitchr/publishing/media/createSwipePublishingSlideObjectKey";
-import { isSha256Base64Checksum } from "@/lib/clipstitchr/publishing/media/isSha256Base64Checksum";
-import type { SwipePublishingBundle } from "@/lib/clipstitchr/publishing/media/SwipePublishingBundle";
-import { SWIPE_PUBLISHING_OUTPUT_CONTRACT } from "@/lib/clipstitchr/publishing/media/swipePublishingOutputContract";
-import { SWIPE_PUBLISHING_RENDERER_VERSION } from "@/lib/clipstitchr/publishing/media/swipePublishingRendererVersion";
+} from "../../constants/swiprSlideCountBounds";
+import { TIKTOK_OUTPUT_HEIGHT, TIKTOK_OUTPUT_WIDTH } from "../../constants/tiktokOutputSize";
+import { createSwipePublishingSlideObjectKey } from "./createSwipePublishingSlideObjectKey";
+import { isSha256Base64Checksum } from "./isSha256Base64Checksum";
+import type { SwipePublishingBundle } from "./SwipePublishingBundle";
+import { SWIPE_PUBLISHING_OUTPUT_CONTRACT } from "./swipePublishingOutputContract";
+import { SWIPE_PUBLISHING_RENDERER_VERSION } from "./swipePublishingRendererVersion";
 
 type AssertSwipePublishingBundleMatchesSwipeOptions = {
   bundle: SwipePublishingBundle;

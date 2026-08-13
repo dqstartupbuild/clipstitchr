@@ -1,5 +1,5 @@
-import { createSha256HexDigest } from "@/lib/clipstitchr/crypto/createSha256HexDigest";
-import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
+import { createSha256HexDigest } from "../../crypto/createSha256HexDigest";
+import type { SwiprSlide } from "../../types/SwiprSlide";
 
 type SwipePublishingEditableState = {
   backgroundId: string;
