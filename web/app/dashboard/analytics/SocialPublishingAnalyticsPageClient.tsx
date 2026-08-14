@@ -3,39 +3,55 @@
 import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
+import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
+import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
+import { SocialPublishingAnalyticsOverview } from "@/app/dashboard/analytics/SocialPublishingAnalyticsOverview";
 import { SocialPublishingAnalyticsResultsSection } from "@/app/dashboard/analytics/SocialPublishingAnalyticsResultsSection";
-import { SocialPublishingAnalyticsStatsGrid } from "@/app/dashboard/analytics/SocialPublishingAnalyticsStatsGrid";
+import { SocialPublishingAnalyticsStrategy } from "@/app/dashboard/analytics/SocialPublishingAnalyticsStrategy";
 import { SocialPublishingAnalyticsSyncStatus } from "@/app/dashboard/analytics/SocialPublishingAnalyticsSyncStatus";
 import { SocialPublishingAnalyticsTimeRangeFilter } from "@/app/dashboard/analytics/SocialPublishingAnalyticsTimeRangeFilter";
+import {
+  SocialPublishingAnalyticsWorkspaceNav,
+  type SocialPublishingAnalyticsWorkspace,
+} from "@/app/dashboard/analytics/SocialPublishingAnalyticsWorkspaceNav";
 import { fetchSocialPublishingAnalytics } from "@/lib/clipstitchr/client/fetchSocialPublishingAnalytics";
 import { refreshSocialPublishingAnalytics } from "@/lib/clipstitchr/client/refreshSocialPublishingAnalytics";
 import { socialPublishingListPageSize } from "@/lib/clipstitchr/constants/socialPublishingListPageSize";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
-import type { SocialPublishingAnalytics } from "@/lib/clipstitchr/types/SocialPublishingAnalytics";
 import type { SocialPublishingAnalyticsLoadResult } from "@/lib/clipstitchr/types/SocialPublishingAnalyticsLoadResult";
 import type { SocialPublishingAnalyticsTimeRange } from "@/lib/clipstitchr/types/SocialPublishingAnalyticsTimeRange";
 import { defaultSocialPublishingAnalyticsTimeRange } from "@/lib/clipstitchr/utils/defaultSocialPublishingAnalyticsTimeRange";
 import { filterSocialPublishingAnalyticsByTimeRange } from "@/lib/clipstitchr/utils/filterSocialPublishingAnalyticsByTimeRange";
+import { filterSocialPublishingDailyMetricsByTimeRange } from "@/lib/clipstitchr/utils/filterSocialPublishingDailyMetricsByTimeRange";
 import { getSocialPublishingAnalyticsTotals } from "@/lib/clipstitchr/utils/getSocialPublishingAnalyticsTotals";
+import { getSocialPublishingPlatformAnalyticsSummaries } from "@/lib/clipstitchr/utils/getSocialPublishingPlatformAnalyticsSummaries";
 import { sortSocialPublishingAnalyticsNewestFirst } from "@/lib/clipstitchr/utils/sortSocialPublishingAnalyticsNewestFirst";
 
-const emptySyncStatus = {
+const emptyAnalyticsDashboard: SocialPublishingAnalyticsLoadResult = {
+  accountCount: 0,
+  analytics: [],
+  bestTimes: [],
+  contentDecay: [],
+  dailyMetrics: [],
+  externalSyncFailedAccountCount: 0,
+  followerStats: { accounts: [], historyByAccountId: {} },
   lastSyncedAt: null,
+  postingFrequency: [],
   stale: false,
+  unavailableInsights: [],
 };
 
 export function SocialPublishingAnalyticsPageClient() {
   const products = useDashboardProduct();
-  const [analytics, setAnalytics] = useState<SocialPublishingAnalytics[]>([]);
-  const [syncStatus, setSyncStatus] = useState<{
-    lastSyncedAt: string | null;
-    stale: boolean;
-  }>(emptySyncStatus);
+  const [dashboard, setDashboard] =
+    useState<SocialPublishingAnalyticsLoadResult>(emptyAnalyticsDashboard);
+  const [workspace, setWorkspace] =
+    useState<SocialPublishingAnalyticsWorkspace>("overview");
   const [timeRange, setTimeRange] = useState<SocialPublishingAnalyticsTimeRange>(
     defaultSocialPublishingAnalyticsTimeRange,
   );
@@ -43,11 +59,19 @@ export function SocialPublishingAnalyticsPageClient() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const filteredAnalytics = useMemo(
-    () => filterSocialPublishingAnalyticsByTimeRange(analytics, timeRange),
-    [analytics, timeRange],
+    () => filterSocialPublishingAnalyticsByTimeRange(dashboard.analytics, timeRange),
+    [dashboard.analytics, timeRange],
+  );
+  const filteredDailyMetrics = useMemo(
+    () => filterSocialPublishingDailyMetricsByTimeRange(dashboard.dailyMetrics, timeRange),
+    [dashboard.dailyMetrics, timeRange],
   );
   const totals = useMemo(
     () => getSocialPublishingAnalyticsTotals(filteredAnalytics),
+    [filteredAnalytics],
+  );
+  const platformSummaries = useMemo(
+    () => getSocialPublishingPlatformAnalyticsSummaries(filteredAnalytics),
     [filteredAnalytics],
   );
   const orderedAnalytics = useMemo(
@@ -66,11 +90,7 @@ export function SocialPublishingAnalyticsPageClient() {
 
   const applyLoadResult = useCallback(
     (result: SocialPublishingAnalyticsLoadResult) => {
-      setAnalytics(result.analytics);
-      setSyncStatus({
-        lastSyncedAt: result.lastSyncedAt,
-        stale: result.stale,
-      });
+      setDashboard(result);
     },
     [],
   );
@@ -81,12 +101,10 @@ export function SocialPublishingAnalyticsPageClient() {
     const loadInitialDashboard = async () => {
       try {
         setIsLoading(true);
-        setAnalytics([]);
-        setSyncStatus(emptySyncStatus);
+        setDashboard(emptyAnalyticsDashboard);
         setError(null);
 
         if (!activeProductId) {
-          setAnalytics([]);
           return;
         }
 
@@ -94,21 +112,17 @@ export function SocialPublishingAnalyticsPageClient() {
           productId: activeProductId,
         });
 
-        if (!isActive) {
-          return;
+        if (isActive) {
+          applyLoadResult(result);
         }
-
-        applyLoadResult(result);
       } catch (nextError) {
-        if (!isActive) {
-          return;
+        if (isActive) {
+          setError(
+            nextError instanceof Error
+              ? nextError.message
+              : "Unable to load post analytics.",
+          );
         }
-
-        setError(
-          nextError instanceof Error
-            ? nextError.message
-            : "Unable to load post analytics.",
-        );
       } finally {
         if (isActive) {
           setIsLoading(false);
@@ -149,11 +163,11 @@ export function SocialPublishingAnalyticsPageClient() {
 
   return (
     <DashboardShell>
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
+      <div className="mx-auto flex min-w-0 max-w-7xl flex-col gap-6">
         <DashboardPageHeader
-          eyebrow="Analytics"
+          eyebrow="Zernio analytics"
           title="Analytics"
-          description="Review post performance across connected channels."
+          description="See every post from this product’s connected accounts, including posts published outside ClipStitchr."
           actions={
             <Button
               type="button"
@@ -167,44 +181,96 @@ export function SocialPublishingAnalyticsPageClient() {
           }
         />
 
-        {error ? (
-          <DashboardAlert variant="error">{error}</DashboardAlert>
+        {error ? <DashboardAlert variant="error">{error}</DashboardAlert> : null}
+
+        {dashboard.externalSyncFailedAccountCount > 0 ? (
+          <DashboardAlert variant="warning" title="Some accounts could not refresh">
+            Zernio kept their most recent saved results. Reconnect any account that stays out of date.
+          </DashboardAlert>
         ) : null}
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <SocialPublishingAnalyticsTimeRangeFilter
-            onChange={setTimeRange}
-            value={timeRange}
-          />
-          <div className="flex flex-col gap-1 sm:items-end">
-            <p className="text-sm font-semibold text-text-secondary">
-              {filteredAnalytics.length} posts with results
-            </p>
-            <SocialPublishingAnalyticsSyncStatus
-              isRefreshing={isSyncing}
-              lastSyncedAt={syncStatus.lastSyncedAt}
-              stale={syncStatus.stale}
-            />
-          </div>
-        </div>
-
-        <SocialPublishingAnalyticsStatsGrid totals={totals} />
-
-        <SocialPublishingAnalyticsResultsSection analytics={pagination.pageItems} />
-
-        {pagination.totalPages > 1 ? (
-          <PaginationControls
-            canGoNext={pagination.canGoNext}
-            canGoPrevious={pagination.canGoPrevious}
-            currentPage={pagination.currentPage}
-            totalItems={pagination.totalItems}
-            totalPages={pagination.totalPages}
-            visibleEnd={pagination.visibleEnd}
-            visibleStart={pagination.visibleStart}
-            onNext={pagination.goToNextPage}
-            onPrevious={pagination.goToPreviousPage}
-          />
+        {dashboard.unavailableInsights.length ? (
+          <DashboardAlert title="Some Zernio insights are unavailable">
+            {dashboard.unavailableInsights.join(", ")} could not load. These views need Zernio&apos;s Analytics add-on and the right channel permissions.
+          </DashboardAlert>
         ) : null}
+
+        {isLoading ? (
+          <p className="py-8 text-sm font-semibold text-text-secondary" role="status">
+            Loading analytics from Zernio...
+          </p>
+        ) : dashboard.accountCount === 0 ? (
+          <DashboardEmptyState
+            title="Connect accounts to this product"
+            description="Choose the social accounts this product uses in Settings. Analytics will then include posts made in ClipStitchr and posts made directly on those channels."
+            action={<SecondaryButtonLink href="/dashboard/settings">Open Settings</SecondaryButtonLink>}
+          />
+        ) : (
+          <>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <SocialPublishingAnalyticsWorkspaceNav
+                postCount={filteredAnalytics.length}
+                value={workspace}
+                onChange={setWorkspace}
+              />
+              <div className="flex flex-col gap-3 sm:items-end">
+                {workspace === "strategy" ? (
+                  <p className="text-sm font-semibold text-text-tertiary">
+                    Strategy uses all available history
+                  </p>
+                ) : (
+                  <SocialPublishingAnalyticsTimeRangeFilter
+                    onChange={setTimeRange}
+                    value={timeRange}
+                  />
+                )}
+                <SocialPublishingAnalyticsSyncStatus
+                  isRefreshing={isSyncing}
+                  lastSyncedAt={dashboard.lastSyncedAt}
+                  stale={dashboard.stale}
+                />
+              </div>
+            </div>
+
+            {workspace === "overview" ? (
+              <SocialPublishingAnalyticsOverview
+                dailyMetrics={filteredDailyMetrics}
+                platformSummaries={platformSummaries}
+                totals={totals}
+              />
+            ) : null}
+
+            {workspace === "strategy" ? (
+              <SocialPublishingAnalyticsStrategy
+                bestTimes={dashboard.bestTimes}
+                contentDecay={dashboard.contentDecay}
+                followerStats={dashboard.followerStats}
+                postingFrequency={dashboard.postingFrequency}
+              />
+            ) : null}
+
+            {workspace === "posts" ? (
+              <>
+                <SocialPublishingAnalyticsResultsSection
+                  analytics={pagination.pageItems}
+                />
+                {pagination.totalPages > 1 ? (
+                  <PaginationControls
+                    canGoNext={pagination.canGoNext}
+                    canGoPrevious={pagination.canGoPrevious}
+                    currentPage={pagination.currentPage}
+                    totalItems={pagination.totalItems}
+                    totalPages={pagination.totalPages}
+                    visibleEnd={pagination.visibleEnd}
+                    visibleStart={pagination.visibleStart}
+                    onNext={pagination.goToNextPage}
+                    onPrevious={pagination.goToPreviousPage}
+                  />
+                ) : null}
+              </>
+            ) : null}
+          </>
+        )}
       </div>
     </DashboardShell>
   );

@@ -5,7 +5,12 @@ export function getSocialPublishingAnalyticsEngagementTotal(
 ) {
   return analytics.reduce(
     (total, item) =>
-      total + item.like_count + item.comment_count + item.share_count,
+      total +
+      item.like_count +
+      item.comment_count +
+      item.share_count +
+      item.save_count +
+      item.click_count,
     0,
   );
 }

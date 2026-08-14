@@ -5,8 +5,10 @@ import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/get
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
-import { getSocialPublishingAnalyticsFreshness } from "@/lib/clipstitchr/server/socialPublishing/getSocialPublishingAnalyticsFreshness";
-import { listSocialPublishingAnalytics } from "@/lib/clipstitchr/server/socialPublishing/listSocialPublishingAnalytics";
+import { createEmptySocialPublishingAnalyticsLoadResult } from "@/lib/clipstitchr/server/socialPublishing/createEmptySocialPublishingAnalyticsLoadResult";
+import { getSocialPublishingAnalyticsAccountIds } from "@/lib/clipstitchr/server/socialPublishing/getSocialPublishingAnalyticsAccountIds";
+import { listSocialPublishingAnalyticsAccounts } from "@/lib/clipstitchr/server/socialPublishing/listSocialPublishingAnalyticsAccounts";
+import { loadSocialPublishingAnalyticsDashboard } from "@/lib/clipstitchr/server/socialPublishing/loadSocialPublishingAnalyticsDashboard";
 import { readSocialPublishingProductIdFromRequest } from "@/lib/clipstitchr/server/socialPublishing/readSocialPublishingProductIdFromRequest";
 import { resolveSocialPublishingApiKey } from "@/lib/clipstitchr/server/socialPublishing/resolveSocialPublishingApiKey";
 
@@ -33,31 +35,27 @@ export async function GET(request: Request) {
     });
 
     const productId = readSocialPublishingProductIdFromRequest(request);
-    const mappedPostIds = productId
-      ? await convex.query(
-          api.socialPublishingPostProductMappings.listPostIdsByProduct,
-          { productId },
-        )
-      : [];
+    const product = productId
+      ? await convex.query(api.products.get, { id: productId })
+      : null;
+    const apiKey = await resolveSocialPublishingApiKey(convex);
+    const accounts = await listSocialPublishingAnalyticsAccounts(apiKey);
+    const accountIds = getSocialPublishingAnalyticsAccountIds(
+      accounts,
+      productId ? product?.socialPublishingSocialAccountIds ?? [] : undefined,
+    );
 
-    if (productId && mappedPostIds.length === 0) {
-      return Response.json({
-        analytics: [],
-        lastSyncedAt: null,
-        stale: false,
-      });
+    if (!accountIds.length) {
+      return Response.json(createEmptySocialPublishingAnalyticsLoadResult());
     }
 
-    const analytics = await listSocialPublishingAnalytics(
-      await resolveSocialPublishingApiKey(convex),
-      mappedPostIds,
+    return Response.json(
+      await loadSocialPublishingAnalyticsDashboard({
+        accountIds,
+        accounts,
+        apiKey,
+      }),
     );
-    const freshness = getSocialPublishingAnalyticsFreshness(analytics);
-
-    return Response.json({
-      analytics,
-      ...freshness,
-    });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);
 

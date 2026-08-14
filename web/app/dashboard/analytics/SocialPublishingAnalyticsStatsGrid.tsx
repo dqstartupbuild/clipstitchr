@@ -10,13 +10,15 @@ export function SocialPublishingAnalyticsStatsGrid({
 }: SocialPublishingAnalyticsStatsGridProps) {
   const stats = [
     { label: "Views", value: totals.views },
-    { label: "Likes", value: totals.likes },
-    { label: "Comments", value: totals.comments },
-    { label: "Shares", value: totals.shares },
+    { label: "Reach", value: totals.reach },
+    { label: "Impressions", value: totals.impressions },
+    { label: "Average engagement", value: `${totals.averageEngagementRate.toFixed(1)}%` },
+    { label: "Saves", value: totals.saves },
+    { label: "Link clicks", value: totals.clicks },
   ];
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {stats.map((item) => (
         <SocialPublishingAnalyticsStatCard
           key={item.label}

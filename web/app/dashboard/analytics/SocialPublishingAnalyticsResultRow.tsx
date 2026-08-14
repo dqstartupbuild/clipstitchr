@@ -1,9 +1,7 @@
-import { Badge } from "@/app/_components/ui/Badge";
 import type { SocialPublishingAnalytics } from "@/lib/clipstitchr/types/SocialPublishingAnalytics";
 import { getSocialPublishingAnalyticsCreatedAtLabel } from "@/lib/clipstitchr/utils/getSocialPublishingAnalyticsCreatedAtLabel";
 import { getSocialPublishingPlatformLabel } from "@/lib/clipstitchr/utils/getSocialPublishingPlatformLabel";
 import { getSocialPublishingScheduledAtLabel } from "@/lib/clipstitchr/utils/getSocialPublishingScheduledAtLabel";
-import { getSocialPublishingUnknownString } from "@/lib/clipstitchr/utils/getSocialPublishingUnknownString";
 import { SocialPublishingAnalyticsMetricCell } from "@/app/dashboard/analytics/SocialPublishingAnalyticsMetricCell";
 
 type SocialPublishingAnalyticsResultRowProps = {
@@ -13,19 +11,34 @@ type SocialPublishingAnalyticsResultRowProps = {
 export function SocialPublishingAnalyticsResultRow({
   item,
 }: SocialPublishingAnalyticsResultRowProps) {
-  const shareUrl = getSocialPublishingUnknownString(item.share_url);
   const metrics = [
     { label: "Views", value: item.view_count },
+    { label: "Reach", value: item.reach_count },
+    { label: "Impressions", value: item.impression_count },
     { label: "Likes", value: item.like_count },
     { label: "Comments", value: item.comment_count },
     { label: "Shares", value: item.share_count },
+    { label: "Saves", value: item.save_count },
+    { label: "Clicks", value: item.click_count },
   ];
 
   return (
-    <div className="grid gap-3 p-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+    <article className="grid gap-5 p-5 lg:grid-cols-[minmax(16rem,0.8fr)_minmax(32rem,1.2fr)] lg:items-center">
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge>{getSocialPublishingPlatformLabel(item.platform)}</Badge>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="text-xs font-bold text-accent-dark">
+            {getSocialPublishingPlatformLabel(item.platform)}
+          </span>
+          {item.account_username ? (
+            <span className="text-xs font-semibold text-text-tertiary">
+              {item.account_username}
+            </span>
+          ) : null}
+          <span className="text-xs font-semibold text-text-tertiary">
+            {item.is_external ? "Published on channel" : "Published with ClipStitchr"}
+          </span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
           <span className="text-xs font-semibold text-text-tertiary">
             {getSocialPublishingAnalyticsCreatedAtLabel(item)}
           </span>
@@ -33,22 +46,21 @@ export function SocialPublishingAnalyticsResultRow({
             Synced {getSocialPublishingScheduledAtLabel(item.last_synced_at)}
           </span>
         </div>
-        <p className="mt-2 truncate text-sm font-bold text-text-primary">
-          {getSocialPublishingUnknownString(item.video_description) ||
-            item.post_result_id}
+        <p className="mt-3 line-clamp-2 text-sm font-bold leading-6 text-text-primary">
+          {item.video_description || item.post_result_id}
         </p>
-        {shareUrl ? (
+        {item.share_url ? (
           <a
-            href={shareUrl}
+            href={item.share_url}
             target="_blank"
             rel="noreferrer"
-            className="mt-1 inline-flex text-sm font-semibold text-accent underline-offset-4 hover:underline"
+            className="mt-2 inline-flex text-sm font-semibold text-accent-dark transition-colors hover:text-text-primary"
           >
             Open post
           </a>
         ) : null}
       </div>
-      <div className="grid grid-cols-4 gap-3 text-right">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-left sm:grid-cols-4 sm:text-right">
         {metrics.map((metric) => (
           <SocialPublishingAnalyticsMetricCell
             key={metric.label}
@@ -57,6 +69,6 @@ export function SocialPublishingAnalyticsResultRow({
           />
         ))}
       </div>
-    </div>
+    </article>
   );
 }

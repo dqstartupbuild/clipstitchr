@@ -4,10 +4,17 @@ import type { SocialPublishingAnalytics } from "@/lib/clipstitchr/types/SocialPu
 
 function createAnalytics(lastSyncedAt: string): SocialPublishingAnalytics {
   return {
+    account_id: null,
+    account_username: null,
+    click_count: 0,
     comment_count: 0,
     cover_image_url: null,
     duration: null,
+    engagement_rate: 0,
+    follow_count: 0,
     id: "analytics_1",
+    impression_count: 0,
+    is_external: false,
     last_synced_at: lastSyncedAt,
     like_count: 0,
     match_confidence: null,
@@ -15,9 +22,13 @@ function createAnalytics(lastSyncedAt: string): SocialPublishingAnalytics {
     platform_created_at: null,
     platform_post_id: null,
     post_result_id: "post_1",
+    reach_count: 0,
+    reels_average_watch_time: null,
+    reels_total_watch_time: null,
+    save_count: 0,
     share_count: 0,
     share_url: null,
-    video_description: null,
+    video_description: "",
     view_count: 0,
   };
 }

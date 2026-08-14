@@ -2,7 +2,7 @@ import { formatSocialPublishingNumber } from "@/lib/clipstitchr/utils/formatSoci
 
 type SocialPublishingAnalyticsStatCardProps = {
   label: string;
-  value: number;
+  value: number | string;
 };
 
 export function SocialPublishingAnalyticsStatCard({
@@ -10,10 +10,10 @@ export function SocialPublishingAnalyticsStatCard({
   value,
 }: SocialPublishingAnalyticsStatCardProps) {
   return (
-    <div className="rounded-lg border border-border bg-white p-4">
+    <div className="rounded-lg bg-surface-elevated p-4">
       <p className="text-sm font-semibold text-text-secondary">{label}</p>
       <p className="mt-2 text-2xl font-bold text-text-primary">
-        {formatSocialPublishingNumber(value)}
+        {typeof value === "number" ? formatSocialPublishingNumber(value) : value}
       </p>
     </div>
   );

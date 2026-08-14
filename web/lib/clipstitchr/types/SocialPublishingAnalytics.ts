@@ -1,19 +1,30 @@
 import type { SocialPublishingPlatform } from "@/lib/clipstitchr/types/SocialPublishingPlatform";
 
 export type SocialPublishingAnalytics = {
+  account_id: string | null;
+  account_username: string | null;
+  click_count: number;
   comment_count: number;
-  cover_image_url: unknown;
-  duration: unknown;
+  cover_image_url: string | null;
+  duration: number | null;
+  engagement_rate: number;
+  follow_count: number;
   id: string;
+  impression_count: number;
+  is_external: boolean;
   last_synced_at: string;
   like_count: number;
-  match_confidence: unknown;
+  match_confidence: null;
   platform: SocialPublishingPlatform;
-  platform_created_at: unknown;
-  platform_post_id: unknown;
+  platform_created_at: string | null;
+  platform_post_id: string | null;
   post_result_id: string;
+  reach_count: number;
+  reels_average_watch_time: number | null;
+  reels_total_watch_time: number | null;
+  save_count: number;
   share_count: number;
-  share_url: unknown;
-  video_description: unknown;
+  share_url: string | null;
+  video_description: string;
   view_count: number;
 };

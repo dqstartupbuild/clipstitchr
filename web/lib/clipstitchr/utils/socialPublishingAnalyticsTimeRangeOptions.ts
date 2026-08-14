@@ -7,5 +7,5 @@ export const socialPublishingAnalyticsTimeRangeOptions: SocialPublishingAnalytic
     { label: "Last 30 days", value: "last_30_days" },
     { label: "Last 90 days", value: "last_90_days" },
     { label: "Last 12 months", value: "last_12_months" },
-    { label: "All time", value: "all_time" },
+    { label: "All available", value: "all_time" },
   ];

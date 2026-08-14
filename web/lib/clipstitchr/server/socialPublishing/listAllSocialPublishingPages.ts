@@ -3,6 +3,7 @@ import { requestSocialPublishing } from "@/lib/clipstitchr/server/socialPublishi
 type SocialPublishingPageItem = {
   _id?: string;
   id?: string;
+  postId?: string;
 };
 
 type SocialPublishingPageResponse<Item extends SocialPublishingPageItem> = {
@@ -42,7 +43,7 @@ export async function listAllSocialPublishingPages<Item extends SocialPublishing
     const pageItems = response.posts ?? response.data ?? [];
 
     pageItems.forEach((item) => {
-      const id = item._id ?? item.id;
+      const id = item._id ?? item.id ?? item.postId;
 
       if (id && !seenIds.has(id)) {
         seenIds.add(id);

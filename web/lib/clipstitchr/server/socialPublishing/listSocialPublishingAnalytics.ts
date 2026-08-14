@@ -3,19 +3,29 @@ import { listAllSocialPublishingPages } from "@/lib/clipstitchr/server/socialPub
 import type { SocialPublishingAnalytics } from "@/lib/clipstitchr/types/SocialPublishingAnalytics";
 
 type ZernioAnalyticsMetrics = {
+  clicks?: number;
   comments?: number;
+  engagementRate?: number;
+  follows?: number;
+  igReelsAvgWatchTime?: number;
+  igReelsVideoViewTotalTime?: number;
+  impressions?: number;
   lastUpdated?: string;
   likes?: number;
+  reach?: number;
+  saves?: number;
   shares?: number;
   videoDurationSeconds?: number | null;
   views?: number;
 };
 
 type ZernioAnalyticsPost = {
-  _id: string;
+  _id?: string;
   analytics?: ZernioAnalyticsMetrics;
   content?: string;
+  isExternal?: boolean;
   latePostId?: string | null;
+  platformAnalytics?: ZernioAnalyticsTarget[];
   platforms?: {
     accountId?: string;
     accountUsername?: string | null;
@@ -25,11 +35,21 @@ type ZernioAnalyticsPost = {
     platformPostUrl?: string | null;
   }[];
   platform?: string;
+  postId?: string;
   platformPostId?: string | null;
   platformPostUrl?: string | null;
   publishedAt?: string | null;
   scheduledFor?: string;
   thumbnailUrl?: string | null;
+};
+
+type ZernioAnalyticsTarget = {
+  accountId?: string;
+  accountUsername?: string | null;
+  analytics?: ZernioAnalyticsMetrics | null;
+  platform?: string;
+  platformPostId?: string | null;
+  platformPostUrl?: string | null;
 };
 
 const socialPublishingAnalyticsPageSize = 100;
@@ -46,13 +66,24 @@ function createSocialPublishingAnalyticsRow(
     return null;
   }
 
-  const postId = post.latePostId || post._id;
+  const postId = post.latePostId || post.postId || post._id || platformPostId;
+
+  if (!postId) {
+    return null;
+  }
 
   return {
+    account_id: accountId || null,
+    account_username: null,
+    click_count: metrics.clicks ?? 0,
     comment_count: metrics.comments ?? 0,
     cover_image_url: post.thumbnailUrl ?? null,
     duration: metrics.videoDurationSeconds ?? null,
-    id: `${post._id}:${platform}:${accountId || platformPostId || "post"}`,
+    engagement_rate: metrics.engagementRate ?? 0,
+    follow_count: metrics.follows ?? 0,
+    id: `${post.postId || post._id || postId}:${platform}:${accountId || platformPostId || "post"}`,
+    impression_count: metrics.impressions ?? 0,
+    is_external: Boolean(post.isExternal),
     last_synced_at:
       metrics.lastUpdated ?? post.publishedAt ?? post.scheduledFor ?? "",
     like_count: metrics.likes ?? 0,
@@ -61,6 +92,10 @@ function createSocialPublishingAnalyticsRow(
     platform_created_at: post.publishedAt ?? post.scheduledFor ?? null,
     platform_post_id: platformPostId ?? null,
     post_result_id: postId,
+    reach_count: metrics.reach ?? 0,
+    reels_average_watch_time: metrics.igReelsAvgWatchTime ?? null,
+    reels_total_watch_time: metrics.igReelsVideoViewTotalTime ?? null,
+    save_count: metrics.saves ?? 0,
     share_count: metrics.shares ?? 0,
     share_url: platformPostUrl ?? null,
     video_description: post.content ?? "",
@@ -70,7 +105,7 @@ function createSocialPublishingAnalyticsRow(
 
 export async function listSocialPublishingAnalytics(
   apiKey: string,
-  mappedPostIds: string[] = [],
+  accountIds: string[] = [],
 ) {
   const fromDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
     .toISOString()
@@ -79,19 +114,24 @@ export async function listSocialPublishingAnalytics(
     apiKey,
     pageSize: socialPublishingAnalyticsPageSize,
     path: "/v1/analytics",
-    query: new URLSearchParams({ fromDate, source: "late" }),
+    query: new URLSearchParams({ fromDate, source: "all" }),
   });
-  const mappedPostIdSet = new Set(mappedPostIds);
+  const accountIdSet = new Set(accountIds);
 
   return posts.flatMap((post) => {
-    const postId = post.latePostId || post._id;
+    const targets = post.platformAnalytics?.length
+      ? post.platformAnalytics
+      : post.platforms;
 
-    if (mappedPostIdSet.size > 0 && !mappedPostIdSet.has(postId)) {
-      return [];
-    }
+    if (targets?.length) {
+      return targets.flatMap((target) => {
+        if (
+          accountIdSet.size > 0 &&
+          (!target.accountId || !accountIdSet.has(target.accountId))
+        ) {
+          return [];
+        }
 
-    if (post.platforms?.length) {
-      return post.platforms.flatMap((target) => {
         const row = createSocialPublishingAnalyticsRow(
           post,
           target.platform ?? "",
@@ -101,8 +141,14 @@ export async function listSocialPublishingAnalytics(
           target.platformPostUrl,
         );
 
-        return row ? [row] : [];
+        return row
+          ? [{ ...row, account_username: target.accountUsername ?? null }]
+          : [];
       });
+    }
+
+    if (accountIdSet.size > 0) {
+      return [];
     }
 
     const row = createSocialPublishingAnalyticsRow(

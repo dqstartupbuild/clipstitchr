@@ -23,7 +23,11 @@ export function DevelopmentFixtureStateSelector({
   const searchParams = useSearchParams();
 
   return (
-    <div className="flex flex-wrap items-center gap-2" aria-label="Fixture state">
+    <div
+      className="flex flex-wrap items-center gap-2"
+      role="group"
+      aria-label="Fixture state"
+    >
       <span className="mr-1 text-sm font-semibold text-text-secondary">
         Preview state
       </span>
@@ -35,7 +39,7 @@ export function DevelopmentFixtureStateSelector({
           className={[
             "min-h-9 rounded-md px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
             state === value
-              ? "bg-text-primary text-white"
+              ? "bg-surface-elevated text-accent-dark"
               : "bg-surface-muted text-text-secondary hover:bg-surface-elevated hover:text-text-primary",
           ].join(" ")}
           onClick={() => {

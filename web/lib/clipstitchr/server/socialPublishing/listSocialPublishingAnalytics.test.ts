@@ -8,27 +8,39 @@ vi.mock("@/lib/clipstitchr/server/socialPublishing/requestSocialPublishing", () 
 
 const requestSocialPublishingMock = vi.mocked(requestSocialPublishing);
 
-function createAnalyticsPost(id: string, platform = "tiktok") {
+function createAnalyticsPost(
+  id: string,
+  accountId = `account_${id}`,
+  platform = "tiktok",
+) {
   return {
-    _id: id,
     analytics: {
+      clicks: 6,
       comments: 3,
+      engagementRate: 4.2,
+      follows: 1,
+      impressions: 480,
       lastUpdated: "2026-08-01T00:00:00.000Z",
       likes: 12,
+      reach: 390,
+      saves: 4,
       shares: 2,
       views: 300,
     },
     content: "Launch",
-    latePostId: "late_" + id,
-    platforms: [
+    isExternal: true,
+    latePostId: null,
+    platformAnalytics: [
       {
-        accountId: "account_" + id,
+        accountId,
+        accountUsername: "@launch",
         analytics: null,
         platform,
-        platformPostId: "platform_" + id,
-        platformPostUrl: "https://example.com/" + id,
+        platformPostId: `platform_${id}`,
+        platformPostUrl: `https://example.com/${id}`,
       },
     ],
+    postId: id,
     publishedAt: "2026-08-01T00:00:00.000Z",
   };
 }
@@ -43,7 +55,7 @@ describe("listSocialPublishingAnalytics", () => {
     vi.clearAllMocks();
   });
 
-  it("loads and normalizes Zernio analytics", async () => {
+  it("loads external and Zernio posts with the full metric set", async () => {
     requestSocialPublishingMock.mockResolvedValue({
       posts: [createAnalyticsPost("post_1")],
       pagination: { pages: 1 },
@@ -54,22 +66,31 @@ describe("listSocialPublishingAnalytics", () => {
     expect(requestSocialPublishingMock).toHaveBeenCalledOnce();
     expect(readQuery(0).get("page")).toBe("1");
     expect(readQuery(0).get("limit")).toBe("100");
-    expect(readQuery(0).get("source")).toBe("late");
+    expect(readQuery(0).get("source")).toBe("all");
     expect(readQuery(0).get("fromDate")).toMatch(/^20\d\d-\d\d-\d\d$/);
     expect(analytics).toEqual([
       expect.objectContaining({
+        account_id: "account_post_1",
+        account_username: "@launch",
+        click_count: 6,
         comment_count: 3,
+        engagement_rate: 4.2,
+        follow_count: 1,
         id: "post_1:tiktok:account_post_1",
+        impression_count: 480,
+        is_external: true,
         like_count: 12,
         platform: "tiktok",
-        post_result_id: "late_post_1",
+        post_result_id: "post_1",
+        reach_count: 390,
+        save_count: 4,
         share_count: 2,
         view_count: 300,
       }),
     ]);
   });
 
-  it("loads every Zernio page and deduplicates posts", async () => {
+  it("loads every Zernio page and deduplicates documented postId values", async () => {
     requestSocialPublishingMock
       .mockResolvedValueOnce({
         posts: [createAnalyticsPost("post_1")],
@@ -88,28 +109,25 @@ describe("listSocialPublishingAnalytics", () => {
     expect(requestSocialPublishingMock).toHaveBeenCalledTimes(2);
     expect(readQuery(1).get("page")).toBe("2");
     expect(analytics.map((item) => item.post_result_id)).toEqual([
-      "late_post_1",
-      "late_post_2",
+      "post_1",
+      "post_2",
     ]);
   });
 
-  it("keeps mapped posts on supported platforms", async () => {
+  it("keeps every post from the selected connected accounts", async () => {
     requestSocialPublishingMock.mockResolvedValue({
       posts: [
-        createAnalyticsPost("post_1"),
-        createAnalyticsPost("post_2"),
-        createAnalyticsPost("post_3", "myspace"),
+        createAnalyticsPost("post_1", "selected"),
+        createAnalyticsPost("post_2", "other"),
+        createAnalyticsPost("post_3", "selected", "myspace"),
       ],
       pagination: { pages: 1 },
     });
 
     const analytics = await listSocialPublishingAnalytics("zernio_key", [
-      "late_post_1",
-      "late_post_3",
+      "selected",
     ]);
 
-    expect(analytics.map((item) => item.post_result_id)).toEqual([
-      "late_post_1",
-    ]);
+    expect(analytics.map((item) => item.post_result_id)).toEqual(["post_1"]);
   });
 });
