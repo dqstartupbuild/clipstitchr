@@ -95,6 +95,7 @@ import type * as billing_getEffectiveEntitlementForOwner from "../billing/getEff
 import type * as billing_getEntitlementForOwner from "../billing/getEntitlementForOwner.js";
 import type * as billing_reconcileStripeEntitlement from "../billing/reconcileStripeEntitlement.js";
 import type * as billing_recordCheckoutSession from "../billing/recordCheckoutSession.js";
+import type * as billing_repairLatestPaidInvoiceAllowance from "../billing/repairLatestPaidInvoiceAllowance.js";
 import type * as billing_retireCompletedSubscriptionCheckoutSessions from "../billing/retireCompletedSubscriptionCheckoutSessions.js";
 import type * as billing_setBillingSupportOverride from "../billing/setBillingSupportOverride.js";
 import type * as blogPostCards_deleteBlogPostCardsBySlug from "../blogPostCards/deleteBlogPostCardsBySlug.js";
@@ -371,6 +372,7 @@ import type * as stripe_recordStripeEventFailure from "../stripe/recordStripeEve
 import type * as stripe_recoverCreditRefillFromCharge from "../stripe/recoverCreditRefillFromCharge.js";
 import type * as stripe_recoverMonthlyGrantFromCharge from "../stripe/recoverMonthlyGrantFromCharge.js";
 import type * as stripe_refreshStripeSubscriptionEvent from "../stripe/refreshStripeSubscriptionEvent.js";
+import type * as stripe_repairPaidInvoiceAllowance from "../stripe/repairPaidInvoiceAllowance.js";
 import type * as stripe_resolveStripeOwnerId from "../stripe/resolveStripeOwnerId.js";
 import type * as stripe_resolveStripePaymentHold from "../stripe/resolveStripePaymentHold.js";
 import type * as stripe_restoreGrantForCharge from "../stripe/restoreGrantForCharge.js";
@@ -1005,6 +1007,7 @@ declare const fullApi: ApiFromModules<{
   "billing/getEntitlementForOwner": typeof billing_getEntitlementForOwner;
   "billing/reconcileStripeEntitlement": typeof billing_reconcileStripeEntitlement;
   "billing/recordCheckoutSession": typeof billing_recordCheckoutSession;
+  "billing/repairLatestPaidInvoiceAllowance": typeof billing_repairLatestPaidInvoiceAllowance;
   "billing/retireCompletedSubscriptionCheckoutSessions": typeof billing_retireCompletedSubscriptionCheckoutSessions;
   "billing/setBillingSupportOverride": typeof billing_setBillingSupportOverride;
   "blogPostCards/deleteBlogPostCardsBySlug": typeof blogPostCards_deleteBlogPostCardsBySlug;
@@ -1281,6 +1284,7 @@ declare const fullApi: ApiFromModules<{
   "stripe/recoverCreditRefillFromCharge": typeof stripe_recoverCreditRefillFromCharge;
   "stripe/recoverMonthlyGrantFromCharge": typeof stripe_recoverMonthlyGrantFromCharge;
   "stripe/refreshStripeSubscriptionEvent": typeof stripe_refreshStripeSubscriptionEvent;
+  "stripe/repairPaidInvoiceAllowance": typeof stripe_repairPaidInvoiceAllowance;
   "stripe/resolveStripeOwnerId": typeof stripe_resolveStripeOwnerId;
   "stripe/resolveStripePaymentHold": typeof stripe_resolveStripePaymentHold;
   "stripe/restoreGrantForCharge": typeof stripe_restoreGrantForCharge;

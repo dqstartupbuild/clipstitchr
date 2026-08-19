@@ -51,13 +51,21 @@ export function getStripeInvoiceSnapshot(invoice: Stripe.Invoice) {
     throw new Error("Stripe invoice is missing ClipStitchr billing data.");
   }
 
+  const isProration =
+    line.parent?.subscription_item_details?.proration === true ||
+    line.parent?.invoice_item_details?.proration === true;
+
+  const periodStart = isProration
+    ? invoice.period_start
+    : line.period.start;
+
   return {
     billingReason: invoice.billing_reason,
     customerId,
     invoiceId: invoice.id,
     ownerId: ownerId || undefined,
     periodEnd: toStripeIsoString(line.period.end),
-    periodStart: toStripeIsoString(invoice.period_start),
+    periodStart: toStripeIsoString(periodStart),
     planKey,
     priceId,
     subscriptionId,
