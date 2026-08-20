@@ -1,9 +1,0 @@
-import type { PublishingPostSummary } from "@/lib/clipstitchr/publishing/client/contracts/PublishingPostSummary";
-
-export type PublishingCalendarResponse = {
-  from: string;
-  posts: PublishingPostSummary[];
-  productId: string;
-  timeZone: string;
-  to: string;
-};

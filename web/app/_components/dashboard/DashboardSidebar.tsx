@@ -16,13 +16,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { BrandMark } from "@/app/_components/BrandMark";
 import { DashboardAccountButton } from "@/app/_components/dashboard/DashboardAccountButton";
 import { DashboardNotificationBell } from "@/app/_components/dashboard/DashboardNotificationBell";
 import { DashboardProductSwitcher } from "@/app/_components/dashboard/DashboardProductSwitcher";
-import { StudioBetaSidebarLink } from "@/app/_components/studio/StudioBetaSidebarLink";
-import { useDashboardNavigationFocus } from "@/app/_components/dashboard/useDashboardNavigationFocus";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 
@@ -57,15 +55,7 @@ const navigationSections = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const openButtonRef = useRef<HTMLButtonElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { requiresOnboarding } = useDashboardProduct();
-  useDashboardNavigationFocus(
-    isOpen,
-    setIsOpen,
-    openButtonRef,
-    closeButtonRef,
-  );
 
   return (
     <>
@@ -77,13 +67,10 @@ export function DashboardSidebar() {
             <DashboardAccountButton />
           </span>
           <button
-            aria-controls="dashboard-navigation"
-            aria-expanded={isOpen}
             type="button"
             aria-label="Open navigation"
-            className="dashboard-sidebar-control inline-flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-surface-muted text-text-primary transition-colors hover:border-border-hover hover:text-accent-dark"
+            className="dashboard-sidebar-control inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface-muted text-text-primary transition-colors hover:border-border-hover hover:text-accent-dark"
             onClick={() => setIsOpen(true)}
-            ref={openButtonRef}
           >
             <Menu aria-hidden className="h-5 w-5" />
           </button>
@@ -94,7 +81,6 @@ export function DashboardSidebar() {
         <button
           type="button"
           aria-label="Close navigation overlay"
-          tabIndex={-1}
           className="fixed inset-0 z-40 bg-black/30 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
@@ -103,20 +89,16 @@ export function DashboardSidebar() {
       <aside
         className={[
           "dashboard-sidebar fixed inset-y-0 left-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col border-r border-border bg-surface/95 px-4 py-4 shadow-2xl shadow-black/35 transition-transform duration-200 lg:sticky lg:inset-auto lg:top-0 lg:z-auto lg:h-screen lg:w-auto lg:max-w-none lg:translate-x-0 lg:shadow-none",
-          isOpen
-            ? "visible translate-x-0"
-            : "invisible -translate-x-full lg:visible",
+          isOpen ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
-        id="dashboard-navigation"
       >
         <div className="flex items-center justify-between">
           <BrandMark />
           <button
             type="button"
             aria-label="Close navigation"
-            className="dashboard-sidebar-control inline-flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-surface-muted text-text-primary transition-colors hover:border-border-hover hover:text-accent-dark lg:hidden"
+            className="dashboard-sidebar-control inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface-muted text-text-primary transition-colors hover:border-border-hover hover:text-accent-dark lg:hidden"
             onClick={() => setIsOpen(false)}
-            ref={closeButtonRef}
           >
             <X aria-hidden className="h-5 w-5" />
           </button>
@@ -131,13 +113,7 @@ export function DashboardSidebar() {
             <p className="rounded-lg border border-border bg-surface-muted px-3 py-3 text-sm font-semibold leading-6 text-text-secondary">
               Finish your first set of ads to open the rest of ClipStitchr.
             </p>
-          ) : (
-            <>
-              <StudioBetaSidebarLink
-                pathname={pathname}
-                onNavigate={() => setIsOpen(false)}
-              />
-              {navigationSections.map((section) => (
+          ) : navigationSections.map((section) => (
             <div key={section.label} className="dashboard-sidebar-section grid gap-1">
               <p className="dashboard-sidebar-label px-3 pt-3 text-[11px] font-bold uppercase text-text-tertiary">
                 {section.label}
@@ -155,7 +131,7 @@ export function DashboardSidebar() {
                     href={item.href}
                     aria-current={isActive ? "page" : undefined}
                     className={[
-                      "dashboard-sidebar-link inline-flex min-h-11 items-center gap-3 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors",
+                      "dashboard-sidebar-link inline-flex items-center gap-3 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors",
                       isActive
                         ? "dashboard-sidebar-link-active border-border-hover bg-surface-muted text-accent-dark"
                         : "border-transparent text-text-secondary hover:border-border hover:bg-surface-muted hover:text-accent-dark",
@@ -174,9 +150,7 @@ export function DashboardSidebar() {
                 );
               })}
             </div>
-              ))}
-            </>
-          )}
+          ))}
         </nav>
         <div className="dashboard-sidebar-account mt-4 flex items-center gap-3 rounded-lg border border-border bg-surface-muted px-3 py-3 text-sm font-semibold text-text-secondary">
           <span className="dashboard-account-button inline-flex h-8 w-8 shrink-0 items-center justify-center">

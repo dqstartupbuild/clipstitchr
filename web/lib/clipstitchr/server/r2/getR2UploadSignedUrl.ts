@@ -7,34 +7,20 @@ import { getR2SignedUrlExpiresSeconds } from "@/lib/clipstitchr/server/r2/getR2S
 type GetR2UploadSignedUrlOptions = {
   key: string;
   contentType: string;
-  sizeBytes?: number;
 };
 
 export async function getR2UploadSignedUrl({
   key,
   contentType,
-  sizeBytes,
 }: GetR2UploadSignedUrlOptions) {
-  if (
-    sizeBytes !== undefined &&
-    (!Number.isSafeInteger(sizeBytes) || sizeBytes < 1)
-  ) {
-    throw new Error("R2 upload size is invalid.");
-  }
   const expiresIn = getR2SignedUrlExpiresSeconds();
   const environment = getR2Environment();
   const command = new PutObjectCommand({
     Bucket: environment.bucketName,
-    ...(sizeBytes === undefined ? {} : { ContentLength: sizeBytes }),
     Key: key,
     ContentType: contentType,
   });
-  const url = await getSignedUrl(createR2Client(), command, {
-    expiresIn,
-    ...(sizeBytes === undefined
-      ? {}
-      : { signableHeaders: new Set(["content-length"]) }),
-  });
+  const url = await getSignedUrl(createR2Client(), command, { expiresIn });
 
   return {
     url,

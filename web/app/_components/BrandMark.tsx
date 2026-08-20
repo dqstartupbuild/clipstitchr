@@ -7,7 +7,7 @@ export function BrandMark() {
   return (
     <Link
       href="/"
-      className="brand-mark relative inline-flex h-11 w-[10.25rem] shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="brand-mark relative inline-flex h-10 w-[10.25rem] shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <Image
         src={brandAssets.logoOnDark}

@@ -7,15 +7,10 @@ import { DevelopmentHookLabPage } from "@/app/dashboard/development/DevelopmentH
 import { DevelopmentLibraryPage } from "@/app/dashboard/development/DevelopmentLibraryPage";
 import { DevelopmentSchedulePage } from "@/app/dashboard/development/DevelopmentSchedulePage";
 import { DevelopmentSettingsPage } from "@/app/dashboard/development/DevelopmentSettingsPage";
-import { DevelopmentStudioUnavailablePage } from "@/app/dashboard/development/DevelopmentStudioUnavailablePage";
 import { DevelopmentToolPage } from "@/app/dashboard/development/DevelopmentToolPage";
 
 export function DevelopmentDashboardRoute() {
   const pathname = usePathname();
-
-  if (pathname.startsWith("/dashboard/studio")) {
-    return <DevelopmentStudioUnavailablePage />;
-  }
 
   if (
     pathname.startsWith("/dashboard/library") ||

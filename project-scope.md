@@ -301,17 +301,6 @@ selected slides.
 /dashboard/avatars → Compatibility redirect to `/dashboard/library?tab=avatars`
 /dashboard/uploads → Compatibility redirect to `/dashboard/library`
 /dashboard/stitches → Compatibility redirect to `/dashboard/library?tab=stitches`
-/dashboard/studio → Private, allowlisted, user-enabled Studio Beta workspace; unavailable unless every server-side access gate passes
-/dashboard/studio/research → Product-scoped LazyReel research, saved reports, creative briefs, Wiki, and plan-only companion workflows inside Studio Beta
-/dashboard/studio/clips → Product-scoped long-video clipping, reviewed candidates, background processing, rendered revisions, and accepted-output handoffs
-/dashboard/studio/stitch → Product-grounded classic and talking reel recipes, batch review, generation, and output handoffs
-/dashboard/studio/edit → Product-scoped Studio Beta browser editor with saved projects, Product media, timeline editing, preview, and owned export
-/dashboard/studio/publishing → Isolated Postiz Beta publishing home beside classic Zernio
-/dashboard/studio/publishing/compose → Product-scoped TikTok, Instagram, and YouTube composer
-/dashboard/studio/publishing/calendar → Postiz Beta schedule calendar
-/dashboard/studio/publishing/posts → Postiz Beta post status, detail, cancellation, and safe retry
-/dashboard/studio/publishing/analytics → Postiz Beta account and post analytics
-/dashboard/studio/publishing/connections → Postiz Beta provider connections and health
 ```
 
 ---
@@ -559,59 +548,6 @@ record. Legacy destination-tool fields remain for old saved briefs, but new
 adaptations stay inside Hook Lab. Products may store a default avatar and Demo
 clip.
 
-Studio Beta access is additive and fail-closed. Convex stores one
-`studioBetaAccessGrants` row, one `studioBetaPreferences` row, and append-only
-`studioBetaAuditEvents` for each participating Clerk owner. Studio access
-requires the exact server switch, an active grant, and the owner's opt-in at
-every page, API, Convex, signed-storage, and worker boundary. Disabling or
-revoking access preserves Studio data. Studio-owned R2 artifacts use the
-versioned `users/{ownerId}/studio/v1/...` namespace; classic Library objects and
-current workflows keep their existing paths and behavior.
-
-Studio Research retains a complete verified LazyReel source snapshot while
-adapting its seven MCP tools and six companion workflows behind authenticated
-Next.js and Convex boundaries. Research runs, saved reports, and creative briefs
-use separate Product-scoped Studio tables and versioned bounded JSON snapshots.
-Results distinguish observed, derived, and heuristic evidence. Product creative
-claims are rebuilt server-side from the active saved Product. Companion workflow
-results are explicitly plan-only and perform no provider or render work. Hook
-Lab remains on its current routes, schemas, and behavior.
-
-Studio Edit stores separate versioned `StudioEditorProjectV1` snapshots with
-durable media references, optimistic revisions, and idempotent write receipts.
-Its heavy client is loaded only after the server Studio access guard passes.
-Owned Library clips, Stitches, and Studio uploads can become video, image,
-voice, music, text, or caption layers. Multi-source browser export creates a
-fresh Media Bunny `Output`, composes visual frames and mixed audio, uploads the
-MP4 and poster to the owner's Studio R2 namespace, and can save the result to
-the active Product's existing Library. It does not use single-input
-`Conversion`, replace classic Stitchr, or introduce a duplicate media library.
-
-Studio Clips keeps SupoClip-derived task, analysis, output, and revision records
-separate from classic Clipr. A dedicated authenticated Cloud Run worker owns
-bounded YouTube or R2 acquisition, transcription, grounded clip selection,
-optional Pexels B-roll, FFmpeg captions/rendering, checkpoint recovery, verified
-R2 uploads, and platform exports. Accepting an output is explicit; saving it to
-the active Product Library and opening it in Edit or Studio Stitch reloads the
-durable owned output instead of trusting a browser URL.
-
-Studio Stitch keeps ReelClaw-derived immutable recipes, generation runs, review
-subsets, and outputs separate from classic Stitchr. Deterministic recipes ground
-claims in the active Product and support a short classic reel or a narrated
-talking-video cadence. A separate lease/checkpoint worker owns configured
-DanSUGC, Gemini, ElevenLabs, and FFmpeg execution. Provider calls and rendering
-have independent owner/global cost gates; missing providers remain visibly
-unavailable.
-
-Postiz Beta publishing uses Studio-only routes and credentials while leaving
-Zernio Schedule, Analytics, records, and APIs unchanged. An isolated long-lived
-service stores its transactional outbox, schedules, attempts, leases, receipts,
-and reconciliation state in PostgreSQL and its short-lived OAuth state, replay
-protection, coordination, and action limits in Redis. It supports only TikTok,
-Instagram, and YouTube. Browser requests carry durable Product media identities;
-the gateway resolves owned R2 objects and issues provider-readable access only
-at dispatch time.
-
 ---
 
 ## 9. Phased Rollout
@@ -672,8 +608,7 @@ at dispatch time.
 - ❌ Mobile-native app
 - ❌ Collaborative editing
 - ❌ User-authored thumbnail generation / thumbnail editing
-- ❌ Destructive cutting in classic browser-first tools. Studio Beta keeps
-  immutable originals and may create separate rendered output revisions.
+- ❌ Destructive video cutting — trims are editable metadata only
 - ❌ AI-first content platform positioning — AI supports source creation, while Stitchr remains the primary workflow
 
 ---
