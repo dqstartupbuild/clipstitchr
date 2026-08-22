@@ -61,7 +61,8 @@ systems between pages.
 
 The homepage has five product chapters: the real-output hero, the output reel,
 the batch workflow and populated workspace, three consolidated campaign jobs,
-and campaign proof followed by one direct close. Hook Lab, Clipr, Swapr,
+campaign proof, and a contextual resource path to tools, examples, and guides
+followed by one direct close. Hook Lab, Clipr, Swapr,
 Swipr, scoring, and automation remain represented without repeating the same
 standalone heading-and-card section.
 
@@ -84,6 +85,9 @@ or source handling changes.
 - `web/app/site-footer.tsx` provides the one footer used by the homepage and
   every public content route.
 - `web/app/_components/landing/*` contains the homepage sections.
+- `web/lib/clipstitchr/seo/createHomepageStructuredData.ts` keeps the homepage
+  `WebPage` and `SoftwareApplication` structured-data graph aligned with the
+  real product and pricing.
 - `web/app/_components/pricing/*` contains the pricing page sections.
 - `web/app/_components/tools/*` and its resource components contain the public
   tool discovery system.

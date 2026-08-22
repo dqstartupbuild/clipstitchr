@@ -3,6 +3,7 @@ import { type Blog, type CaseStudy } from "content-collections";
 import { brandAssets } from "@/lib/brandAssets";
 import { createPageMetadata } from "@/lib/metadata";
 import { createCanonicalUrl, site } from "@/lib/site";
+import { isBlogPost } from "./isBlogPost";
 import type { RssPost } from "./RssPost";
 
 type ContentArticle = Blog | CaseStudy;
@@ -55,8 +56,7 @@ export function createContentMetadata(post: ContentArticle): Metadata {
 
 export function createArticleJsonLd(post: ContentArticle) {
   return {
-    "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": isBlogPost(post) ? "BlogPosting" : "Article",
     headline: post.title,
     description: post.description,
     datePublished: post.date,
@@ -75,6 +75,7 @@ export function createArticleJsonLd(post: ContentArticle) {
       },
     },
     image: [toAbsoluteImageUrl(post.image)],
+    url: post.canonical,
     mainEntityOfPage: post.canonical,
     keywords: [post.targetKeyword, ...post.tags].join(", "),
     articleSection: post.category,
@@ -87,7 +88,6 @@ export function createFaqJsonLd(post: ContentArticle) {
   }
 
   return {
-    "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: post.faq.map((entry) => ({
       "@type": "Question",

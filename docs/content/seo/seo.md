@@ -16,6 +16,24 @@ content from scratch. ClipStitchr is better positioned around turning saved
 clips and product demos into finished 9:16 ads without asking the user to become
 a content person.
 
+## Implemented Search Surfaces
+
+- The homepage has its own intent-aligned metadata and a `WebPage` plus
+  `SoftwareApplication` JSON-LD graph. Its visible copy names the actual job:
+  turning UGC clips and product demos into short-form app ads.
+- Public blog and case-study pages emit a single JSON-LD graph containing an
+  `Article` or `BlogPosting`, a `BreadcrumbList`, and a visible FAQ schema when
+  applicable. Frontmatter `schemaTypeHints` controls whether the article and FAQ
+  nodes are emitted.
+- Public tools emit `WebApplication`, `BreadcrumbList`, and FAQ schema. The
+  tools, examples, docs, articles, and case studies are all discoverable from
+  the main sitemap.
+- Static sitemap entries omit volatile `lastModified` values. Only entries with
+  a real publication or update date declare one.
+
+See [homepage structured data](./homepage-structured-data.md) for the homepage
+implementation and maintenance rules.
+
 ## Source Notes
 
 Public search results show crowded demand around:

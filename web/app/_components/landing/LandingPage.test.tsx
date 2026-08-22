@@ -67,7 +67,7 @@ describe("LandingPage", () => {
 
     expect(markup).toContain("Your clips");
     expect(markup).toContain("Your campaign");
-    expect(markup).toContain("Pair every Hook/UGC clip with one product demo");
+    expect(markup).toContain("Turn UGC clips and product demos into finished short-form app ads");
     expect(markup).toContain("TikTok, Instagram Reels, and YouTube Shorts");
     expect(markup).toContain("Get ClipStitchr");
     expect(markup).toContain("Paid plans start at $39/month");
@@ -88,6 +88,10 @@ describe("LandingPage", () => {
     expect(markup).toContain("161K+");
     expect(markup).toContain("Make the batch. Keep building");
     expect(markup).toContain("Guppy production library inside ClipStitchr");
+    expect(markup).toContain('"@type":"SoftwareApplication"');
+    expect(markup).toContain("Plan your next app ad");
+    expect(markup).toContain("Watch finished app ads");
+    expect(markup).toContain("Learn the workflow");
   });
 
   it("renders landing and content header variants", () => {

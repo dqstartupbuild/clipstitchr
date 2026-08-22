@@ -47,7 +47,8 @@ describe("content SEO helpers", () => {
     const article = createArticleJsonLd(post);
     const faq = createFaqJsonLd(post);
 
-    expect(article["@type"]).toBe("Article");
+    expect(article["@type"]).toBe("BlogPosting");
+    expect(article.url).toBe(post.canonical);
 
     if (post.faq?.length) {
       expect(faq?.["@type"]).toBe("FAQPage");

@@ -10,7 +10,6 @@ import { createCanonicalUrl, site } from "@/lib/site";
 export async function getSitemapEntries(): Promise<MetadataRoute.Sitemap> {
   const staticEntries = site.staticPages.map((page) => ({
     url: createCanonicalUrl(page.pathname),
-    lastModified: new Date(),
     changeFrequency: page.changeFrequency,
     priority: page.priority,
   }));

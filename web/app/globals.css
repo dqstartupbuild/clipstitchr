@@ -2945,6 +2945,62 @@
   line-height: 1.5;
 }
 
+.landing-discovery {
+  background: #1e1713;
+  padding: 3rem 1.5rem 4rem;
+}
+
+.landing-discovery-inner {
+  max-width: 80rem;
+  margin-inline: auto;
+}
+
+.landing-discovery-list {
+  display: grid;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  list-style: none;
+}
+
+.landing-discovery-list a {
+  display: block;
+  min-height: 100%;
+  padding: 1.15rem 1rem;
+  border-left: 2px solid var(--accent);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.landing-discovery-list a:hover {
+  background: rgba(221, 180, 152, 0.08);
+  color: var(--accent-dark);
+}
+
+.landing-discovery-list a:focus-visible {
+  outline: 2px solid var(--accent-dark);
+  outline-offset: 4px;
+}
+
+.landing-discovery-list span,
+.landing-discovery-list small {
+  display: block;
+}
+
+.landing-discovery-list span {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.landing-discovery-list small {
+  margin-top: 0.55rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .landing-hero-output {
   display: flex;
   max-width: 67rem;
@@ -3458,6 +3514,10 @@
     display: flex;
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .landing-discovery-list {
+    grid-template-columns: 1fr;
   }
 
   .landing-workflow-copy h2,

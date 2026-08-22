@@ -7,11 +7,8 @@ import {
   getBlogPostBySlug,
   getRelatedBlogPosts,
 } from "@/lib/content/queries";
-import {
-  createArticleJsonLd,
-  createContentMetadata,
-  createFaqJsonLd,
-} from "@/lib/content/seo";
+import { createContentMetadata } from "@/lib/content/seo";
+import { createContentStructuredData } from "@/lib/content/createContentStructuredData";
 import { mdxComponents } from "@/lib/content/mdx-components";
 import { fetchConvexBlogPostBySlug } from "@/lib/content/runtimeBlog/fetchConvexBlogPostBySlug";
 import { createRuntimeBlogPostMetadata } from "@/lib/content/runtimeBlog/createRuntimeBlogPostMetadata";
@@ -58,20 +55,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   if (post) {
     const relatedPosts = getRelatedBlogPosts(post);
-    const structuredData = [
-      createArticleJsonLd(post),
-      createFaqJsonLd(post),
-    ].filter(Boolean);
+    const structuredData = createContentStructuredData(post);
 
     return (
       <div className="article-page">
-        {structuredData.map((data, index) => (
-          <script
-            key={index}
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-          />
-        ))}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
 
         <div className="article-page-inner">
           <Link href="/blog" className="public-back-link">
@@ -153,12 +144,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const runtimePost = toRuntimeBlogPostFromConvex(convexPost);
   const articleJsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
     headline: runtimePost.title,
     description: runtimePost.description,
     datePublished: runtimePost.date,
     dateModified: runtimePost.updated ?? runtimePost.date,
     mainEntityOfPage: runtimePost.canonical,
+    url: runtimePost.canonical,
     keywords: runtimePost.tags.join(", "),
     ...(runtimePost.image ? { image: [runtimePost.image] } : {}),
   };

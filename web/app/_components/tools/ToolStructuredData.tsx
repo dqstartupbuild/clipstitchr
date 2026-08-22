@@ -1,5 +1,6 @@
 import type { ToolFaq } from "@/lib/clipstitchr/types/ToolFaq";
 import { createToolFaqJsonLd } from "@/lib/clipstitchr/tools/createToolFaqJsonLd";
+import { createToolBreadcrumbJsonLd } from "@/lib/clipstitchr/tools/createToolBreadcrumbJsonLd";
 import { createToolWebApplicationJsonLd } from "@/lib/clipstitchr/tools/createToolWebApplicationJsonLd";
 
 type ToolStructuredDataProps = {
@@ -17,6 +18,7 @@ export function ToolStructuredData({
 }: ToolStructuredDataProps) {
   const structuredData = [
     createToolWebApplicationJsonLd({ description, name, pathname }),
+    createToolBreadcrumbJsonLd(name, pathname),
     createToolFaqJsonLd(faqs),
   ];
 

@@ -13,9 +13,9 @@ export function LandingHero() {
         </h1>
         <div className="landing-hero-intro">
           <p>
-            Pair every Hook/UGC clip with one product demo. Leave with finished
-            vertical ads ready to review, test, and post on TikTok, Instagram
-            Reels, and YouTube Shorts.
+            Turn UGC clips and product demos into finished short-form app ads.
+            Review, test, and post vertical videos for TikTok, Instagram Reels,
+            and YouTube Shorts without spending your week editing.
           </p>
           <div className="landing-hero-actions">
             <LandingDashboardCta

@@ -5,17 +5,21 @@ import { LandingHero } from "@/app/_components/landing/LandingHero";
 import { LandingOfferStackSection } from "@/app/_components/landing/LandingOfferStackSection";
 import { LandingExampleOutputSection } from "@/app/_components/landing/LandingExampleOutputSection";
 import { LandingProofSection } from "@/app/_components/landing/LandingProofSection";
+import { LandingDiscoverySection } from "@/app/_components/landing/LandingDiscoverySection";
+import { LandingSeoStructuredData } from "@/app/_components/landing/LandingSeoStructuredData";
 import { LandingWorkflow } from "@/app/_components/landing/LandingWorkflow";
 
 export function LandingPage() {
   return (
     <div className="marketing-shell landing-shell min-h-full bg-background text-foreground">
+      <LandingSeoStructuredData />
       <SiteHeader variant="landing" />
       <LandingHero />
       <LandingExampleOutputSection />
       <LandingWorkflow />
       <LandingOfferStackSection />
       <LandingProofSection />
+      <LandingDiscoverySection />
       <LandingBottomBand />
       <SiteFooter />
     </div>

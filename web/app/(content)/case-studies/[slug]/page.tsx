@@ -9,11 +9,8 @@ import {
   getPublishedCaseStudies,
 } from "@/lib/content/caseStudyQueries";
 import { mdxComponents } from "@/lib/content/mdx-components";
-import {
-  createArticleJsonLd,
-  createContentMetadata,
-  createFaqJsonLd,
-} from "@/lib/content/seo";
+import { createContentMetadata } from "@/lib/content/seo";
+import { createContentStructuredData } from "@/lib/content/createContentStructuredData";
 
 type CaseStudyPageProps = {
   params: Promise<{ slug: string }>;
@@ -44,20 +41,14 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
     notFound();
   }
 
-  const structuredData = [
-    createArticleJsonLd(caseStudy),
-    createFaqJsonLd(caseStudy),
-  ].filter(Boolean);
+  const structuredData = createContentStructuredData(caseStudy);
 
   return (
     <div className="case-study-detail-page">
-      {structuredData.map((data, index) => (
-        <script
-          key={index}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-        />
-      ))}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
 
       <div className="case-study-detail-inner">
         <Link href="/case-studies" className="public-back-link">
