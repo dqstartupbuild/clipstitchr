@@ -32,6 +32,9 @@ describe("sitemap", () => {
     expect(urls).toContain("http://localhost:3000/docs");
     expect(urls).toContain("http://localhost:3000/examples");
     expect(urls).toContain("http://localhost:3000/pricing");
+    expect(urls).toContain("http://localhost:3000/about");
+    expect(urls).toContain("http://localhost:3000/contact");
+    expect(urls).toContain("http://localhost:3000/developers");
     expect(urls).toContain("http://localhost:3000/tools");
     for (const key of publicToolKeys) {
       expect(urls).toContain(

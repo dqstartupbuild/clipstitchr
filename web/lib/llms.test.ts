@@ -10,6 +10,9 @@ describe("createLlmsTxt", () => {
     expect(text).toContain("## Facts Block");
     expect(text).toContain("## Core Reading Path");
     expect(text).toContain("## Site Context");
+    expect(text).toContain("## When to use ClipStitchr");
+    expect(text).toContain("POST /api/v1/hooks");
+    expect(text).toContain("- /openapi.json");
     expect(text).toContain("TikTok, Instagram Reels, and YouTube Shorts");
     expect(text).toContain("Stitchr includes a Longr mode");
     expect(text).toContain("- /tools");

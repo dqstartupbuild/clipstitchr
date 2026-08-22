@@ -32,6 +32,7 @@ describe("readAppHookGeneratorRequest", () => {
     { ...validRequest, variationIndex: 1.5 },
     { ...validRequest, variationIndex: 101 },
     { ...validRequest, problem: "p".repeat(241) },
+    { ...validRequest, unknownField: "not accepted" },
   ])("rejects invalid input %#", (request) => {
     expect(() => readAppHookGeneratorRequest(request)).toThrow(
       AppHookGeneratorInputError,

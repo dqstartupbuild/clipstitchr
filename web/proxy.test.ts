@@ -45,6 +45,107 @@ describe("proxy development auth bypass", () => {
     expect(mocks.runClerkProtectedProxy).not.toHaveBeenCalled();
   });
 
+  it("rewrites markdown-preferred public pages and varies by Accept", async () => {
+    const { default: proxy } = await import("@/proxy");
+    const response = await proxy(
+      new NextRequest("http://localhost:3000/developers", {
+        headers: { accept: "text/markdown, text/html;q=0.5" },
+      }),
+      {} as never,
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("content-type")).toBe(
+      "text/markdown; charset=utf-8",
+    );
+    expect(response?.headers.get("vary")).toBe(
+      "Accept, Accept-Encoding",
+    );
+    await expect(response?.text()).resolves.toContain(
+      "# ClipStitchr Developer Resources",
+    );
+    expect(mocks.runClerkProtectedProxy).not.toHaveBeenCalled();
+  });
+
+  it("returns a negotiated markdown 404 with recovery links", async () => {
+    const { default: proxy } = await import("@/proxy");
+    const response = await proxy(
+      new NextRequest("http://localhost:3000/not-a-real-page", {
+        headers: { accept: "text/markdown" },
+      }),
+      {} as never,
+    );
+
+    expect(response?.status).toBe(404);
+    await expect(response?.text()).resolves.toContain("/sitemap.xml");
+    expect(mocks.runClerkProtectedProxy).not.toHaveBeenCalled();
+  });
+
+  it("keeps machine-readable resources on their native routes", async () => {
+    const { default: proxy } = await import("@/proxy");
+
+    for (const pathname of [
+      "/llms.txt",
+      "/openapi.json",
+      "/sitemap.xml",
+      "/api/v1",
+      "/api/v1/hooks",
+    ]) {
+      mocks.runClerkProtectedProxy.mockClear();
+      const response = await proxy(
+        new NextRequest(`http://localhost:3000${pathname}`, {
+          headers: { accept: "text/markdown" },
+        }),
+        {} as never,
+      );
+      expect(response?.headers.get("x-middleware-next")).toBe("1");
+      expect(mocks.runClerkProtectedProxy).not.toHaveBeenCalled();
+    }
+  });
+
+  it("falls back to acceptable HTML for an HTML-only public page", async () => {
+    const { default: proxy } = await import("@/proxy");
+    await proxy(
+      new NextRequest("http://localhost:3000/docs", {
+        headers: { accept: "text/markdown, text/html;q=0.5" },
+      }),
+      {} as never,
+    );
+
+    expect(mocks.runClerkProtectedProxy).toHaveBeenCalledOnce();
+  });
+
+  it("varies negotiated HTML responses by Accept", async () => {
+    const { default: proxy } = await import("@/proxy");
+    const response = await proxy(
+      new NextRequest("http://localhost:3000/", {
+        headers: { accept: "text/html" },
+      }),
+      {} as never,
+    );
+
+    expect(response?.headers.get("vary")).toBe(
+      "Accept, Accept-Encoding",
+    );
+    expect(mocks.runClerkProtectedProxy).toHaveBeenCalledOnce();
+  });
+
+  it("returns 406 when no page representation is acceptable", async () => {
+    const { default: proxy } = await import("@/proxy");
+    const response = await proxy(
+      new NextRequest("http://localhost:3000/docs", {
+        headers: { accept: "text/markdown" },
+      }),
+      {} as never,
+    );
+
+    expect(response?.status).toBe(406);
+    expect(response?.headers.get("vary")).toBe(
+      "Accept, Accept-Encoding",
+    );
+    expect(mocks.runClerkProtectedProxy).not.toHaveBeenCalled();
+  });
+
   it("denies API routes instead of granting preview access", async () => {
     const { default: proxy } = await import("@/proxy");
     const request = new NextRequest("http://localhost:3000/api/r2/upload-url");

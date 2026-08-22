@@ -14,6 +14,19 @@ in a Next.js route handler.
   created the prediction.
 - Fail closed with `429` and a `Retry-After` header when a limit is exceeded.
 
+## Public Agent API
+
+`POST /api/v1/hooks` is a public alias for the deterministic App Hook Generator.
+It consumes the same per-client and global Convex quota as
+`POST /api/tools/app-hook-generator` before generating a result. It must not
+receive a separate bucket because parallel aliases would otherwise let one
+caller bypass the public hook quota.
+
+`GET /api/v1` and `GET /openapi.json` are intentionally not rate-limited. They
+are static, bounded discovery reads that do not create provider calls, storage,
+user-specific work, or billable media processing. They remain public only as
+documentation for the explicitly limited hook operation.
+
 ## Billing and Paid-Creation Limits
 
 Stripe session creation is protected before the Stripe API call. These limits

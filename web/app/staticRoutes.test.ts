@@ -54,6 +54,8 @@ describe("static metadata routes", () => {
     );
     expect(response.headers.get("cache-control")).toContain("s-maxage=3600");
     expect(body).toContain("# ClipStitchr");
+    expect(body).toContain("## When to use ClipStitchr");
+    expect(body).toContain("/api/v1/hooks");
   });
 
   it("serves the video sitemap with example output metadata", async () => {

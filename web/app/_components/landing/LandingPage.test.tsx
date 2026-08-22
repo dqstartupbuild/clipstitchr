@@ -65,6 +65,11 @@ describe("LandingPage", () => {
   it("renders the full landing page from the home route", () => {
     const markup = renderToStaticMarkup(<Home />);
 
+    expect(markup).toMatch(/<main[^>]*>/);
+    expect((markup.match(/<h1/g) ?? []).length).toBe(1);
+    expect((markup.match(/<h2/g) ?? []).length).toBeGreaterThan(1);
+    expect(markup.replace(/<[^>]+>/g, "").length).toBeGreaterThan(500);
+
     expect(markup).toContain("Your clips");
     expect(markup).toContain("Your campaign");
     expect(markup).toContain("Turn UGC clips and product demos into finished short-form app ads");

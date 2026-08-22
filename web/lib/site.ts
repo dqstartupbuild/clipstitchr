@@ -2,6 +2,7 @@ import { resolveSiteUrl } from "./resolveSiteUrl";
 import { brandAssets } from "@/lib/brandAssets";
 import { publicToolCatalog } from "@/lib/clipstitchr/tools/catalog/publicToolCatalog";
 import { publicToolKeys } from "@/lib/clipstitchr/tools/catalog/publicToolKeys";
+import { supportEmail } from "@/lib/supportEmail";
 
 const configuredSiteUrl = resolveSiteUrl();
 
@@ -102,6 +103,21 @@ export const site = {
       priority: 0.3,
     },
     {
+      pathname: "/about",
+      changeFrequency: "yearly" as const,
+      priority: 0.45,
+    },
+    {
+      pathname: "/contact",
+      changeFrequency: "yearly" as const,
+      priority: 0.45,
+    },
+    {
+      pathname: "/developers",
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    },
+    {
       pathname: "/terms",
       changeFrequency: "yearly" as const,
       priority: 0.3,
@@ -135,6 +151,15 @@ export function createOrganizationJsonLd() {
     name: site.publisherName,
     url: site.url,
     description: site.defaultDescription,
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: supportEmail,
+      contactType: "customer support",
+    },
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "US",
+    },
     logo: {
       "@type": "ImageObject",
       url: createCanonicalUrl(brandAssets.icon512),

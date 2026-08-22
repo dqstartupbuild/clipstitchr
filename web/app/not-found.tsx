@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BrandMark } from "@/app/_components/BrandMark";
 import { PrimaryButtonLink } from "@/app/_components/PrimaryButtonLink";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
@@ -21,6 +22,17 @@ export default function NotFound() {
               This page is not in ClipStitchr. Head back to the app or start
               from the homepage.
             </p>
+            <p className="mt-4 text-sm leading-6 text-text-secondary">
+              Looking for a machine-readable starting point? Read our sitemap,
+              agent guide, developer resources, or API specification.
+            </p>
+            <nav aria-label="Recovery links" className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+              <Link href="/sitemap.xml">Sitemap</Link>
+              <Link href="/llms.txt">Agent guide</Link>
+              <Link href="/docs">Docs</Link>
+              <Link href="/developers">Developer resources</Link>
+              <Link href="/openapi.json">OpenAPI</Link>
+            </nav>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <PrimaryButtonLink href={site.ctaUrl}>
                 Open Dashboard

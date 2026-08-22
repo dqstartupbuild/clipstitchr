@@ -14,13 +14,15 @@ export function LandingPage() {
     <div className="marketing-shell landing-shell min-h-full bg-background text-foreground">
       <LandingSeoStructuredData />
       <SiteHeader variant="landing" />
-      <LandingHero />
-      <LandingExampleOutputSection />
-      <LandingWorkflow />
-      <LandingOfferStackSection />
-      <LandingProofSection />
-      <LandingDiscoverySection />
-      <LandingBottomBand />
+      <main>
+        <LandingHero />
+        <LandingExampleOutputSection />
+        <LandingWorkflow />
+        <LandingOfferStackSection />
+        <LandingProofSection />
+        <LandingDiscoverySection />
+        <LandingBottomBand />
+      </main>
       <SiteFooter />
     </div>
   );

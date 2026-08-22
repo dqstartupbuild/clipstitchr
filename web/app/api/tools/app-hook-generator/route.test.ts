@@ -104,7 +104,7 @@ describe("POST /api/tools/app-hook-generator", () => {
     const response = await POST(createRequest(JSON.stringify({ appName: "" })));
 
     await expect(response.json()).resolves.toEqual({
-      message: "Check each field, then try again.",
+      error: { code: "invalid_request", message: "Check each field, then try again.", resolution: "Provide all required fields in the documented formats." },
     });
     expect(response.status).toBe(400);
     expect(mocks.convex.mutation).not.toHaveBeenCalled();
@@ -116,7 +116,7 @@ describe("POST /api/tools/app-hook-generator", () => {
     );
 
     await expect(response.json()).resolves.toEqual({
-      message: "Send this request as JSON.",
+      error: { code: "unsupported_media_type", message: "Send this request as JSON.", resolution: "Set Content-Type to application/json and send a JSON object." },
     });
     expect(response.status).toBe(415);
     expect(mocks.convex.mutation).not.toHaveBeenCalled();
@@ -128,7 +128,7 @@ describe("POST /api/tools/app-hook-generator", () => {
     );
 
     await expect(response.json()).resolves.toEqual({
-      message: "This request is not allowed.",
+      error: { code: "origin_not_allowed", message: "This request is not allowed.", resolution: "Call this public endpoint from the same origin or from a server without browser origin headers." },
     });
     expect(response.status).toBe(403);
     expect(mocks.convex.mutation).not.toHaveBeenCalled();
@@ -140,7 +140,7 @@ describe("POST /api/tools/app-hook-generator", () => {
     );
 
     await expect(response.json()).resolves.toEqual({
-      message: "This request is not allowed.",
+      error: { code: "origin_not_allowed", message: "This request is not allowed.", resolution: "Call this public endpoint from the same origin or from a server without browser origin headers." },
     });
     expect(response.status).toBe(403);
     expect(mocks.convex.mutation).not.toHaveBeenCalled();
@@ -150,7 +150,7 @@ describe("POST /api/tools/app-hook-generator", () => {
     const response = await POST(createRequest("{"));
 
     await expect(response.json()).resolves.toEqual({
-      message: "Check each field, then try again.",
+      error: { code: "invalid_request", message: "Check each field, then try again.", resolution: "Provide all required fields in the documented formats." },
     });
     expect(response.status).toBe(400);
   });
@@ -161,7 +161,7 @@ describe("POST /api/tools/app-hook-generator", () => {
     );
 
     await expect(response.json()).resolves.toEqual({
-      message: "Check each field, then try again.",
+      error: { code: "body_too_large", message: "Check each field, then try again.", resolution: "Send a smaller JSON request within the documented field limits." },
     });
     expect(response.status).toBe(413);
     expect(mocks.convex.mutation).not.toHaveBeenCalled();
@@ -171,7 +171,7 @@ describe("POST /api/tools/app-hook-generator", () => {
     const response = await POST(createRequest(`"${"x".repeat(8 * 1024)}"`));
 
     await expect(response.json()).resolves.toEqual({
-      message: "Check each field, then try again.",
+      error: { code: "body_too_large", message: "Check each field, then try again.", resolution: "Send a smaller JSON request within the documented field limits." },
     });
     expect(response.status).toBe(413);
     expect(mocks.convex.mutation).not.toHaveBeenCalled();
@@ -189,7 +189,7 @@ describe("POST /api/tools/app-hook-generator", () => {
     const response = await POST(createRequest());
 
     await expect(response.json()).resolves.toEqual({
-      message: "Too many hook sets were requested. Try again in a moment.",
+      error: { code: "rate_limited", message: "Too many hook sets were requested. Try again in a moment.", resolution: "Wait for the Retry-After period before sending another request." },
     });
     expect(response.status).toBe(429);
     expect(response.headers.get("Retry-After")).toBe("2");
@@ -202,7 +202,7 @@ describe("POST /api/tools/app-hook-generator", () => {
     const response = await POST(createRequest());
 
     await expect(response.json()).resolves.toEqual({
-      message: "Unable to generate hooks right now.",
+      error: { code: "internal_error", message: "Unable to generate hooks right now.", resolution: "Wait briefly and retry. Contact support if the issue continues." },
     });
     expect(response.status).toBe(500);
   });

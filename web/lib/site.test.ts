@@ -14,5 +14,13 @@ describe("site brand metadata", () => {
     const organization = createOrganizationJsonLd();
 
     expect(organization.logo.url).toContain(brandAssets.icon512);
+    expect(organization.contactPoint).toMatchObject({
+      contactType: "customer support",
+      email: "support@followusai.com",
+    });
+    expect(organization.address).toMatchObject({
+      "@type": "PostalAddress",
+      addressCountry: "US",
+    });
   });
 });

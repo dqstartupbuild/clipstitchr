@@ -9,6 +9,7 @@ import { createAppHookGeneratorRateLimitResponse } from "@/lib/clipstitchr/tools
 import { createAppHookGeneratorRequestGuardResponse } from "@/lib/clipstitchr/tools/appHookGenerator/server/createAppHookGeneratorRequestGuardResponse";
 import { readAppHookGeneratorJsonBody } from "@/lib/clipstitchr/tools/appHookGenerator/server/readAppHookGeneratorJsonBody";
 import { readAppHookGeneratorRequest } from "@/lib/clipstitchr/tools/appHookGenerator/server/readAppHookGeneratorRequest";
+import { createPublicApiErrorResponse } from "@/lib/clipstitchr/publicApi/createPublicApiErrorResponse";
 
 export const runtime = "nodejs";
 
@@ -50,22 +51,13 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof AppHookGeneratorBodyTooLargeError) {
-      return Response.json(
-        { message: "Check each field, then try again." },
-        { status: 413 },
-      );
+      return createPublicApiErrorResponse({ code: "body_too_large", message: "Check each field, then try again.", resolution: "Send a smaller JSON request within the documented field limits.", status: 413 });
     }
 
     if (error instanceof AppHookGeneratorInputError) {
-      return Response.json(
-        { message: "Check each field, then try again." },
-        { status: 400 },
-      );
+      return createPublicApiErrorResponse({ code: "invalid_request", message: "Check each field, then try again.", resolution: "Provide all required fields in the documented formats.", status: 400 });
     }
 
-    return Response.json(
-      { message: "Unable to generate hooks right now." },
-      { status: 500 },
-    );
+    return createPublicApiErrorResponse({ code: "internal_error", message: "Unable to generate hooks right now.", resolution: "Wait briefly and retry. Contact support if the issue continues.", status: 500 });
   }
 }

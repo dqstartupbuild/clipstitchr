@@ -9,6 +9,14 @@ const edgeLevels = new Set<AppHookGeneratorEdgeLevel>([
   "punchy",
   "bold",
 ]);
+const requestFields = new Set([
+  "appName",
+  "audience",
+  "desiredOutcome",
+  "edgeLevel",
+  "problem",
+  "variationIndex",
+]);
 
 export function readAppHookGeneratorRequest(
   value: unknown,
@@ -18,6 +26,11 @@ export function readAppHookGeneratorRequest(
   }
 
   const source = value as Record<string, unknown>;
+
+  if (Object.keys(source).some((key) => !requestFields.has(key))) {
+    throw new AppHookGeneratorInputError();
+  }
+
   const edgeLevel = source.edgeLevel;
   const variationIndex = source.variationIndex ?? 0;
 

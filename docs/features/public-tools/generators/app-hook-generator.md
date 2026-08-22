@@ -62,10 +62,12 @@ the cap. Braced template syntax in user fields is rejected so submitted text
 cannot add or preserve internal placeholders.
 
 Successful responses use `Cache-Control: private, no-store` and return exactly
-eight public hook objects plus the variation index. Validation failures return
-generic `400` or `413` messages. Unexpected failures return a generic `500`
-message. Rate-limit failures return `429` with `Retry-After` without exposing
-the internal quota name.
+eight public hook objects plus the variation index. The public alias
+`POST /api/v1/hooks` reuses the same implementation and shared quota. Every
+error response is JSON in the form `{ "error": { "code", "message",
+"resolution" } }`. Validation failures return `400` or `413`; unexpected
+failures return `500`; and rate-limit failures return `429` with `Retry-After`
+without exposing the internal quota name.
 
 ## Abuse Protection
 

@@ -6,7 +6,15 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/docs", "/blog", "/examples", "/feed.xml"],
+        allow: [
+          "/",
+          "/docs",
+          "/blog",
+          "/examples",
+          "/feed.xml",
+          "/api/v1",
+          "/api/tools/app-hook-generator",
+        ],
         disallow: ["/api/", "/dashboard", "/_next/"],
       },
     ],
