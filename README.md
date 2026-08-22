@@ -5,6 +5,12 @@ marketers, and small teams that have product demos, Hook/UGC clips, avatar photo
 raw ideas but do not want to spend every week inside a traditional video
 editor.
 
+## License
+
+ClipStitchr is available under the [MIT License](LICENSE). The ClipStitchr name,
+logos, icons, and other brand identifiers are not licensed for reuse. See
+[TRADEMARKS.md](TRADEMARKS.md) for the brand-use policy.
+
 The main product is Stitchr. Users upload Hook/UGC clips and product demos
 once, keep them organized in a reusable library, then create finished vertical
 ads by pairing attention-first clips with product demos. AI-assisted tools such
