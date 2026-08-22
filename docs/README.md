@@ -2,7 +2,8 @@
 
 Use this index to find a document and decide where new documentation belongs.
 The repository root keeps only the main project entry points: `README.md`,
-`AGENTS.md`, `coding-guidelines.md`, and `project-scope.md`.
+`AGENTS.md`, `coding-guidelines.md`, `project-scope.md`, and repository
+governance files.
 
 ## Documentation map
 
@@ -81,6 +82,10 @@ Public tool documentation uses these focused subdirectories:
 - [`AGENTS.md`](../AGENTS.md): repository working rules
 - [`coding-guidelines.md`](../coding-guidelines.md): atomic code organization
 - [`project-scope.md`](../project-scope.md): product and architecture scope
+- [`BRAND-ASSETS.md`](../BRAND-ASSETS.md): reserved ClipStitchr visual identity
+- [`CONTRIBUTING.md`](../CONTRIBUTING.md): contribution workflow
+- [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md): community standards
+- [`SECURITY.md`](../SECURITY.md): vulnerability reporting guidance
 - [`operations/email/campaigns.md`](operations/email/campaigns.md): creating and sharing Loops campaigns
 - [`operations/security/rate-limits.md`](operations/security/rate-limits.md): backend abuse protection
 - [`references/media-bunny/guides.md`](references/media-bunny/guides.md): Media Bunny implementation guidance

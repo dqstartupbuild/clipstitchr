@@ -632,6 +632,16 @@ Cloud Run worker deployment commands and smoke checks are documented in
 - Browser codec support varies, so Media Bunny and WebCodecs support checks
   must stay visible to users when processing is not available.
 
+## License And Brand Assets
+
+The source code is available under the [MIT License](LICENSE). Your use of the
+ClipStitchr name, logos, icons, product imagery, and other brand assets is not
+granted by that license. See [BRAND-ASSETS.md](BRAND-ASSETS.md) for the terms
+that apply to those assets.
+
+To contribute, read [CONTRIBUTING.md](CONTRIBUTING.md),
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [SECURITY.md](SECURITY.md).
+
 ## Current Status
 
 The project is an active MVP implementation. The codebase already contains the
