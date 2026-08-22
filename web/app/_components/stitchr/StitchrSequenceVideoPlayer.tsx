@@ -9,6 +9,7 @@ import { TextOverlayQuickControls } from "@/app/_components/stitchr/TextOverlayQ
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { useLongrSequenceVideoPlayer } from "@/lib/clipstitchr/hooks/useLongrSequenceVideoPlayer";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -22,6 +23,7 @@ type StitchrSequenceVideoPlayerProps = {
   clips: VideoClip[];
   includeAudioFlags: boolean[];
   playbackRates: VideoPlaybackRate[];
+  quickEdits?: Array<QuickEditSuggestions | undefined>;
   textOverlays: TextOverlay[];
   activeTextOverlayId: string | null;
   totalDuration: number;
@@ -35,6 +37,7 @@ export function StitchrSequenceVideoPlayer({
   clips,
   includeAudioFlags,
   playbackRates,
+  quickEdits,
   textOverlays,
   activeTextOverlayId,
   totalDuration,
@@ -45,6 +48,9 @@ export function StitchrSequenceVideoPlayer({
 }: StitchrSequenceVideoPlayerProps) {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const [areTextControlsOpen, setAreTextControlsOpen] = useState(false);
+  const resolvedQuickEdits =
+    quickEdits ??
+    clips.map((clip) => createQuickEditSuggestionsFromMetadata(clip.quickEdit));
   const {
     activeIndex,
     currentTime,
@@ -58,9 +64,7 @@ export function StitchrSequenceVideoPlayer({
     togglePlayback,
   } = useLongrSequenceVideoPlayer({
     playbackRates,
-    quickEdits: clips.map((clip) =>
-      createQuickEditSuggestionsFromMetadata(clip.quickEdit),
-    ),
+    quickEdits: resolvedQuickEdits,
     sourceDurations: clips.map((clip) => clip.duration),
     trimRanges,
   });
@@ -104,6 +108,7 @@ export function StitchrSequenceVideoPlayer({
               isActive={activeIndex === index}
               isMuted={!includeAudioFlags[index]}
               playbackRate={playbackRates[index] ?? 1}
+              quickEdit={resolvedQuickEdits[index]}
               videoRef={(video) => setVideoRef(index, video)}
               onEnded={() => handleEnded(index)}
               onLoadedMetadata={() => handleLoadedMetadata(index)}

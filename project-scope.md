@@ -121,13 +121,13 @@ cleanup.
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
-| 1 | User **selects** up to 20 UGC clips and one product-linked Demo clip | ✅ | ✅ |
-| 2 | Preview each selected UGC clip followed immediately by the selected Demo clip | ✅ | ✅ |
+| 1 | User **selects** up to 20 UGC clips, an optional product-linked Demo clip, or one Demo clip alone | ✅ | ✅ |
+| 2 | Preview each selected UGC clip alone or followed immediately by the selected Demo clip; a Demo-only selection previews alone | ✅ | ✅ |
 | 3 | Copy upload default trims into each new Stitchr selection | ✅ | ✅ |
 | 4 | Override copied trim ranges while stitching without changing upload defaults | ✅ | ✅ |
 | 5 | Tap/swipe through selected UGC previews before stitching | ✅ | ✅ |
 | 6 | Processing happens in-browser (no server-side rendering for MVP) | ✅ | ✅ |
-| 7 | Click **"Stitch"** to create one editable UGC-then-Demo stitch per selected UGC clip | ✅ | ✅ |
+| 7 | Click **"Stitch"** to create one editable output per selected UGC clip, paired with the optional Demo when selected, or one Demo-only output | ✅ | ✅ |
 | 8 | Progress indicator during stitching and export | ✅ | ✅ |
 | 9 | Export/download each finished TikTok 9:16 video file on demand | ✅ | ✅ |
 | 10 | Select reusable shared-library music or upload a music file for saved stitches and mix it only at download/export time | ✅ | ✅ |
@@ -240,7 +240,7 @@ copies are deleted on every terminal path.
 ### 4.7 Stitchr Longr Mode
 
 Longr is a Stitchr mode toggle, not a standalone dashboard tool. Normal mode
-keeps the batch UGC-to-Demo workflow. Longr mode creates one saved Stitch from
+creates standalone videos or UGC-to-Demo outputs. Longr mode creates one saved Stitch from
 an ordered sequence of selected source clips.
 
 | # | Feature | MVP | Prod |
@@ -380,14 +380,14 @@ selected slides.
 - Do not stretch source footage. For non-9:16 uploads, preserve the source aspect
   ratio inside the 9:16 output. Manual crop metadata can reframe clips and saved
   Stitch sources non-destructively inside the same 9:16 frame.
-- Preview, save, and export must all use the same sequence: each normalized UGC clip starts first, and the selected normalized Demo clip starts immediately after that UGC clip ends.
+- Preview, save, and export must all use the same sequence: a standalone selected video plays alone; each normalized UGC clip starts first and an optional selected normalized Demo clip starts immediately after that UGC clip ends.
 - Clipr music export must not mutate the saved video. Export/download reads the
   clean saved Clipr video and optional R2 music object, then creates a temporary
   mixed MP4 in the browser with Media Bunny.
 - Trimming is non-destructive metadata. Uploads store a default trim range. When clips are selected in Stitchr, the default trim range for each selected UGC and the selected Demo is copied into that Stitchr session and can be changed independently.
 - Preview, saved stitches, and exports must use the copied Stitchr trim ranges when present.
-- The preview should let the user tap or swipe through each selected UGC + Demo sequence before export.
-- Each exported stitch must be a single 9:16 file using the same normalized assets shown in preview. A batch saves one stitch per selected UGC clip.
+- The preview should let the user tap or swipe through each selected UGC + Demo sequence before export and show standalone selections directly.
+- Each exported stitch must be a single 9:16 file using the same normalized assets shown in preview. Normal mode saves one output per selected UGC clip, or one Demo-only output.
 - Clip cards should use the HTML video `poster` attribute for the static preview
   state. Generate poster images in the browser by seeking through early
   candidate frames, choosing the first visibly non-black frame, encoding it as
@@ -445,9 +445,11 @@ Use `docs/references/media-bunny/guides.md` as the implementation guide and `doc
 
 #### Stitched Export / Download
 
-- Saving a stitch stores the UGC clip id, Demo clip id, copied trim ranges, text
-  overlay, source audio flags, music metadata, crop metadata, a poster, and a
-  rendered finished video when the browser can create one.
+- Saving a stitch stores representative legacy UGC and Demo fields for compatibility
+  plus ordered sequence segments as the canonical source list for standalone and
+  Longr outputs. It also stores copied trim ranges, text overlay, source audio
+  flags, music metadata, crop metadata, a poster, and a rendered finished video
+  when the browser can create one.
 - Do not use `Conversion` for stitching because it is a single-input conversion abstraction, not a multi-input composition API.
 - Create a fresh `Output` with `Mp4OutputFormat` and `BufferTarget` for each stitch. A multi-UGC Stitchr batch runs this one-output-per-UGC flow sequentially.
 - Add one `VideoSampleSource` and, when at least one selected clip has audio, one `AudioSampleSource`.

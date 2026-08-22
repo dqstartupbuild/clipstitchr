@@ -29,14 +29,14 @@ export function ClipPickerActionBar({
       ? "Create Longr"
       : selectedUgcCount > 1
       ? `Stitch ${selectedUgcCount} ads`
-      : "Stitch";
+      : "Create ad";
 
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
       <div>
         <p className="text-sm font-semibold text-accent-dark">Stitchr</p>
         <h2 className="mt-0.5 text-base font-bold text-text-primary">
-          {mode === "longr" ? "Arrange one Longr stitch" : "Stitch selected clips"}
+          {mode === "longr" ? "Arrange one Longr stitch" : "Create from selected videos"}
         </h2>
         {mode === "longr" ? (
           <p className="mt-1 text-xs font-semibold text-text-tertiary">

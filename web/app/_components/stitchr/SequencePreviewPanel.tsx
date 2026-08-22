@@ -94,6 +94,10 @@ export function SequencePreviewPanel({
         demoPlaybackRate,
       )
     : 0;
+  const standaloneClip = ugcClip ?? demoClip;
+  const standaloneTrimRange = ugcClip ? ugcTrimRange : demoTrimRange;
+  const standalonePlaybackRate = ugcClip ? ugcPlaybackRate : demoPlaybackRate;
+  const standaloneIncludeAudio = ugcClip ? includeUgcAudio : includeDemoAudio;
   const totalDuration = useMemo(
     () =>
       mode === "longr"
@@ -252,9 +256,46 @@ export function SequencePreviewPanel({
             onCopyToAll={onCopyTextOverlayToAll}
           />
         </>
+      ) : standaloneClip && standaloneTrimRange ? (
+        <>
+          {ugcClip ? (
+            <SequencePreviewNavigator
+              activeIndex={activePreviewIndex}
+              activeName={activePreviewClip?.name ?? ugcClip.name}
+              totalCount={previewUgcClips.length}
+              onPrevious={handlePreviousPreview}
+              onNext={handleNextPreview}
+              onSelectIndex={handleSelectPreviewIndex}
+            />
+          ) : null}
+          <div {...(ugcClip ? swipeHandlers : {})}>
+            <StitchrSequenceVideoPlayer
+              key={`${standaloneClip.id}:${standaloneTrimRange.start}:${standaloneTrimRange.end}:${standalonePlaybackRate}`}
+              clips={[standaloneClip]}
+              includeAudioFlags={[standaloneIncludeAudio]}
+              playbackRates={[standalonePlaybackRate]}
+              textOverlays={textOverlays}
+              activeTextOverlayId={selectedTextOverlayId}
+              totalDuration={totalDuration}
+              trimRanges={[standaloneTrimRange]}
+              onActiveTextOverlayIdChange={setActiveTextOverlayId}
+              onTextOverlayChange={handleOverlayChange}
+              onPlaybackTimeChange={setPlaybackTime}
+            />
+          </div>
+          <TextOverlayEditor
+            textOverlays={textOverlays}
+            totalDuration={totalDuration}
+            ugcDuration={ugcDuration}
+            currentTime={playbackTime}
+            activeTextOverlayId={selectedTextOverlayId}
+            onActiveTextOverlayIdChange={setActiveTextOverlayId}
+            onChange={onTextOverlaysChange}
+          />
+        </>
       ) : (
         <div className="rounded-lg border border-dashed border-border bg-slate-50 p-8 text-center text-sm text-text-secondary">
-          Select Hook/UGC clips and a product demo to preview the ads.
+          Select a video to preview your finished ad.
         </div>
       )}
     </Panel>

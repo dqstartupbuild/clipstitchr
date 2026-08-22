@@ -28,6 +28,7 @@ import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange
 import { createMusicMetadataComparisonKey } from "@/lib/clipstitchr/utils/createMusicMetadataComparisonKey";
 import { createQuickEditRemoveRangesComparisonKey } from "@/lib/clipstitchr/utils/createQuickEditRemoveRangesComparisonKey";
 import { createStitchPreviewCacheKey } from "@/lib/clipstitchr/utils/createStitchPreviewCacheKey";
+import { createStitchSequencePreviewCacheKey } from "@/lib/clipstitchr/utils/createStitchSequencePreviewCacheKey";
 import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 import { createStitchSourceSettingsComparisonKey } from "@/lib/clipstitchr/utils/createStitchSourceSettingsComparisonKey";
 import { createTextOverlaysComparisonKey } from "@/lib/clipstitchr/utils/createTextOverlaysComparisonKey";
@@ -41,7 +42,9 @@ import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyText
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getQuickEditSuggestionsWithReplacedRemoveRanges } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsWithReplacedRemoveRanges";
 import { getQuickEditSuggestionsWithCrop } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsWithCrop";
-import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
+import { getStitchHasSequenceSegments } from "@/lib/clipstitchr/utils/getStitchHasSequenceSegments";
+import { getOrderedStitchSequenceSegments } from "@/lib/clipstitchr/utils/getOrderedStitchSequenceSegments";
+import { getStitchSequenceDuration } from "@/lib/clipstitchr/utils/getStitchSequenceDuration";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { normalizeQuickEditRemoveRanges } from "@/lib/clipstitchr/utils/normalizeQuickEditRemoveRanges";
@@ -116,7 +119,13 @@ export function StitchEditDialog({
   onSaveSourceCuts,
   onSaveTextOverlay,
 }: StitchEditDialogProps) {
-  const isLongrStitch = getStitchIsLongr(stitch);
+  const hasSequenceSegments = getStitchHasSequenceSegments(stitch);
+  const orderedSequenceSegments = getOrderedStitchSequenceSegments(
+    stitch.sequenceSegments,
+  );
+  const sequenceDuration = getStitchSequenceDuration(stitch.sequenceSegments);
+  const standaloneSequenceSegment =
+    orderedSequenceSegments.length === 1 ? orderedSequenceSegments[0] : null;
   const currentUgcFallbackClip = {
     id: stitch.ugcClipId,
     name: stitch.ugcClipName,
@@ -316,11 +325,16 @@ export function StitchEditDialog({
       )
     : 0;
   const sourceDuration = ugcDuration + demoDuration;
-  const selectedPreviewCacheKey = createStitchPreviewCacheKey(
-    stitch.id,
-    selectedUgcClipId,
-    selectedDemoClipId,
-  );
+  const selectedPreviewCacheKey = hasSequenceSegments
+    ? createStitchSequencePreviewCacheKey(
+        stitch.id,
+        orderedSequenceSegments.map((segment) => segment.clipId),
+      )
+    : createStitchPreviewCacheKey(
+        stitch.id,
+        selectedUgcClipId,
+        selectedDemoClipId,
+      );
   const selectedPreviewSources =
     previewSources?.cacheKey === selectedPreviewCacheKey
       ? previewSources
@@ -338,7 +352,11 @@ export function StitchEditDialog({
     demoPlaybackRate,
     demoQuickEdit: draftDemoQuickEdit,
     demoTrimRange: clampedDemoTrimRange,
-    duration: selectedUgcClip && selectedDemoClip ? sourceDuration : stitch.duration,
+    duration: hasSequenceSegments
+      ? sequenceDuration
+      : selectedUgcClip && selectedDemoClip
+        ? sourceDuration
+        : stitch.duration,
     music: music ?? undefined,
     socialCaption: socialCaption.trim() || undefined,
     textOverlay: textOverlays[0],
@@ -375,7 +393,7 @@ export function StitchEditDialog({
   const currentMusicKey = createMusicMetadataComparisonKey(currentMusic);
   const currentSocialCaption = socialCaption.trim();
   const hasSourceChanges =
-    !isLongrStitch && currentSourceSettingsKey !== savedSourceSettingsKey;
+    !hasSequenceSegments && currentSourceSettingsKey !== savedSourceSettingsKey;
   const currentUgcRemoveRangesKey = createQuickEditRemoveRangesComparisonKey(
     normalizedUgcRemoveRanges,
     selectedUgcClip?.duration ?? 0,
@@ -389,12 +407,12 @@ export function StitchEditDialog({
   const currentDemoCrop = getManualCropForSave(demoCrop);
   const currentUgcCropKey = JSON.stringify(currentUgcCrop);
   const currentDemoCropKey = JSON.stringify(currentDemoCrop);
-  const canEditSourceCuts = !isLongrStitch && Boolean(onSaveSourceCuts);
+  const canEditSourceCuts = !hasSequenceSegments && Boolean(onSaveSourceCuts);
   const hasUgcCutChanges =
     canEditSourceCuts && currentUgcRemoveRangesKey !== savedUgcRemoveRangesKey;
   const hasDemoCutChanges =
     canEditSourceCuts && currentDemoRemoveRangesKey !== savedDemoRemoveRangesKey;
-  const canEditSourceCrop = !isLongrStitch && Boolean(onSaveSourceCrop);
+  const canEditSourceCrop = !hasSequenceSegments && Boolean(onSaveSourceCrop);
   const hasUgcCropChanges =
     canEditSourceCrop && currentUgcCropKey !== savedUgcCropKey;
   const hasDemoCropChanges =
@@ -420,7 +438,7 @@ export function StitchEditDialog({
   const canSaveChanges =
     hasChanges &&
     !isSavingAny &&
-    (isLongrStitch || Boolean(selectedUgcClip && selectedDemoClip));
+    (hasSequenceSegments || Boolean(selectedUgcClip && selectedDemoClip));
   const createSourceSettingsUpdate = (): StitchSourceSettingsUpdate | null => {
     if (!selectedUgcClip || !selectedDemoClip) {
       return null;
@@ -644,6 +662,7 @@ export function StitchEditDialog({
               posterUrl={posterUrl}
               stitch={draftStitch}
               ugcClip={selectedPreviewSources?.ugcClip ?? null}
+              sequenceClips={selectedPreviewSources?.sequenceClips}
               onLoadPreview={() =>
                 onLoadPreview(selectedUgcClipId, selectedDemoClipId)
               }
@@ -730,11 +749,14 @@ export function StitchEditDialog({
                 </span>
               </div>
               <p className="mt-3 break-words text-sm font-semibold text-text-primary [overflow-wrap:anywhere]">
-                {draftStitch.ugcClipName} to {draftStitch.demoClipName}
+                {standaloneSequenceSegment
+                  ? standaloneSequenceSegment.clipName
+                  : `${draftStitch.ugcClipName} to ${draftStitch.demoClipName}`}
               </p>
               <p className="mt-2 break-words text-xs font-semibold text-text-tertiary [overflow-wrap:anywhere]">
-                Hook/UGC {getStitchTrimRangeLabel(draftStitch.ugcTrimRange)} . Demo{" "}
-                {getStitchTrimRangeLabel(draftStitch.demoTrimRange)}
+                {standaloneSequenceSegment
+                  ? `Source ${getStitchTrimRangeLabel(standaloneSequenceSegment.trimRange)}`
+                  : `Hook/UGC ${getStitchTrimRangeLabel(draftStitch.ugcTrimRange)} . Demo ${getStitchTrimRangeLabel(draftStitch.demoTrimRange)}`}
               </p>
               <p className="mt-2 break-words text-xs text-text-tertiary [overflow-wrap:anywhere]">
                 {stitch.width} x {stitch.height} . {fileSizeLabel}
@@ -742,7 +764,7 @@ export function StitchEditDialog({
             </div>
           </div>
           <div className="flex min-w-0 flex-col gap-4">
-            {!isLongrStitch ? (
+            {!hasSequenceSegments ? (
               <StitchSourceSettingsPanel
                 demoClips={demoClips}
                 demoFallbackClip={currentDemoFallbackClip}

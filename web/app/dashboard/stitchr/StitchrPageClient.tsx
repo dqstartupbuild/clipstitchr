@@ -48,6 +48,8 @@ import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEd
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
 import { getStitchrSocialCaptionForUgcId } from "@/lib/clipstitchr/utils/getStitchrSocialCaptionForUgcId";
 import { getStitchrTextOverlaysForUgcId } from "@/lib/clipstitchr/utils/getStitchrTextOverlaysForUgcId";
+import { getStitchrNormalOutputPlans } from "@/lib/clipstitchr/utils/getStitchrNormalOutputPlans";
+import { getStitchrNormalTextGenerationClips } from "@/lib/clipstitchr/utils/getStitchrNormalTextGenerationClips";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoClipMetadataById";
 import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchrUgcSelection";
@@ -211,7 +213,7 @@ export function StitchrPageClient() {
   >(() => getSearchParamValue("ugcId"));
   const [selectedDemoId, setSelectedDemoId] = useState<
     string | null | undefined
-  >(() => getSearchParamValue("demoId"));
+  >(() => getSearchParamValue("demoId") ?? null);
   const [selectedDemoIds, setSelectedDemoIds] = useState<string[]>(() => {
     const initialDemoId = getSearchParamValue("demoId");
 
@@ -236,10 +238,7 @@ export function StitchrPageClient() {
       .filter((id) => validUgcIds.has(id))
       .slice(0, maxStitchrUgcSelectionCount);
   }, [selectedUgcIds, ugcClips]);
-  const activeDemoId =
-    selectedDemoId === undefined
-      ? (visibleDemoClips[0]?.id ?? null)
-      : selectedDemoId;
+  const activeDemoId = selectedDemoId ?? null;
   const activeSelectedDemoIds = useMemo(() => {
     const validDemoIds = new Set(visibleDemoClips.map((clip) => clip.id));
 
@@ -262,6 +261,7 @@ export function StitchrPageClient() {
     null;
   const selectedDemoMetadata =
     visibleDemoClips.find((clip) => clip.id === activeDemoId) ?? null;
+  const activeNormalMetadata = activeUgcMetadata ?? selectedDemoMetadata;
   const clipsById = useMemo(() => {
     const map = new Map<string, VideoClipMetadata>();
 
@@ -388,37 +388,35 @@ export function StitchrPageClient() {
       ? false
       : mode === "longr"
       ? selectedLongrMetadata.length > 0
-      : Boolean(
-          selectedUgcMetadata.length &&
-            selectedDemoMetadata &&
-            selectedUgcTrimRange &&
-            selectedDemoTrimRange,
-        );
+      : getStitchrNormalOutputPlans(
+          selectedUgcMetadata.map((clip) => clip.id),
+          selectedDemoMetadata?.id ?? null,
+        ).length > 0;
   const totalDuration =
     mode === "longr"
       ? selectedLongrDuration
       : selectedUgcDuration + selectedDemoDuration;
   const activeTextOverlays = useMemo(
     () =>
-      activeUgcMetadata
+      activeNormalMetadata
         ? getStitchrTextOverlaysForUgcId({
             fallbackTextOverlays: reusedTextOverlays,
             textOverlaysByUgcId,
-            ugcId: activeUgcMetadata.id,
+            ugcId: activeNormalMetadata.id,
           })
         : [],
-    [activeUgcMetadata, reusedTextOverlays, textOverlaysByUgcId],
+    [activeNormalMetadata, reusedTextOverlays, textOverlaysByUgcId],
   );
   const previewTextOverlays =
     mode === "longr" ? longrTextOverlays : activeTextOverlays;
   const activeSocialCaption =
     mode === "longr"
       ? longrSocialCaption
-      : activeUgcMetadata
+      : activeNormalMetadata
         ? getStitchrSocialCaptionForUgcId({
             fallbackSocialCaption: reusedSocialCaption,
             socialCaptionByUgcId,
-            ugcId: activeUgcMetadata.id,
+            ugcId: activeNormalMetadata.id,
           })
         : "";
   const clampedTextOverlays = clampTextOverlays(
@@ -430,7 +428,7 @@ export function StitchrPageClient() {
   const autoTextContextKey =
     mode === "longr"
       ? `longr:${selectedLongrMetadata.map((clip) => clip.id).join(",")}`
-      : `normal:${activeUgcMetadata?.id ?? ""}:${selectedDemoMetadata?.id ?? ""}`;
+      : `normal:${activeNormalMetadata?.id ?? ""}:${selectedDemoMetadata?.id ?? ""}`;
   const activeAutoTextHookOptions =
     autoTextHookOptions?.contextKey === autoTextContextKey
       ? autoTextHookOptions.options
@@ -478,8 +476,7 @@ export function StitchrPageClient() {
 
       const sourceIds = [
         ...new Set(
-          reusedStitch.mode === "longr" &&
-            reusedStitch.sequenceSegments?.length
+          reusedStitch.sequenceSegments?.length
             ? reusedStitch.sequenceSegments.map((segment) => segment.clipId)
             : [reusedStitch.ugcClipId, reusedStitch.demoClipId],
         ),
@@ -586,6 +583,37 @@ export function StitchrPageClient() {
         setSocialCaptionByUgcId({});
         setReusedSocialCaption(null);
         setLongrSocialCaption(reusedStitch.socialCaption ?? "");
+        return;
+      }
+
+      if (reusedStitch.sequenceSegments?.length) {
+        const segment = reusedStitch.sequenceSegments[0];
+
+        setMode("normal");
+        setSelectedUgcIds(segment.clipType === "demo" ? [] : [segment.clipId]);
+        setActivePreviewUgcId(
+          segment.clipType === "demo" ? undefined : segment.clipId,
+        );
+        setSelectedDemoId(segment.clipType === "demo" ? segment.clipId : null);
+        setSelectedDemoIds(segment.clipType === "demo" ? [segment.clipId] : []);
+        setLongrTimelineClipIds([segment.clipId]);
+        if (segment.clipType === "demo") {
+          setDemoTrimRangesByClipId((trimRanges) => ({
+            ...trimRanges,
+            [segment.clipId]: segment.trimRange,
+          }));
+        } else {
+          setUgcTrimRangesByClipId((trimRanges) => ({
+            ...trimRanges,
+            [segment.clipId]: segment.trimRange,
+          }));
+        }
+        setTextOverlaysByUgcId({});
+        setReusedTextOverlays(cloneTextOverlays(savedTextOverlays));
+        setLongrTextOverlays([]);
+        setSocialCaptionByUgcId({});
+        setReusedSocialCaption(reusedStitch.socialCaption ?? null);
+        setLongrSocialCaption("");
         return;
       }
 
@@ -828,10 +856,7 @@ export function StitchrPageClient() {
       }
 
       setSelectedDemoId((currentId) => {
-        const currentActiveId =
-          currentId === undefined
-            ? (visibleDemoClips[0]?.id ?? null)
-            : currentId;
+        const currentActiveId = currentId ?? null;
 
         return currentActiveId === id ? null : id;
       });
@@ -884,7 +909,7 @@ export function StitchrPageClient() {
         return;
       }
 
-      if (!activeUgcMetadata) {
+      if (!activeNormalMetadata) {
         return;
       }
 
@@ -892,7 +917,7 @@ export function StitchrPageClient() {
         reusedTextOverlays !== null &&
         !Object.prototype.hasOwnProperty.call(
           textOverlaysByUgcId,
-          activeUgcMetadata.id,
+          activeNormalMetadata.id,
         )
       ) {
         setReusedTextOverlays(nextClampedTextOverlays);
@@ -901,11 +926,11 @@ export function StitchrPageClient() {
 
       setTextOverlaysByUgcId((overlays) => ({
         ...overlays,
-        [activeUgcMetadata.id]: nextClampedTextOverlays,
+        [activeNormalMetadata.id]: nextClampedTextOverlays,
       }));
     },
     [
-      activeUgcMetadata,
+      activeNormalMetadata,
       mode,
       reusedTextOverlays,
       textOverlaysByUgcId,
@@ -966,7 +991,7 @@ export function StitchrPageClient() {
         return;
       }
 
-      if (!activeUgcMetadata) {
+      if (!activeNormalMetadata) {
         return;
       }
 
@@ -974,7 +999,7 @@ export function StitchrPageClient() {
         reusedSocialCaption !== null &&
         !Object.prototype.hasOwnProperty.call(
           socialCaptionByUgcId,
-          activeUgcMetadata.id,
+          activeNormalMetadata.id,
         )
       ) {
         setReusedSocialCaption(nextSocialCaption);
@@ -983,10 +1008,10 @@ export function StitchrPageClient() {
 
       setSocialCaptionByUgcId((captions) => ({
         ...captions,
-        [activeUgcMetadata.id]: nextSocialCaption,
+        [activeNormalMetadata.id]: nextSocialCaption,
       }));
     },
-    [activeUgcMetadata, mode, reusedSocialCaption, socialCaptionByUgcId],
+    [activeNormalMetadata, mode, reusedSocialCaption, socialCaptionByUgcId],
   );
 
   const handleStitch = () => {
@@ -1075,7 +1100,56 @@ export function StitchrPageClient() {
           ugcPlaybackRate,
         },
       );
+      return;
     }
+
+    const standaloneClips = selectedUgcMetadata.length
+      ? selectedUgcMetadata
+      : selectedDemoMetadata
+        ? [selectedDemoMetadata]
+        : [];
+    const standaloneSelections = standaloneClips.map((clip) => {
+      const isDemo = clip.clipType === "demo";
+      const trimRange = isDemo
+        ? (selectedDemoTrimRangesByClipId[clip.id] ??
+          selectedDemoTrimRange ??
+          getDefaultVideoTrimRange(clip))
+        : (selectedUgcTrimRangesByClipId[clip.id] ??
+          getDefaultVideoTrimRange(clip));
+      const playbackRate = isDemo ? demoPlaybackRate : ugcPlaybackRate;
+      const duration = getQuickEditPlaybackDuration(
+        trimRange,
+        clip.duration,
+        clip.quickEdit?.removeRanges,
+        playbackRate,
+      );
+      const textOverlays = getStitchrTextOverlaysForUgcId({
+        fallbackTextOverlays: reusedTextOverlays,
+        textOverlaysByUgcId,
+        ugcId: clip.id,
+      });
+
+      return {
+        clip,
+        socialCaption: getStitchrSocialCaptionForUgcId({
+          fallbackSocialCaption: reusedSocialCaption,
+          socialCaptionByUgcId,
+          ugcId: clip.id,
+        }),
+        textOverlays: getNonEmptyTextOverlays(
+          clampTextOverlays(textOverlays, duration),
+        ),
+        trimRange,
+      };
+    });
+
+    void stitchrState.stitchStandaloneVideos(standaloneSelections, {
+      demoPlaybackRate,
+      includeDemoAudio,
+      includeUgcAudio,
+      musicTrack: selectedMusicTrack,
+      ugcPlaybackRate,
+    });
   };
 
   const handleGenerateBatch = useCallback(() => {
@@ -1140,8 +1214,8 @@ export function StitchrPageClient() {
       return;
     }
 
-    if (mode !== "longr" && !activeUgcMetadata) {
-      setAutoTextMessage("Select a UGC clip before generating text.");
+    if (mode !== "longr" && !activeNormalMetadata) {
+      setAutoTextMessage("Select a video before generating text.");
       return;
     }
 
@@ -1151,10 +1225,10 @@ export function StitchrPageClient() {
     const stitchrClipContexts =
       mode === "longr"
         ? selectedLongrMetadata.map(createStitchrTextGenerationClipContext)
-        : [
-            ...(activeUgcMetadata ? [activeUgcMetadata] : []),
-            ...(selectedDemoMetadata ? [selectedDemoMetadata] : []),
-          ].map(createStitchrTextGenerationClipContext);
+        : getStitchrNormalTextGenerationClips(
+            activeUgcMetadata,
+            selectedDemoMetadata,
+          ).map(createStitchrTextGenerationClipContext);
 
     void generateCliprText({
       durationSeconds: totalDuration > 30 ? 60 : 30,
@@ -1188,7 +1262,7 @@ export function StitchrPageClient() {
           return;
         }
 
-        if (!activeUgcMetadata) {
+        if (!activeNormalMetadata) {
           return;
         }
 
@@ -1196,7 +1270,7 @@ export function StitchrPageClient() {
           reusedTextOverlays !== null &&
           !Object.prototype.hasOwnProperty.call(
             textOverlaysByUgcId,
-            activeUgcMetadata.id,
+            activeNormalMetadata.id,
           )
         ) {
           setReusedTextOverlays(nextTextOverlays);
@@ -1207,11 +1281,11 @@ export function StitchrPageClient() {
 
         setTextOverlaysByUgcId((overlays) => ({
           ...overlays,
-          [activeUgcMetadata.id]: nextTextOverlays,
+          [activeNormalMetadata.id]: nextTextOverlays,
         }));
         setSocialCaptionByUgcId((captions) => ({
           ...captions,
-          [activeUgcMetadata.id]: text.socialCaption || "",
+          [activeNormalMetadata.id]: text.socialCaption || "",
         }));
         setAutoTextMessage("Hook options and caption generated.");
       })
@@ -1224,6 +1298,7 @@ export function StitchrPageClient() {
   }, [
     activeAutoTextProductId,
     autoTextContextKey,
+    activeNormalMetadata,
     activeUgcMetadata,
     mode,
     previewTextOverlays,
@@ -1256,7 +1331,7 @@ export function StitchrPageClient() {
         return;
       }
 
-      if (!activeUgcMetadata) {
+      if (!activeNormalMetadata) {
         return;
       }
 
@@ -1264,7 +1339,7 @@ export function StitchrPageClient() {
         reusedTextOverlays !== null &&
         !Object.prototype.hasOwnProperty.call(
           textOverlaysByUgcId,
-          activeUgcMetadata.id,
+          activeNormalMetadata.id,
         )
       ) {
         setReusedTextOverlays(nextTextOverlays);
@@ -1274,12 +1349,12 @@ export function StitchrPageClient() {
 
       setTextOverlaysByUgcId((overlays) => ({
         ...overlays,
-        [activeUgcMetadata.id]: nextTextOverlays,
+        [activeNormalMetadata.id]: nextTextOverlays,
       }));
       setAutoTextMessage("Hook updated.");
     },
     [
-      activeUgcMetadata,
+      activeNormalMetadata,
       handleSocialCaptionChange,
       mode,
       previewTextOverlays,
@@ -1294,7 +1369,7 @@ export function StitchrPageClient() {
   }, []);
   const handleDemoProductFilterChange = useCallback((productId: string) => {
     setDemoProductFilterId(productId);
-    setSelectedDemoId(undefined);
+    setSelectedDemoId(null);
   }, []);
   const handleModeChange = useCallback(
     (nextMode: StitchrMode) => {
@@ -1413,11 +1488,12 @@ export function StitchrPageClient() {
     stitchrState.status === "reading" ||
     stitchrState.status === "saving" ||
     stitchrState.status === "stitching";
-  const hasStitchrInputs = ugcClips.length > 0 && demoClips.length > 0;
+  const hasStitchrInputs = ugcClips.length > 0 || demoClips.length > 0;
+  const hasBatchInputs = ugcClips.length > 0 && demoClips.length > 0;
   const hasPickedStitchrClips =
     mode === "longr"
       ? selectedLongrMetadata.length > 0
-      : Boolean(selectedUgcMetadata.length && selectedDemoMetadata);
+      : canStitch;
   const hasFinishingDetails =
     getNonEmptyTextOverlays(clampedTextOverlays).length > 0 ||
     activeSocialCaption.trim().length > 0 ||
@@ -1427,7 +1503,9 @@ export function StitchrPageClient() {
     {
       label: "Pick clips",
       description:
-        mode === "longr" ? "Build the sequence." : "Choose UGC and a demo.",
+        mode === "longr"
+          ? "Build the sequence."
+          : "Choose one or more videos. Add a demo to pair it with UGC.",
       status: hasPickedStitchrClips ? "complete" : "current",
     },
     {
@@ -1468,7 +1546,7 @@ export function StitchrPageClient() {
           brief={handoff.brief}
           isLoading={handoff.isLoading}
         />
-        {hasStitchrInputs && mode === "batch" ? (
+        {hasBatchInputs && mode === "batch" ? (
           <StitchrBatchPanel
             backgroundColorChoice={batchTextBackgroundColorChoice}
             batchSize={STITCHR_BATCH_OUTPUT_COUNT}
@@ -1490,7 +1568,7 @@ export function StitchrPageClient() {
             onTextColorChoiceChange={setBatchTextColorChoice}
             onTextStyleChoiceChange={setBatchTextStyleChoice}
           />
-        ) : hasStitchrInputs ? (
+        ) : hasStitchrInputs && mode !== "batch" ? (
           <>
             <WorkflowStepList
               label="Stitchr workflow"
@@ -1590,7 +1668,7 @@ export function StitchrPageClient() {
                 onGenerate={handleGenerateAutoText}
                 onHookOptionSelect={handleHookOptionSelect}
               />
-              {mode === "longr" || activeUgcMetadata ? (
+              {mode === "longr" || activeNormalMetadata ? (
                 <StitchrSocialCaptionPanel
                   socialCaption={activeSocialCaption}
                   onChange={handleSocialCaptionChange}

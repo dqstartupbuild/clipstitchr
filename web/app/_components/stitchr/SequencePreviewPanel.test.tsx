@@ -25,6 +25,9 @@ const mocks = vi.hoisted(() => ({
     textOverlays: TextOverlay[];
     totalDuration: number;
   } | null,
+  standalonePlayerProps: null as {
+    totalDuration: number;
+  } | null,
   setState: vi.fn(),
   stateQueue: [] as unknown[],
   swipeOptions: null as {
@@ -70,6 +73,15 @@ vi.mock("@/app/_components/stitchr/SequenceVideoPlayer", () => ({
   SequenceVideoPlayer: (props: NonNullable<typeof mocks.playerProps>) => {
     mocks.playerProps = props;
     return <div>Player:{props.totalDuration}</div>;
+  },
+}));
+
+vi.mock("@/app/_components/stitchr/StitchrSequenceVideoPlayer", () => ({
+  StitchrSequenceVideoPlayer: (
+    props: NonNullable<typeof mocks.standalonePlayerProps>,
+  ) => {
+    mocks.standalonePlayerProps = props;
+    return <div>Standalone player:{props.totalDuration}</div>;
   },
 }));
 
@@ -152,6 +164,7 @@ describe("SequencePreviewPanel", () => {
       .mockReturnValueOnce(4);
     mocks.navigatorProps = null;
     mocks.playerProps = null;
+    mocks.standalonePlayerProps = null;
     mocks.setState.mockReset();
     mocks.stateQueue = [];
     mocks.swipeOptions = null;
@@ -239,7 +252,7 @@ describe("SequencePreviewPanel", () => {
       />,
     );
 
-    expect(emptyMarkup).toContain("Select Hook/UGC clips and a product demo");
+    expect(emptyMarkup).toContain("Select a video to preview your finished ad.");
     expect(mocks.navigatorProps).toBeNull();
     expect(mocks.swipeOptions).toMatchObject({ isEnabled: false });
 
@@ -276,5 +289,42 @@ describe("SequencePreviewPanel", () => {
     });
     expect(mocks.swipeOptions).toMatchObject({ isEnabled: false });
     expect(onActiveUgcChange).not.toHaveBeenCalled();
+  });
+
+  it("keeps navigator and swipe selection for UGC-only outputs", () => {
+    const onActiveUgcChange = vi.fn();
+
+    renderToStaticMarkup(
+      <SequencePreviewPanel
+        activeUgcId="ugc_2"
+        demoClip={null}
+        demoPlaybackRate={1}
+        demoTrimRange={null}
+        includeDemoAudio={false}
+        includeUgcAudio={false}
+        onActiveUgcChange={onActiveUgcChange}
+        onTextOverlaysChange={vi.fn()}
+        previewUgcClips={[
+          createClipMetadata("ugc_1", "First UGC"),
+          createClipMetadata("ugc_2", "Second UGC"),
+        ]}
+        textOverlays={[]}
+        ugcClip={createClip("ugc_2", "Second UGC")}
+        ugcPlaybackRate={1}
+        ugcTrimRange={ugcTrimRange}
+      />,
+    );
+
+    mocks.navigatorProps?.onNext();
+    mocks.swipeOptions?.onSwipeRight();
+
+    expect(mocks.navigatorProps).toMatchObject({
+      activeIndex: 1,
+      activeName: "Second UGC",
+      totalCount: 2,
+    });
+    expect(mocks.swipeOptions?.isEnabled).toBe(true);
+    expect(mocks.standalonePlayerProps?.totalDuration).toBe(5);
+    expect(onActiveUgcChange).toHaveBeenCalledWith("ugc_1");
   });
 });

@@ -53,6 +53,7 @@ import { getQuickEditSuggestedTrimRange } from "@/lib/clipstitchr/utils/getQuick
 import { getQuickEditSuggestionsWithReplacedRemoveRanges } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsWithReplacedRemoveRanges";
 import { getQuickEditSuggestionsWithCrop } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsWithCrop";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
+import { getStitchHasSequenceSegments } from "@/lib/clipstitchr/utils/getStitchHasSequenceSegments";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoClipMetadataById";
 import { normalizeQuickEditRemoveRanges } from "@/lib/clipstitchr/utils/normalizeQuickEditRemoveRanges";
@@ -1124,7 +1125,7 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
       const firstTextOverlay = nextTextOverlays[0] ?? null;
       let posterObject: R2ObjectReference | null = null;
 
-      if (stitch.mode !== "longr") {
+      if (!getStitchHasSequenceSegments(stitch)) {
         try {
           const [ugcClip, demoClip] = await Promise.all([
             loadClip(stitch.ugcClipId),

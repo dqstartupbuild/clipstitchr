@@ -9,7 +9,7 @@ import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getOrderedStitchSequenceSegments } from "@/lib/clipstitchr/utils/getOrderedStitchSequenceSegments";
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
-import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
+import { getStitchHasSequenceSegments } from "@/lib/clipstitchr/utils/getStitchHasSequenceSegments";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 
 type RenderSavedStitchBlobOptions = {
@@ -23,7 +23,7 @@ export async function renderSavedStitchBlob({
   onProgress,
   stitch,
 }: RenderSavedStitchBlobOptions) {
-  if (getStitchIsLongr(stitch)) {
+  if (getStitchHasSequenceSegments(stitch)) {
     const segments = getOrderedStitchSequenceSegments(stitch.sequenceSegments);
     const loadedClips = await Promise.all(
       segments.map(async (segment) => {

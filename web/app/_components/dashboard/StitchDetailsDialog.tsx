@@ -13,7 +13,7 @@ import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
-import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
+import { getStitchDetailItems } from "@/lib/clipstitchr/utils/getStitchDetailItems";
 
 type StitchDetailsDialogProps = {
   actionItems?: MediaCardActionMenuItem[];
@@ -23,6 +23,7 @@ type StitchDetailsDialogProps = {
   previewError: string | null;
   stitch: Stitch;
   stitchVideoBlob?: Blob | null;
+  sequenceClips?: VideoClip[];
   ugcClip: VideoClip | null;
   onClose: () => void;
   onLoadPreview: () => void;
@@ -36,6 +37,7 @@ export function StitchDetailsDialog({
   previewError,
   stitch,
   stitchVideoBlob = null,
+  sequenceClips = [],
   ugcClip,
   onClose,
   onLoadPreview,
@@ -51,20 +53,7 @@ export function StitchDetailsDialog({
     ? formatBytes(stitch.size)
     : "Ready to download";
   const detailItems = [
-    { label: "Hook/UGC clip", value: stitch.ugcClipName },
-    { label: "Demo clip", value: stitch.demoClipName },
-    { label: "Hook/UGC trim", value: getStitchTrimRangeLabel(stitch.ugcTrimRange) },
-    { label: "Demo trim", value: getStitchTrimRangeLabel(stitch.demoTrimRange) },
-    {
-      label: "Hook/UGC audio",
-      value: stitch.includeUgcAudio === false ? "Muted" : "Included",
-    },
-    {
-      label: "Demo audio",
-      value: stitch.includeDemoAudio === false ? "Muted" : "Included",
-    },
-    { label: "Hook/UGC speed", value: `${stitch.ugcPlaybackRate ?? 1}x` },
-    { label: "Demo speed", value: `${stitch.demoPlaybackRate ?? 1}x` },
+    ...getStitchDetailItems(stitch),
     { label: "Music", value: musicLabel },
     { label: "Text overlay", value: textOverlayText },
     {
@@ -124,6 +113,7 @@ export function StitchDetailsDialog({
               posterUrl={posterUrl}
               stitch={stitch}
               stitchVideoBlob={stitchVideoBlob}
+              sequenceClips={sequenceClips}
               ugcClip={ugcClip}
               onLoadPreview={onLoadPreview}
             />

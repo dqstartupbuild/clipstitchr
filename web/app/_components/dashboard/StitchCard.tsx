@@ -43,11 +43,13 @@ import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { createStitchPreviewCacheKey } from "@/lib/clipstitchr/utils/createStitchPreviewCacheKey";
+import { createStitchSequencePreviewCacheKey } from "@/lib/clipstitchr/utils/createStitchSequencePreviewCacheKey";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { getReuseStitchHref } from "@/lib/clipstitchr/utils/getReuseStitchHref";
 import { getQuickEditSuggestionsHasActionableChange } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange";
-import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
+import { getStitchHasSequenceSegments } from "@/lib/clipstitchr/utils/getStitchHasSequenceSegments";
+import { getOrderedStitchSequenceSegments } from "@/lib/clipstitchr/utils/getOrderedStitchSequenceSegments";
 import { capturePostHogException } from "@/lib/clipstitchr/analytics/capturePostHogException";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
@@ -193,7 +195,7 @@ export function StitchCard({
     ? formatBytes(stitch.size)
     : "Ready to download";
   const isPosted = Boolean(stitch.isPosted) || hasScheduledSocialPublishingPost;
-  const canUseQuickEdit = !getStitchIsLongr(stitch);
+  const canUseQuickEdit = !getStitchHasSequenceSegments(stitch);
   const hasActionableQuickEditSuggestions =
     getQuickEditSuggestionsHasActionableChange(
       stitch.stitchScore?.quickEditSuggestions,
@@ -232,11 +234,15 @@ export function StitchCard({
     ugcClipId = stitch.ugcClipId,
     demoClipId = stitch.demoClipId,
   ) => {
-    const cacheKey = createStitchPreviewCacheKey(
-      stitch.id,
-      ugcClipId,
-      demoClipId,
+    const sequenceSegments = getOrderedStitchSequenceSegments(
+      stitch.sequenceSegments,
     );
+    const sourceClipIds = sequenceSegments.length
+      ? sequenceSegments.map((segment) => segment.clipId)
+      : [ugcClipId, demoClipId];
+    const cacheKey = sequenceSegments.length
+      ? createStitchSequencePreviewCacheKey(stitch.id, sourceClipIds)
+      : createStitchPreviewCacheKey(stitch.id, ugcClipId, demoClipId);
 
     if (previewState?.cacheKey === cacheKey || isLoadingPreview) {
       return;
@@ -246,10 +252,26 @@ export function StitchCard({
     setPreviewErrorState(null);
 
     try {
-      const [ugcClip, demoClip] = await Promise.all([
-        onLoadClip(ugcClipId),
-        onLoadClip(demoClipId),
-      ]);
+      const sourceClips = await Promise.all(
+        sourceClipIds.map(async (clipId) => await onLoadClip(clipId)),
+      );
+      const loadedSequenceClips = sourceClips.filter(
+        (clip): clip is VideoClip => Boolean(clip),
+      );
+      if (
+        sequenceSegments.length &&
+        loadedSequenceClips.length !== sourceClipIds.length
+      ) {
+        throw new Error("Unable to load the source videos for this stitch.");
+      }
+      const [ugcClip, demoClip] = sequenceSegments.length
+        ? [
+            loadedSequenceClips.find((clip) => clip.clipType !== "demo") ??
+              loadedSequenceClips[0],
+            loadedSequenceClips.find((clip) => clip.clipType === "demo") ??
+              loadedSequenceClips[loadedSequenceClips.length - 1],
+          ]
+        : sourceClips;
 
       if (!ugcClip || !demoClip) {
         throw new Error("Unable to load the source videos for this stitch.");
@@ -258,6 +280,9 @@ export function StitchCard({
       setPreviewState({
         cacheKey,
         demoClip,
+        ...(sequenceSegments.length
+          ? { sequenceClips: loadedSequenceClips }
+          : {}),
         ugcClip,
       });
     } catch (nextError) {
@@ -770,6 +795,7 @@ export function StitchCard({
           previewError={previewError}
           stitch={stitch}
           stitchVideoBlob={stitchVideoBlob}
+          sequenceClips={previewSources?.sequenceClips}
           ugcClip={previewSources?.ugcClip ?? null}
           onClose={() => setIsDetailsOpen(false)}
           onLoadPreview={() => {

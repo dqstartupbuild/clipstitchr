@@ -59,8 +59,10 @@ attention first, show the product immediately after.
    and spreads a batch across different Hook/UGC and Demo clips before reusing
    pieces. When unique pairs run out, it repeats ranked pairs until the batch
    is full.
-7. Switch to Normal mode to select up to 20 Hook/UGC clips and one demo clip inside
-   Stitchr. Hook/UGC and demo selection both use the active product, so clips
+7. Switch to Normal mode to select one or more videos inside Stitchr: up to 20
+   Hook/UGC clips, an optional demo, or a demo by itself. Each selected Hook/UGC
+   becomes its own output; when a demo is selected it follows every Hook/UGC
+   output. Hook/UGC and demo selection both use the active product, so clips
    from another product stay out of the picker. When upload analysis has scored
    a clip, show that score in the picker so the user can spot clips worth using
    before building the batch. The picker header, filters, and create action
@@ -68,7 +70,7 @@ attention first, show the product immediately after.
    panel cannot place a filter over the create button.
 8. Copy clip default trims and active source Quick Edit metadata into the
    Stitchr session.
-9. Tap or swipe through each exact Hook/UGC-then-demo preview.
+9. Preview the exact standalone or Hook/UGC-then-demo output before creating it.
 10. Optionally configure one text overlay and one caption/hashtag field per
     output or copy one overlay across the batch.
 11. Optionally generate one overlay, a caption hook, and 3-5 hashtags from saved
@@ -148,8 +150,8 @@ automated Stitch.
 - Preserve saved Stitch control; later source clip defaults must not rewrite
   existing Stitches.
 - Make outputs easy to recognize later with names, posters, and metadata.
-- Keep Normal mode creation predictable: one selected demo, up to 20 selected
-  Hook/UGC clips, and one editable overlay per output.
+- Keep Normal mode creation predictable: up to 20 selected Hook/UGC clips, an
+  optional single demo, and one editable overlay per output.
 - Keep AI-generated Clipr Hook/UGC and Swaps as UGC-compatible clips that can flow
   into Stitchr.
 - Keep generated overlay text and caption copy editable while hiding internal

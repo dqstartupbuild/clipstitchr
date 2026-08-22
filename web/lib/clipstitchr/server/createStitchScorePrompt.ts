@@ -47,7 +47,7 @@ export function createStitchScorePrompt({
     firstScore
       ? "Reassess this finished ClipStitchr Stitch for short-form posting."
       : "Score this finished ClipStitchr Stitch for short-form posting.",
-    "A Stitch usually starts with a UGC or reaction clip, then moves into a demo or proof clip.",
+    "Score the actual ordered source clips. A Stitch may be a UGC-to-Demo pair, a standalone UGC clip, a standalone Demo clip, or a longer ordered sequence.",
     `Video input: ${videoInputDescription}`,
     "If a rendered stitch video is provided, score the rendered video first.",
     "If no rendered stitch video is provided, use the saved trim, playback, audio, overlay, caption, and source clip notes before scoring.",
@@ -55,7 +55,7 @@ export function createStitchScorePrompt({
     responseShape,
     "Rules:",
     "- overallRetentionEstimate is a 0-100 retention guess for this finished stitch, not a promise of real performance.",
-    "- hookToDemoFlow is a 0-100 score for how naturally the opener earns the demo watch.",
+    "- hookToDemoFlow is kept for compatibility. It is a 0-100 opening-to-payoff flow score: judge how naturally the first visible moment earns the next meaningful moment in the actual ordered sources. For a standalone source, judge whether its opening earns its visible payoff without assuming a missing UGC or Demo.",
     "- When score context mode is rescore-reassessment, compare the current stitch against the archived first score instead of starting a brand-new critique.",
     "- For a rescore, use reassessment.completedImprovements for first-score trim, cut, crop, or pacing fixes that now look handled.",
     "- For a rescore, use reassessment.remainingImprovements for first-score fixes that still look missing or only partly handled.",

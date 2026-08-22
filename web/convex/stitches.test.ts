@@ -130,6 +130,14 @@ function createSaveArgs(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function createSaveSourceClipFixtures() {
+  return [
+    { id: "ugc_1", clipType: "ugc", name: "UGC" },
+    { id: "demo_1", clipType: "demo", name: "Demo", productId: "product_1" },
+    { id: "demo_1", clipType: "demo", name: "Demo", productId: "product_1" },
+  ];
+}
+
 function createSocialPublishingPost(overrides: Record<string, unknown> = {}) {
   return {
     createdAt: "2026-06-27T10:00:00.000Z",
@@ -191,7 +199,7 @@ describe("convex stitches", () => {
       expect.any(Function),
     );
 
-    setup = createCtx([null]);
+    setup = createCtx([null, ...createSaveSourceClipFixtures()]);
     await expect(getHandler(save)(setup.ctx, createSaveArgs())).resolves.toBe(
       "doc_inserted",
     );
@@ -202,7 +210,10 @@ describe("convex stitches", () => {
       }),
     );
 
-    setup = createCtx([{ _id: "doc_existing", id: "stitch_1" }]);
+    setup = createCtx([
+      { _id: "doc_existing", id: "stitch_1" },
+      ...createSaveSourceClipFixtures(),
+    ]);
     await expect(getHandler(save)(setup.ctx, createSaveArgs())).resolves.toBe(
       "doc_existing",
     );
@@ -218,7 +229,7 @@ describe("convex stitches", () => {
     const serverNow = "2026-07-16T12:00:00.000Z";
     vi.useFakeTimers();
     vi.setSystemTime(serverNow);
-    const setup = createCtx([null, null]);
+    const setup = createCtx([null, ...createSaveSourceClipFixtures()]);
 
     await getHandler(save)(
       setup.ctx,
@@ -235,6 +246,49 @@ describe("convex stitches", () => {
       usageIdempotencyKey: undefined,
       usageReservationId: "reservation_123",
     });
+  });
+
+  it("rejects a save when a referenced source clip is not owned by the user", async () => {
+    const setup = createCtx([
+      null,
+      { id: "ugc_1", clipType: "ugc", name: "UGC" },
+      null,
+    ]);
+
+    await expect(
+      getHandler(save)(setup.ctx, createSaveArgs()),
+    ).rejects.toThrow("Stitchr source clips were not found.");
+    expect(setup.ctx.db.insert).not.toHaveBeenCalled();
+  });
+
+  it("rejects a standalone Normal save with mismatched legacy representatives", async () => {
+    const setup = createCtx([
+      null,
+      { id: "ugc_1", clipType: "ugc", name: "UGC", productId: "product_1" },
+    ]);
+
+    await expect(
+      getHandler(save)(
+        setup.ctx,
+        createSaveArgs({
+          demoClipId: "demo_1",
+          mode: "normal",
+          sequenceSegments: [
+            {
+              clipId: "ugc_1",
+              clipName: "UGC",
+              clipType: "ugc",
+              duration: 12,
+              order: 0,
+              trimRange: { start: 0, end: 12 },
+            },
+          ],
+        }),
+      ),
+    ).rejects.toThrow(
+      "Normal Stitchr standalone source fields must match the sequence segment.",
+    );
+    expect(setup.ctx.db.insert).not.toHaveBeenCalled();
   });
 
   it("keys Stitchr Batch media-worker saves by the batch date", async () => {

@@ -14,7 +14,7 @@ export const stitchScoreDoc = {
     {
       title: "What stitch scores do",
       body: [
-        "Stitch scores help you decide if a finished Stitch is ready to post before it becomes a public mistake. The score looks at the opener, how smoothly it moves into the demo, and where someone may lose interest.",
+        "Stitch scores help you decide if a finished Stitch is ready to post before it becomes a public mistake. The score looks at the opener, how smoothly it moves into the next payoff in your saved video, and where someone may lose interest.",
         "Use it as a quick gut check before you download, post, or make another version you did not need.",
       ],
     },
@@ -39,7 +39,7 @@ export const stitchScoreDoc = {
       ],
       bullets: [
         "Retention estimate: a quick read on whether the Stitch keeps moving.",
-        "Hook to demo flow: how well the opener earns the demo.",
+        "Opening to payoff flow: how well the opener earns what the viewer sees next, whether your Stitch has one source or several.",
         "Drop-off risks: moments where viewers may leave.",
         "Suggested trims: what to cut or start sooner.",
         "Posting recheck: what was fixed, what still needs work, and whether it feels ready.",

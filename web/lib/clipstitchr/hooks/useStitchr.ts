@@ -16,6 +16,7 @@ import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus"
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SourcePlaybackRateOptions } from "@/lib/clipstitchr/types/SourcePlaybackRateOptions";
 import type { StitchrLongrSelection } from "@/lib/clipstitchr/types/StitchrLongrSelection";
+import type { StitchrStandaloneSelection } from "@/lib/clipstitchr/types/StitchrStandaloneSelection";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
@@ -32,6 +33,7 @@ import { createStitchSequenceSegment } from "@/lib/clipstitchr/utils/createStitc
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getLongrStitchFileName } from "@/lib/clipstitchr/utils/getLongrStitchFileName";
+import { getStandaloneStitchFileName } from "@/lib/clipstitchr/utils/getStandaloneStitchFileName";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { useBrowserStitchUsage } from "@/lib/clipstitchr/hooks/useBrowserStitchUsage";
@@ -259,6 +261,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
       textOverlays: TextOverlay[] = [],
       options: StitchrBuildOptions = {},
       onPairProgress?: (progress: number) => void,
+      mode: "longr" | "normal" = "longr",
     ) => {
       if (!selections.length) {
         throw new Error("Select at least one source clip before stitching.");
@@ -291,8 +294,11 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         : null;
       const nextStitch: Stitch = {
         id: stitchId,
-        mode: "longr",
-        name: getLongrStitchFileName(),
+        mode,
+        name:
+          mode === "longr"
+            ? getLongrStitchFileName()
+            : getStandaloneStitchFileName(selections[0].clip.name),
         ugcClipId: representativeUgc.clip.id,
         demoClipId: representativeDemo.clip.id,
         ugcClipName: representativeUgc.clip.name,
@@ -573,6 +579,83 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
     [createLongrStitch, onCreated],
   );
 
+  const stitchStandaloneVideos = useCallback(
+    async (
+      selections: StitchrStandaloneSelection[],
+      options: StitchrBuildOptions = {},
+    ) => {
+      setStatus("saving");
+      setProgress(0);
+      setError(null);
+      setStitch(null);
+      setStitches([]);
+      setCompletedCount(0);
+      setTotalCount(selections.length);
+
+      if (!selections.length) {
+        setStatus("error");
+        setError("Select at least one source clip before stitching.");
+        return [];
+      }
+
+      const nextStitches: Stitch[] = [];
+
+      try {
+        for (let index = 0; index < selections.length; index += 1) {
+          const selection = selections[index];
+          const playbackRate =
+            selection.clip.clipType === "demo"
+              ? options.demoPlaybackRate ?? 1
+              : options.ugcPlaybackRate ?? 1;
+          const duration = getQuickEditPlaybackDuration(
+            clampVideoTrimRange(selection.trimRange, selection.clip.duration),
+            selection.clip.duration,
+            selection.clip.quickEdit?.removeRanges,
+            playbackRate,
+          );
+          const textOverlays = getNonEmptyTextOverlays(
+            clampTextOverlays(selection.textOverlays ?? [], duration),
+          );
+          const nextStitch = await createLongrStitch(
+            [
+              {
+                clip: selection.clip,
+                playbackRate,
+                trimRange: selection.trimRange,
+              },
+            ],
+            textOverlays,
+            { ...options, socialCaption: selection.socialCaption },
+            (itemProgress) => {
+              setProgress((index + itemProgress) / selections.length);
+            },
+            "normal",
+          );
+
+          nextStitches.push(nextStitch);
+          setStitch(nextStitch);
+          setStitches([...nextStitches]);
+          setCompletedCount(nextStitches.length);
+          setProgress(nextStitches.length / selections.length);
+        }
+
+        await onCreated?.();
+        setProgress(1);
+        setStatus("complete");
+        return nextStitches;
+      } catch (nextError) {
+        setStatus("error");
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to stitch the videos.",
+        );
+        return nextStitches;
+      }
+    },
+    [createLongrStitch, onCreated],
+  );
+
   const stitchVideo = useCallback(
     async (
       ugcClip: VideoClip,
@@ -609,6 +692,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
     completedCount,
     totalCount,
     stitchLongrSequence,
+    stitchStandaloneVideos,
     stitchVideo,
     stitchVideos,
   };

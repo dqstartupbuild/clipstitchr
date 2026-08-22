@@ -328,4 +328,115 @@ describe("useStitchr", () => {
     expect(mocks.useStateSetter).toHaveBeenCalledWith("error");
     expect(mocks.useStateSetter).toHaveBeenCalledWith("save failed");
   });
+
+  it("creates one canonical Normal sequence and usage reservation per standalone UGC output", async () => {
+    const state = useStitchr({});
+
+    await expect(
+      state.stitchStandaloneVideos(
+        [
+          { clip: createClip("ugc_1", "UGC One", 8), trimRange: { end: 6, start: 1 } },
+          { clip: createClip("ugc_2", "UGC Two", 9), trimRange: { end: 7, start: 2 } },
+        ],
+        {
+          demoPlaybackRate: 1,
+          includeDemoAudio: false,
+          includeUgcAudio: true,
+          ugcPlaybackRate: 2,
+        },
+      ),
+    ).resolves.toHaveLength(2);
+
+    expect(getMutation("usage.reserveCreationCredits")).toHaveBeenCalledTimes(2);
+    expect(getMutation("stitches.save")).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        demoClipId: "ugc_1",
+        demoPlaybackRate: 1,
+        includeDemoAudio: false,
+        includeUgcAudio: true,
+        mode: "normal",
+        sequenceSegments: [
+          expect.objectContaining({
+            clipId: "ugc_1",
+            clipType: "ugc",
+            duration: 2.5,
+            playbackRate: 2,
+            trimRange: { end: 6, start: 1 },
+          }),
+        ],
+        ugcClipId: "ugc_1",
+        ugcPlaybackRate: 2,
+        usageIdempotencyKey: "stitch:stitch_1",
+      }),
+    );
+    expect(getMutation("stitches.save")).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        demoClipId: "ugc_2",
+        sequenceSegments: [expect.objectContaining({ clipId: "ugc_2" })],
+        ugcClipId: "ugc_2",
+        usageIdempotencyKey: "stitch:stitch_2",
+      }),
+    );
+    expect(mocks.createRenderedStitchVideoUpload).toHaveBeenCalledTimes(2);
+    expect(mocks.createRenderedStitchVideoUpload).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        stitch: expect.objectContaining({
+          sequenceSegments: [
+            expect.objectContaining({ clipId: "ugc_1", playbackRate: 2 }),
+          ],
+        }),
+      }),
+    );
+  });
+
+  it("creates one canonical Normal sequence for a standalone Demo", async () => {
+    const state = useStitchr({});
+
+    await expect(
+      state.stitchStandaloneVideos(
+        [{ clip: createClip("demo_1", "Demo", 8), trimRange: { end: 6, start: 1 } }],
+        {
+          demoPlaybackRate: 2,
+          includeDemoAudio: true,
+          includeUgcAudio: false,
+          ugcPlaybackRate: 1,
+        },
+      ),
+    ).resolves.toHaveLength(1);
+
+    expect(getMutation("usage.reserveCreationCredits")).toHaveBeenCalledTimes(1);
+    expect(getMutation("stitches.save")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        demoClipId: "demo_1",
+        demoPlaybackRate: 2,
+        includeDemoAudio: true,
+        includeUgcAudio: false,
+        mode: "normal",
+        sequenceSegments: [
+          expect.objectContaining({
+            clipId: "demo_1",
+            clipType: "demo",
+            duration: 2.5,
+            playbackRate: 2,
+            trimRange: { end: 6, start: 1 },
+          }),
+        ],
+        ugcClipId: "demo_1",
+        ugcPlaybackRate: 1,
+        usageIdempotencyKey: "stitch:stitch_1",
+      }),
+    );
+    expect(mocks.createRenderedStitchVideoUpload).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stitch: expect.objectContaining({
+          sequenceSegments: [
+            expect.objectContaining({ clipId: "demo_1", playbackRate: 2 }),
+          ],
+        }),
+      }),
+    );
+  });
 });

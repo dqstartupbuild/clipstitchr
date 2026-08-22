@@ -70,10 +70,67 @@ describe("createStitchScorePrompt", () => {
     expect(prompt).toContain("Wait for it");
     expect(prompt).toContain("Person reacts in the first second.");
     expect(prompt).toContain("first-score");
+    expect(prompt).toContain("actual ordered source clips");
+    expect(prompt).toContain("opening-to-payoff flow score");
     expect(prompt).toContain("Do not suggest new text overlay copy.");
     expect(prompt).toContain("Do not return suggestedOverlayText");
     expect(prompt).not.toContain('"suggestedOverlayText"');
     expect(prompt).not.toContain('"overlayText":{"replaceWith"');
+  });
+
+  it("scores a standalone source without assuming an omitted demo", () => {
+    const prompt = createStitchScorePrompt({
+      sourceClips: [
+        {
+          clipType: "ugc",
+          createdAt: "2026-06-14T00:00:00.000Z",
+          duration: 5,
+          hasAudio: true,
+          height: 1920,
+          id: "ugc_1",
+          libraryKind: "ugc",
+          mimeType: "video/mp4",
+          name: "Creator action",
+          originalName: "creator-action.mp4",
+          originalSize: 100,
+          ownerId: "user_123",
+          size: 100,
+          sourceMimeType: "video/mp4",
+          tags: [],
+          updatedAt: "2026-06-14T00:00:00.000Z",
+          videoObject: { contentType: "video/mp4", key: "ugc.mp4", size: 100 },
+          width: 1080,
+        },
+      ] as never,
+      stitch: {
+        createdAt: "2026-06-14T00:00:00.000Z",
+        demoClipId: "ugc_1",
+        demoClipName: "Creator action",
+        duration: 5,
+        height: 1920,
+        id: "stitch_1",
+        mode: "normal",
+        name: "Creator action",
+        ownerId: "user_123",
+        sequenceSegments: [
+          {
+            clipId: "ugc_1",
+            clipName: "Creator action",
+            clipType: "ugc",
+            duration: 5,
+            order: 0,
+            trimRange: { end: 5, start: 0 },
+          },
+        ],
+        ugcClipId: "ugc_1",
+        ugcClipName: "Creator action",
+        width: 1080,
+      } as never,
+      videoInputDescription: "Rendered video attached.",
+    });
+
+    expect(prompt).toContain("standalone source");
+    expect(prompt).toContain("Creator action (ugc, 5s)");
   });
 
   it("includes archived first-score context for rescoring", () => {

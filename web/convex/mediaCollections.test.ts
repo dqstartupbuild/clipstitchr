@@ -339,6 +339,23 @@ describe("convex media collections", () => {
   it("patches and removes stitches with metadata rate limits", async () => {
     const saveCtx = createCtx({
       stitches: [{ unique: { _id: "stitch_doc" } }],
+      videoClips: [
+        { unique: createVideoClipArgs({ id: "ugc_1", name: "UGC" }) },
+        {
+          unique: createVideoClipArgs({
+            clipType: "demo",
+            id: "demo_1",
+            name: "Demo",
+          }),
+        },
+        {
+          unique: createVideoClipArgs({
+            clipType: "demo",
+            id: "demo_1",
+            name: "Demo",
+          }),
+        },
+      ],
     });
 
     await expect(

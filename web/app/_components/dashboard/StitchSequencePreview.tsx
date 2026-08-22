@@ -2,6 +2,7 @@
 
 import { Loader2, Play } from "lucide-react";
 import { LoadedStitchSequencePreview } from "@/app/_components/dashboard/LoadedStitchSequencePreview";
+import { LoadedStitchSequenceSegmentsPreview } from "@/app/_components/dashboard/LoadedStitchSequenceSegmentsPreview";
 import { SavedStitchVideoPreview } from "@/app/_components/dashboard/SavedStitchVideoPreview";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -13,6 +14,7 @@ type StitchSequencePreviewProps = {
   posterUrl: string | null;
   stitch: Stitch;
   stitchVideoBlob?: Blob | null;
+  sequenceClips?: VideoClip[];
   ugcClip: VideoClip | null;
   onLoadPreview: () => void;
   onTextOverlayChange?: (textOverlays: TextOverlay[]) => void;
@@ -24,6 +26,7 @@ export function StitchSequencePreview({
   posterUrl,
   stitch,
   stitchVideoBlob,
+  sequenceClips = [],
   ugcClip,
   onLoadPreview,
   onTextOverlayChange,
@@ -34,6 +37,16 @@ export function StitchSequencePreview({
         posterUrl={posterUrl}
         stitch={stitch}
         videoBlob={stitchVideoBlob}
+      />
+    );
+  }
+
+  if (stitch.sequenceSegments?.length && sequenceClips.length) {
+    return (
+      <LoadedStitchSequenceSegmentsPreview
+        clips={sequenceClips}
+        stitch={stitch}
+        onTextOverlayChange={onTextOverlayChange}
       />
     );
   }

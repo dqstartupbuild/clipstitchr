@@ -153,6 +153,52 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).not.toContain("Optional audience language hints");
   });
 
+  it("keeps standalone Stitchr copy grounded in its supplied source role", () => {
+    const prompt = createCliprTextGenerationPrompt({
+      candidates: [candidate],
+      durationSeconds: 30,
+      fillers: { topic: ["launches"] },
+      product,
+      purpose: "stitchr",
+      slideCount: 1,
+      stitchrClipContexts: [
+        {
+          id: "demo_1",
+          name: "LaunchKit demo",
+          productDescription: "Assets move into one organized launch plan.",
+          role: "demo",
+        },
+      ],
+    });
+
+    expect(prompt).toContain("Composition: standalone Demo.");
+    expect(prompt).toContain("Do not invent a creator reaction");
+    expect(prompt).not.toContain("Composition: paired UGC then Demo.");
+  });
+
+  it("does not require Demo proof for a standalone UGC source", () => {
+    const prompt = createCliprTextGenerationPrompt({
+      candidates: [candidate],
+      durationSeconds: 30,
+      fillers: { topic: ["launches"] },
+      product,
+      purpose: "stitchr",
+      slideCount: 1,
+      stitchrClipContexts: [
+        {
+          id: "ugc_1",
+          name: "Creator sorting sticky notes",
+          role: "ugc",
+          videoDescription: "A creator sorts a crowded wall of sticky notes.",
+        },
+      ],
+    });
+
+    expect(prompt).toContain("Composition: standalone UGC.");
+    expect(prompt).toContain("Do not invent a Demo");
+    expect(prompt).not.toContain("Composition: paired UGC then Demo.");
+  });
+
   it("defines Swipr as an audience-first carousel with natural product placement", () => {
     const prompt = createCliprTextGenerationPrompt({
       candidates: [candidate],

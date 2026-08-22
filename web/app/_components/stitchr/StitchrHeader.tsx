@@ -7,7 +7,7 @@ export function StitchrHeader() {
     <DashboardPageHeader
       eyebrow="Stitchr"
       title="Stitchr"
-      description="Pair Hook/UGC clips with a product demo and save finished ads."
+      description="Turn any selected Hook/UGC clip or product demo into a finished ad. Add a demo when you want it paired."
     />
   );
 }

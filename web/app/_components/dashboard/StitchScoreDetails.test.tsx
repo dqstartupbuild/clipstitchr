@@ -24,7 +24,7 @@ describe("StitchScoreDetails", () => {
 
     expect(markup).toContain("Stitch score");
     expect(markup).toContain("Retention estimate");
-    expect(markup).toContain("Hook to demo flow");
+    expect(markup).toContain("Opening to payoff flow");
     expect(markup).toContain("Drop-off risks");
     expect(markup).toContain("Cut the quiet pause");
     expect(markup).toContain("Recheck");

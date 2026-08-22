@@ -13,7 +13,7 @@ export function StitchScoreDetails({ score }: StitchScoreDetailsProps) {
 
   const metricItems = [
     { label: "Retention estimate", value: score.overallRetentionEstimate },
-    { label: "Hook to demo flow", value: score.hookToDemoFlow },
+    { label: "Opening to payoff flow", value: score.hookToDemoFlow },
   ];
   const noteItems = [
     { label: "Drop-off risks", values: score.dropOffRiskPoints },

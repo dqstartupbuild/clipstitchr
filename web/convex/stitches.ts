@@ -216,7 +216,53 @@ export const save = mutation({
         q.eq("ownerId", ownerId).eq("id", args.id),
       )
       .unique();
-    const productId = await getStitchProductId(ctx, ownerId, args.demoClipId);
+    const sourceClipIds = [
+      ...new Set(
+        args.sequenceSegments?.length
+          ? args.sequenceSegments.map((segment) => segment.clipId)
+          : [args.ugcClipId, args.demoClipId],
+      ),
+    ];
+    const sourceClips = await Promise.all(
+      sourceClipIds.map(async (clipId) =>
+        await ctx.db
+          .query("videoClips")
+          .withIndex("by_owner_id", (q) =>
+            q.eq("ownerId", ownerId).eq("id", clipId),
+          )
+          .unique(),
+      ),
+    );
+
+    if (sourceClips.some((clip) => !clip)) {
+      throw new Error("Stitchr source clips were not found.");
+    }
+
+    if (args.mode === "normal" && args.sequenceSegments?.length !== undefined) {
+      if (args.sequenceSegments.length !== 1) {
+        throw new Error("Normal Stitchr outputs must contain one source segment.");
+      }
+
+      const [segment] = args.sequenceSegments;
+      const [sourceClip] = sourceClips;
+
+      if (
+        segment.clipId !== args.ugcClipId ||
+        segment.clipId !== args.demoClipId ||
+        segment.clipName !== args.ugcClipName ||
+        segment.clipName !== args.demoClipName ||
+        !sourceClip ||
+        segment.clipType !== sourceClip.clipType
+      ) {
+        throw new Error(
+          "Normal Stitchr standalone source fields must match the sequence segment.",
+        );
+      }
+    }
+    const productId =
+      args.mode === "normal" && args.sequenceSegments?.length
+        ? sourceClips[0]?.productId
+        : await getStitchProductId(ctx, ownerId, args.demoClipId);
     const stitch = {
       ownerId,
       ...args,
@@ -676,9 +722,9 @@ export const updateSourceSettings = mutation({
       throw new Error("Stitch not found.");
     }
 
-    if (stitch.mode === "longr" && stitch.sequenceSegments?.length) {
+    if (stitch.sequenceSegments?.length) {
       throw new Error(
-        "Longr stitches do not support UGC and demo source edits.",
+        "Sequence stitches do not support legacy source edits.",
       );
     }
 
@@ -818,6 +864,10 @@ export const updateSourceCrop = mutation({
       throw new Error("Stitch not found.");
     }
 
+    if (stitch.sequenceSegments?.length) {
+      throw new Error("Sequence stitches do not support legacy source crops.");
+    }
+
     await ctx.db.patch(stitch._id, {
       ...(source === "ugc"
         ? { ugcQuickEdit: getQuickEditWithCrop(stitch.ugcQuickEdit, crop) }
@@ -874,9 +924,9 @@ export const updateSourceCuts = mutation({
       throw new Error("Stitch not found.");
     }
 
-    if (stitch.mode === "longr" && stitch.sequenceSegments?.length) {
+    if (stitch.sequenceSegments?.length) {
       throw new Error(
-        "Longr stitches do not support UGC and demo source cuts.",
+        "Sequence stitches do not support legacy source cuts.",
       );
     }
 

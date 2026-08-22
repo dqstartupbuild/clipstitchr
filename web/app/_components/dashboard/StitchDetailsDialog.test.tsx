@@ -178,4 +178,45 @@ describe("StitchDetailsDialog", () => {
     expect(titleText.props.className).toContain("break-words");
     expect(detailText.props.className).toContain("[overflow-wrap:anywhere]");
   });
+
+  it("shows a single source instead of duplicated legacy fields for standalone sequences", () => {
+    const tree = StitchDetailsDialog({
+      demoClip: null,
+      isLoadingPreview: false,
+      onClose: vi.fn(),
+      onLoadPreview: vi.fn(),
+      posterUrl: null,
+      previewError: null,
+      stitch: createStitch({
+        demoClipId: "ugc_1",
+        demoClipName: "UGC",
+        sequenceSegments: [
+          {
+            clipId: "ugc_1",
+            clipName: "UGC",
+            clipType: "ugc",
+            duration: 5,
+            order: 0,
+            trimRange: { end: 5, start: 0 },
+          },
+        ],
+        ugcClipId: "ugc_1",
+        ugcClipName: "UGC",
+      }),
+      ugcClip: null,
+    });
+
+    expect(
+      findElements(
+        tree,
+        (element) => element.type === "p" && element.props?.children === "Source video",
+      ),
+    ).toHaveLength(1);
+    expect(
+      findElements(
+        tree,
+        (element) => element.type === "p" && element.props?.children === "Demo clip",
+      ),
+    ).toHaveLength(0);
+  });
 });
